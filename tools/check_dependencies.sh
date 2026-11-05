@@ -4,6 +4,8 @@
 #   - TreewiseFileSystem imports no UI framework and not TreewiseUI.
 #   - TreewiseModuleInterface imports only Foundation and TreewiseCore, and names
 #     no way to reach a file, so a module receives data only (ADR 0057).
+#   - TreewiseModuleXPC, the module catalog and the modules' service reach no file
+#     system or UI code, and the service's entitlements are the App Sandbox alone.
 #   - removeItem( appears only in TreewiseFileSystem's FileOperationRunner, the
 #     one place that removes a user's file without the Trash (ADR 0004, 0018).
 # Package.swift already enforces the dependency direction between the modules.
@@ -51,6 +53,24 @@ report "TreewiseModuleInterface may import only Foundation and TreewiseCore" "$i
 report "TreewiseModuleInterface may not name a way to reach a file" \
   "$(grep -rnE --include='*.swift' '\b(URL|FileManager|FileHandle|FileItem)\b' \
     "$SOURCES/TreewiseModuleInterface" 2>/dev/null | sed "s|^$ROOT_DIR/||" || true)"
+
+# Prints the imports under [1] other than the modules named by the regex [2].
+imports_besides() {
+  imports_in "$1" | grep -vE "import[[:space:]]+($2)([.[:space:]]|\$)" | sed "s|^$ROOT_DIR/||" || true
+}
+
+report "TreewiseModuleXPC may import only Foundation, Synchronization, os, TreewiseCore and TreewiseModuleInterface" \
+  "$(imports_besides "$SOURCES/TreewiseModuleXPC" 'Foundation|Synchronization|os|TreewiseCore|TreewiseModuleInterface')"
+report "The module catalog may import only TreewiseModuleInterface" \
+  "$(imports_besides "$ROOT_DIR/Packages/TreewiseModuleCatalog/Sources" 'TreewiseModuleInterface')"
+report "The modules' service may import only Foundation, the catalog and TreewiseModuleXPC" \
+  "$(imports_besides "$ROOT_DIR/Apps/TreewiseModuleHost" 'Foundation|TreewiseModuleCatalog|TreewiseModuleXPC')"
+
+service_entitlements="$ROOT_DIR/Apps/TreewiseModuleHost.entitlements"
+if [[ "$(grep -c '<key>' "$service_entitlements" || true)" != "1" ]] \
+  || ! grep -q '<key>com.apple.security.app-sandbox</key>' "$service_entitlements"; then
+  report "The modules' service may hold only the App Sandbox entitlement" "$service_entitlements"
+fi
 
 removals="$(grep -rn --include='*.swift' 'removeItem(' "$SOURCES" "$ROOT_DIR/Apps" 2>/dev/null |
   grep -v "$SOURCES/TreewiseFileSystem/FileOperationRunner.swift:" |

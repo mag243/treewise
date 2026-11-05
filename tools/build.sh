@@ -459,6 +459,7 @@ verify_release() {
   spctl --assess --type exec "$app" 2>"$LOG_DIR/spctl.log" \
     || fail "Gatekeeper rejects the app; log: build/logs/spctl.log"
   ok "Gatekeeper accepts $APP_NAME.app"
+  "$ROOT_DIR/tools/check_module_service.sh" "$app"
 }
 
 # Fails unless Gatekeeper lets the disk image open.
