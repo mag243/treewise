@@ -1,8 +1,8 @@
 # Releases Treewise from a tag vX.Y.Z when started by hand (ADR 0014,
 # ADR 0040): checks the tag against the version and the changelog, runs
 # tools/build.sh ci, signs and notarizes the macOS app and its disk image
-# (ADR 0030, ADR 0034), and publishes them with tools/publish.sh: the releases
-# repository, the Sparkle appcast and the Homebrew cask (ADR 0031-0033).
+# (ADR 0030, ADR 0034), and publishes them with tools/publish.sh: the Release,
+# the Sparkle appcast on the site branch and the Homebrew cask (ADR 0032, 0033, 0056).
 # Releases are made with tools/build.sh publish on the owner's Mac; this is for
 # when that Mac is not available.
 name: Release
@@ -28,13 +28,13 @@ jobs:
     steps:
       - id: release
         env:
-          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != v* ]]; then
             echo "Run the release workflow on a tag vX.Y.Z, not on $GITHUB_REF_NAME." >&2
             exit 1
           fi
-          if gh release view "$GITHUB_REF_NAME" --repo mag243/treewise-releases >/dev/null 2>&1; then
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "published=true" >> "$GITHUB_OUTPUT"
             echo "$GITHUB_REF_NAME is already published; nothing to do." >> "$GITHUB_STEP_SUMMARY"
           else

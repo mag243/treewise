@@ -101,7 +101,7 @@ extension FocusedValues {
 /// through the responder chain; Close and Show Next and Previous Tab from
 /// macOS's window tabs (ADR 0037).
 struct BrowserCommands: Commands {
-    /// The download page (ADR 0031), in place of a Help book Treewise does not have.
+    /// The download page (ADR 0053), in place of a Help book Treewise does not have.
     private static let website = URL(string: "https://treewise.m-domain.me/")
 
     @FocusedValue(\.browserActions) private var actions

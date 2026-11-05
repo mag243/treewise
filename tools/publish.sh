@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Publishes the release that tools/build.sh package left in build/release/
 # (ADR 0035): adds the zip to the Sparkle appcast (ADR 0032), creates the
-# GitHub Release with the zip and the disk image in the releases repository
-# (ADR 0031), commits the appcast, and writes the Homebrew cask (ADR 0033).
+# GitHub Release with the zip and the disk image, commits the appcast and the
+# download link to the site branch (ADR 0056), and writes the Homebrew cask (ADR 0033).
 #
 # Usage: tools/publish.sh      (tools/build.sh publish, or the release workflow)
 #
@@ -13,7 +13,8 @@ set -euo pipefail
 # shellcheck source=tools/lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-RELEASES_REPOSITORY="mag243/treewise-releases"
+RELEASES_REPOSITORY="mag243/treewise"
+SITE_BRANCH="gh-pages"
 TAP_REPOSITORY="mag243/homebrew-tap"
 WORK="$BUILD_DIR/publish"
 
@@ -38,7 +39,7 @@ commit_and_push() {
   git -C "$clone" push --quiet
 }
 
-# Adds the zip to the releases repository's appcast; generate_appcast reuses
+# Adds the zip to the site branch's appcast; generate_appcast reuses
 # the appcast it finds next to the zip, and the notes with the zip's name
 # become the new item's release notes.
 update_appcast() {
@@ -85,22 +86,23 @@ tag="v$version"
 rm -rf "$WORK"
 mkdir -p "$WORK"
 "$TOOLS_DIR/release_notes.sh" "$version" >"$WORK/notes.md"
-git clone --quiet --depth 1 "https://github.com/$RELEASES_REPOSITORY.git" "$WORK/releases"
+git clone --quiet --depth 1 --branch "$SITE_BRANCH" "https://github.com/$RELEASES_REPOSITORY.git" "$WORK/site"
 git clone --quiet --depth 1 "https://github.com/$TAP_REPOSITORY.git" "$WORK/tap"
 
-update_appcast "$zip" "$tag" "$WORK/notes.md" "$WORK/releases"
+update_appcast "$zip" "$tag" "$WORK/notes.md" "$WORK/site"
 ok "Appcast has $APP_NAME $version"
-update_download_link "$WORK/releases/index.html" \
+update_download_link "$WORK/site/index.html" \
   "https://github.com/$RELEASES_REPOSITORY/releases/download/$tag/$(basename "$dmg")"
 
 # The Release comes before the appcast, so the zip exists when Sparkle reads of it.
+# --verify-tag: without the tag on GitHub, gh would make one at the newest commit of main.
 prerelease=()
 [[ "$version" == 0.* ]] && prerelease=(--prerelease)
-gh release create "$tag" "$zip" "$dmg" --repo "$RELEASES_REPOSITORY" \
+gh release create "$tag" "$zip" "$dmg" --repo "$RELEASES_REPOSITORY" --verify-tag \
   --title "$APP_NAME $version" --notes-file "$WORK/notes.md" "${prerelease[@]}" >/dev/null
 ok "Release $tag in $RELEASES_REPOSITORY"
 
-commit_and_push "$WORK/releases" "$APP_NAME $version"
+commit_and_push "$WORK/site" "$APP_NAME $version"
 ok "Appcast published"
 
 # The cask comes last, so brew installs only a version that is downloadable and

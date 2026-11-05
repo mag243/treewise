@@ -4,7 +4,7 @@ cask "treewise" do
   version "@VERSION@,@BUILD@"
   sha256 "@SHA256@"
 
-  url "https://github.com/mag243/treewise-releases/releases/download/v#{version.csv.first}/Treewise-#{version.csv.first}-#{version.csv.second}.zip"
+  url "https://github.com/mag243/treewise/releases/download/v#{version.csv.first}/Treewise-#{version.csv.first}-#{version.csv.second}.zip"
   name "Treewise"
   desc "File manager with the behaviour of Windows Explorer"
   homepage "https://treewise.m-domain.me/"

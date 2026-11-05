@@ -28,9 +28,9 @@
 #               (TREEWISE_NOTARY_PROFILE), or with NOTARY_KEY_PATH, NOTARY_KEY_ID and
 #               NOTARY_ISSUER_ID when they are set.
 #   publish     Release from this Mac (ADR 0035): checks that the tree is clean and the
-#               tag v<MARKETING_VERSION> points at HEAD, runs package, then
-#               tools/publish.sh: appcast, GitHub Release in mag243/treewise-releases
-#               and the Homebrew cask. It pushes to those repositories: the owner runs it.
+#               tag v<MARKETING_VERSION> points at HEAD, here and on GitHub, runs package,
+#               then tools/publish.sh: GitHub Release, appcast and download link on the
+#               site branch, and the Homebrew cask. It pushes to GitHub: the owner runs it.
 #   export      Release archive and Developer ID export of the macOS app ->
 #               build/TreewiseMac/, with tools/ExportOptions-mac.plist; not notarized.
 #   quick       check + test: the gate for a step that leaves the apps alone.
@@ -508,6 +508,10 @@ cmd_publish() {
     || fail "No tag $tag; tag the release first: git tag $tag"
   [[ "$(git -C "$ROOT_DIR" rev-parse "$tag^{commit}")" == "$(git -C "$ROOT_DIR" rev-parse HEAD)" ]] \
     || fail "The tag $tag does not point at HEAD."
+  local remote_tag
+  remote_tag="$(git -C "$ROOT_DIR" ls-remote origin "refs/tags/$tag" "refs/tags/$tag^{}" | tail -n 1 | cut -f 1)"
+  [[ "$remote_tag" == "$(git -C "$ROOT_DIR" rev-parse HEAD)" ]] \
+    || fail "The tag $tag is not at HEAD on GitHub; push it first: git push origin $tag"
   "$TOOLS_DIR/release_notes.sh" "$version" >/dev/null
   ok "$APP_NAME $version, tag $tag at HEAD"
   cmd_package
