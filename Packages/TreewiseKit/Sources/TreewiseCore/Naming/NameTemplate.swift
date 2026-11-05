@@ -14,7 +14,7 @@ public struct NameTemplate: Hashable, Sendable {
         public enum Kind: String, Hashable, Sendable, Codable {
             /// A date, written in the field's format.
             case date
-            /// Digits, perhaps with letters before them, like `F26009`.
+            /// A word without spaces that holds a digit, like `F26009` or `26G0320014-1`.
             case number
             /// Any text.
             case text
@@ -143,7 +143,7 @@ public struct NameTemplate: Hashable, Sendable {
         case .field(let field, let format):
             switch field.kind {
             case .date: return (format ?? .standard).pattern
-            case .number: return "[A-Za-z]*[0-9]+"
+            case .number: return "[^ ]*[0-9][^ ]*"
             case .text: return ".+?"
             case .fixed:
                 return fixed[field.name].map(NSRegularExpression.escapedPattern(for:))
