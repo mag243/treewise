@@ -4,9 +4,11 @@ public enum ProposedNameProblem: Error, Hashable, Sendable {
     case noName
     /// The name is the one the item already has.
     case unchanged
+    /// A required field is still a gap, to be filled in.
+    case hasGap
     /// The name is empty or only whitespace.
     case empty
-    /// The name holds `/` or `:`, which could point somewhere else.
+    /// The name holds `:`, which is what a `/` becomes on disk.
     case containsPathSeparator
     /// The name holds a control character.
     case containsControlCharacter

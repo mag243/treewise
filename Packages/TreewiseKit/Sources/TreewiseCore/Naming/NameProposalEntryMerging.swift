@@ -6,9 +6,11 @@ extension NameProposalSession.Entry {
         let rank = { (option: Option) in
             moduleOrder.firstIndex { option.moduleIDs.first == $0 } ?? moduleOrder.count
         }
-        // Sorting is stable, so each module's ranking stays as it arrived.
+        let gap = { (option: Option) in option.name.contains(NameTemplate.gap) ? 1 : 0 }
+        // The offset keeps each module's ranking as it arrived.
         proposals = proposals.enumerated().sorted {
-            (rank($0.element), $0.offset) < (rank($1.element), $1.offset)
+            (rank($0.element), gap($0.element), $0.offset)
+                < (rank($1.element), gap($1.element), $1.offset)
         }.map(\.element)
         mergeEdit()
         selectBestIfNone()
@@ -58,17 +60,19 @@ extension NameProposalSession.Entry {
         guard
             case .success(let name) = ProposedName.resolve(
                 proposal, for: originalName, kind: kind),
-            name != originalName
+            name != ProposedName.shownName(fromDisk: originalName)
         else { return }
         let key = Self.key(name)
         guard let index = proposals.firstIndex(where: { Self.key($0.name) == key }) else {
-            proposals.append(Option(name: name, moduleIDs: [proposal.moduleID]))
+            proposals.append(
+                Option(name: name, moduleIDs: [proposal.moduleID], dateSource: proposal.dateSource))
             return
         }
         guard !proposals[index].moduleIDs.contains(proposal.moduleID) else { return }
         let rank = { (id: String) in moduleOrder.firstIndex(of: id) ?? moduleOrder.count }
         if let first = proposals[index].moduleIDs.first, rank(proposal.moduleID) < rank(first) {
             proposals[index].name = name
+            proposals[index].dateSource = proposal.dateSource
         }
         proposals[index].moduleIDs.append(proposal.moduleID)
         proposals[index].moduleIDs.sort { rank($0) < rank($1) }

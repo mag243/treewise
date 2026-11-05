@@ -11,8 +11,10 @@ import TreewiseCore
             moduleOrder: modules)
     }
 
-    private func proposal(_ name: String, from module: String = "first") -> NameProposal {
-        NameProposal(name: name, moduleID: module)
+    private func proposal(
+        _ name: String, from module: String = "first", dateSource: NameProposal.DateSource? = nil
+    ) -> NameProposal {
+        NameProposal(name: name, moduleID: module, dateSource: dateSource)
     }
 
     private func session(with names: String...) -> NameProposalSession {
@@ -137,6 +139,74 @@ import TreewiseCore
         session.add([proposal("Same"), proposal("Same", from: "second")], to: Self.item)
         session.replaceProposals([], from: "first", for: Self.item)
         #expect(session.entry(Self.item)?.proposals.map(\.moduleIDs) == [["second"]])
+    }
+
+    @Test func aGapComesAfterTheCompleteOptionsOfItsModule() {
+        var session = newSession()
+        session.add(
+            [proposal("A " + NameTemplate.gap), proposal("B"), proposal("C", from: "second")],
+            to: Self.item)
+        #expect(names(session) == ["B.pdf", "A " + NameTemplate.gap + ".pdf", "C.pdf"])
+    }
+
+    @Test func aGapCannotBeApprovedUntilItIsFilledIn() {
+        var session = newSession()
+        session.add([proposal("A " + NameTemplate.gap)], to: Self.item)
+        #expect(session.approve(Self.item) == .hasGap)
+        session.edit(Self.item, to: "A filled.pdf")
+        #expect(session.approve(Self.item) == nil)
+    }
+
+    @Test func approveAllPassesAGapBy() {
+        var session = newSession()
+        session.add([proposal("A " + NameTemplate.gap)], to: Self.item)
+        session.approveAll(dateInFileIsReliable: true)
+        #expect(session.entry(Self.item)?.state == .pending)
+    }
+
+    @Test func storesApprovedNamesAsTheDiskHasThem() {
+        var session = newSession()
+        session.add([proposal("JK/o/1")], to: Self.item)
+        session.approve(Self.item)
+        #expect(session.approvedRenames.first?.to == "JK:o:1.pdf")
+    }
+
+    @Test func comparesWithAnOriginalNameAsShown() {
+        var session = NameProposalSession(
+            items: [.init(id: "/f/a:b.pdf", folder: "/f", originalName: "a:b.pdf", kind: .file)],
+            moduleOrder: ["first"])
+        session.add([proposal("a/b")], to: "/f/a:b.pdf")
+        #expect(session.entry("/f/a:b.pdf")?.proposals.isEmpty == true)
+    }
+
+    @Test func aDateInTheFileNeedsALookUnlessReliable() {
+        var session = newSession()
+        session.add([proposal("A", dateSource: .insideFile)], to: Self.item)
+        session.approveAll(dateInFileIsReliable: false)
+        #expect(session.entry(Self.item)?.state == .pending)
+        session.approveAll(dateInFileIsReliable: true)
+        #expect(session.entry(Self.item)?.state == .approved)
+    }
+
+    @Test func aFileSystemDateAlwaysNeedsALook() {
+        var session = newSession()
+        session.add([proposal("A", dateSource: .fileSystem)], to: Self.item)
+        session.approveAll(dateInFileIsReliable: true)
+        #expect(session.entry(Self.item)?.state == .pending)
+    }
+
+    @Test func aRowWithASuggestedDateCanBeApprovedByItself() {
+        var session = newSession()
+        session.add([proposal("A", dateSource: .fileSystem)], to: Self.item)
+        #expect(session.approve(Self.item) == nil)
+    }
+
+    @Test func tellsWhereTheCurrentDateComesFrom() {
+        var session = newSession()
+        session.add([proposal("A", dateSource: .fileSystem), proposal("B")], to: Self.item)
+        #expect(session.entry(Self.item)?.currentDateSource == .fileSystem)
+        session.step(Self.item, by: .next)
+        #expect(session.entry(Self.item)?.currentDateSource == nil)
     }
 
     @Test func recordsWhichModulesAFileFits() {

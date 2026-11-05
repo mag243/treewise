@@ -2,7 +2,8 @@ import Foundation
 
 /// Reads the text of a `NameTemplate`, one character at a time.
 struct NameTemplateParser {
-    private static let pathSeparators: Set<Character> = ["/", ":"]
+    /// A `/` is allowed, because it shows what a `:` is on disk, as in Finder.
+    private static let pathSeparators: Set<Character> = [":"]
 
     private var rest: Substring
     private let fields: [NameTemplate.Field]

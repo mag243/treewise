@@ -57,7 +57,7 @@ public struct NameTemplate: Hashable, Sendable {
         case nestedOptionalParts
         /// The field is not one the module knows.
         case unknownField(String)
-        /// Fixed text holds `/` or `:`, which could point somewhere else.
+        /// Fixed text holds `:`, which a name on screen cannot have.
         case containsPathSeparator
         /// A format is on a field that is no date, or is not a date format.
         case invalidFormat
@@ -70,6 +70,8 @@ public struct NameTemplate: Hashable, Sendable {
         case optional([Part])
     }
 
+    /// What stands for a required field without a value, for the user to fill in.
+    public static let gap = "▮"
     /// A regular expression that fits nothing.
     private static let matchNothing = "(?!)"
 
@@ -88,35 +90,71 @@ public struct NameTemplate: Hashable, Sendable {
         return parser.parse().map { NameTemplate(text: text, parts: $0) }
     }
 
-    /// The name these values make, or nil when a required field has no value. It has
-    /// no extension and is not yet checked: `ProposedName` does that.
+    /// The name these values make, with single spaces. A required field without a value
+    /// leaves a `gap`, and an optional part without one falls away. Without a value for
+    /// any field that a module fills, it gives nil. The name has no extension and is not
+    /// yet checked: `ProposedName` does that.
     public func name(from values: [String: Value]) -> String? {
-        Self.fill(parts, with: values)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let moduleFields = Self.fields(in: parts).filter { $0.kind != .fixed }
+        guard
+            moduleFields.isEmpty
+                || moduleFields.contains(where: { field in
+                    Self.write(values[field.name], for: field, format: nil) != nil
+                })
+        else { return nil }
+        let name = Self.fill(parts, with: values, leavingGaps: true) ?? ""
+        return Self.singleSpaced(name)
+    }
+
+    /// Whether the template holds a field for a date, and that field has this value.
+    public func uses(date value: Value, in values: [String: Value]) -> Bool {
+        Self.fields(in: parts).contains { $0.kind == .date && values[$0.name] == value }
     }
 
     /// Whether a name without its extension fits this template. Fixed text and the
     /// `fixed` values, by field name, compare exactly as written. A fixed field
-    /// without a value fits nothing.
+    /// without a value fits nothing, and neither does a name with stray spaces.
     public func matches(_ name: String, fixed: [String: String] = [:]) -> Bool {
+        guard name == Self.singleSpaced(name) else { return false }
         let pattern = "^" + parts.map { Self.pattern(for: $0, fixed: fixed) }.joined() + "$"
         guard let expression = try? NSRegularExpression(pattern: pattern) else { return false }
         let whole = NSRange(name.startIndex..., in: name)
         return expression.firstMatch(in: name, range: whole) != nil
     }
 
-    private static func fill(_ parts: [Part], with values: [String: Value]) -> String? {
+    private static func singleSpaced(_ text: String) -> String {
+        text.replacingOccurrences(of: " {2,}", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func fields(in parts: [Part]) -> [Field] {
+        parts.flatMap { part -> [Field] in
+            switch part {
+            case .text: []
+            case .field(let field, _): [field]
+            case .optional(let inner): fields(in: inner)
+            }
+        }
+    }
+
+    private static func fill(
+        _ parts: [Part], with values: [String: Value], leavingGaps: Bool
+    ) -> String? {
         var result = ""
         for part in parts {
             switch part {
             case .text(let text):
                 result += text
             case .field(let field, let format):
-                guard let filled = write(values[field.name], for: field, format: format) else {
+                if let filled = write(values[field.name], for: field, format: format) {
+                    result += filled
+                } else if leavingGaps {
+                    result += gap
+                } else {
                     return nil
                 }
-                result += filled
             case .optional(let inner):
-                result += fill(inner, with: values) ?? ""
+                result += fill(inner, with: values, leavingGaps: false) ?? ""
             }
         }
         return result

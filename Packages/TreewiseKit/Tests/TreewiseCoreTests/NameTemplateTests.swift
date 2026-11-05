@@ -53,15 +53,39 @@ import TreewiseCore
         #expect(try template("{number}[ - {description}]").name(from: values) == "F26009")
     }
 
-    @Test func givesNoNameWithoutARequiredValue() throws {
+    @Test func leavesAGapForARequiredValue() throws {
         let values = Self.values.filter { $0.key != "number" }
-        #expect(try template("{company} {number}").name(from: values) == nil)
+        #expect(
+            try template("{company} - {number}").name(from: values)
+                == "Northwind - " + NameTemplate.gap)
     }
 
-    @Test func aDateFieldNeedsADate() throws {
+    @Test func leavesAGapForADateThatIsNoDate() throws {
         var values = Self.values
         values["date"] = .text("soon")
-        #expect(try template("{date}").name(from: values) == nil)
+        #expect(
+            try template("{date} {company}").name(from: values) == NameTemplate.gap + " Northwind")
+    }
+
+    @Test func givesNoNameWithoutAnyValue() throws {
+        #expect(try template("{company} - {number}").name(from: [:]) == nil)
+    }
+
+    @Test func aFixedFieldAloneIsNoValue() throws {
+        let template = try NameTemplate.parse("{folder} {number}", fields: Self.fields + [.folder])
+            .get()
+        #expect(template.name(from: ["folder": .text("Invoices")]) == nil)
+    }
+
+    @Test func makesNamesWithSingleSpaces() throws {
+        var values = Self.values
+        values["company"] = .text("North  wind")
+        #expect(try template("{number}  {company}").name(from: values) == "F26009 North wind")
+    }
+
+    @Test(arguments: ["F1  - x", " F1 - x", "F1 - x "])
+    func aNameWithStraySpacesDoesNotFit(_ name: String) throws {
+        #expect(try !template("{number} - {description}").matches(name))
     }
 
     @Test(arguments: [
@@ -121,9 +145,15 @@ import TreewiseCore
         #expect(problem("{price}") == .unknownField("price"))
     }
 
-    @Test(arguments: ["a/b {number}", "a:b {number}", "{number}[/{company}]"])
-    func refusesPathSeparators(_ text: String) {
+    @Test(arguments: ["a:b {number}", "{number}[:{company}]"])
+    func refusesAColon(_ text: String) {
         #expect(problem(text) == .containsPathSeparator)
+    }
+
+    @Test func allowsASlashAsFinderDoes() throws {
+        let template = try template("Ref/{number}")
+        #expect(template.name(from: Self.values) == "Ref/F26009")
+        #expect(template.matches("Ref/F26009"))
     }
 
     @Test(arguments: ["{date:hh}", "{date:yyyy/MM}", "{company:yyyy}"])

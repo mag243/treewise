@@ -39,9 +39,36 @@ import TreewiseCore
         #expect(resolve(name) == .failure(.empty))
     }
 
-    @Test(arguments: ["a/b", "../b", "a:b"])
-    func rejectsPathSeparators(_ name: String) {
-        #expect(resolve(name) == .failure(.containsPathSeparator))
+    @Test func rejectsAColon() {
+        #expect(resolve("a:b") == .failure(.containsPathSeparator))
+    }
+
+    @Test func allowsASlashAsFinderDoes() {
+        #expect(resolve("JK/o/26049") == .success("JK/o/26049.pdf"))
+    }
+
+    @Test func storesASlashAsAColon() {
+        #expect(ProposedName.diskName(fromShown: "JK/o/26049.pdf") == "JK:o:26049.pdf")
+    }
+
+    @Test func showsAColonAsASlash() {
+        #expect(ProposedName.shownName(fromDisk: "JK:o:26049.pdf") == "JK/o/26049.pdf")
+    }
+
+    @Test(arguments: [
+        ("a  b.pdf", "a b.pdf"), (" a.pdf", "a.pdf"), ("a .pdf", "a.pdf"),
+        ("a   b  c.pdf", "a b c.pdf"),
+    ])
+    func repairsStraySpaces(_ name: String, _ repaired: String) {
+        #expect(ProposedName.repairingSpaces(in: name) == repaired)
+    }
+
+    @Test func leavesCleanSpacesAlone() {
+        #expect(ProposedName.repairingSpaces(in: "a b.pdf") == nil)
+    }
+
+    @Test func leavesAGapToBeFilledIn() {
+        #expect(resolve("a - " + NameTemplate.gap) == .success("a - " + NameTemplate.gap + ".pdf"))
     }
 
     @Test(arguments: ["a\u{0}b", "a\nb", "a\u{7F}b"])
@@ -71,7 +98,8 @@ import TreewiseCore
 
     @Test func checksAnEditAsItIsTyped() {
         #expect(ProposedName.problem(inEdit: " ") == .empty)
-        #expect(ProposedName.problem(inEdit: "a/b") == .containsPathSeparator)
+        #expect(ProposedName.problem(inEdit: "a:b") == .containsPathSeparator)
+        #expect(ProposedName.problem(inEdit: "a/b") == nil)
     }
 
     @Test func makesProposalsFromRankedValues() throws {
@@ -79,11 +107,11 @@ import TreewiseCore
         let template = try NameTemplate.parse("{folder} {number}", fields: fields).get()
         let proposals = NameProposal.make(
             from: [["number": .text("1")], [:], ["number": .text("2")]], template: template,
-            moduleID: "m", folderName: "Invoices")
+            moduleID: "m", folderName: "Invoices", suggestedDate: nil)
         #expect(
             proposals == [
-                NameProposal(name: "Invoices 1", moduleID: "m"),
-                NameProposal(name: "Invoices 2", moduleID: "m"),
+                NameProposal(name: "Invoices 1", moduleID: "m", dateSource: nil),
+                NameProposal(name: "Invoices 2", moduleID: "m", dateSource: nil),
             ])
     }
 
@@ -91,7 +119,41 @@ import TreewiseCore
         let template = try NameTemplate.parse("{folder}", fields: [.folder]).get()
         let proposals = NameProposal.make(
             from: [["folder": .text("Other")]], template: template, moduleID: "m",
-            folderName: "Invoices")
+            folderName: "Invoices", suggestedDate: nil)
         #expect(proposals.first?.name == "Invoices")
+    }
+
+    @Test func aDateFromTheFileKeepsItsSource() throws {
+        let fields = [NameTemplate.Field(name: "date", kind: .date)]
+        let template = try NameTemplate.parse("{date}", fields: fields).get()
+        let date = SuggestedDate(year: 2026, month: 11, day: 2, source: .insideFile)
+        let fromFile = NameProposal.make(
+            from: [["date": date.value]], template: template, moduleID: "m", folderName: "",
+            suggestedDate: date)
+        #expect(fromFile.first?.dateSource == .insideFile)
+    }
+
+    @Test func aDateAModuleFoundHasNoSuchSource() throws {
+        let fields = [NameTemplate.Field(name: "date", kind: .date)]
+        let template = try NameTemplate.parse("{date}", fields: fields).get()
+        let date = SuggestedDate(year: 2026, month: 11, day: 2, source: .fileSystem)
+        let found = NameProposal.make(
+            from: [["date": .date(year: 2026, month: 1, day: 1)]], template: template,
+            moduleID: "m",
+            folderName: "", suggestedDate: date)
+        #expect(found.first?.dateSource == nil)
+    }
+
+    @Test func aTemplateWithoutADateHasNoDateSource() throws {
+        let fields = [
+            NameTemplate.Field(name: "date", kind: .date),
+            NameTemplate.Field(name: "text", kind: .text),
+        ]
+        let template = try NameTemplate.parse("{text}", fields: fields).get()
+        let date = SuggestedDate(year: 2026, month: 11, day: 2, source: .fileSystem)
+        let made = NameProposal.make(
+            from: [["date": date.value, "text": .text("a")]], template: template, moduleID: "m",
+            folderName: "", suggestedDate: date)
+        #expect(made.first?.dateSource == nil)
     }
 }

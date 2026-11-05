@@ -51,7 +51,7 @@ import TreewiseCore
 
     @Test func dropsInvalidProposalsAndKeepsTheRest() {
         var session = newSession()
-        session.add([proposal("a/b"), proposal("Good")], to: Self.item)
+        session.add([proposal("a:b"), proposal("Good")], to: Self.item)
         #expect(names(session) == ["Good.pdf"])
     }
 
@@ -134,7 +134,7 @@ import TreewiseCore
 
     @Test func refusesToApproveAnInvalidEdit() {
         var session = session(with: "A")
-        session.edit(Self.item, to: "a/b")
+        session.edit(Self.item, to: "a:b")
         #expect(session.approve(Self.item) == .containsPathSeparator)
     }
 
@@ -183,8 +183,8 @@ import TreewiseCore
         session.add([proposal("A1")], to: "/f/a")
         session.add([proposal("C1")], to: "/f/c")
         session.skip("/f/c")
-        session.edit("/f/d", to: "x/y")
-        session.approveAll()
+        session.edit("/f/d", to: "x:y")
+        session.approveAll(dateInFileIsReliable: false)
         #expect(session.entry("/f/a")?.state == .approved)
         #expect(session.entry("/f/b")?.state == .pending)
         #expect(session.entry("/f/c")?.state == .skipped)
@@ -201,7 +201,7 @@ import TreewiseCore
             moduleOrder: ["first"])
         session.add([proposal("B1")], to: "/f/b")
         session.add([proposal("A1")], to: "/f/a")
-        session.approveAll()
+        session.approveAll(dateInFileIsReliable: false)
         #expect(
             session.approvedRenames == [
                 BatchRename(item: "/f/a", folder: "/f", from: "a.pdf", to: "A1.pdf"),

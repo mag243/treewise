@@ -21,6 +21,8 @@ extension NameProposalSession {
             public internal(set) var name: String
             /// The modules that proposed it, in their order.
             public internal(set) var moduleIDs: [String]
+            /// Where its date comes from, or nil when it has no suggested date.
+            public internal(set) var dateSource: NameProposal.DateSource?
         }
 
         /// Which of the options is current.
@@ -90,8 +92,15 @@ extension NameProposalSession {
         /// Why the current name cannot be approved, or nil when it can.
         public var problem: ProposedNameProblem? {
             guard !isOutOfScope, let name = currentName else { return .noName }
-            if name == originalName { return .unchanged }
+            if name == ProposedName.shownName(fromDisk: originalName) { return .unchanged }
+            if name.contains(NameTemplate.gap) { return .hasGap }
             return ProposedName.problem(inEdit: name)
+        }
+
+        /// Where the current name's date comes from, or nil when it has no suggested date.
+        public var currentDateSource: NameProposal.DateSource? {
+            guard case .proposal(let key) = selection else { return nil }
+            return proposals.first { Self.key($0.name) == key }?.dateSource
         }
 
         /// The current name's place among the options, or nil before there is one.

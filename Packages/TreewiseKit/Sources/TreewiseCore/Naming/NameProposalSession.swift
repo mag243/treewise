@@ -89,9 +89,17 @@ public struct NameProposalSession: Hashable, Sendable {
         return problem
     }
 
-    /// Approves every pending item that has a usable name.
-    public mutating func approveAll() {
-        for entry in entries where entry.state == .pending { approve(entry.id) }
+    /// Approves every pending item that has a usable name and no date to look at. A
+    /// date from the file system always needs a look; one inside the file does unless
+    /// it proved reliable in this folder.
+    public mutating func approveAll(dateInFileIsReliable: Bool) {
+        for entry in entries where entry.state == .pending {
+            switch entry.currentDateSource {
+            case .fileSystem: continue
+            case .insideFile where !dateInFileIsReliable: continue
+            default: approve(entry.id)
+            }
+        }
     }
 
     /// Leaves the item as it is.
@@ -104,7 +112,8 @@ public struct NameProposalSession: Hashable, Sendable {
         entries.compactMap { entry in
             guard entry.state == .approved, let name = entry.currentName else { return nil }
             return BatchRename(
-                item: entry.id, folder: entry.folder, from: entry.originalName, to: name)
+                item: entry.id, folder: entry.folder, from: entry.originalName,
+                to: ProposedName.diskName(fromShown: name))
         }
     }
 
