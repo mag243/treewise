@@ -55,27 +55,17 @@ struct NameReviewListView: View {
     }
 
     private func handle(_ press: KeyPress) -> KeyPress.Result {
-        guard let id = model.selectedID else { return .ignored }
+        let key: NameReviewKey
         switch press.key {
-        case .leftArrow: model.step(id, by: .previous)
-        case .rightArrow: model.step(id, by: .next)
-        case KeyEquivalent("a"):
-            model.approve(id)
-            moveDown(from: id)
-        case KeyEquivalent("s"):
-            model.skip(id)
-            moveDown(from: id)
+        case .leftArrow: key = .previous
+        case .rightArrow: key = .next
+        case KeyEquivalent("a"): key = .approve
+        case KeyEquivalent("s"): key = .skip
         default: return .ignored
         }
-        return .handled
-    }
-
-    private func moveDown(from id: FileItem.ID) {
-        let rows = model.rows
-        guard let index = rows.firstIndex(where: { $0.id == id }), index + 1 < rows.count else {
-            return
-        }
-        model.selectedID = rows[index + 1].id
+        // SwiftUI asks the list before the name's field, so the field has to be ruled out here.
+        let isTyping = NSApp.keyWindow?.firstResponder is NSText
+        return model.handle(key, isTyping: isTyping) ? .handled : .ignored
     }
 }
 

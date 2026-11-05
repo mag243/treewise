@@ -36,6 +36,33 @@ extension NameReviewModel {
         refreshConflicts()
     }
 
+    /// Answers a key on the selected row, and says whether it did. While the user types
+    /// in a name, keys belong to the text.
+    public func handle(_ key: NameReviewKey, isTyping: Bool) -> Bool {
+        guard !isTyping, let id = selectedID else { return false }
+        switch key {
+        case .approve:
+            approve(id)
+            moveDown(from: id)
+        case .skip:
+            skip(id)
+            moveDown(from: id)
+        case .next:
+            step(id, by: .next)
+        case .previous:
+            step(id, by: .previous)
+        }
+        return true
+    }
+
+    private func moveDown(from id: FileItem.ID) {
+        let shown = rows
+        guard let index = shown.firstIndex(where: { $0.id == id }), index + 1 < shown.count else {
+            return
+        }
+        selectedID = shown[index + 1].id
+    }
+
     /// Takes back a row's approval or skip.
     public func undecide(_ id: FileItem.ID) {
         session?.undecide(id)
@@ -90,6 +117,18 @@ extension NameReviewModel {
         }
         return NameNeighbours.around(name, among: others, reach: Self.neighbourReach)
     }
+}
+
+/// A key the overview's list answers to.
+public enum NameReviewKey: Hashable, Sendable {
+    /// Approve the row and go down.
+    case approve
+    /// Skip the row and go down.
+    case skip
+    /// The row's next option.
+    case next
+    /// The row's previous option.
+    case previous
 }
 
 /// Why a row cannot be approved.

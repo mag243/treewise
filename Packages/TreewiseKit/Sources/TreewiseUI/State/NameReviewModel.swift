@@ -138,7 +138,10 @@ public final class NameReviewModel {
     public func start() async {
         folderItems = (try? await dependencies.operations.contents(of: folder.id)) ?? []
         let visible = folderItems.filter { !$0.isHidden }
-        items = scope == .selection ? selection : visible.filter { !$0.isContainer }
+        // A provider lists items in no particular order; the rows follow the names.
+        items = (scope == .selection ? selection : visible.filter { !$0.isContainer }).sorted {
+            $0.name.localizedStandardCompare($1.name) == .orderedAscending
+        }
         let descriptions = (try? await dependencies.host.availableModules()) ?? []
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
         isFirstReview = saved == nil

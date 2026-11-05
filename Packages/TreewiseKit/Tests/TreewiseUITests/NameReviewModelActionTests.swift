@@ -102,4 +102,57 @@ extension NameReviewModelTests {
         model.selectedID = item.id
         #expect(model.neighbours.contains { $0.name == "Doc Other.txt" && $0.isNew })
     }
+
+    @Test(arguments: [NameReviewKey.approve, .skip, .next, .previous])
+    func keysLeaveARowAloneWhileTyping(_ key: NameReviewKey) async {
+        let item = addFile("scan.txt")
+        let model = await model(
+            host(answers: [
+                Self.free: .success([["text": .text("One")], ["text": .text("Two")]])
+            ]))
+        #expect(!model.handle(key, isTyping: true))
+        #expect(model.session?.entry(item.id)?.state == .pending)
+        #expect(model.session?.entry(item.id)?.currentName == "Doc One.txt")
+    }
+
+    @Test func aKeyApprovesAndMovesDown() async {
+        let first = addFile("a.txt")
+        let second = addFile("b.txt")
+        let model = await model(
+            host(answers: [Self.free: .success([["number": .text("1"), "text": .text("x")]])]))
+        await model.setTemplate(Self.free, to: "{text} {number}")
+        model.edit(first.id, to: "First.txt")
+        model.edit(second.id, to: "Second.txt")
+        model.selectedID = first.id
+        #expect(model.handle(.approve, isTyping: false))
+        #expect(model.session?.entry(first.id)?.state == .approved)
+        #expect(model.selectedID == second.id)
+    }
+
+    @Test func rowsFollowTheNames() async {
+        let later = addFile("b10.txt")
+        let earlier = addFile("b9.txt")
+        let model = await model(host())
+        #expect(model.session?.entries.map(\.id) == [earlier.id, later.id])
+    }
+
+    @Test func aKeySkipsAndMovesDown() async {
+        let first = addFile("a.txt")
+        let second = addFile("b.txt")
+        let model = await model(host())
+        model.selectedID = first.id
+        #expect(model.handle(.skip, isTyping: false))
+        #expect(model.session?.entry(first.id)?.state == .skipped)
+        #expect(model.selectedID == second.id)
+    }
+
+    @Test func aKeyStepsBetweenOptions() async {
+        let item = addFile("scan.txt")
+        let model = await model(
+            host(answers: [
+                Self.free: .success([["text": .text("One")], ["text": .text("Two")]])
+            ]))
+        #expect(model.handle(.next, isTyping: false))
+        #expect(model.session?.entry(item.id)?.currentName == "Doc Two.txt")
+    }
 }
