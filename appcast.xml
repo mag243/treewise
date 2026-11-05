@@ -3,6 +3,20 @@
     <channel>
         <title>Treewise</title>
         <item>
+            <title>0.5.3</title>
+            <pubDate>Thu, 05 Nov 2026 15:53:54 +0100</pubDate>
+            <sparkle:version>2026.1105.155201</sparkle:version>
+            <sparkle:shortVersionString>0.5.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[### Added
+- About Treewise links to the website and to the source code, which is now open under the Mozilla Public License 2.0.
+
+### Changed
+- Downloads and updates now come from the `mag243/treewise` repository.
+]]></description>
+            <enclosure url="https://github.com/mag243/treewise/releases/download/v0.5.3/Treewise-0.5.3-2026.1105.155201.zip" length="2627633" type="application/octet-stream" sparkle:edSignature="SjrvzmiC/BPAknDqzcOBI85HWUE/CrpVGPQZvVymHG4F7hXpQgvKYldyTn4klCPTqs6iOPp2NewOSEW3lwmiDw=="/>
+        </item>
+        <item>
             <title>0.5.2</title>
             <pubDate>Wed, 04 Nov 2026 14:54:56 +0100</pubDate>
             <sparkle:version>2026.1104.145301</sparkle:version>
@@ -133,18 +147,6 @@
 - A click on empty space in a pane, below its last row, makes that pane the active one.
 ]]></description>
             <enclosure url="https://github.com/mag243/treewise-releases/releases/download/v0.2.0/Treewise-0.2.0-2026.1029.184601.zip" length="2232506" type="application/octet-stream" sparkle:edSignature="GVVqVQhYItiTr0ODdyP9BinBheTXh+3fFBvUDGKaqK10YVT7esRIC0yQUGFSRD0XXxBTJWaZUJV4lk+MQ7kSAw=="/>
-        </item>
-        <item>
-            <title>0.1.2</title>
-            <pubDate>Thu, 29 Oct 2026 17:27:44 +0100</pubDate>
-            <sparkle:version>2026.1029.172501</sparkle:version>
-            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### Fixed
-- Check for Updates… can be chosen; in 0.1.1 it stayed disabled. The setting for checking automatically shows whether it is on.
-- Installing with Homebrew no longer warns about deprecated forms in the cask.
-]]></description>
-            <enclosure url="https://github.com/mag243/treewise-releases/releases/download/v0.1.2/Treewise-0.1.2-2026.1029.172501.zip" length="2209886" type="application/octet-stream" sparkle:edSignature="iJQAnwAd4sn8hbK1nUxmb5vqXjwrXLCd4fEPVIQTHdj3Q5D/gcoLFSVd6bh38ky/TympETGHDfPQDKTT0VFTAA=="/>
         </item>
     </channel>
 </rss>
