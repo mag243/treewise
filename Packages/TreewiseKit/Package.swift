@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "TreewiseFileSystem", targets: ["TreewiseFileSystem"]),
         .library(name: "TreewiseUI", targets: ["TreewiseUI"]),
         .library(name: "TreewiseTestSupport", targets: ["TreewiseTestSupport"]),
+        .library(name: "TreewiseModuleInterface", targets: ["TreewiseModuleInterface"]),
     ],
     targets: [
         .target(name: "TreewiseCore", resources: [.process("Resources")]),
@@ -25,6 +26,14 @@ let package = Package(
         .target(
             name: "TreewiseTestSupport",
             dependencies: ["TreewiseCore"]
+        ),
+        .target(
+            name: "TreewiseModuleInterface",
+            dependencies: ["TreewiseCore"]
+        ),
+        .testTarget(
+            name: "TreewiseModuleInterfaceTests",
+            dependencies: ["TreewiseModuleInterface"]
         ),
         .testTarget(
             name: "TreewiseCoreTests",

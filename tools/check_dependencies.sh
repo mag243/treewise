@@ -2,6 +2,8 @@
 # Verifies the import rules of ADR 0001 that Package.swift cannot express:
 #   - TreewiseCore imports only Foundation (no UI frameworks, no other module).
 #   - TreewiseFileSystem imports no UI framework and not TreewiseUI.
+#   - TreewiseModuleInterface imports only Foundation and TreewiseCore, and names
+#     no way to reach a file, so a module receives data only (ADR 0057).
 #   - removeItem( appears only in TreewiseFileSystem's FileOperationRunner, the
 #     one place that removes a user's file without the Trash (ADR 0004, 0018).
 # Package.swift already enforces the dependency direction between the modules.
@@ -42,6 +44,13 @@ core_non_foundation="$(imports_in "$SOURCES/TreewiseCore" |
 report "TreewiseCore may import only Foundation" "$core_non_foundation"
 report "TreewiseFileSystem may not import a UI framework or TreewiseUI" \
   "$(violations "$SOURCES/TreewiseFileSystem" "$UI_FRAMEWORKS|TreewiseUI")"
+
+interface_imports="$(imports_in "$SOURCES/TreewiseModuleInterface" |
+  grep -vE 'import[[:space:]]+(Foundation|TreewiseCore)([.[:space:]]|$)' | sed "s|^$ROOT_DIR/||" || true)"
+report "TreewiseModuleInterface may import only Foundation and TreewiseCore" "$interface_imports"
+report "TreewiseModuleInterface may not name a way to reach a file" \
+  "$(grep -rnE --include='*.swift' '\b(URL|FileManager|FileHandle|FileItem)\b' \
+    "$SOURCES/TreewiseModuleInterface" 2>/dev/null | sed "s|^$ROOT_DIR/||" || true)"
 
 removals="$(grep -rn --include='*.swift' 'removeItem(' "$SOURCES" "$ROOT_DIR/Apps" 2>/dev/null |
   grep -v "$SOURCES/TreewiseFileSystem/FileOperationRunner.swift:" |
