@@ -26,6 +26,8 @@ enum NameReviewText {
         case .derived: String(localized: "recognized in this folder")
         case .moduleDefault: String(localized: "add-on's default")
         case .user: String(localized: "changed by you")
+        case .notRecognized: String(localized: "no pattern recognized in this folder")
+        case .usersDefault: String(localized: "your default, as files were selected")
         }
     }
 

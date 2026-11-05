@@ -155,4 +155,50 @@ extension NameReviewModelTests {
         #expect(model.handle(.next, isTyping: false))
         #expect(model.session?.entry(item.id)?.currentName == "Doc Two.txt")
     }
+
+    @Test func aWholeFolderWithoutAPatternGetsNoProposals() async {
+        let item = addFile("scan.txt")
+        let host = ScriptedModuleHost(
+            modules: [Self.freeDescription],
+            answers: [Self.free: .success([["text": .text("New")]])])
+        let model = await model(host)
+        #expect(model.modules.first?.origin == .notRecognized)
+        #expect(model.session?.entry(item.id)?.proposals.isEmpty == true)
+        #expect(model.session?.entry(item.id)?.isOutOfScope == false)
+        #expect(host.requests.isEmpty)
+    }
+
+    @Test func aSelectionWithoutAPatternUsesTheUsersDefault() async {
+        let item = addFile("scan.txt")
+        let host = ScriptedModuleHost(
+            modules: [Self.freeDescription],
+            answers: [Self.free: .success([["text": .text("New")]])])
+        let model = await model(host, scope: .selection, selection: [item])
+        #expect(model.modules.first?.origin == .usersDefault)
+        #expect(model.session?.entry(item.id)?.currentName == "Std New.txt")
+    }
+
+    @Test func theUsersDefaultIsOneClickAway() async {
+        let item = addFile("scan.txt")
+        let host = ScriptedModuleHost(
+            modules: [Self.freeDescription],
+            answers: [Self.free: .success([["text": .text("New")]])])
+        let model = await model(host)
+        await model.useDefaultPattern(Self.free)
+        await model.waitUntilRead()
+        #expect(model.session?.entry(item.id)?.currentName == "Std New.txt")
+        #expect(await store.settings(forFolderAt: "review")?.templates[Self.free] == "Std {text}")
+    }
+
+    @Test func aPaidModuleStartsFromItsOwnDefault() async {
+        _ = addFile("scan.pdf")
+        await store.save(
+            FolderSettings(enabledModules: [Self.paid], templates: [:]), forFolderAt: "review")
+        let host = ScriptedModuleHost(
+            modules: [Self.paidDescription],
+            answers: [Self.paid: .success([["company": .text("North")]])])
+        let model = await model(host)
+        #expect(model.modules.first?.origin == .moduleDefault)
+        #expect(model.modules.first?.templateText == "Co {company}")
+    }
 }

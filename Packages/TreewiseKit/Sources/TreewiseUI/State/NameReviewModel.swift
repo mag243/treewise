@@ -14,16 +14,20 @@ public struct NameReviewDependencies: Sendable {
     let operations: any FileOperating
     let host: any NameModuleHosting
     let store: any FolderSettingsStoring
+    /// The user's pattern for a folder without one.
+    let defaultPattern: String
     let makeRequest: MakeRequest
 
     /// Creates the dependencies.
     public init(
         operations: any FileOperating, host: any NameModuleHosting,
-        store: any FolderSettingsStoring, makeRequest: @escaping MakeRequest
+        store: any FolderSettingsStoring, defaultPattern: String,
+        makeRequest: @escaping MakeRequest
     ) {
         self.operations = operations
         self.host = host
         self.store = store
+        self.defaultPattern = defaultPattern
         self.makeRequest = makeRequest
     }
 }
@@ -38,6 +42,10 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
         case moduleDefault
         /// Changed by the user.
         case user
+        /// None recognized, so the default module proposes nothing until the user picks one.
+        case notRecognized
+        /// None recognized, and the user's own default is used because files were selected.
+        case usersDefault
     }
 
     /// What the module is.
@@ -52,8 +60,8 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     public internal(set) var templateProblem: NameTemplate.Problem?
     /// The template in force.
     var template: NameTemplate?
-    /// The template it had before the user changed it.
-    var recognized: String
+    /// The template it had before the user changed it, if it had one.
+    var recognized: String?
 
     /// The module's id.
     public var id: String { description.id }
@@ -177,26 +185,41 @@ public final class NameReviewModel {
     private func makeModule(_ description: NameModuleDescription, names: [String]) async
         -> NameReviewModule
     {
-        var module = NameReviewModule(
-            description: description, isOn: settings.enabledModules.contains(description.id),
-            templateText: description.defaultTemplate, origin: .moduleDefault,
-            recognized: description.defaultTemplate)
         let derived = try? await dependencies.host.derivedTemplate(
             moduleID: description.id, names: names)
-        if let derived {
-            module.templateText = derived
-            module.recognized = derived
-            module.origin = .derived
-        }
+        // The default module imposes no pattern on a folder that shows none.
+        let isDefault = description.id == NameModuleDescription.defaultModuleID
+        var module = NameReviewModule(
+            description: description, isOn: settings.enabledModules.contains(description.id),
+            templateText: "", origin: .notRecognized,
+            recognized: derived ?? (isDefault ? nil : description.defaultTemplate))
         if let own = settings.templates[description.id] {
             module.templateText = own
             module.origin = .user
+            module.template = Self.parse(own, for: description)
         }
-        module.template = Self.parse(module.templateText, for: description)
-        if module.template == nil {
-            module.template = Self.parse(description.defaultTemplate, for: description)
-        }
+        if module.template == nil { applyRecognized(to: &module) }
         return module
+    }
+
+    /// Gives a module what it recognized, its default, or for selected files in a folder
+    /// without a pattern, the user's own default.
+    func applyRecognized(to module: inout NameReviewModule) {
+        module.templateProblem = nil
+        if let recognized = module.recognized {
+            module.templateText = recognized
+            module.template = Self.parse(recognized, for: module.description)
+            module.origin =
+                recognized == module.description.defaultTemplate ? .moduleDefault : .derived
+        } else if scope == .selection {
+            module.templateText = dependencies.defaultPattern
+            module.template = Self.parse(dependencies.defaultPattern, for: module.description)
+            module.origin = .usersDefault
+        } else {
+            module.templateText = ""
+            module.template = nil
+            module.origin = .notRecognized
+        }
     }
 
     static func parse(_ text: String, for description: NameModuleDescription) -> NameTemplate? {

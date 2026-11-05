@@ -39,17 +39,20 @@ extension NameReviewModel {
     /// Returns to what the module recognizes in this folder, or to its default.
     public func resetTemplate(_ id: String) async {
         guard let index = modules.firstIndex(where: { $0.id == id }) else { return }
-        let module = modules[index]
         settings.templates[id] = nil
-        modules[index].templateText = module.recognized
-        modules[index].templateProblem = nil
-        modules[index].template = Self.parse(module.recognized, for: module.description)
-        modules[index].origin =
-            module.recognized == module.description.defaultTemplate ? .moduleDefault : .derived
+        applyRecognized(to: &modules[index])
         measureDates()
         replan()
         await saveSettings()
     }
+
+    /// Uses the user's own default pattern in this folder, which then keeps it.
+    public func useDefaultPattern(_ id: String) async {
+        await setTemplate(id, to: dependencies.defaultPattern)
+    }
+
+    /// The user's own default pattern.
+    public var defaultPattern: String { dependencies.defaultPattern }
 
     /// Whether a whole-folder review always leaves this file out.
     public func alwaysSkip(_ id: FileItem.ID) async {
@@ -113,7 +116,8 @@ extension NameReviewModel {
                 modules: reviewModules)
             plans[item.id] = plan
             session?.setFit(item.id, moduleIDs: plan?.fittingModules ?? [])
-            session?.setOutOfScope(item.id, plan?.isOutOfScope == true)
+            // A module without a pattern here still handles the file, so it is not out of scope.
+            session?.setOutOfScope(item.id, handledBy.isEmpty)
             session?.replaceProposals(
                 plan?.repair.map { [$0] } ?? [], from: NameProposal.treewiseID, for: item.id)
             for module in modules { refreshProposals(of: item, from: module.id) }

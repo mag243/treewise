@@ -43,9 +43,11 @@ import TreewiseUI
         modules: [NameModuleDescription] = [freeDescription],
         answers: [String: Result<[[String: NameTemplate.Value]], NameModuleHostError>]? = nil
     ) -> ScriptedModuleHost {
-        ScriptedModuleHost(
+        let host = ScriptedModuleHost(
             modules: modules,
             answers: answers ?? [Self.free: .success([["text": .text("New")]])])
+        host.setDerivedTemplate("Doc {text}", for: Self.free)
+        return host
     }
 
     func model(
@@ -55,7 +57,7 @@ import TreewiseUI
         let model = NameReviewModel(
             folder: folder, scope: scope, selection: selection,
             dependencies: .init(
-                operations: fileSystem, host: host, store: store,
+                operations: fileSystem, host: host, store: store, defaultPattern: "Std {text}",
                 makeRequest: { item, siblings, needed in
                     NameRequest(
                         id: item.id.rawValue, name: item.name,

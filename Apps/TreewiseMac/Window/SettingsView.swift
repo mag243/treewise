@@ -54,6 +54,15 @@ struct SettingsView: View {
                 }
             }
             Section {
+                TextField("Default name pattern", text: $settings.defaultNamePattern)
+                    .font(.body.monospaced())
+            } footer: {
+                Text(
+                    "For a folder without a pattern of its own, when you choose it or select files there."
+                )
+                .font(.caption).foregroundStyle(.secondary)
+            }
+            Section {
                 Toggle("Check for updates automatically", isOn: $updater.checksAutomatically)
                     .disabled(!updater.isRunning)
             }

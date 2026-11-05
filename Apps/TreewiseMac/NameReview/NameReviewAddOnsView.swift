@@ -85,6 +85,12 @@ struct NameReviewAddOnsView: View {
                 module.isOn ? 1 : 0.5)
             Text(NameReviewText.origin(of: module)).font(.caption)
                 .foregroundStyle(module.origin == .user ? Color.accentColor : .secondary)
+            if module.isOn, module.origin == .notRecognized, editing != module.id {
+                Button("Use Your Default: \(model.defaultPattern)") {
+                    Task { await model.useDefaultPattern(module.id) }
+                }
+                .buttonStyle(.link).font(.caption)
+            }
             if module.isOn, editing != module.id {
                 Button("Change") {
                     draft = module.templateText

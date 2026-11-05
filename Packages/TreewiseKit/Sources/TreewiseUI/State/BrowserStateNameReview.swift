@@ -21,6 +21,7 @@ extension BrowserState {
             selection: selection,
             dependencies: .init(
                 operations: operations, host: host, store: store,
+                defaultPattern: settings.defaultNamePattern,
                 makeRequest: { item, siblings, needed in
                     // Reading a scan is slow, so it happens away from the main actor.
                     await Task.detached {
