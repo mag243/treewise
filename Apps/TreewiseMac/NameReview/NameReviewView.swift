@@ -56,11 +56,6 @@ struct NameReviewView: View {
                 .font(.caption).foregroundStyle(.tertiary)
             Spacer()
             Button(showsPanel ? "Hide Preview" : "Show Preview") { showsPanel.toggle() }
-            if model.datesToCheck > 0 {
-                Button("Approve \(model.datesToCheck) with Dates to Check") {
-                    model.approveAllWithDatesToCheck()
-                }
-            }
             Button("Approve All") { model.approveAll() }
             Button("Cancel", role: .cancel, action: close)
             Button(applyTitle) { apply() }

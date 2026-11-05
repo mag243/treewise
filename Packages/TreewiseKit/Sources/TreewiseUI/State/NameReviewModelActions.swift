@@ -69,21 +69,9 @@ extension NameReviewModel {
         refreshConflicts()
     }
 
-    /// Approves every row with a usable name and no date to look at.
+    /// Approves every row with a usable name, a date to check included (ADR 0058).
     public func approveAll() {
-        session?.approveAll(dateInFileIsReliable: dateInFileIsReliable, except: Set(conflicts.keys))
-    }
-
-    /// Approves every row with a usable name, dates to look at included.
-    public func approveAllWithDatesToCheck() {
-        session?.approveAll(
-            dateInFileIsReliable: dateInFileIsReliable, includingDatesToCheck: true,
-            except: Set(conflicts.keys))
-    }
-
-    /// How many rows only wait for a look at their date.
-    public var datesToCheck: Int {
-        session?.datesToCheck(dateInFileIsReliable: dateInFileIsReliable) ?? 0
+        session?.approveAll(except: Set(conflicts.keys))
     }
 
     /// Whether anything approved can be applied now.

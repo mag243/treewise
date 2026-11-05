@@ -150,13 +150,7 @@ struct NameReviewRow: View {
         return text
     }
 
-    private var needsLook: Bool {
-        switch entry.currentDateSource {
-        case .fileSystem: true
-        case .insideFile: !model.dateInFileIsReliable
-        case nil: false
-        }
-    }
+    private var needsLook: Bool { entry.currentDateSource != nil }
 
     private func dateText(in name: String) -> String {
         name.range(of: "[0-9]{2,4}[.-][0-9]{2}[.-][0-9]{2,4}|[0-9]{8}", options: .regularExpression)

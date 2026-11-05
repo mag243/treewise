@@ -29,8 +29,6 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     public var templates: [String: String]
     /// The names, on disk, of the files a whole-folder review always skips.
     public var alwaysSkipped: Set<String> = []
-    /// Whether the user trusts dates inside this folder's files without a look.
-    public var trustsDatesInFiles = false
 
     /// The settings of a folder reviewed for the first time.
     public static func new(defaultModuleID: String) -> FolderSettings {

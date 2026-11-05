@@ -32,11 +32,6 @@ struct NameReviewAddOnsView: View {
                     Text("Reading \(model.readingCount) files…").font(.caption).foregroundStyle(
                         .secondary)
                 }
-                if isOpen, model.trustsDatesInFiles {
-                    Text("PDF dates: trusted").font(.caption).foregroundStyle(.secondary)
-                    Button("Undo") { Task { await model.setTrustsDatesInFiles(false) } }
-                        .buttonStyle(.link).font(.caption)
-                }
             }
             if isOpen {
                 ScrollView {

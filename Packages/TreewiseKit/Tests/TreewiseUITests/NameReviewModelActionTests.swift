@@ -43,7 +43,7 @@ extension NameReviewModelTests {
         #expect(model.outcome?.failure == nil)
     }
 
-    @Test func aFileSystemDateWaitsForTheSecondButton() async {
+    @Test func approveAllTakesAFileSystemDate() async {
         let item = addFile("scan.txt")
         let date = SuggestedDate(year: 2026, month: 1, day: 1, source: .fileSystem)
         let host = host(answers: [
@@ -52,34 +52,7 @@ extension NameReviewModelTests {
         let model = await model(host, suggestedDate: date)
         await model.setTemplate(Self.free, to: "{date} X {text}")
         model.approveAll()
-        #expect(model.session?.entry(item.id)?.state == .pending)
-        #expect(model.datesToCheck == 1)
-        model.approveAllWithDatesToCheck()
         #expect(model.session?.entry(item.id)?.state == .approved)
-    }
-
-    @Test func trustingDatesInFilesIsRemembered() async {
-        let item = addFile("scan.txt")
-        let date = SuggestedDate(year: 2026, month: 1, day: 1, source: .insideFile)
-        let host = host(answers: [
-            Self.free: .success([["date": date.value, "text": .text("New")]])
-        ])
-        let model = await model(host, suggestedDate: date)
-        await model.setTemplate(Self.free, to: "{date} X {text}")
-        #expect(model.datesToCheck == 1)
-        await model.setTrustsDatesInFiles(true)
-        #expect(model.datesToCheck == 0)
-        model.approveAll()
-        #expect(model.session?.entry(item.id)?.state == .approved)
-        #expect(await store.settings(forFolderAt: "review")?.trustsDatesInFiles == true)
-    }
-
-    @Test func measuresWhetherDatesInFilesAreReliable() async {
-        for day in 1...6 { _ = addFile("2026-01-0\(day) a\(day).txt") }
-        let host = host()
-        host.setDerivedTemplate("{date} {text}", for: Self.free)
-        let date = SuggestedDate(year: 2026, month: 1, day: 1, source: .insideFile)
-        #expect(await !model(host, suggestedDate: date).dateInFileIsReliable)
     }
 
     @Test func aModuleThatFailsLeavesTheRest() async {

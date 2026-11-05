@@ -83,10 +83,8 @@ extension LaunchTests {
         let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
         XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
-        // The odd photo has only the date of the file, which Approve All leaves to check.
-        let approve = review.buttons.matching(
-            NSPredicate(format: "label BEGINSWITH 'Approve 1 with Dates to Check'")
-        ).firstMatch
+        // The odd photo has only the date of the file, which Approve All takes too (ADR 0058).
+        let approve = review.buttons["Approve All"]
         XCTAssertTrue(approve.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
         approve.click()
         let rename = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Rename 1'"))

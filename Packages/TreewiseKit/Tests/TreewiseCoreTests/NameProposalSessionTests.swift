@@ -194,7 +194,7 @@ import TreewiseCore
         session.add([proposal("C1")], to: "/f/c")
         session.skip("/f/c")
         session.edit("/f/d", to: "x:y")
-        session.approveAll(dateInFileIsReliable: false)
+        session.approveAll()
         #expect(session.entry("/f/a")?.state == .approved)
         #expect(session.entry("/f/b")?.state == .pending)
         #expect(session.entry("/f/c")?.state == .skipped)
@@ -211,7 +211,7 @@ import TreewiseCore
             moduleOrder: ["first"])
         session.add([proposal("B1")], to: "/f/b")
         session.add([proposal("A1")], to: "/f/a")
-        session.approveAll(dateInFileIsReliable: false)
+        session.approveAll()
         #expect(
             session.approvedRenames == [
                 BatchRename(item: "/f/a", folder: "/f", from: "a.pdf", to: "A1.pdf"),

@@ -65,14 +65,19 @@ import TreewiseCore
         #expect(settings.alwaysSkipped.contains("Budget.xlsx"))
     }
 
-    @Test func doesNotTrustDatesUntilAsked() {
-        #expect(!FolderSettings.new(defaultModuleID: "free").trustsDatesInFiles)
+    @Test func settingsStoredWithTheOldDateTrustStillLoad() throws {
+        let settings = FolderSettings(enabledModules: ["a"], templates: [:])
+        var stored = try #require(
+            try JSONSerialization.jsonObject(with: JSONEncoder().encode(settings))
+                as? [String: Any])
+        stored["trustsDatesInFiles"] = true
+        let data = try JSONSerialization.data(withJSONObject: stored)
+        #expect(try JSONDecoder().decode(FolderSettings.self, from: data) == settings)
     }
 
     @Test func settingsSurviveEncoding() throws {
         var settings = FolderSettings(enabledModules: ["a"], templates: ["a": "{number}"])
         settings.alwaysSkipped = ["b"]
-        settings.trustsDatesInFiles = true
         let data = try JSONEncoder().encode(settings)
         #expect(try JSONDecoder().decode(FolderSettings.self, from: data) == settings)
     }

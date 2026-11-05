@@ -41,14 +41,8 @@ struct NameReviewPanelView: View {
         switch entry.currentDateSource {
         case .fileSystem:
             warning(String(localized: "Date of the file, check it"))
-        case .insideFile where model.dateInFileIsReliable:
-            Text("Date from the PDF, reliable in this folder").font(.caption)
         case .insideFile:
             warning(String(localized: "Date from the PDF, check it"))
-            Button("Trust PDF Dates in This Folder") {
-                Task { await model.setTrustsDatesInFiles(true) }
-            }
-            .buttonStyle(.link).font(.caption)
         case nil:
             EmptyView()
         }

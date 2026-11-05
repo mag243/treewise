@@ -96,24 +96,11 @@ public struct NameProposalSession: Hashable, Sendable {
         return problem
     }
 
-    /// Approves every pending item that has a usable name, and leaves those with a date
-    /// to look at unless `includingDatesToCheck`. A date from the file system always
-    /// needs a look; one inside the file does unless it is reliable in this folder.
-    public mutating func approveAll(
-        dateInFileIsReliable: Bool, includingDatesToCheck: Bool = false,
-        except excluded: Set<FileItem.ID> = []
-    ) {
+    /// Approves every pending item that has a usable name, a date to check included
+    /// (ADR 0058).
+    public mutating func approveAll(except excluded: Set<FileItem.ID> = []) {
         for entry in entries where entry.state == .pending && !excluded.contains(entry.id) {
-            if includingDatesToCheck || !entry.needsDateCheck(dateInFileIsReliable) {
-                approve(entry.id)
-            }
-        }
-    }
-
-    /// How many pending items only wait for a look at their date.
-    public func datesToCheck(dateInFileIsReliable: Bool) -> Int {
-        entries.count {
-            $0.state == .pending && $0.problem == nil && $0.needsDateCheck(dateInFileIsReliable)
+            approve(entry.id)
         }
     }
 

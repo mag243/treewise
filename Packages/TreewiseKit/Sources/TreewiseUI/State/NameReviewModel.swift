@@ -90,8 +90,6 @@ public final class NameReviewModel {
     public internal(set) var isFirstReview = false
     /// Whether a module failed to answer.
     public internal(set) var moduleFailed = false
-    /// Whether dates inside files proved reliable in this folder, or the user trusts them.
-    public internal(set) var dateInFileIsReliable = false
     /// What stands in the way of each name shown now.
     public internal(set) var conflicts: [FileItem.ID: BatchRenameConflict.Kind] = [:]
     /// Whether the overview's window is closing.
@@ -167,7 +165,6 @@ public final class NameReviewModel {
                 .init(id: $0.id, folder: folder.id, originalName: $0.name, kind: $0.kind)
             },
             moduleOrder: settings.enabledModules)
-        measureDates()
         replan()
         selectedID = rows.first?.id
     }

@@ -30,7 +30,6 @@ extension NameReviewModel {
             modules[index].origin =
                 text == modules[index].recognized ? modules[index].origin : .user
             settings.templates[id] = text
-            measureDates()
             replan()
             await saveSettings()
         }
@@ -41,7 +40,6 @@ extension NameReviewModel {
         guard let index = modules.firstIndex(where: { $0.id == id }) else { return }
         settings.templates[id] = nil
         applyRecognized(to: &modules[index])
-        measureDates()
         replan()
         await saveSettings()
     }
@@ -68,32 +66,6 @@ extension NameReviewModel {
         settings.alwaysSkipped.remove(item.name)
         replan()
         await saveSettings()
-    }
-
-    /// Whether the user trusts dates inside this folder's files.
-    public func setTrustsDatesInFiles(_ trusts: Bool) async {
-        settings.trustsDatesInFiles = trusts
-        measureDates()
-        await saveSettings()
-    }
-
-    /// Whether the user trusts dates inside this folder's files.
-    public var trustsDatesInFiles: Bool { settings.trustsDatesInFiles }
-
-    /// Judges dates inside files against the dates in the names already there.
-    func measureDates() {
-        let templates = modules.filter(\.isOn).compactMap(\.template)
-        let samples = items.compactMap { item -> DateReliability.Sample? in
-            guard let inside = facts[item.id]?.suggestedDate, inside.source == .insideFile else {
-                return nil
-            }
-            let stem = ProposedName.stem(of: ProposedName.shownName(fromDisk: item.name))
-            guard let inName = templates.lazy.compactMap({ $0.date(in: stem) }).first else {
-                return nil
-            }
-            return .init(inName: inName, insideFile: inside.value)
-        }
-        dateInFileIsReliable = settings.trustsDatesInFiles || DateReliability.isReliable(samples)
     }
 
     /// Decides again what happens to every item, from what is known now, and asks for
