@@ -6,6 +6,14 @@ All notable changes to Treewise are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-05
+
+### Added
+- About Treewise links to the website and to the source code, which is now open under the Mozilla Public License 2.0.
+
+### Changed
+- Downloads and updates now come from the `mag243/treewise` repository.
+
 ## [0.5.2] - 2026-11-04
 
 ### Changed
