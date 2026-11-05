@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "TreewiseUI", targets: ["TreewiseUI"]),
         .library(name: "TreewiseTestSupport", targets: ["TreewiseTestSupport"]),
         .library(name: "TreewiseModuleInterface", targets: ["TreewiseModuleInterface"]),
+        .library(name: "TreewiseModuleXPC", targets: ["TreewiseModuleXPC"]),
     ],
     targets: [
         .target(name: "TreewiseCore", resources: [.process("Resources")]),
@@ -30,6 +31,14 @@ let package = Package(
         .target(
             name: "TreewiseModuleInterface",
             dependencies: ["TreewiseCore"]
+        ),
+        .target(
+            name: "TreewiseModuleXPC",
+            dependencies: ["TreewiseCore", "TreewiseModuleInterface"]
+        ),
+        .testTarget(
+            name: "TreewiseModuleXPCTests",
+            dependencies: ["TreewiseModuleXPC"]
         ),
         .testTarget(
             name: "TreewiseModuleInterfaceTests",
