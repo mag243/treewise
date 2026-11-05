@@ -16,7 +16,7 @@ let package = Package(
         .target(name: "TreewiseCore", resources: [.process("Resources")]),
         .target(
             name: "TreewiseFileSystem",
-            dependencies: ["TreewiseCore"]
+            dependencies: ["TreewiseCore", "TreewiseModuleInterface"]
         ),
         .target(
             name: "TreewiseUI",
@@ -25,7 +25,7 @@ let package = Package(
         ),
         .target(
             name: "TreewiseTestSupport",
-            dependencies: ["TreewiseCore"]
+            dependencies: ["TreewiseCore", "TreewiseModuleInterface"]
         ),
         .target(
             name: "TreewiseModuleInterface",
