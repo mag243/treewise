@@ -10,6 +10,9 @@ public struct ModuleContent: Hashable, Sendable, Codable {
     /// PNG images of the item's pages.
     public let pageImages: [Data]?
 
+    /// Whether it holds nothing at all.
+    public var isEmpty: Bool { text == nil && positionedText == nil && pageImages == nil }
+
     /// Creates content.
     public init(
         text: String? = nil, positionedText: [PositionedText]? = nil, pageImages: [Data]? = nil

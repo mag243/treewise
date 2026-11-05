@@ -21,7 +21,7 @@ public struct FreeModule: NameModule {
 
     /// What this module is.
     public let description = NameModuleDescription(
-        id: "me.m-domain.treewise.folder-pattern", contentTypes: ["public.item"], neededContent: [],
+        id: NameModuleDescription.freeModuleID, contentTypes: ["public.item"], neededContent: [],
         fields: fields, defaultTemplate: "{date:yyyy.MM.dd} {text}")
 
     /// Creates the module.

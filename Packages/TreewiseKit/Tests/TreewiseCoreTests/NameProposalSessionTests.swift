@@ -172,6 +172,16 @@ import TreewiseCore
         #expect(session.approvedRenames.isEmpty)
     }
 
+    @Test func takesBackADecision() {
+        var session = session(with: "A")
+        session.approve(Self.item)
+        session.undecide(Self.item)
+        #expect(session.entry(Self.item)?.state == .pending)
+        session.skip(Self.item)
+        session.undecide(Self.item)
+        #expect(session.entry(Self.item)?.state == .pending)
+    }
+
     @Test func approveAllTakesOnlyPendingItemsWithAValidName() {
         var session = NameProposalSession(
             items: ["a", "b", "c", "d"].map {

@@ -22,7 +22,7 @@ let package = Package(
         ),
         .target(
             name: "TreewiseUI",
-            dependencies: ["TreewiseCore", "TreewiseFileSystem"],
+            dependencies: ["TreewiseCore", "TreewiseFileSystem", "TreewiseModuleInterface"],
             resources: [.process("Resources")]
         ),
         .target(

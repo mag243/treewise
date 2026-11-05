@@ -1,3 +1,11 @@
+/// Where the settings of folders are kept.
+public protocol FolderSettingsStoring: Sendable {
+    /// The settings of the folder at a path, or nil when it has none.
+    func settings(forFolderAt path: String) async -> FolderSettings?
+    /// Saves the settings of the folder at a path.
+    func save(_ settings: FolderSettings, forFolderAt path: String) async
+}
+
 /// What the user chose for a folder: which modules are on and each module's template
 /// (ADR 0057). Treewise keeps this in its own folder; the folder holds only a random id.
 public struct FolderSettings: Hashable, Sendable, Codable {

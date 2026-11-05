@@ -6,7 +6,7 @@ import os
 /// random id in an extended attribute on the folder, so a folder that is shared carries
 /// nothing about its patterns (ADR 0057). A volume that refuses the attribute makes the
 /// path the key, and the settings then follow a folder only when Treewise moves it.
-public actor FolderSettingsStore {
+public actor FolderSettingsStore: FolderSettingsStoring {
     /// The name of the file that holds the settings.
     public static let fileName = "folder-settings.json"
     private static let attributeName = "me.m-domain.treewise.folder-id"
