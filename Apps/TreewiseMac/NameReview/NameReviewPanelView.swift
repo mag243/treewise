@@ -41,6 +41,8 @@ struct NameReviewPanelView: View {
         switch entry.currentDateSource {
         case .fileSystem:
             warning(String(localized: "Date of the file, check it"))
+        case .insideFile where model.isPhoto(entry.id):
+            warning(String(localized: "Date from the photo, check it"))
         case .insideFile:
             warning(String(localized: "Date from the PDF, check it"))
         case nil:

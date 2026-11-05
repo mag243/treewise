@@ -55,6 +55,14 @@ extension NameReviewModelTests {
         #expect(model.session?.entry(item.id)?.state == .approved)
     }
 
+    @Test func tellsAPhotoFromADocument() async {
+        let photo = addFile("IMG_0412.heic")
+        let document = addFile("scan.pdf")
+        let model = await model(host())
+        #expect(model.isPhoto(photo.id))
+        #expect(!model.isPhoto(document.id))
+    }
+
     @Test func aModuleThatFailsLeavesTheRest() async {
         let item = addFile("scan.txt")
         let model = await model(host(answers: [Self.free: .failure(.unavailable)]))

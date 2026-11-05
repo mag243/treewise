@@ -1,5 +1,6 @@
 import Foundation
 import TreewiseCore
+import UniformTypeIdentifiers
 
 extension NameReviewModel {
     /// How many names around a new name show on each side.
@@ -67,6 +68,13 @@ extension NameReviewModel {
     public func undecide(_ id: FileItem.ID) {
         session?.undecide(id)
         refreshConflicts()
+    }
+
+    /// Whether the item is a photo, whose date inside the file is the capture date. The
+    /// other files that give such a date are PDFs (ADR 0057).
+    public func isPhoto(_ id: FileItem.ID) -> Bool {
+        guard let type = facts[id].flatMap({ UTType($0.contentType) }) else { return false }
+        return type.conforms(to: .image)
     }
 
     /// Approves every row with a usable name, a date to check included (ADR 0058).

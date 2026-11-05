@@ -50,6 +50,13 @@ import TreewiseUI
         return host
     }
 
+    /// The content type a file's extension stands for, as far as these tests need.
+    nonisolated static func contentType(of name: String) -> String {
+        if name.hasSuffix(".pdf") { return "com.adobe.pdf" }
+        if name.hasSuffix(".heic") { return "public.heic" }
+        return "public.plain-text"
+    }
+
     func model(
         _ host: ScriptedModuleHost, scope: NameReviewRules.Scope = .wholeFolder,
         selection: [FileItem] = [], suggestedDate: SuggestedDate? = nil
@@ -61,8 +68,7 @@ import TreewiseUI
                 makeRequest: { item, siblings, needed in
                     NameRequest(
                         id: item.id.rawValue, name: item.name,
-                        contentType: item.name.hasSuffix(".pdf")
-                            ? "com.adobe.pdf" : "public.plain-text",
+                        contentType: Self.contentType(of: item.name),
                         byteCount: nil, created: nil, modified: nil, suggestedDate: suggestedDate,
                         siblingNames: siblings.map(\.name),
                         content: needed.contains(.text)
