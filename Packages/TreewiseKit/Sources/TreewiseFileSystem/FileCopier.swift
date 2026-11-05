@@ -1,6 +1,7 @@
 import Darwin
 import Foundation
 import TreewiseCore
+import os
 
 /// Copies files for `FileOperationRunner` on a serial queue of its own, so a
 /// paused copy, or an access waiting for a File Provider (ADR 0047), blocks
@@ -9,6 +10,8 @@ import TreewiseCore
 enum FileCopier {
     /// The start of a partial copy's name; a leading dot keeps it out of other apps' lists.
     static let partialPrefix = ".treewise-partial-"
+
+    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "FileCopier")
 
     private static let queue = DispatchQueue(
         label: "me.m-domain.treewise.copy", qos: .userInitiated)
@@ -100,6 +103,7 @@ enum FileCopier {
         } else {
             try FileManager.default.createDirectory(
                 at: destination, withIntermediateDirectories: false)
+            copyExtendedAttributes(from: source, to: destination)
             for child in try FileManager.default.contentsOfDirectory(
                 at: source, includingPropertiesForKeys: nil)
             {
@@ -110,6 +114,16 @@ enum FileCopier {
             return
         }
         copied += Int64(footprint(of: source).size)
+    }
+
+    /// Copies a folder's extended attributes, such as Finder tags. A folder is made
+    /// anew so its items can report progress, which would leave these behind. A volume
+    /// that refuses them does not stop the copy: the files are what matters.
+    private static func copyExtendedAttributes(from source: URL, to destination: URL) {
+        guard
+            copyfile(source.path, destination.path, nil, copyfile_flags_t(COPYFILE_XATTR)) != 0
+        else { return }
+        logger.error("Extended attributes not copied, errno \(errno)")
     }
 
     /// Copies one regular file with `copyfile(3)`.

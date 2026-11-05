@@ -58,6 +58,22 @@ import TreewiseTestSupport
             }
         }
 
+        @Test func movingAFolderToAnotherVolumeKeepsItsExtendedAttributes() async throws {
+            let directory = try TempDirectory()
+            try directory.makeFolder("Project")
+            try ExtendedAttribute.write("kept", to: directory.url("Project"))
+            try await withVolume(in: directory) { volume in
+                let runner = FileOperationRunner()
+                let project = try await runner.item(at: FileItem.ID(directory.url("Project").path))
+
+                try await runner.transfer(
+                    [project], to: FileItem.ID(volume.path), mode: .move,
+                    resolver: ScriptedResolver())
+
+                #expect(ExtendedAttribute.read(volume.appendingPathComponent("Project")) == "kept")
+            }
+        }
+
         @Test func movesAFileToAnotherVolumeByCopyingAndRemovingTheSource() async throws {
             let directory = try TempDirectory()
             let source = try directory.makeFile("Notes.md", contents: "hello")

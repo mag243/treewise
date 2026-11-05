@@ -40,6 +40,23 @@ import TreewiseTestSupport
         #expect(FileManager.default.fileExists(atPath: directory.url("from/Notes.md").path))
     }
 
+    @Test func copyingAFolderKeepsItsExtendedAttributes() async throws {
+        let directory = try TempDirectory()
+        try directory.makeFolder("from/Project/Sources")
+        try directory.makeFolder("to")
+        try ExtendedAttribute.write("outer", to: directory.url("from/Project"))
+        try ExtendedAttribute.write("inner", to: directory.url("from/Project/Sources"))
+        let runner = FileOperationRunner()
+        let project = try await runner.item(at: FileItem.ID(directory.url("from/Project").path))
+
+        try await runner.transfer(
+            [project], to: FileItem.ID(directory.url("to").path), mode: .copy,
+            resolver: ScriptedResolver())
+
+        #expect(ExtendedAttribute.read(directory.url("to/Project")) == "outer")
+        #expect(ExtendedAttribute.read(directory.url("to/Project/Sources")) == "inner")
+    }
+
     @Test func copiesANestedFolderKeepingSymlinksAsSymlinks() async throws {
         let directory = try TempDirectory()
         try directory.makeFolder("from/Project/Sources")
