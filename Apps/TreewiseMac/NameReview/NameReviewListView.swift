@@ -224,7 +224,7 @@ struct NameReviewField: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
     func makeNSView(context: Context) -> NSTextField {
-        let field = NSTextField(string: text)
+        let field = GapSelectingField(string: text)
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
@@ -247,13 +247,6 @@ struct NameReviewField: NSViewRepresentable {
             self.parent = parent
         }
 
-        func controlTextDidBeginEditing(_ notification: Notification) {
-            guard let field = notification.object as? NSTextField,
-                let range = field.stringValue.range(of: NameTemplate.gap)
-            else { return }
-            field.currentEditor()?.selectedRange = NSRange(range, in: field.stringValue)
-        }
-
         func controlTextDidChange(_ notification: Notification) {
             if let field = notification.object as? NSTextField {
                 parent.onChange(field.stringValue)
@@ -263,5 +256,26 @@ struct NameReviewField: NSViewRepresentable {
         func controlTextDidEndEditing(_ notification: Notification) {
             parent.onFinish()
         }
+    }
+}
+
+/// A field that selects a name's gap as soon as it gets the focus, by a click or by Tab,
+/// so what is typed replaces the gap.
+final class GapSelectingField: NSTextField {
+    override func becomeFirstResponder() -> Bool {
+        let became = super.becomeFirstResponder()
+        if became { selectGap() }
+        return became
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        super.mouseDown(with: event)
+        // A click places the cursor where it lands; the gap is chosen after that.
+        selectGap()
+    }
+
+    private func selectGap() {
+        guard let range = stringValue.range(of: NameTemplate.gap) else { return }
+        currentEditor()?.selectedRange = NSRange(range, in: stringValue)
     }
 }

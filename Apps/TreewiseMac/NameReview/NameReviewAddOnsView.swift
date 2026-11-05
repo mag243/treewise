@@ -12,6 +12,7 @@ struct NameReviewAddOnsView: View {
     @Binding var isOpen: Bool
     @State private var editing: String?
     @State private var draft = ""
+    @State private var insertion: PatternInsertion?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -97,15 +98,14 @@ struct NameReviewAddOnsView: View {
 
     private func editor(for module: NameReviewModule) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            TextField("Pattern", text: $draft)
-                .font(.caption.monospaced())
+            PatternField(text: $draft, insertion: insertion, onSubmit: finish)
+                .frame(height: 20)
                 .onChange(of: draft) { _, text in
                     Task { await model.setTemplate(module.id, to: text) }
                 }
-                .onSubmit(finish)
             HStack(spacing: 5) {
                 ForEach(module.description.fields + [.folder], id: \.name) { field in
-                    Button("{\(field.name)}") { draft = (draft + " " + token(field)).trimmed }
+                    Button("{\(field.name)}") { insertion = PatternInsertion(token: token(field)) }
                         .font(.caption.monospaced()).controlSize(.small)
                 }
                 Spacer()
@@ -137,8 +137,4 @@ struct NameReviewAddOnsView: View {
     private func finish() {
         if !mustStayOpen { editing = nil }
     }
-}
-
-extension String {
-    fileprivate var trimmed: String { trimmingCharacters(in: .whitespaces) }
 }
