@@ -30,14 +30,11 @@
 
         /// Replies with the descriptions of the modules.
         public func listModules(reply: @escaping @Sendable (Data?) -> Void) {
-            let descriptions = modules.map {
-                NameModuleDescription(id: $0.id, neededContent: $0.neededContent)
-            }
-            reply(try? ModuleWire.encode(descriptions))
+            reply(try? ModuleWire.encode(modules.map(\.description)))
         }
 
-        /// Runs a module and replies with its proposals, or nil when it fails.
-        public func proposeNames(
+        /// Runs a module and replies with its sets of values, or nil when it fails.
+        public func fieldValues(
             moduleID: String, request: Data, reply: @escaping @Sendable (Data?) -> Void
         ) {
             guard let module = modules.first(where: { $0.id == moduleID }),
@@ -48,7 +45,7 @@
             }
             Task {
                 do {
-                    reply(try ModuleWire.encode(try await module.proposeNames(for: decoded)))
+                    reply(try ModuleWire.encode(try await module.fieldValues(for: decoded)))
                 } catch {
                     // The error comes from closed code, so only its type is logged.
                     Self.logger.error("Module \(moduleID) failed: \(type(of: error))")

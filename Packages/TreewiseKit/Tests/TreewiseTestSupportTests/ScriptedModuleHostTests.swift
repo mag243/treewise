@@ -9,16 +9,16 @@ import TreewiseTestSupport
         modified: nil, siblingNames: [], content: ModuleContent())
 
     @Test func givesTheScriptedAnswerAndRecordsTheRequest() async throws {
-        let proposal = NameProposal(name: "b", moduleID: "m", confidence: 1)
-        let host = ScriptedModuleHost(modules: [], answers: ["m": .success([proposal])])
-        #expect(try await host.proposeNames(moduleID: "m", request: request) == [proposal])
+        let values: [String: NameTemplate.Value] = ["number": .text("1")]
+        let host = ScriptedModuleHost(modules: [], answers: ["m": .success([values])])
+        #expect(try await host.fieldValues(moduleID: "m", request: request) == [values])
         #expect(host.requests == [request])
     }
 
     @Test func failsForAModuleWithoutAnAnswer() async {
         let host = ScriptedModuleHost(modules: [], answers: [:])
         await #expect(throws: NameModuleHostError.moduleFailed) {
-            try await host.proposeNames(moduleID: "m", request: request)
+            try await host.fieldValues(moduleID: "m", request: request)
         }
     }
 }

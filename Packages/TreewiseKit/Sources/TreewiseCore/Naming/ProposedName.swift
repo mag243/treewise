@@ -9,7 +9,7 @@ public enum ProposedName {
     private static let pathSeparators = CharacterSet(charactersIn: "/:")
 
     /// Returns the full name for a proposal: trimmed, and with the item's
-    /// extension unless the proposal has it already or replaces it.
+    /// extension unless the proposal has it already.
     ///
     /// Postcondition: a success is valid by `problem(inEdit:)` and starts without a dot.
     public static func resolve(
@@ -19,10 +19,8 @@ public enum ProposedName {
         if let problem = problem(inEdit: trimmed) { return .failure(problem) }
         if trimmed.hasPrefix(".") { return .failure(.startsWithDot) }
         let (_, pathExtension) = ConflictResolver.split(original, kind: kind)
-        let keepsName =
-            proposal.replacesExtension
-            || trimmed.lowercased().hasSuffix(pathExtension.lowercased())
-        let name = keepsName ? trimmed : trimmed + pathExtension
+        let hasExtension = trimmed.lowercased().hasSuffix(pathExtension.lowercased())
+        let name = hasExtension ? trimmed : trimmed + pathExtension
         if name.utf8.count > maximumByteCount { return .failure(.tooLong) }
         return .success(name)
     }

@@ -1,42 +1,29 @@
-import Foundation
-
-/// A name a module proposes for an item (ADR 0057). The data comes from a module
-/// and is not trusted: `ProposedName` checks it before it can reach a file.
-public struct NameProposal: Hashable, Sendable, Codable {
-    /// The range a confidence is kept in.
-    private static let confidenceRange = 0.0...1.0
-
-    /// The proposed name, with or without the item's extension.
+/// A name made for an item from a module's values (ADR 0057). The values come from
+/// a module and are not trusted: `ProposedName` checks the name before it can reach
+/// a file.
+public struct NameProposal: Hashable, Sendable {
+    /// The name, with or without the item's extension.
     public let name: String
-    /// The module that made the proposal.
+    /// The module whose values made it.
     public let moduleID: String
-    /// How sure the module is, from 0 to 1. Anything else from a module is
-    /// brought into that range, and what is not a number counts as 0.
-    public let confidence: Double
-    /// Whether `name` carries a new extension instead of the item's own.
-    public let replacesExtension: Bool
 
     /// Creates a proposal.
-    public init(
-        name: String, moduleID: String, confidence: Double, replacesExtension: Bool = false
-    ) {
+    public init(name: String, moduleID: String) {
         self.name = name
         self.moduleID = moduleID
-        self.confidence =
-            confidence.isNaN
-            ? Self.confidenceRange.lowerBound
-            : min(max(confidence, Self.confidenceRange.lowerBound), Self.confidenceRange.upperBound)
-        self.replacesExtension = replacesExtension
     }
 
-    /// Decodes a proposal through the checks of `init`, because it crosses from
-    /// the module's process (ADR 0057).
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        try self.init(
-            name: container.decode(String.self, forKey: .name),
-            moduleID: container.decode(String.self, forKey: .moduleID),
-            confidence: container.decode(Double.self, forKey: .confidence),
-            replacesExtension: container.decode(Bool.self, forKey: .replacesExtension))
+    /// Makes the proposals for a module's ranked sets of values, in their order. A set
+    /// that leaves a required field empty gives none. Treewise supplies the folder's
+    /// name itself, so a module never sees it.
+    public static func make(
+        from valueSets: [[String: NameTemplate.Value]], template: NameTemplate, moduleID: String,
+        folderName: String
+    ) -> [NameProposal] {
+        valueSets.compactMap { values in
+            var all = values
+            all[NameTemplate.Field.folder.name] = .text(folderName)
+            return template.name(from: all).map { NameProposal(name: $0, moduleID: moduleID) }
+        }
     }
 }

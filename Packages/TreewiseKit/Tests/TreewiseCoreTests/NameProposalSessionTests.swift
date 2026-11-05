@@ -5,38 +5,54 @@ import TreewiseCore
 @Suite struct NameProposalSessionTests {
     private static let item: FileItem.ID = "/f/scan.pdf"
 
-    private func session() -> NameProposalSession {
-        NameProposalSession(items: [
-            .init(id: Self.item, folder: "/f", originalName: "scan.pdf", kind: .file)
-        ])
+    private func newSession(modules: [String] = ["first", "second"]) -> NameProposalSession {
+        NameProposalSession(
+            items: [.init(id: Self.item, folder: "/f", originalName: "scan.pdf", kind: .file)],
+            moduleOrder: modules)
     }
 
-    private func proposal(_ name: String, _ confidence: Double = 0.5) -> NameProposal {
-        NameProposal(name: name, moduleID: "test", confidence: confidence)
+    private func proposal(_ name: String, from module: String = "first") -> NameProposal {
+        NameProposal(name: name, moduleID: module)
     }
 
     private func session(with names: String...) -> NameProposalSession {
-        var result = session()
+        var result = newSession()
         result.add(names.map { proposal($0) }, to: Self.item)
         return result
     }
 
+    private func names(_ session: NameProposalSession) -> [String]? {
+        session.entry(Self.item)?.proposals.map(\.name)
+    }
+
     @Test func startsWithoutAName() {
-        let entry = session().entry(Self.item)
+        let entry = newSession().entry(Self.item)
         #expect(entry?.currentName == nil)
         #expect(entry?.state == .pending)
     }
 
-    @Test func choosesTheMostConfidentProposalFirst() {
-        var session = session()
-        session.add([proposal("Low", 0.2), proposal("High", 0.9)], to: Self.item)
-        #expect(session.entry(Self.item)?.currentName == "High.pdf")
+    @Test func choosesTheFirstProposalOfTheFirstModule() {
+        var session = newSession()
+        session.add(
+            [proposal("Late", from: "second"), proposal("Early", from: "first")], to: Self.item)
+        #expect(session.entry(Self.item)?.currentName == "Early.pdf")
+    }
+
+    @Test func ordersByModuleAndThenByEachModulesRanking() {
+        var session = newSession()
+        session.add(
+            [
+                proposal("C", from: "second"), proposal("A"), proposal("D", from: "second"),
+                proposal("B"),
+            ],
+            to: Self.item)
+        #expect(names(session) == ["A.pdf", "B.pdf", "C.pdf", "D.pdf"])
     }
 
     @Test func dropsInvalidProposalsAndKeepsTheRest() {
-        var session = session()
+        var session = newSession()
         session.add([proposal("a/b"), proposal("Good")], to: Self.item)
-        #expect(session.entry(Self.item)?.proposals.map(\.name) == ["Good.pdf"])
+        #expect(names(session) == ["Good.pdf"])
     }
 
     @Test func dropsAProposalThatChangesNothing() {
@@ -45,13 +61,6 @@ import TreewiseCore
 
     @Test func keepsACaseOnlyChange() {
         #expect(session(with: "Scan").entry(Self.item)?.currentName == "Scan.pdf")
-    }
-
-    @Test func mergesDuplicatesKeepingTheHigherConfidence() {
-        var session = session()
-        session.add([proposal("Same", 0.2), proposal("Other", 0.5)], to: Self.item)
-        session.add([proposal("same", 0.9)], to: Self.item)
-        #expect(session.entry(Self.item)?.proposals.map(\.name) == ["same.pdf", "Other.pdf"])
     }
 
     @Test func stepsForwardAndWrapsAround() {
@@ -69,7 +78,7 @@ import TreewiseCore
     }
 
     @Test func steppingWithoutProposalsDoesNothing() {
-        var session = session()
+        var session = newSession()
         session.step(Self.item, by: .next)
         #expect(session.entry(Self.item)?.currentName == nil)
     }
@@ -83,14 +92,14 @@ import TreewiseCore
     @Test func aLaterProposalDoesNotMoveTheChoice() {
         var session = session(with: "A", "B")
         session.step(Self.item, by: .next)
-        session.add([proposal("Better", 0.9)], to: Self.item)
+        session.add([proposal("Before", from: "first")], to: Self.item)
         #expect(session.entry(Self.item)?.currentName == "B.pdf")
     }
 
     @Test func aLaterProposalDoesNotReplaceAnEdit() {
         var session = session(with: "A")
         session.edit(Self.item, to: "Mine.pdf")
-        session.add([proposal("Better", 0.9)], to: Self.item)
+        session.add([proposal("Better")], to: Self.item)
         #expect(session.entry(Self.item)?.currentName == "Mine.pdf")
     }
 
@@ -118,7 +127,7 @@ import TreewiseCore
     }
 
     @Test func refusesToApproveWithoutAName() {
-        var session = session()
+        var session = newSession()
         #expect(session.approve(Self.item) == .noName)
         #expect(session.entry(Self.item)?.state == .pending)
     }
@@ -150,7 +159,7 @@ import TreewiseCore
     @Test func aLaterProposalKeepsAnApproval() {
         var session = session(with: "A")
         session.approve(Self.item)
-        session.add([proposal("Better", 0.9)], to: Self.item)
+        session.add([proposal("Better")], to: Self.item)
         #expect(session.entry(Self.item)?.state == .approved)
         #expect(session.entry(Self.item)?.currentName == "A.pdf")
     }
@@ -164,12 +173,13 @@ import TreewiseCore
     }
 
     @Test func approveAllTakesOnlyPendingItemsWithAValidName() {
-        var session = NameProposalSession(items: [
-            .init(id: "/f/a", folder: "/f", originalName: "a.pdf", kind: .file),
-            .init(id: "/f/b", folder: "/f", originalName: "b.pdf", kind: .file),
-            .init(id: "/f/c", folder: "/f", originalName: "c.pdf", kind: .file),
-            .init(id: "/f/d", folder: "/f", originalName: "d.pdf", kind: .file),
-        ])
+        var session = NameProposalSession(
+            items: ["a", "b", "c", "d"].map {
+                .init(
+                    id: FileItem.ID("/f/\($0)"), folder: "/f", originalName: "\($0).pdf",
+                    kind: .file)
+            },
+            moduleOrder: ["first"])
         session.add([proposal("A1")], to: "/f/a")
         session.add([proposal("C1")], to: "/f/c")
         session.skip("/f/c")
@@ -182,10 +192,13 @@ import TreewiseCore
     }
 
     @Test func approvedRenamesFollowTheItemsOrder() {
-        var session = NameProposalSession(items: [
-            .init(id: "/f/a", folder: "/f", originalName: "a.pdf", kind: .file),
-            .init(id: "/f/b", folder: "/f", originalName: "b.pdf", kind: .file),
-        ])
+        var session = NameProposalSession(
+            items: ["a", "b"].map {
+                .init(
+                    id: FileItem.ID("/f/\($0)"), folder: "/f", originalName: "\($0).pdf",
+                    kind: .file)
+            },
+            moduleOrder: ["first"])
         session.add([proposal("B1")], to: "/f/b")
         session.add([proposal("A1")], to: "/f/a")
         session.approveAll()
@@ -197,7 +210,7 @@ import TreewiseCore
     }
 
     @Test func ignoresAnUnknownItem() {
-        var session = session()
+        var session = newSession()
         session.add([proposal("A")], to: "/gone")
         session.step("/gone", by: .next)
         #expect(session.approve("/gone") == .noName)

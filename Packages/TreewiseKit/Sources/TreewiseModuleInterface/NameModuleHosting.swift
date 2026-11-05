@@ -4,13 +4,26 @@ import TreewiseCore
 public struct NameModuleDescription: Hashable, Sendable, Codable {
     /// The module's id.
     public let id: String
+    /// The uniform type identifiers it handles, each with its subtypes. Other files
+    /// are never sent to it.
+    public let contentTypes: Set<String>
     /// The content its requests must hold.
     public let neededContent: Set<ModuleContentKind>
+    /// The fields its values can fill, besides `NameTemplate.Field.folder`.
+    public let fields: [NameTemplate.Field]
+    /// The template it starts from, until the user changes it.
+    public let defaultTemplate: String
 
     /// Creates a description.
-    public init(id: String, neededContent: Set<ModuleContentKind>) {
+    public init(
+        id: String, contentTypes: Set<String>, neededContent: Set<ModuleContentKind>,
+        fields: [NameTemplate.Field], defaultTemplate: String
+    ) {
         self.id = id
+        self.contentTypes = contentTypes
         self.neededContent = neededContent
+        self.fields = fields
+        self.defaultTemplate = defaultTemplate
     }
 }
 
@@ -31,6 +44,8 @@ public enum NameModuleHostError: Error, Hashable, Sendable {
 public protocol NameModuleHosting: Sendable {
     /// The modules on offer.
     func availableModules() async throws -> [NameModuleDescription]
-    /// Asks a module for proposals. A request must hold only what the module declared.
-    func proposeNames(moduleID: String, request: NameRequest) async throws -> [NameProposal]
+    /// Asks a module for ranked sets of values. A request must hold only what the
+    /// module declared.
+    func fieldValues(moduleID: String, request: NameRequest) async throws
+        -> [[String: NameTemplate.Value]]
 }

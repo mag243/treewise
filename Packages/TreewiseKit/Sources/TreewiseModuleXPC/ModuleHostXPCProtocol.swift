@@ -6,8 +6,8 @@
     @objc public protocol ModuleHostXPCProtocol {
         /// Replies with the encoded module descriptions.
         func listModules(reply: @escaping @Sendable (Data?) -> Void)
-        /// Replies with the encoded proposals, or nil when the module failed or is not known.
-        func proposeNames(
+        /// Replies with the encoded sets of values, or nil when the module failed or is not known.
+        func fieldValues(
             moduleID: String, request: Data, reply: @escaping @Sendable (Data?) -> Void)
     }
 

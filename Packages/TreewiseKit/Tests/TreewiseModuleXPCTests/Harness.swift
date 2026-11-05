@@ -28,24 +28,33 @@
 
     /// A module that answers from a closure, or never.
     struct StubModule: NameModule {
-        let id: String
-        var neededContent: Set<ModuleContentKind> = []
+        let description: NameModuleDescription
         var answers = true
-        var answer: @Sendable (NameRequest) throws -> [NameProposal] = { _ in [] }
+        var answer: @Sendable (NameRequest) throws -> [[String: NameTemplate.Value]] = { _ in [] }
         var signal: RequestSignal?
 
+        private static func describe(
+            _ id: String, neededContent: Set<ModuleContentKind> = []
+        ) -> NameModuleDescription {
+            NameModuleDescription(
+                id: id, contentTypes: ["public.data"], neededContent: neededContent,
+                fields: [NameTemplate.Field(name: "text", kind: .text)], defaultTemplate: "{text}")
+        }
+
         init(id: String, neededContent: Set<ModuleContentKind> = [], answers: Bool = true) {
-            self.id = id
-            self.neededContent = neededContent
+            description = Self.describe(id, neededContent: neededContent)
             self.answers = answers
         }
 
-        init(id: String, answer: @escaping @Sendable (NameRequest) throws -> [NameProposal]) {
-            self.id = id
+        init(
+            id: String,
+            answer: @escaping @Sendable (NameRequest) throws -> [[String: NameTemplate.Value]]
+        ) {
+            description = Self.describe(id)
             self.answer = answer
         }
 
-        func proposeNames(for request: NameRequest) async throws -> [NameProposal] {
+        func fieldValues(for request: NameRequest) async throws -> [[String: NameTemplate.Value]] {
             signal?.signal()
             guard answers else {
                 // Stays silent without holding a thread, for longer than any test runs.

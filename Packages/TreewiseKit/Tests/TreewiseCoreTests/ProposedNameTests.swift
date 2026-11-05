@@ -1,15 +1,12 @@
-import Foundation
 import Testing
 import TreewiseCore
 
 /// What a proposed or edited name must be before it can reach a file (ADR 0057).
 @Suite struct ProposedNameTests {
     private func resolve(
-        _ name: String, for original: String = "scan.pdf", kind: ItemKind = .file,
-        replacesExtension: Bool = false
+        _ name: String, for original: String = "scan.pdf", kind: ItemKind = .file
     ) -> Result<String, ProposedNameProblem> {
-        let proposal = NameProposal(
-            name: name, moduleID: "test", confidence: 1, replacesExtension: replacesExtension)
+        let proposal = NameProposal(name: name, moduleID: "test")
         return ProposedName.resolve(proposal, for: original, kind: kind)
     }
 
@@ -27,11 +24,6 @@ import TreewiseCore
 
     @Test func keepsACompoundExtensionWhole() {
         #expect(resolve("Backup", for: "old.tar.gz") == .success("Backup.tar.gz"))
-    }
-
-    @Test func replacesTheExtensionOnlyWhenTheProposalSaysSo() {
-        #expect(resolve("Invoice.txt", replacesExtension: true) == .success("Invoice.txt"))
-        #expect(resolve("Invoice.txt") == .success("Invoice.txt.pdf"))
     }
 
     @Test func addsNoExtensionToAFolder() {
@@ -82,22 +74,24 @@ import TreewiseCore
         #expect(ProposedName.problem(inEdit: "a/b") == .containsPathSeparator)
     }
 
-    @Test(arguments: [(Double.nan, 0.0), (-1, 0), (2, 1), (0.5, 0.5)])
-    func keepsConfidenceBetweenZeroAndOne(_ given: Double, _ expected: Double) {
-        #expect(NameProposal(name: "a", moduleID: "m", confidence: given).confidence == expected)
+    @Test func makesProposalsFromRankedValues() throws {
+        let fields = [NameTemplate.Field(name: "number", kind: .number), .folder]
+        let template = try NameTemplate.parse("{folder} {number}", fields: fields).get()
+        let proposals = NameProposal.make(
+            from: [["number": .text("1")], [:], ["number": .text("2")]], template: template,
+            moduleID: "m", folderName: "Invoices")
+        #expect(
+            proposals == [
+                NameProposal(name: "Invoices 1", moduleID: "m"),
+                NameProposal(name: "Invoices 2", moduleID: "m"),
+            ])
     }
 
-    @Test func decodingAProposalKeepsConfidenceInRangeToo() throws {
-        let json = #"{"name":"a","moduleID":"m","confidence":7,"replacesExtension":false}"#
-        let proposal = try JSONDecoder().decode(NameProposal.self, from: Data(json.utf8))
-        #expect(proposal.confidence == 1)
-    }
-
-    @Test func aProposalSurvivesEncoding() throws {
-        let proposal = NameProposal(
-            name: "a", moduleID: "m", confidence: 0.5, replacesExtension: true)
-        let decoded = try JSONDecoder().decode(
-            NameProposal.self, from: JSONEncoder().encode(proposal))
-        #expect(decoded == proposal)
+    @Test func aModuleCannotChooseTheFolderName() throws {
+        let template = try NameTemplate.parse("{folder}", fields: [.folder]).get()
+        let proposals = NameProposal.make(
+            from: [["folder": .text("Other")]], template: template, moduleID: "m",
+            folderName: "Invoices")
+        #expect(proposals.first?.name == "Invoices")
     }
 }

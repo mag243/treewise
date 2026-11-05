@@ -1,9 +1,9 @@
 import Foundation
 
 extension NameProposalSession {
-    /// One item under review. `Invariant:` `proposals` is sorted by falling
-    /// confidence, holds no two names the file system treats as the same, and
-    /// holds only names that passed `ProposedName`.
+    /// One item under review. `Invariant:` `proposals` follows the order of the
+    /// modules and each module's ranking, holds no two names the file system treats
+    /// as the same, and holds only names that passed `ProposedName`.
     public struct Entry: Identifiable, Hashable, Sendable {
         /// Where an item stands in the review.
         public enum State: Hashable, Sendable {
@@ -18,11 +18,9 @@ extension NameProposalSession {
         /// A valid name among the options of an item.
         public struct Option: Hashable, Sendable {
             /// The full name, with its extension.
-            public let name: String
-            /// The module that proposed it.
-            public let moduleID: String
-            /// How sure the module is, from 0 to 1.
-            public let confidence: Double
+            public internal(set) var name: String
+            /// The modules that proposed it, in their order.
+            public internal(set) var moduleIDs: [String]
         }
 
         /// Which of the options is current.
@@ -54,12 +52,16 @@ extension NameProposalSession {
         public let originalName: String
         /// The item's kind, which decides whether it has an extension.
         public let kind: ItemKind
-        /// The proposals so far, best first.
+        /// The proposals so far, in order.
         public internal(set) var proposals: [Option] = []
         /// What the user typed, if anything. It stays an option while stepping.
         public internal(set) var edit: String?
         /// Where the item stands in the review.
         public internal(set) var state = State.pending
+        /// The modules whose templates the current name fits, in their order.
+        public internal(set) var fittingModuleIDs: [String] = []
+        /// Whether no module that is on handles this item, which then stays as it is.
+        public internal(set) var isOutOfScope = false
         var selection = Selection.none
 
         /// Creates an entry without proposals.
@@ -79,9 +81,15 @@ extension NameProposalSession {
             }
         }
 
+        /// Whether the item fits a template and nothing else is proposed, so it
+        /// needs no decision.
+        public var restsFitting: Bool {
+            !fittingModuleIDs.isEmpty && proposals.isEmpty && edit == nil
+        }
+
         /// Why the current name cannot be approved, or nil when it can.
         public var problem: ProposedNameProblem? {
-            guard let name = currentName else { return .noName }
+            guard !isOutOfScope, let name = currentName else { return .noName }
             if name == originalName { return .unchanged }
             return ProposedName.problem(inEdit: name)
         }
@@ -111,35 +119,8 @@ extension NameProposalSession {
             state = .pending
         }
 
-        /// Adds proposals without changing what is chosen, except that the first
-        /// valid proposal becomes the choice while there is none.
-        mutating func add(_ newProposals: [NameProposal]) {
-            for proposal in newProposals { add(proposal) }
-            // Sorting is stable, so names of equal confidence keep their arrival order.
-            proposals.sort { $0.confidence > $1.confidence }
-            if selection == .none, let best = proposals.first {
-                selection = .proposal(key: Self.key(best.name))
-            }
-        }
-
-        private mutating func add(_ proposal: NameProposal) {
-            guard
-                case .success(let name) = ProposedName.resolve(
-                    proposal, for: originalName, kind: kind),
-                name != originalName
-            else { return }
-            let option = Option(
-                name: name, moduleID: proposal.moduleID, confidence: proposal.confidence)
-            let key = Self.key(name)
-            guard let index = proposals.firstIndex(where: { Self.key($0.name) == key }) else {
-                proposals.append(option)
-                return
-            }
-            if option.confidence > proposals[index].confidence { proposals[index] = option }
-        }
-
         /// The form two names share when the file system treats them as the same.
-        private static func key(_ name: String) -> String {
+        static func key(_ name: String) -> String {
             ConflictResolver.comparisonKey(name)
         }
     }

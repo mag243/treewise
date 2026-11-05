@@ -11,10 +11,10 @@
         public static let serviceName = "me.m-domain.treewise.modulehost"
         /// How long a module may take. It runs on the device and may read a long text.
         public static let defaultTimeout = Duration.seconds(60)
-        /// The largest answer accepted. Proposals are short, so more is a fault.
+        /// The largest answer accepted. Values are short, so more is a fault.
         public static let maximumResponseBytes = 1_000_000
-        /// The most proposals taken from one answer.
-        public static let maximumProposals = 50
+        /// The most sets of values taken from one answer.
+        public static let maximumValueSets = 50
 
         private let timeout: Duration
         private let makeConnection: () -> NSXPCConnection
@@ -39,16 +39,16 @@
             return try decode([NameModuleDescription].self, from: data)
         }
 
-        /// Asks a module for proposals, in the order it gave them.
-        public func proposeNames(moduleID: String, request: NameRequest) async throws
-            -> [NameProposal]
+        /// Asks a module for sets of values, in the order it gave them.
+        public func fieldValues(moduleID: String, request: NameRequest) async throws
+            -> [[String: NameTemplate.Value]]
         {
             let encoded = try ModuleWire.encode(request)
             let data = try await ask { service, reply in
-                service.proposeNames(moduleID: moduleID, request: encoded, reply: reply)
+                service.fieldValues(moduleID: moduleID, request: encoded, reply: reply)
             }
-            let proposals = try decode([NameProposal].self, from: data)
-            return Array(proposals.prefix(Self.maximumProposals))
+            let valueSets = try decode([[String: NameTemplate.Value]].self, from: data)
+            return Array(valueSets.prefix(Self.maximumValueSets))
         }
 
         private func decode<Value: Decodable>(_ type: Value.Type, from data: Data) throws -> Value {

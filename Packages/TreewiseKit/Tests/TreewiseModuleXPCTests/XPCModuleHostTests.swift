@@ -16,18 +16,16 @@
             let harness = Harness(modules: [StubModule(id: "m", neededContent: [.text])])
             defer { withExtendedLifetime(harness) {} }
             let modules = try await harness.host().availableModules()
-            #expect(modules == [NameModuleDescription(id: "m", neededContent: [.text])])
+            #expect(modules == [StubModule(id: "m", neededContent: [.text]).description])
         }
 
         @Test func carriesTheRequestToTheModuleAndTheProposalsBack() async throws {
             let harness = Harness(modules: [
-                StubModule(id: "m") {
-                    [NameProposal(name: $0.content.text ?? "", moduleID: "m", confidence: 0.5)]
-                }
+                StubModule(id: "m") { [["text": .text($0.content.text ?? "")]] }
             ])
             defer { withExtendedLifetime(harness) {} }
-            let proposals = try await harness.host().proposeNames(moduleID: "m", request: request)
-            #expect(proposals == [NameProposal(name: "Invoice", moduleID: "m", confidence: 0.5)])
+            let proposals = try await harness.host().fieldValues(moduleID: "m", request: request)
+            #expect(proposals == [["text": .text("Invoice")]])
         }
 
         @Test func carriesALargeRequest() async throws {
@@ -37,16 +35,12 @@
                 content: ModuleContent(pageImages: [Data(count: 20_000_000)]))
             let harness = Harness(modules: [
                 StubModule(id: "m") {
-                    [
-                        NameProposal(
-                            name: "\($0.content.pageImages?.first?.count ?? 0)", moduleID: "m",
-                            confidence: 1)
-                    ]
+                    [["size": .text("\($0.content.pageImages?.first?.count ?? 0)")]]
                 }
             ])
             defer { withExtendedLifetime(harness) {} }
-            let proposals = try await harness.host().proposeNames(moduleID: "m", request: large)
-            #expect(proposals.first?.name == "20000000")
+            let proposals = try await harness.host().fieldValues(moduleID: "m", request: large)
+            #expect(proposals == [["size": .text("20000000")]])
         }
 
         @Test func anUnknownModuleFails() async {
@@ -54,7 +48,7 @@
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
             await #expect(throws: NameModuleHostError.moduleFailed) {
-                try await host.proposeNames(moduleID: "gone", request: request)
+                try await host.fieldValues(moduleID: "gone", request: request)
             }
         }
 
@@ -63,7 +57,7 @@
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
             await #expect(throws: NameModuleHostError.moduleFailed) {
-                try await host.proposeNames(moduleID: "m", request: request)
+                try await host.fieldValues(moduleID: "m", request: request)
             }
         }
 
@@ -72,7 +66,7 @@
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host(timeout: .milliseconds(20))
             await #expect(throws: NameModuleHostError.timedOut) {
-                try await host.proposeNames(moduleID: "m", request: request)
+                try await host.fieldValues(moduleID: "m", request: request)
             }
         }
 
@@ -81,7 +75,7 @@
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
             let request = request
-            let answer = Task { try await host.proposeNames(moduleID: "m", request: request) }
+            let answer = Task { try await host.fieldValues(moduleID: "m", request: request) }
             await harness.waitForRequest()
             harness.dropConnections()
             await #expect(throws: NameModuleHostError.unavailable) { try await answer.value }
@@ -101,25 +95,25 @@
         @Test func refusesAnAnswerThatIsTooLarge() async {
             let long = String(repeating: "a", count: XPCModuleHost.maximumResponseBytes + 1)
             let harness = Harness(modules: [
-                StubModule(id: "m") { _ in [NameProposal(name: long, moduleID: "m", confidence: 1)]
+                StubModule(id: "m") { _ in [["text": .text(long)]]
                 }
             ])
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
             await #expect(throws: NameModuleHostError.invalidResponse) {
-                try await host.proposeNames(moduleID: "m", request: request)
+                try await host.fieldValues(moduleID: "m", request: request)
             }
         }
 
         @Test func keepsOnlyTheFirstProposalsOfALongAnswer() async throws {
-            let many = (0...XPCModuleHost.maximumProposals).map {
-                NameProposal(name: "\($0)", moduleID: "m", confidence: 1)
+            let many = (0...XPCModuleHost.maximumValueSets).map {
+                ["number": NameTemplate.Value.text("\($0)")]
             }
             let harness = Harness(modules: [StubModule(id: "m") { _ in many }])
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
-            let proposals = try await host.proposeNames(moduleID: "m", request: request)
-            #expect(proposals.count == XPCModuleHost.maximumProposals)
+            let proposals = try await host.fieldValues(moduleID: "m", request: request)
+            #expect(proposals.count == XPCModuleHost.maximumValueSets)
         }
 
         @Test func cancellingEndsTheWait() async {
@@ -127,7 +121,7 @@
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
             let request = request
-            let task = Task { try await host.proposeNames(moduleID: "m", request: request) }
+            let task = Task { try await host.fieldValues(moduleID: "m", request: request) }
             await harness.waitForRequest()
             task.cancel()
             await #expect(throws: CancellationError.self) { try await task.value }

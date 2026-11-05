@@ -1,6 +1,6 @@
 import Foundation
 
-/// A review of proposed names: per item the ranked proposals, the choice, the
+/// A review of proposed names: per item the proposals in order, the choice, the
 /// user's edit and a decision (ADR 0057). It holds no file system access and no
 /// module; proposals arrive through `add(_:to:)`, in any order and at any time.
 ///
@@ -8,13 +8,16 @@ import Foundation
 public struct NameProposalSession: Hashable, Sendable {
     /// All items under review, in the order they were given.
     public private(set) var entries: [Entry]
+    /// The modules that are on, which order an item's proposals.
+    public private(set) var moduleOrder: [String]
     private let indexes: [FileItem.ID: Int]
 
     /// Creates a session for items.
     ///
     /// Precondition: the items have different ids.
-    public init(items: [Entry]) {
+    public init(items: [Entry], moduleOrder: [String]) {
         entries = items
+        self.moduleOrder = moduleOrder
         indexes = Dictionary(uniqueKeysWithValues: items.enumerated().map { ($1.id, $0) })
     }
 
@@ -26,7 +29,17 @@ public struct NameProposalSession: Hashable, Sendable {
     /// Adds proposals to an item. Invalid ones and ones equal to the current name
     /// are dropped. What the user chose, typed or approved stays as it is.
     public mutating func add(_ proposals: [NameProposal], to id: FileItem.ID) {
-        update(id) { $0.add(proposals) }
+        let order = moduleOrder
+        update(id) { $0.add(proposals, moduleOrder: order) }
+    }
+
+    /// Replaces what one module proposed for an item, as after a change of its
+    /// template. An approved name stays, as the user's own.
+    public mutating func replaceProposals(
+        _ proposals: [NameProposal], from moduleID: String, for id: FileItem.ID
+    ) {
+        let order = moduleOrder
+        update(id) { $0.replaceProposals(proposals, from: moduleID, moduleOrder: order) }
     }
 
     /// Moves an item to its next or previous option. This needs a new approval.
@@ -34,7 +47,8 @@ public struct NameProposalSession: Hashable, Sendable {
         update(id) { $0.step(by: direction) }
     }
 
-    /// Makes typed text the item's name. This needs a new approval.
+    /// Makes typed text the item's name. This needs a new approval. It keeps the text
+    /// as typed until `finishEditing(_:)`, so the options do not shift during typing.
     public mutating func edit(_ id: FileItem.ID, to name: String) {
         update(id) {
             $0.edit = name
@@ -43,14 +57,28 @@ public struct NameProposalSession: Hashable, Sendable {
         }
     }
 
+    /// Ends an edit, when the user leaves the field: an empty one goes away, and one
+    /// exactly equal to a proposal merges with it.
+    public mutating func finishEditing(_ id: FileItem.ID) {
+        update(id) { $0.finishEditing() }
+    }
+
     /// Removes the item's edit and returns to its best proposal.
     public mutating func discardEdit(_ id: FileItem.ID) {
-        update(id) {
-            $0.edit = nil
-            $0.selection = .none
-            $0.state = .pending
-            $0.add([])
+        update(id) { $0.discardEdit() }
+    }
+
+    /// Records which modules' templates the item's name fits.
+    public mutating func setFit(_ id: FileItem.ID, moduleIDs: [String]) {
+        let order = moduleOrder
+        update(id) { entry in
+            entry.fittingModuleIDs = order.filter(moduleIDs.contains)
         }
+    }
+
+    /// Records whether no module that is on handles the item.
+    public mutating func setOutOfScope(_ id: FileItem.ID, _ isOutOfScope: Bool) {
+        update(id) { $0.isOutOfScope = isOutOfScope }
     }
 
     /// Approves the item's current name, or returns why that is not possible.
