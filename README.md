@@ -34,7 +34,7 @@ brew install --cask mag243/tap/treewise
 
 ### By download
 
-1. Open [**Releases**](https://github.com/mag243/treewise-releases/releases) and download `Treewise-<version>-<build>.dmg` of the newest version.
+1. Open [**Releases**](https://github.com/mag243/treewise/releases) and download `Treewise-<version>-<build>.dmg` of the newest version.
 2. Open it and drag **Treewise** onto **Applications**.
 3. Start Treewise from Applications. It is signed and notarized by Apple, so it opens without a warning.
 
@@ -44,7 +44,7 @@ Started from anywhere else, Treewise offers once to move itself into Application
 
 Treewise checks for a new version once a day and asks before it installs one. You can check by hand with **Treewise > Check for Updates…**, and turn the daily check off in **Settings**. A Homebrew install updates the same way; `brew upgrade` leaves it to Treewise.
 
-Every update is signed twice, by Apple's Developer ID and by Treewise's own update key, and is installed only when both check out. Checking for updates sends nothing about you or your Mac; it only reads a list of versions from this site. What changed in each version is on the [Releases](https://github.com/mag243/treewise-releases/releases) page.
+Every update is signed twice, by Apple's Developer ID and by Treewise's own update key, and is installed only when both check out. Checking for updates sends nothing about you or your Mac; it only reads a list of versions from this site. What changed in each version is on the [Releases](https://github.com/mag243/treewise/releases) page.
 
 ## Requirements
 
