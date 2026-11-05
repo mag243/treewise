@@ -35,6 +35,9 @@ struct BrowserActions {
     }
 
     func newFolder() { Task { await browser.newFolder(undoManager: undoManager) } }
+    /// Whether names can be suggested for the selection or the folder (ADR 0057).
+    var canSuggestNames: Bool { browser.canSuggestNames }
+    func suggestNames() { NameReviewWindow.show(for: browser, undoManager: undoManager) }
     func moveToTrash() {
         Task { await browser.moveSelectionToTrash(undoManager: undoManager) }
     }
@@ -121,6 +124,8 @@ struct BrowserCommands: Commands {
             Button("Open in Other Window") { actions?.openSelection(option: true) }
                 .keyboardShortcut(.downArrow, modifiers: [.command, .option])
                 .disabled(!(actions?.hasSelection ?? false))
+            Button("Suggest Names…") { actions?.suggestNames() }
+                .disabled(!(actions?.canSuggestNames ?? false))
             Button("Rename") { actions?.rename() }
                 .disabled(!(actions?.canRename ?? false))
             Button("Eject") { actions?.eject() }

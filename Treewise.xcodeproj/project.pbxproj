@@ -12,6 +12,7 @@
 		B1000000000000000000B003 /* TreewiseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D003 /* TreewiseCore */; };
 		B1000000000000000000B004 /* TreewiseFileSystem in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D004 /* TreewiseFileSystem */; };
 		B1000000000000000000B005 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D005 /* Sparkle */; };
+		B1000000000000000000B009 /* TreewiseModuleXPC in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D008 /* TreewiseModuleXPC */; };
 		B1000000000000000000B006 /* TreewiseModuleCatalog in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D006 /* TreewiseModuleCatalog */; };
 		B1000000000000000000B007 /* TreewiseModuleXPC in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D007 /* TreewiseModuleXPC */; };
 		B1000000000000000000B008 /* TreewiseModuleHost.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = F1000000000000000000F004 /* TreewiseModuleHost.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -87,6 +88,7 @@
 				B1000000000000000000B003 /* TreewiseCore in Frameworks */,
 				B1000000000000000000B004 /* TreewiseFileSystem in Frameworks */,
 				B1000000000000000000B005 /* Sparkle in Frameworks */,
+				B1000000000000000000B009 /* TreewiseModuleXPC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +184,7 @@
 				D1000000000000000000D003 /* TreewiseCore */,
 				D1000000000000000000D004 /* TreewiseFileSystem */,
 				D1000000000000000000D005 /* Sparkle */,
+				D1000000000000000000D008 /* TreewiseModuleXPC */,
 			);
 			productName = TreewiseMac;
 			productReference = F1000000000000000000F001 /* Treewise.app */;
@@ -790,6 +793,10 @@
 			productName = TreewiseModuleCatalog;
 		};
 		D1000000000000000000D007 /* TreewiseModuleXPC */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TreewiseModuleXPC;
+		};
+		D1000000000000000000D008 /* TreewiseModuleXPC */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TreewiseModuleXPC;
 		};

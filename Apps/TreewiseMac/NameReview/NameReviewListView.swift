@@ -1,0 +1,277 @@
+import AppKit
+import SwiftUI
+import TreewiseCore
+import TreewiseUI
+
+/// The list of files: two lines per row, the original above the new name, in one size and
+/// starting at one place, so differences stand out. The list scrolls by itself.
+struct NameReviewListView: View {
+    let model: NameReviewModel
+    @Binding var showsHidden: Bool
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            List(selection: selection) {
+                ForEach(model.rows) { row(for: $0) }
+                if !model.hiddenRows.isEmpty {
+                    Button {
+                        showsHidden.toggle()
+                    } label: {
+                        Label(
+                            hiddenLine, systemImage: showsHidden ? "chevron.down" : "chevron.right"
+                        )
+                        .font(.caption).foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    if showsHidden { ForEach(model.hiddenRows) { row(for: $0) } }
+                }
+            }
+            .listStyle(.inset)
+            .onChange(of: model.selectedID) { _, id in
+                if let id { proxy.scrollTo(id) }
+            }
+            .onKeyPress(action: handle)
+        }
+    }
+
+    private var selection: Binding<FileItem.ID?> {
+        Binding(get: { model.selectedID }, set: { model.selectedID = $0 })
+    }
+
+    private func row(for entry: NameProposalSession.Entry) -> some View {
+        NameReviewRow(
+            entry: entry, model: model, isSelected: entry.id == model.selectedID
+        )
+        .tag(entry.id)
+        .id(entry.id)
+    }
+
+    private var hiddenLine: String {
+        let skipped = model.hiddenRows.filter { model.isAlwaysSkipped($0.id) }.count
+        let fitting = model.hiddenRows.count - skipped
+        return skipped == 0
+            ? String(localized: "\(fitting) files already fit")
+            : String(localized: "\(fitting) files already fit, \(skipped) always skipped")
+    }
+
+    private func handle(_ press: KeyPress) -> KeyPress.Result {
+        guard let id = model.selectedID else { return .ignored }
+        switch press.key {
+        case .leftArrow: model.step(id, by: .previous)
+        case .rightArrow: model.step(id, by: .next)
+        case KeyEquivalent("a"):
+            model.approve(id)
+            moveDown(from: id)
+        case KeyEquivalent("s"):
+            model.skip(id)
+            moveDown(from: id)
+        default: return .ignored
+        }
+        return .handled
+    }
+
+    private func moveDown(from id: FileItem.ID) {
+        let rows = model.rows
+        guard let index = rows.firstIndex(where: { $0.id == id }), index + 1 < rows.count else {
+            return
+        }
+        model.selectedID = rows[index + 1].id
+    }
+}
+
+/// One file in the list.
+struct NameReviewRow: View {
+    private static let lineHeight: CGFloat = 18
+    private static let iconSize: CGFloat = 28
+
+    let entry: NameProposalSession.Entry
+    let model: NameReviewModel
+    let isSelected: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            approval.frame(width: 18)
+            Image(nsImage: NSWorkspace.shared.icon(forFile: entry.id.rawValue))
+                .resizable().frame(width: Self.iconSize, height: Self.iconSize)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(entry.originalName).foregroundStyle(.secondary)
+                newName
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            side
+        }
+        .opacity(entry.state == .skipped ? 0.5 : 1)
+    }
+
+    @ViewBuilder
+    private var approval: some View {
+        if entry.restsFitting {
+            Image(systemName: "checkmark").foregroundStyle(.green).help("Already fits")
+        } else if !entry.isOutOfScope {
+            Toggle(
+                "Approve",
+                isOn: Binding(
+                    get: { entry.state == .approved },
+                    set: { approved in
+                        if approved {
+                            model.approve(entry.id)
+                        } else {
+                            model.undecide(entry.id)
+                        }
+                    })
+            )
+            .labelsHidden()
+            .toggleStyle(.checkbox)
+        }
+    }
+
+    @ViewBuilder
+    private var newName: some View {
+        if isSelected, !entry.isOutOfScope, !entry.restsFitting {
+            NameReviewField(
+                text: entry.currentName ?? "", placeholder: emptyText,
+                onChange: { model.edit(entry.id, to: $0) },
+                onFinish: { model.finishEditing(entry.id) }
+            )
+            .frame(height: Self.lineHeight)
+        } else if let name = entry.restsFitting ? entry.originalName : entry.currentName {
+            Text(marked(name)).foregroundStyle(
+                model.conflicts[entry.id] == nil ? .primary : Color.red)
+        } else {
+            Text(emptyText).italic().foregroundStyle(.tertiary)
+        }
+    }
+
+    private var emptyText: String {
+        if entry.isOutOfScope { return String(localized: "Not for these add-ons. Stays as it is.") }
+        return model.readingCount > 0
+            ? String(localized: "Reading the file…")
+            : String(localized: "No proposal. Type a name.")
+    }
+
+    /// Colours a gap, and the date of a name whose date needs a look.
+    private func marked(_ name: String) -> AttributedString {
+        var text = AttributedString(name)
+        if let range = text.range(of: NameTemplate.gap) {
+            text[range].backgroundColor = .accentColor.opacity(0.25)
+        } else if needsLook, let range = text.range(of: dateText(in: name)) {
+            text[range].backgroundColor = .orange.opacity(0.25)
+        }
+        return text
+    }
+
+    private var needsLook: Bool {
+        switch entry.currentDateSource {
+        case .fileSystem: true
+        case .insideFile: !model.dateInFileIsReliable
+        case nil: false
+        }
+    }
+
+    private func dateText(in name: String) -> String {
+        name.range(of: "[0-9]{2,4}[.-][0-9]{2}[.-][0-9]{2,4}|[0-9]{8}", options: .regularExpression)
+            .map { String(name[$0]) } ?? name
+    }
+
+    private var hasProblem: Bool {
+        model.conflicts[entry.id] != nil
+            || (entry.currentName != nil && entry.problem != nil && entry.problem != .unchanged)
+    }
+
+    private var side: some View {
+        HStack(spacing: 4) {
+            if isSelected, entry.proposals.count + (entry.edit == nil ? 0 : 1) > 1 {
+                Button {
+                    model.step(entry.id, by: .previous)
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                .buttonStyle(.plain)
+            }
+            Text(position).font(.caption).monospacedDigit().foregroundStyle(.secondary)
+            if isSelected, entry.proposals.count + (entry.edit == nil ? 0 : 1) > 1 {
+                Button {
+                    model.step(entry.id, by: .next)
+                } label: {
+                    Image(systemName: "chevron.right")
+                }
+                .buttonStyle(.plain)
+            }
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                .opacity(hasProblem ? 1 : 0)
+            if isSelected { skipMenu }
+        }
+    }
+
+    private var position: String {
+        entry.position.map { "\($0.index + 1)/\($0.count)" } ?? ""
+    }
+
+    @ViewBuilder
+    private var skipMenu: some View {
+        if model.isAlwaysSkipped(entry.id) {
+            Button("Back in List") { Task { await model.stopAlwaysSkipping(entry.id) } }
+                .buttonStyle(.link).font(.caption)
+        } else if entry.state == .skipped {
+            Button("Undo Skip") { model.undecide(entry.id) }.buttonStyle(.link).font(.caption)
+        } else if !entry.restsFitting, !entry.isOutOfScope {
+            Menu("Skip") {
+                Button("Skip") { model.skip(entry.id) }
+                Button("Always Skip") { Task { await model.alwaysSkip(entry.id) } }
+            }
+            .menuStyle(.borderlessButton).fixedSize().font(.caption)
+        }
+    }
+}
+
+/// The name of the selected row, as text to edit. Starting on a gap selects the gap.
+struct NameReviewField: NSViewRepresentable {
+    let text: String
+    let placeholder: String
+    let onChange: (String) -> Void
+    let onFinish: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField(string: text)
+        field.isBordered = false
+        field.drawsBackground = false
+        field.focusRingType = .none
+        field.lineBreakMode = .byTruncatingMiddle
+        field.delegate = context.coordinator
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        context.coordinator.parent = self
+        field.placeholderString = placeholder
+        if field.currentEditor() == nil, field.stringValue != text { field.stringValue = text }
+    }
+
+    @MainActor
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        var parent: NameReviewField
+
+        init(_ parent: NameReviewField) {
+            self.parent = parent
+        }
+
+        func controlTextDidBeginEditing(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField,
+                let range = field.stringValue.range(of: NameTemplate.gap)
+            else { return }
+            field.currentEditor()?.selectedRange = NSRange(range, in: field.stringValue)
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            if let field = notification.object as? NSTextField {
+                parent.onChange(field.stringValue)
+            }
+        }
+
+        func controlTextDidEndEditing(_ notification: Notification) {
+            parent.onFinish()
+        }
+    }
+}

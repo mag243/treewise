@@ -72,6 +72,7 @@ struct FileContextMenu {
         if !items.isEmpty { addOtherWindowItems(to: menu) }
         menu.addItem(.separator())
         menu.addItem(terminalItem(for: items))
+        menu.addItem(suggestNamesItem())
         let shown = items.isEmpty ? browser.layout.focusedPane.activeTab.folder : nil
         menu.addItem(
             ClosureMenuItem(String(localized: "Show in Finder"), symbol: "folder") {
@@ -119,6 +120,16 @@ struct FileContextMenu {
         Task {
             await WindowTabs.shared.send(
                 selectionOf: browser, mode: mode, from: window, undoManager: undoManager)
+        }
+    }
+
+    /// Suggest Names, for the selection or the folder (ADR 0057).
+    private func suggestNamesItem() -> NSMenuItem {
+        ClosureMenuItem(
+            String(localized: "Suggest Names…"), symbol: "text.badge.star",
+            enabled: browser.canSuggestNames
+        ) { [browser, undoManager] in
+            NameReviewWindow.show(for: browser, undoManager: undoManager)
         }
     }
 

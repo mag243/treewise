@@ -1,0 +1,65 @@
+import TreewiseCore
+import TreewiseModuleInterface
+import TreewiseUI
+
+/// The words the overview uses for what the model knows.
+@MainActor
+enum NameReviewText {
+    /// A module's name. The free module's is here; a paid module brings its own later.
+    static func name(of module: NameReviewModule) -> String {
+        module.id == NameModuleDescription.freeModuleID
+            ? String(localized: "Folder Pattern")
+            : module.id.components(separatedBy: ".").last ?? module.id
+    }
+
+    /// Names the modules behind an option.
+    static func names(ofModules ids: [String], in model: NameReviewModel) -> String {
+        ids.map { id in
+            if id == NameProposal.treewiseID { return String(localized: "Treewise") }
+            return model.modules.first { $0.id == id }.map(name) ?? id
+        }.joined(separator: ", ")
+    }
+
+    /// Where a module's pattern comes from.
+    static func origin(of module: NameReviewModule) -> String {
+        switch module.origin {
+        case .derived: String(localized: "recognized in this folder")
+        case .moduleDefault: String(localized: "add-on's default")
+        case .user: String(localized: "changed by you")
+        }
+    }
+
+    /// Why a pattern cannot be used.
+    static func text(for problem: NameTemplate.Problem) -> String {
+        switch problem {
+        case .nothingRequired: String(localized: "A pattern needs something that is not optional")
+        case .unbalancedBraces: String(localized: "Every { needs its }")
+        case .unbalancedBrackets: String(localized: "Every [ needs its ]")
+        case .nestedOptionalParts: String(localized: "Optional parts cannot nest")
+        case .unknownField(let field): String(localized: "This add-on has no field {\(field)}")
+        case .containsPathSeparator: String(localized: "A pattern cannot hold :")
+        case .invalidFormat: String(localized: "This is not a date format")
+        }
+    }
+
+    /// Why a name cannot be used.
+    static func text(for problem: ProposedNameProblem) -> String? {
+        switch problem {
+        case .noName, .empty: nil
+        case .unchanged: String(localized: "This is the name it already has")
+        case .hasGap: String(localized: "Fill in the gap to approve")
+        case .containsPathSeparator: String(localized: "A name cannot hold :")
+        case .containsControlCharacter: String(localized: "A name cannot hold control characters")
+        case .startsWithDot: String(localized: "A name starting with a dot would hide the file")
+        case .tooLong: String(localized: "This name is too long")
+        }
+    }
+
+    /// What a name collides with.
+    static func text(for conflict: BatchRenameConflict.Kind) -> String {
+        switch conflict {
+        case .duplicateInBatch: String(localized: "Another file in this list wants this name")
+        case .nameTaken: String(localized: "This folder already has a file with this name")
+        }
+    }
+}
