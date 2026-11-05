@@ -231,6 +231,14 @@ import TreewiseCore
         #expect(session.entry(Self.item)?.currentDateSource == nil)
     }
 
+    @Test func aNewModuleOrderReordersTheOptions() {
+        var session = newSession()
+        session.add([proposal("A"), proposal("B", from: "second")], to: Self.item)
+        session.setModuleOrder(["second", "first"])
+        #expect(names(session) == ["B.pdf", "A.pdf"])
+        #expect(session.entry(Self.item)?.currentName == "A.pdf")
+    }
+
     @Test func recordsWhichModulesAFileFits() {
         var session = session(with: "A")
         session.setFit(Self.item, moduleIDs: ["second", "first"])

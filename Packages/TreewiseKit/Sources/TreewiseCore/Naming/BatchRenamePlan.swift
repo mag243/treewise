@@ -15,6 +15,13 @@ public struct BatchRenameStep: Hashable, Sendable {
     public let from: String
     /// The name it has after this step.
     public let to: String
+
+    /// Creates a step.
+    public init(item: FileItem.ID, from: String, to: String) {
+        self.item = item
+        self.from = from
+        self.to = to
+    }
 }
 
 /// Why an item cannot get its approved name.

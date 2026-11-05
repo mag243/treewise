@@ -42,6 +42,13 @@ public struct NameProposalSession: Hashable, Sendable {
         update(id) { $0.replaceProposals(proposals, from: moduleID, moduleOrder: order) }
     }
 
+    /// Changes which modules are on and in what order. Their options follow; what the
+    /// user chose stays chosen.
+    public mutating func setModuleOrder(_ order: [String]) {
+        moduleOrder = order
+        for index in entries.indices { entries[index].add([], moduleOrder: order) }
+    }
+
     /// Moves an item to its next or previous option. This needs a new approval.
     public mutating func step(_ id: FileItem.ID, by direction: StepDirection) {
         update(id) { $0.step(by: direction) }

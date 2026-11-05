@@ -8,7 +8,7 @@
 public enum BatchRenamePlanner {
     /// The start of a temporary name. The dot keeps it out of normal listings if
     /// a batch stops halfway.
-    private static let temporaryPrefix = ".treewise-rename-"
+    static let temporaryPrefix = ".treewise-rename-"
 
     /// Plans a batch: every conflict if there is one, otherwise the steps.
     /// A name that a rename in the batch gives up counts as free.
