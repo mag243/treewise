@@ -51,6 +51,15 @@
             return Array(valueSets.prefix(Self.maximumValueSets))
         }
 
+        /// Asks a module which template names follow.
+        public func derivedTemplate(moduleID: String, names: [String]) async throws -> String? {
+            let encoded = try ModuleWire.encode(names)
+            let data = try await ask { service, reply in
+                service.derivedTemplate(moduleID: moduleID, names: encoded, reply: reply)
+            }
+            return try decode([String].self, from: data).first
+        }
+
         private func decode<Value: Decodable>(_ type: Value.Type, from data: Data) throws -> Value {
             guard data.count <= Self.maximumResponseBytes,
                 let value = try? ModuleWire.decode(type, from: data)

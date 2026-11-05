@@ -9,6 +9,10 @@
         /// Replies with the encoded sets of values, or nil when the module failed or is not known.
         func fieldValues(
             moduleID: String, request: Data, reply: @escaping @Sendable (Data?) -> Void)
+        /// Replies with an encoded list of at most one template, or nil when the module is
+        /// not known.
+        func derivedTemplate(
+            moduleID: String, names: Data, reply: @escaping @Sendable (Data?) -> Void)
     }
 
     /// How requests and answers are written for the trip. A binary property list

@@ -48,4 +48,6 @@ public protocol NameModuleHosting: Sendable {
     /// module declared.
     func fieldValues(moduleID: String, request: NameRequest) async throws
         -> [[String: NameTemplate.Value]]
+    /// Asks a module which template a folder's names follow; nil when it recognizes none.
+    func derivedTemplate(moduleID: String, names: [String]) async throws -> String?
 }

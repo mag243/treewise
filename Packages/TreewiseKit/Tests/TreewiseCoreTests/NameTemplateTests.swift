@@ -197,6 +197,22 @@ import TreewiseCore
             NameTemplate.parse("{folder:yyyy}", fields: [.folder]) == .failure(.invalidFormat))
     }
 
+    @Test(arguments: [
+        ("{date:yyyy.MM.dd} {company}", "2026.11.02 Northwind", 2026, 11, 2),
+        ("x {date:dd-MM-yy}", "x 02-11-26", 2026, 11, 2),
+        ("{date}[ - {company}]", "2026-11-02", 2026, 11, 2),
+    ])
+    func readsTheDateInAName(_ text: String, _ name: String, _ year: Int, _ month: Int, _ day: Int)
+        throws
+    {
+        #expect(try template(text).date(in: name) == .date(year: year, month: month, day: day))
+    }
+
+    @Test func readsNoDateWhereThereIsNone() throws {
+        #expect(try template("{date} {company}").date(in: "Northwind") == nil)
+        #expect(try template("{company}").date(in: "Northwind") == nil)
+    }
+
     @Test func givesBackItsText() throws {
         let text = "{date:yyyy.MM.dd} {company}[ - {number}]"
         #expect(try template(text).text == text)

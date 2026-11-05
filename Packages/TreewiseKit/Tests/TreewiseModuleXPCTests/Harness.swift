@@ -41,6 +41,15 @@
                 fields: [NameTemplate.Field(name: "text", kind: .text)], defaultTemplate: "{text}")
         }
 
+        var derived: String?
+
+        init(id: String, derived: String) {
+            description = Self.describe(id)
+            self.derived = derived
+        }
+
+        func derivedTemplate(fromNames names: [String]) -> String? { derived }
+
         init(id: String, neededContent: Set<ModuleContentKind> = [], answers: Bool = true) {
             description = Self.describe(id, neededContent: neededContent)
             self.answers = answers

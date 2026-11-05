@@ -122,6 +122,32 @@ public struct NameTemplate: Hashable, Sendable {
         return expression.firstMatch(in: name, range: whole) != nil
     }
 
+    /// The date in a name that fits this template, or nil when there is none.
+    public func date(in name: String) -> Value? {
+        let pattern = "^" + parts.map { Self.pattern(for: $0, fixed: [:]) }.joined() + "$"
+        guard let expression = try? NSRegularExpression(pattern: pattern),
+            let match = expression.firstMatch(
+                in: name, range: NSRange(name.startIndex..., in: name)),
+            match.numberOfRanges > 1, let range = Range(match.range(at: 1), in: name),
+            let format = Self.firstDateFormat(in: parts)
+        else { return nil }
+        return format.read(String(name[range]))
+    }
+
+    private static func firstDateFormat(in parts: [Part]) -> DateTemplate? {
+        for part in parts {
+            switch part {
+            case .field(let field, let format) where field.kind == .date:
+                return format ?? .standard
+            case .optional(let inner):
+                if let format = firstDateFormat(in: inner) { return format }
+            default:
+                continue
+            }
+        }
+        return nil
+    }
+
     private static func singleSpaced(_ text: String) -> String {
         text.replacingOccurrences(of: " {2,}", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -180,7 +206,8 @@ public struct NameTemplate: Hashable, Sendable {
             return "(?:" + inner.map { pattern(for: $0, fixed: fixed) }.joined() + ")?"
         case .field(let field, let format):
             switch field.kind {
-            case .date: return (format ?? .standard).pattern
+            // The group lets `date(in:)` find it; it is the template's only one.
+            case .date: return "(" + (format ?? .standard).pattern + ")"
             case .number: return "[^ ]*[0-9][^ ]*"
             case .text: return ".+?"
             case .fixed:

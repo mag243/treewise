@@ -107,6 +107,15 @@ import TreewiseCore
         #expect(plan?.modulesToAsk == ["paid", "free"])
     }
 
+    @Test func aNameWithADotAndNoExtensionCanFit() throws {
+        let template = try NameTemplate.parse("{text} Permit", fields: Self.fields).get()
+        let plan = NameReviewRules.plan(
+            for: .init(name: "2026.04.28 Permit", kind: .file, handledBy: ["m"]),
+            in: .init(name: "Folder", alwaysSkipped: []), scope: .wholeFolder,
+            modules: [.init(id: "m", template: template)])
+        #expect(plan?.fittingModules == ["m"])
+    }
+
     @Test func recognizesTheFolderName() throws {
         let template = try NameTemplate.parse("{folder} {number}", fields: Self.fields).get()
         let plan = NameReviewRules.plan(

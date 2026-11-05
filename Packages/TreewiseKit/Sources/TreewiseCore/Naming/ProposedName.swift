@@ -26,6 +26,11 @@ public enum ProposedName {
         return .success(name)
     }
 
+    /// A file's name without its extension.
+    public static func stem(of name: String) -> String {
+        ConflictResolver.split(name, kind: .file).0
+    }
+
     /// A name as it goes on disk, from how it is shown.
     public static func diskName(fromShown name: String) -> String {
         name.replacingOccurrences(of: "/", with: ":")

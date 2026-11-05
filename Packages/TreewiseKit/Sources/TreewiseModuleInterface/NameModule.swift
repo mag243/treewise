@@ -15,9 +15,14 @@ public protocol NameModule: Sendable {
     /// Returns ranked sets of values for an item, best first. An empty result means
     /// the module has nothing to suggest.
     func fieldValues(for request: NameRequest) async throws -> [[String: NameTemplate.Value]]
+    /// The template these names in a folder follow, or nil when the module recognizes none.
+    func derivedTemplate(fromNames names: [String]) -> String?
 }
 
 extension NameModule {
     /// The id, from the description.
     public var id: String { description.id }
+
+    /// A module starts from its default template unless it can recognize one.
+    public func derivedTemplate(fromNames names: [String]) -> String? { nil }
 }

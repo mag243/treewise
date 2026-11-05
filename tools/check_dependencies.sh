@@ -61,8 +61,10 @@ imports_besides() {
 
 report "TreewiseModuleXPC may import only Foundation, Synchronization, os, TreewiseCore and TreewiseModuleInterface" \
   "$(imports_besides "$SOURCES/TreewiseModuleXPC" 'Foundation|Synchronization|os|TreewiseCore|TreewiseModuleInterface')"
-report "The module catalog may import only TreewiseModuleInterface" \
-  "$(imports_besides "$ROOT_DIR/Packages/TreewiseModuleCatalog/Sources" 'TreewiseModuleInterface')"
+report "TreewiseFreeModule may import only Foundation, TreewiseCore and TreewiseModuleInterface" \
+  "$(imports_besides "$SOURCES/TreewiseFreeModule" 'Foundation|TreewiseCore|TreewiseModuleInterface')"
+report "The module catalog may import only TreewiseModuleInterface and TreewiseFreeModule" \
+  "$(imports_besides "$ROOT_DIR/Packages/TreewiseModuleCatalog/Sources" 'TreewiseModuleInterface|TreewiseFreeModule')"
 report "The modules' service may import only Foundation, the catalog and TreewiseModuleXPC" \
   "$(imports_besides "$ROOT_DIR/Apps/TreewiseModuleHost" 'Foundation|TreewiseModuleCatalog|TreewiseModuleXPC')"
 

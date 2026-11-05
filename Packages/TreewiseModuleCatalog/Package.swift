@@ -14,7 +14,10 @@ let package = Package(
     targets: [
         .target(
             name: "TreewiseModuleCatalog",
-            dependencies: [.product(name: "TreewiseModuleInterface", package: "TreewiseKit")]
+            dependencies: [
+                .product(name: "TreewiseModuleInterface", package: "TreewiseKit"),
+                .product(name: "TreewiseFreeModule", package: "TreewiseKit"),
+            ]
         )
     ],
     swiftLanguageModes: [.v6]

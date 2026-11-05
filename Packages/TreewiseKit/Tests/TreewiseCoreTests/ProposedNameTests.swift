@@ -63,6 +63,21 @@ import TreewiseCore
         #expect(ProposedName.repairingSpaces(in: name) == repaired)
     }
 
+    @Test func repairsSpacesInANameWithoutExtension() {
+        #expect(
+            ProposedName.repairingSpaces(in: "2026.04.28 Permit  request")
+                == "2026.04.28 Permit request")
+    }
+
+    @Test(arguments: [
+        ("a.pdf", "a"), ("2026.04.28 Permit request", "2026.04.28 Permit request"),
+        ("Payroll 2026.09", "Payroll 2026.09"), ("Payroll 2026.09.pdf", "Payroll 2026.09"),
+        ("a.tar.gz", "a"), (".hidden", ".hidden"),
+    ])
+    func findsTheStemOfAName(_ name: String, _ stem: String) {
+        #expect(ProposedName.stem(of: name) == stem)
+    }
+
     @Test func leavesCleanSpacesAlone() {
         #expect(ProposedName.repairingSpaces(in: "a b.pdf") == nil)
     }

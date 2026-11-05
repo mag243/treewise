@@ -43,6 +43,19 @@
             #expect(proposals == [["size": .text("20000000")]])
         }
 
+        @Test func carriesADerivedTemplate() async throws {
+            let harness = Harness(modules: [StubModule(id: "m", derived: "{text}")])
+            defer { withExtendedLifetime(harness) {} }
+            let template = try await harness.host().derivedTemplate(moduleID: "m", names: ["a"])
+            #expect(template == "{text}")
+        }
+
+        @Test func aModuleWithoutADerivedTemplateGivesNone() async throws {
+            let harness = Harness(modules: [StubModule(id: "m")])
+            defer { withExtendedLifetime(harness) {} }
+            #expect(try await harness.host().derivedTemplate(moduleID: "m", names: ["a"]) == nil)
+        }
+
         @Test func anUnknownModuleFails() async {
             let harness = Harness(modules: [])
             defer { withExtendedLifetime(harness) {} }
