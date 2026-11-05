@@ -103,6 +103,14 @@ extension NameProposalSession {
             return proposals.first { Self.key($0.name) == key }?.dateSource
         }
 
+        func needsDateCheck(_ dateInFileIsReliable: Bool) -> Bool {
+            switch currentDateSource {
+            case .fileSystem: true
+            case .insideFile: !dateInFileIsReliable
+            case nil: false
+            }
+        }
+
         /// The current name's place among the options, or nil before there is one.
         public var position: Position? {
             guard let index = selectedIndex else { return nil }

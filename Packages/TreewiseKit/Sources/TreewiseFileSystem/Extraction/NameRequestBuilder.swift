@@ -11,10 +11,15 @@ public struct NameRequestBuilder: Sendable {
     private static let unknownContentType = "public.data"
 
     private let extractor: ContentExtractor
+    private let dateReader: FileDateReader
 
     /// Creates a builder.
-    public init(extractor: ContentExtractor = ContentExtractor()) {
+    public init(
+        extractor: ContentExtractor = ContentExtractor(),
+        dateReader: FileDateReader = FileDateReader()
+    ) {
         self.extractor = extractor
+        self.dateReader = dateReader
     }
 
     /// Returns the request for an item. Content is read only from a regular file on
@@ -36,6 +41,8 @@ public struct NameRequestBuilder: Sendable {
             id: id, name: item.name,
             contentType: values?.contentType?.identifier ?? Self.unknownContentType,
             byteCount: item.size, created: values?.creationDate, modified: item.modified,
+            suggestedDate: item.kind == .file
+                ? dateReader.suggestedDate(of: url, isOnlyOnline: item.isOnlyOnline) : nil,
             siblingNames: Array(
                 siblings.lazy.filter { $0.id != item.id && !$0.isHidden }.map(\.name)
                     .prefix(Self.maximumSiblings)),

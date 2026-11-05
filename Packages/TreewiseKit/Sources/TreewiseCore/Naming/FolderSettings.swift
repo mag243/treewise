@@ -19,6 +19,23 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     public var enabledModules: [String]
     /// The template of each module whose template differs from its default, by module id.
     public var templates: [String: String]
+    /// The names, on disk, of the files a whole-folder review always skips.
+    public var alwaysSkipped: Set<String> = []
+    /// Whether the user trusts dates inside this folder's files without a look.
+    public var trustsDatesInFiles = false
+
+    /// The settings of a folder reviewed for the first time.
+    public static func new(freeModuleID: String) -> FolderSettings {
+        FolderSettings(enabledModules: [freeModuleID], templates: [:])
+    }
+
+    /// Turns a module on or off, keeping `order`. Invariant: at least one stays on.
+    public mutating func setModule(_ id: String, on: Bool, order: [String]) {
+        var enabled = Set(enabledModules)
+        if on { enabled.insert(id) } else { enabled.remove(id) }
+        guard !enabled.isEmpty else { return }
+        enabledModules = order.filter(enabled.contains)
+    }
 
     /// Creates settings.
     public init(enabledModules: [String], templates: [String: String]) {

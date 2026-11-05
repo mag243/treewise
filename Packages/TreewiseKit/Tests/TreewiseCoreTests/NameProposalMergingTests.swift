@@ -195,6 +195,28 @@ import TreewiseCore
         #expect(session.entry(Self.item)?.state == .pending)
     }
 
+    @Test func theSecondButtonTakesDatesToCheckToo() {
+        var session = newSession()
+        session.add([proposal("A", dateSource: .fileSystem)], to: Self.item)
+        session.approveAll(dateInFileIsReliable: false, includingDatesToCheck: true)
+        #expect(session.entry(Self.item)?.state == .approved)
+    }
+
+    @Test func countsTheDatesToCheck() {
+        var session = NameProposalSession(
+            items: ["a", "b", "c"].map {
+                .init(
+                    id: FileItem.ID("/f/\($0)"), folder: "/f", originalName: "\($0).pdf",
+                    kind: .file)
+            },
+            moduleOrder: ["first"])
+        session.add([proposal("A", dateSource: .fileSystem)], to: "/f/a")
+        session.add([proposal("B", dateSource: .insideFile)], to: "/f/b")
+        session.add([proposal("C")], to: "/f/c")
+        #expect(session.datesToCheck(dateInFileIsReliable: false) == 2)
+        #expect(session.datesToCheck(dateInFileIsReliable: true) == 1)
+    }
+
     @Test func aRowWithASuggestedDateCanBeApprovedByItself() {
         var session = newSession()
         session.add([proposal("A", dateSource: .fileSystem)], to: Self.item)

@@ -30,6 +30,12 @@ import TreewiseTestSupport
         return item(name)
     }
 
+    @Test func carriesTheSuggestedDate() throws {
+        let file = try textFile()
+        let request = builder.request(for: file, siblings: [], neededContent: [])
+        #expect(request.suggestedDate?.source == .fileSystem)
+    }
+
     @Test func describesTheItem() throws {
         let request = builder.request(
             for: try textFile(), siblings: [], neededContent: [], id: "r1")

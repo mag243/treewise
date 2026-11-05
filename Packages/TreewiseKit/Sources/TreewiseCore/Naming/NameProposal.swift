@@ -11,6 +11,9 @@ public struct NameProposal: Hashable, Sendable {
         case fileSystem
     }
 
+    /// The id of a proposal from Treewise itself, like repairing stray spaces.
+    public static let treewiseID = "treewise"
+
     /// The name, with or without the item's extension.
     public let name: String
     /// The module whose values made it.
