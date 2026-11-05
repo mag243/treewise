@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Treewise: a file manager for Mac that works like Windows Explorer</title>
+<meta name="description" content="A folder tree, an address bar, cut and paste, and two windows side by side, in a native Mac app. Free while in beta.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="images/icon.png">
+<style>
+:root {
+  --paper: #fbfaf7; --ink: #262017; --soft: #6c6251; --bark: #a9782d; --honey: #f6cd63;
+  --honey-ink: #3b2807; --row: #f3ecdb; --line: #e4dac3;
+  --code: #f1ebdd;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1e1a15; --ink: #f2ecdf; --soft: #b0a590; --bark: #c79a4d; --honey: #f6cd63;
+    --honey-ink: #3b2807; --row: #2c261d; --line: #40372a;
+    --code: #2c261d;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+}
+a { color: inherit; text-underline-offset: .18em; text-decoration-color: var(--bark); }
+:focus-visible { outline: 3px solid var(--bark); outline-offset: 3px; border-radius: 4px; }
+.page { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+.brand { display: flex; align-items: center; gap: 10px; padding: 24px 0 0; font-weight: 600; }
+.brand img { width: 32px; height: 32px; }
+
+.hero h1 {
+  margin: 56px 0 0; max-width: 15em;
+  font: 700 clamp(38px, 6.4vw, 68px)/1.04 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  letter-spacing: -.028em;
+}
+.hero p { margin: 22px 0 0; max-width: 34em; font-size: 20px; line-height: 1.42; color: var(--soft); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 30px; }
+.download {
+  display: inline-block; padding: 12px 22px; border-radius: 10px;
+  background: var(--honey); color: var(--honey-ink); font-weight: 600; text-decoration: none;
+}
+.download:hover { background: #f2c244; }
+.needs { color: var(--soft); font-size: 15px; }
+code, kbd { font: .92em ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+kbd { padding: 0 .3em; border-radius: 4px; background: var(--code); white-space: nowrap; font-family: inherit; }
+.brew { display: block; overflow-x: auto; margin-top: 8px; padding: 10px 14px; border-radius: 8px; background: var(--code); white-space: nowrap; }
+
+.shot { display: block; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 1px 2px #0003, 0 22px 50px -18px #3b280759; }
+.hero .shot { margin-top: 48px; }
+
+/* The page's own folder tree: every part of it is a row that opens and closes. */
+.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
+.tree { margin-top: 72px; padding-bottom: 72px; }
+.tree > li { position: relative; padding-left: 30px; }
+.tree > li::before, .tree > li::after { content: ""; position: absolute; left: 8px; background: var(--bark); }
+.tree > li::before { top: 0; bottom: 0; width: 2px; }
+.tree > li::after { top: 25px; width: 16px; height: 2px; }
+.tree > li:last-child::before { bottom: auto; height: 26px; }
+
+summary {
+  display: flex; align-items: center; gap: 10px; min-height: 50px; margin-left: -6px; padding: 4px 8px;
+  border-radius: 8px; cursor: pointer; list-style: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary:hover { background: var(--row); }
+summary h2 { margin: 0; font-size: 25px; line-height: 1.2; font-weight: 650; letter-spacing: -.012em; }
+.chevron { flex: none; width: 10px; height: 10px; border: solid var(--soft); border-width: 0 2px 2px 0; transform: rotate(-45deg); transition: transform .12s ease-out; }
+details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
+.folder { flex: none; width: 26px; height: 21px; }
+
+.body { padding: 4px 0 30px 14px; }
+.rows { max-width: 44em; }
+.rows li { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.rows li:last-child { border-bottom: 0; }
+.rows b { font-weight: 600; }
+.body > p { margin: 0 0 14px; max-width: 40em; }
+.body .shot { margin: 18px 0 8px; max-width: 860px; }
+.steps { padding-left: 1.3em; max-width: 40em; }
+.steps li { padding: 3px 0; }
+
+.beta { margin: 0; color: var(--soft); font-size: 15px; max-width: 44em; padding: 0 0 56px; }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .page { padding: 0 16px; }
+  .hero h1 { margin-top: 36px; }
+  .hero p { font-size: 18px; }
+  .tree { margin-top: 48px; }
+  .tree > li { padding-left: 24px; }
+  .tree > li::after { width: 12px; }
+  summary h2 { font-size: 21px; }
+  .body { padding-left: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="folder" viewBox="0 0 26 21"><path fill="#e9ad33" d="M1 3.5A2.5 2.5 0 0 1 3.5 1h6.2l2.8 3h10A2.5 2.5 0 0 1 25 6.5V9H1z"/><path fill="#f6cd63" d="M1 7.5A1.5 1.5 0 0 1 2.5 6h21A1.5 1.5 0 0 1 25 7.5v10a2.5 2.5 0 0 1-2.5 2.5h-19A2.5 2.5 0 0 1 1 17.5z"/></symbol>
+</svg>
+<div class="page">
+  <header class="brand"><img src="images/icon.png" alt="" width="32" height="32">Treewise</header>
+
+  <section class="hero">
+    <h1>Windows Explorer’s way of working, in a real Mac app.</h1>
+    <p>A folder tree you can open to any depth, an address bar, cut and paste, and two windows side by side. Made for people who learned files on Windows and now work on a Mac.</p>
+    <div class="actions">
+      <a class="download" data-download href="https://github.com/mag243/treewise-releases/releases/download/v0.5.2/Treewise-0.5.2-2026.1104.145301.dmg">Download for Mac</a>
+      <span class="needs">Free while in beta. Needs macOS 15 or later.</span>
+    </div>
+    <!-- A short video of cut and paste and dragging between windows goes here, in place of this image. -->
+    <picture>
+      <source srcset="images/01-main-dark.webp" media="(prefers-color-scheme: dark)">
+      <img class="shot" src="images/01-main-light.webp" width="2000" height="1250" alt="Treewise with the folder tree, the address bar, the command bar, a list of files and the details pane.">
+    </picture>
+  </section>
+
+  <ul class="tree">
+    <li><details open>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Find your way</h2></summary>
+      <div class="body"><ul class="rows">
+        <li><b>A folder tree</b> with your favorites, your disks, your home folder and your cloud folders, open to any depth.</li>
+        <li><b>An address bar</b> with the path as buttons, a menu of subfolders behind each arrow, and room to type a path with <kbd>⌘L</kbd>.</li>
+        <li><b>A command bar</b> with New, Cut, Copy, Paste, Rename, Share, Move to Trash and Open in Terminal, and Sort and View menus.</li>
+        <li><b>Your own favorites.</b> Add any folder, drag to reorder, and remove one without touching the folder.</li>
+        <li><b>A details pane</b> with a preview and the kind, size, date and folder of what you select, and list or icon view with Quick Look on <kbd>Space</kbd>.</li>
+      </ul>
+      <picture>
+        <source srcset="images/02-icons-dark.webp" media="(prefers-color-scheme: dark)">
+        <img class="shot" loading="lazy" src="images/02-icons-light.webp" width="2000" height="1250" alt="Treewise showing a folder as icons.">
+      </picture></div>
+    </details></li>
+
+    <li><details open>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Move your files</h2></summary>
+      <div class="body"><ul class="rows">
+        <li><b>Cut, copy and paste</b> with <kbd>⌘X</kbd>, <kbd>⌘C</kbd> and <kbd>⌘V</kbd>, also between windows and Finder.</li>
+        <li><b>Two windows side by side</b> with <kbd>⌥⌘N</kbd>: open a folder in the other window, drag between them, or send the selection across.</li>
+        <li><b>Dragging that says what it will do.</b> On the same disk it moves, to another disk it copies; <kbd>⌥</kbd> always copies, <kbd>⌘</kbd> always moves.</li>
+        <li><b>Undo</b> with <kbd>⌘Z</kbd> for move, copy, rename, new folder and Move to Trash, in any window.</li>
+        <li><b>Tabs</b> as in Finder, and every window and tab comes back after a restart.</li>
+      </ul>
+      <picture>
+        <source srcset="images/04-beside-dark.webp" media="(prefers-color-scheme: dark)">
+        <img class="shot" loading="lazy" src="images/04-beside-light.webp" width="2000" height="1250" alt="Two Treewise windows side by side, each on half of the screen.">
+      </picture></div>
+    </details></li>
+
+    <li><details open>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Work with the cloud and the command line</h2></summary>
+      <div class="body"><ul class="rows">
+        <li><b>Cloud folders</b> such as Dropbox, OneDrive and iCloud Drive appear by themselves.</li>
+        <li><b>A cloud icon</b> marks a file that is only online, and a ring shows its download. Browsing a folder downloads nothing.</li>
+        <li><b>Open in Terminal</b> with <kbd>⌃⌘T</kbd>, in Terminal, iTerm, Ghostty, Warp, kitty or Alacritty.</li>
+      </ul></div>
+    </details></li>
+
+    <li><details open>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Install</h2></summary>
+      <div class="body">
+        <p>Download the disk image, open it and drag Treewise onto Applications. It is signed and notarized by Apple, so it opens without a warning.</p>
+        <p>Or use Homebrew:</p>
+        <code class="brew">brew install --cask mag243/tap/treewise</code>
+        <p style="margin-top:14px"><a href="https://github.com/mag243/treewise-releases/releases">All versions and what changed in each</a></p>
+      </div>
+    </details></li>
+
+    <li><details>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Updates and privacy</h2></summary>
+      <div class="body">
+        <p>Treewise checks for a new version once a day and asks before it installs one. You can turn this off in Settings. The check only reads a list of versions from this site and sends nothing about you or your Mac.</p>
+        <p>Every update is signed twice, by Apple’s Developer ID and by Treewise’s own update key, and installs only when both check out.</p>
+      </div>
+    </details></li>
+
+    <li><details>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Requirements and removing it</h2></summary>
+      <div class="body">
+        <p>Treewise needs macOS 15 Sequoia or later, on Apple silicon or Intel. It speaks English, Dutch and German, following your system language.</p>
+        <p>To remove it, drag it from Applications to the Trash. With Homebrew, <code>brew uninstall --zap --cask treewise</code> also removes its settings.</p>
+      </div>
+    </details></li>
+
+    <li><details>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Feedback</h2></summary>
+      <div class="body">
+        <p>Found a bug, or missing something from Explorer? <a href="https://github.com/mag243/treewise/issues">Open an issue</a>.</p>
+      </div>
+    </details></li>
+  </ul>
+
+  <p class="beta">Treewise is in beta. It always deletes through the Trash, but keep a backup of anything you cannot lose.</p>
+</div>
+</body>
+</html>
