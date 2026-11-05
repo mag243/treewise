@@ -11,6 +11,11 @@ DerivedData/
 .build/
 .swiftpm/
 
+# Agent files and project documents, kept in a private repository
+/CLAUDE.md
+/.claude/
+/docs
+
 # Build output
 build/
 
