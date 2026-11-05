@@ -124,14 +124,32 @@ import TreewiseCore
         #expect(session.entry(Self.item)?.currentName == "B.pdf")
     }
 
-    @Test func replacingKeepsAnApprovedNameAsTheUsersOwn() {
+    @Test func anApprovedProposalThatGoesNeedsANewApproval() {
         var session = session(with: "A")
         session.approve(Self.item)
-        session.replaceProposals([], from: "first", for: Self.item)
+        session.replaceProposals([proposal("B")], from: "first", for: Self.item)
         let entry = session.entry(Self.item)
+        #expect(entry?.currentName == "B.pdf", "a changed pattern shows its new proposal")
+        #expect(entry?.state == .pending)
+        #expect(entry?.edit == nil)
+    }
+
+    @Test func anApprovedProposalThatStaysStaysApproved() {
+        var session = session(with: "A")
+        session.approve(Self.item)
+        session.replaceProposals([proposal("A")], from: "first", for: Self.item)
+        #expect(session.entry(Self.item)?.state == .approved)
+    }
+
+    @Test func anApprovedEditOutlivesANewPattern() {
+        var session = session(with: "A")
+        session.edit(Self.item, to: "Mine.pdf")
+        session.finishEditing(Self.item)
+        session.approve(Self.item)
+        session.replaceProposals([proposal("B")], from: "first", for: Self.item)
+        let entry = session.entry(Self.item)
+        #expect(entry?.currentName == "Mine.pdf")
         #expect(entry?.state == .approved)
-        #expect(entry?.currentName == "A.pdf")
-        #expect(entry?.edit == "A.pdf")
     }
 
     @Test func aSharedOptionLosesOnlyTheReplacedModule() {

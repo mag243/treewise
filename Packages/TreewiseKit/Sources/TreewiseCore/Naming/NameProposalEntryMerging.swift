@@ -16,24 +16,21 @@ extension NameProposalSession.Entry {
         selectBestIfNone()
     }
 
-    /// Replaces what one module proposed. A chosen name that is gone gives way to the
-    /// best one, unless it was approved: then it stays, as the user's own.
+    /// Replaces what one module proposed. A chosen proposal that is gone gives way to the
+    /// best one, which waits for an approval. The user's own edit stays as it is.
     mutating func replaceProposals(
         _ newProposals: [NameProposal], from moduleID: String, moduleOrder: [String]
     ) {
-        let previous = currentName
         for index in proposals.indices {
             proposals[index].moduleIDs.removeAll { $0 == moduleID }
         }
         proposals.removeAll { $0.moduleIDs.isEmpty }
         for proposal in newProposals { add(proposal, moduleOrder: moduleOrder) }
+        // A chosen proposal that went makes way for the best one now, which needs a look
+        // of its own: an approval is for the name the user saw.
         if case .proposal = selection, currentName == nil {
-            if state == .approved, let previous {
-                edit = previous
-                selection = .edit
-            } else {
-                selection = .none
-            }
+            selection = .none
+            state = .pending
         }
         add([], moduleOrder: moduleOrder)
     }
