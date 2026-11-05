@@ -1,6 +1,10 @@
 /// Turns approved renames into steps that can run in order (ADR 0057). Names
 /// compare as `ConflictResolver` compares them. It is pure: the caller says which
 /// names each folder holds.
+///
+/// The plan assumes a default APFS volume. On a case-sensitive volume two names can
+/// compare as one, and then a planned step can fail when it runs, which the caller
+/// has to report like any other failed rename.
 public enum BatchRenamePlanner {
     /// The start of a temporary name. The dot keeps it out of normal listings if
     /// a batch stops halfway.
