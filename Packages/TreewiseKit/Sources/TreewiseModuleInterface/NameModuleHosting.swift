@@ -2,8 +2,8 @@ import TreewiseCore
 
 /// A module as the app knows it, without running it (ADR 0057).
 public struct NameModuleDescription: Hashable, Sendable, Codable {
-    /// The id of the free module, the one that is on in a new folder.
-    public static let freeModuleID = "me.m-domain.treewise.folder-pattern"
+    /// The id of the folder pattern module, the one that is on in a new folder.
+    public static let defaultModuleID = "me.m-domain.treewise.folder-pattern"
 
     /// The module's id.
     public let id: String

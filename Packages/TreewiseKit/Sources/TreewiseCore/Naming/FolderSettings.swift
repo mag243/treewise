@@ -33,8 +33,8 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     public var trustsDatesInFiles = false
 
     /// The settings of a folder reviewed for the first time.
-    public static func new(freeModuleID: String) -> FolderSettings {
-        FolderSettings(enabledModules: [freeModuleID], templates: [:])
+    public static func new(defaultModuleID: String) -> FolderSettings {
+        FolderSettings(enabledModules: [defaultModuleID], templates: [:])
     }
 
     /// Turns a module on or off, keeping `order`. Invariant: at least one stays on.

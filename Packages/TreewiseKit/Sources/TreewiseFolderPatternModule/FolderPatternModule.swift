@@ -5,7 +5,7 @@ import TreewiseModuleInterface
 /// Follows a folder's pattern from names and file facts alone: it reads no contents
 /// (ADR 0055, ADR 0057). It fills in the date the file suggests, what the current name
 /// says, and the next number.
-public struct FreeModule: NameModule {
+public struct FolderPatternModule: NameModule {
     /// The fields it can fill.
     public static let fields = [
         NameTemplate.Field(name: "date", kind: .date),
@@ -21,7 +21,7 @@ public struct FreeModule: NameModule {
 
     /// What this module is.
     public let description = NameModuleDescription(
-        id: NameModuleDescription.freeModuleID, contentTypes: ["public.item"], neededContent: [],
+        id: NameModuleDescription.defaultModuleID, contentTypes: ["public.item"], neededContent: [],
         fields: fields, defaultTemplate: "{date:yyyy.MM.dd} {text}")
 
     /// Creates the module.

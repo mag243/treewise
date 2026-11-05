@@ -18,7 +18,7 @@ public enum TemplateDeriver {
         let candidate =
             dated(stems, required: required) ?? wordAndNumberTemplate(stems, required: required)
         return candidate.flatMap { text in
-            let parsed = NameTemplate.parse(text, fields: FreeModule.fields + [.folder])
+            let parsed = NameTemplate.parse(text, fields: FolderPatternModule.fields + [.folder])
             return (try? parsed.get()) == nil ? nil : text
         }
     }

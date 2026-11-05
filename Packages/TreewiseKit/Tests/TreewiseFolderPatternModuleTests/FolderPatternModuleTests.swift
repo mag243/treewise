@@ -1,11 +1,11 @@
 import Testing
 import TreewiseCore
-import TreewiseFreeModule
+import TreewiseFolderPatternModule
 import TreewiseModuleInterface
 
-/// The free module fills in what it knows without reading contents (ADR 0057).
-@Suite struct FreeModuleTests {
-    private let module = FreeModule()
+/// The folder pattern module fills in what it knows without reading contents (ADR 0057).
+@Suite struct FolderPatternModuleTests {
+    private let module = FolderPatternModule()
 
     private func request(
         _ name: String, date: SuggestedDate? = nil, siblings: [String] = []

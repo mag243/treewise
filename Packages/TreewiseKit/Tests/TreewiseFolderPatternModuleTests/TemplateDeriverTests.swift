@@ -1,6 +1,6 @@
 import Testing
 import TreewiseCore
-import TreewiseFreeModule
+import TreewiseFolderPatternModule
 
 /// Recognizing a pattern in a folder's names (ADR 0057). The names are invented, in the
 /// shapes real folders have.
@@ -81,14 +81,14 @@ import TreewiseFreeModule
         for names in [Self.taxes, Self.project, ["Scan: 1.pdf", "Scan: 2.pdf", "Scan: 3.pdf"]] {
             guard let text = derive(names) else { continue }
             #expect(throws: Never.self) {
-                try NameTemplate.parse(text, fields: FreeModule.fields + [.folder]).get()
+                try NameTemplate.parse(text, fields: FolderPatternModule.fields + [.folder]).get()
             }
         }
     }
 
     @Test func comesBackAfterApplyingATemplate() throws {
         let text = "{date:yyyy.MM.dd} Taxes - {text}"
-        let template = try NameTemplate.parse(text, fields: FreeModule.fields).get()
+        let template = try NameTemplate.parse(text, fields: FolderPatternModule.fields).get()
         let names = (1...5).compactMap { day in
             template.name(from: [
                 "date": .date(year: 2026, month: 3, day: day), "text": .text("Item \(day)"),

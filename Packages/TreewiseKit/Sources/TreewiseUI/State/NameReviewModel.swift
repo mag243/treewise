@@ -140,7 +140,7 @@ public final class NameReviewModel {
         let descriptions = (try? await dependencies.host.availableModules()) ?? []
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
         isFirstReview = saved == nil
-        settings = saved ?? .new(freeModuleID: NameModuleDescription.freeModuleID)
+        settings = saved ?? .new(defaultModuleID: NameModuleDescription.defaultModuleID)
         let names = visible.map(\.name)
         modules = []
         for description in descriptions {

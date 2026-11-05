@@ -5,9 +5,9 @@ import TreewiseUI
 /// The words the overview uses for what the model knows.
 @MainActor
 enum NameReviewText {
-    /// A module's name. The free module's is here; a paid module brings its own later.
+    /// A module's name. The folder pattern module's is here; a paid module brings its own later.
     static func name(of module: NameReviewModule) -> String {
-        module.id == NameModuleDescription.freeModuleID
+        module.id == NameModuleDescription.defaultModuleID
             ? String(localized: "Folder Pattern")
             : module.id.components(separatedBy: ".").last ?? module.id
     }

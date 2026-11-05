@@ -16,7 +16,7 @@ let package = Package(
             name: "TreewiseModuleCatalog",
             dependencies: [
                 .product(name: "TreewiseModuleInterface", package: "TreewiseKit"),
-                .product(name: "TreewiseFreeModule", package: "TreewiseKit"),
+                .product(name: "TreewiseFolderPatternModule", package: "TreewiseKit"),
             ]
         )
     ],

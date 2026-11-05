@@ -37,12 +37,12 @@ import TreewiseCore
         #expect(place(recordedPath: "/old", idAtRecordedPath: "id") == .copy)
     }
 
-    @Test func aNewFolderHasOnlyTheFreeModuleOn() {
-        #expect(FolderSettings.new(freeModuleID: "free").enabledModules == ["free"])
+    @Test func aNewFolderHasOnlyTheFolderPatternModuleOn() {
+        #expect(FolderSettings.new(defaultModuleID: "free").enabledModules == ["free"])
     }
 
     @Test func turnsAModuleOnInTheModulesOrder() {
-        var settings = FolderSettings.new(freeModuleID: "free")
+        var settings = FolderSettings.new(defaultModuleID: "free")
         settings.setModule("paid", on: true, order: ["paid", "free"])
         #expect(settings.enabledModules == ["paid", "free"])
     }
@@ -60,13 +60,13 @@ import TreewiseCore
     }
 
     @Test func remembersFilesAlwaysSkipped() {
-        var settings = FolderSettings.new(freeModuleID: "free")
+        var settings = FolderSettings.new(defaultModuleID: "free")
         settings.alwaysSkipped.insert("Budget.xlsx")
         #expect(settings.alwaysSkipped.contains("Budget.xlsx"))
     }
 
     @Test func doesNotTrustDatesUntilAsked() {
-        #expect(!FolderSettings.new(freeModuleID: "free").trustsDatesInFiles)
+        #expect(!FolderSettings.new(defaultModuleID: "free").trustsDatesInFiles)
     }
 
     @Test func settingsSurviveEncoding() throws {
