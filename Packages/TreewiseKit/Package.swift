@@ -42,7 +42,7 @@ let package = Package(
         ),
         .testTarget(
             name: "TreewiseModuleInterfaceTests",
-            dependencies: ["TreewiseModuleInterface"]
+            dependencies: ["TreewiseModuleInterface", "TreewiseCore"]
         ),
         .testTarget(
             name: "TreewiseCoreTests",
