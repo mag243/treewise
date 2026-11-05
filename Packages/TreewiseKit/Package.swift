@@ -1,0 +1,47 @@
+// swift-tools-version: 6.2
+import PackageDescription
+
+let package = Package(
+    name: "TreewiseKit",
+    defaultLocalization: "en",
+    platforms: [.macOS(.v15), .iOS(.v18)],
+    products: [
+        .library(name: "TreewiseCore", targets: ["TreewiseCore"]),
+        .library(name: "TreewiseFileSystem", targets: ["TreewiseFileSystem"]),
+        .library(name: "TreewiseUI", targets: ["TreewiseUI"]),
+        .library(name: "TreewiseTestSupport", targets: ["TreewiseTestSupport"]),
+    ],
+    targets: [
+        .target(name: "TreewiseCore", resources: [.process("Resources")]),
+        .target(
+            name: "TreewiseFileSystem",
+            dependencies: ["TreewiseCore"]
+        ),
+        .target(
+            name: "TreewiseUI",
+            dependencies: ["TreewiseCore", "TreewiseFileSystem"],
+            resources: [.process("Resources")]
+        ),
+        .target(
+            name: "TreewiseTestSupport",
+            dependencies: ["TreewiseCore"]
+        ),
+        .testTarget(
+            name: "TreewiseCoreTests",
+            dependencies: ["TreewiseCore", "TreewiseTestSupport"]
+        ),
+        .testTarget(
+            name: "TreewiseFileSystemTests",
+            dependencies: ["TreewiseFileSystem", "TreewiseTestSupport"]
+        ),
+        .testTarget(
+            name: "TreewiseUITests",
+            dependencies: ["TreewiseUI", "TreewiseTestSupport"]
+        ),
+        .testTarget(
+            name: "TreewiseTestSupportTests",
+            dependencies: ["TreewiseTestSupport"]
+        ),
+    ],
+    swiftLanguageModes: [.v6]
+)

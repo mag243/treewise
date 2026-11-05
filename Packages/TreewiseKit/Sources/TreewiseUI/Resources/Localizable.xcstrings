@@ -1,0 +1,609 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@, %@" : {
+      "comment" : "Status bar: the selection, then its total size",
+      "shouldTranslate" : false
+    },
+    "%@, %@ available" : {
+      "comment" : "Status bar: the item count, then the free space on the volume, e.g. 245.3 GB",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@ verfügbar"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@ beschikbaar"
+          }
+        }
+      }
+    },
+    "%lld items" : {
+      "comment" : "Status bar: how many items the folder shows",
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Objekt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Objekte"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld items"
+                }
+              }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld onderdeel"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld onderdelen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %@ selected" : {
+      "comment" : "Status bar while items are selected: the selected count, then the item count, e.g. 8 items",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld von %2$@ ausgewählt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld van %2$@ geselecteerd"
+          }
+        }
+      }
+    },
+    "An item named “%@” already exists in this location." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An diesem Ort gibt es bereits ein Objekt mit dem Namen „%@“."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er staat al een onderdeel met de naam ‘%@’ op deze locatie."
+          }
+        }
+      }
+    },
+    "Copy" : {
+      "comment" : "Undoable action, shown as “Undo Copy”",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiëren"
+          }
+        }
+      }
+    },
+    "Copy to ‘%@’" : {
+      "comment" : "Drag badge: dropping copies the items into folder %@",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach „%@“ kopieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieer naar ‘%@’"
+          }
+        }
+      }
+    },
+    "Copying — %@ of %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieren — %1$@ von %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copying — %1$@ of %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiëren — %1$@ van %2$@"
+          }
+        }
+      }
+    },
+    "Copying “%@” — %@ of %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ wird kopiert — %2$@ von %3$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copying “%1$@” — %2$@ of %3$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%1$@’ kopiëren — %2$@ van %3$@"
+          }
+        }
+      }
+    },
+    "Date Modified" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderungsdatum"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum gewijzigd"
+          }
+        }
+      }
+    },
+    "Folder is empty" : {
+      "comment" : "Shown in a list whose folder has no items",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordner ist leer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Map is leeg"
+          }
+        }
+      }
+    },
+    "Kind" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Art"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soort"
+          }
+        }
+      }
+    },
+    "Move" : {
+      "comment" : "Undoable action, shown as “Undo Move” in the Edit menu",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaatsen"
+          }
+        }
+      }
+    },
+    "Move to Trash" : {
+      "comment" : "Undoable action, shown as “Undo Move to Trash”",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In den Papierkorb legen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats naar prullenmand"
+          }
+        }
+      }
+    },
+    "Move to ‘%@’" : {
+      "comment" : "Drag badge: dropping moves the items into folder %@",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach „%@“ bewegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats naar ‘%@’"
+          }
+        }
+      }
+    },
+    "New Folder" : {
+      "comment" : "Undoable action, shown as “Undo New Folder”",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Ordner"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe map"
+          }
+        }
+      }
+    },
+    "No results for “%@”" : {
+      "comment" : "Shown in a list when searching for %@ found nothing",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Ergebnisse für „%@“"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen resultaten voor ‘%@’"
+          }
+        }
+      }
+    },
+    "No selection" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Auswahl"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen selectie"
+          }
+        }
+      }
+    },
+    "Paused — %@ of %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angehalten — %1$@ von %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Paused — %1$@ of %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gepauzeerd — %1$@ van %2$@"
+          }
+        }
+      }
+    },
+    "Rename" : {
+      "comment" : "Undoable action, shown as “Undo Rename”",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam"
+          }
+        }
+      }
+    },
+    "Size" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Größe"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grootte"
+          }
+        }
+      }
+    },
+    "The name “%@” can’t be used." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Name „%@“ kann nicht verwendet werden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De naam ‘%@’ kan niet worden gebruikt."
+          }
+        }
+      }
+    },
+    "The operation failed: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Vorgang ist fehlgeschlagen: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bewerking is mislukt: %@"
+          }
+        }
+      }
+    },
+    "The operation was stopped." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Vorgang wurde gestoppt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bewerking is gestopt."
+          }
+        }
+      }
+    },
+    "There isn’t enough space to copy “%@”." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es ist nicht genug Platz vorhanden, um „%@“ zu kopieren."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er is niet genoeg ruimte om ‘%@’ te kopiëren."
+          }
+        }
+      }
+    },
+    "Where" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ort"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waar"
+          }
+        }
+      }
+    },
+    "You don’t have permission to change “%@”." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast keine Berechtigung, „%@“ zu ändern."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je hebt geen toestemming om ‘%@’ te wijzigen."
+          }
+        }
+      }
+    },
+    "You don’t have permission to see “%@”." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast keine Berechtigung, „%@“ zu sehen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je hebt geen toestemming om ‘%@’ te zien."
+          }
+        }
+      }
+    },
+    "“%@” can’t be ejected. %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ kann nicht ausgeworfen werden. %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "“%1$@” can’t be ejected. %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” kan niet worden verwijderd. %2$@"
+          }
+        }
+      }
+    },
+    "“%@” can’t be found." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde nicht gefunden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” kan niet worden gevonden."
+          }
+        }
+      }
+    },
+    "“%@” can’t be moved to the Trash because its volume has no Trash." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ kann nicht in den Papierkorb gelegt werden, weil das Volume keinen Papierkorb hat."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ kan niet naar de prullenmand, omdat het volume geen prullenmand heeft."
+          }
+        }
+      }
+    },
+    "“%@” could not be copied completely, so it stayed where it was." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ konnte nicht vollständig kopiert werden und ist deshalb geblieben, wo es war."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ kon niet volledig worden gekopieerd en is daarom gebleven waar het was."
+          }
+        }
+      }
+    },
+    "“%@” is outside the folders Treewise may use now." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ liegt außerhalb der Ordner, die Treewise jetzt verwenden darf."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ valt buiten de mappen die Treewise nu mag gebruiken."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

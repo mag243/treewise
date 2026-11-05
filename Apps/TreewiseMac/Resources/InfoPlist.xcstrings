@@ -1,0 +1,170 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "The app's name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Treewise"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Treewise"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "NSDesktopFolderUsageDescription" : {
+      "comment" : "Shown when macOS asks whether Treewise may read this place",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Dateien in deinem Ordner „Schreibtisch“, damit du sie durchsuchen und verwalten kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise shows the files in your Desktop folder so you can browse and manage them."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de bestanden in je map Bureaublad, zodat je ze kunt bekijken en beheren."
+          }
+        }
+      }
+    },
+    "NSDocumentsFolderUsageDescription" : {
+      "comment" : "Shown when macOS asks whether Treewise may read this place",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Dateien in deinem Ordner „Dokumente“, damit du sie durchsuchen und verwalten kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise shows the files in your Documents folder so you can browse and manage them."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de bestanden in je map Documenten, zodat je ze kunt bekijken en beheren."
+          }
+        }
+      }
+    },
+    "NSDownloadsFolderUsageDescription" : {
+      "comment" : "Shown when macOS asks whether Treewise may read this place",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Dateien in deinem Ordner „Downloads“, damit du sie durchsuchen und verwalten kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise shows the files in your Downloads folder so you can browse and manage them."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de bestanden in je map Downloads, zodat je ze kunt bekijken en beheren."
+          }
+        }
+      }
+    },
+    "NSFileProviderDomainUsageDescription" : {
+      "comment" : "Shown when macOS asks whether Treewise may read this place",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Dateien in deinen Cloud-Ordnern wie Dropbox und Nextcloud, damit du sie durchsuchen und verwalten kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise shows the files in your cloud folders, such as Dropbox and Nextcloud, so you can browse and manage them."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de bestanden in je cloudmappen, zoals Dropbox en Nextcloud, zodat je ze kunt bekijken en beheren."
+          }
+        }
+      }
+    },
+    "NSNetworkVolumesUsageDescription" : {
+      "comment" : "Shown when macOS asks whether Treewise may read this place",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Dateien auf Netzwerkvolumes, damit du sie durchsuchen und verwalten kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise shows the files on network volumes so you can browse and manage them."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de bestanden op netwerkvolumes, zodat je ze kunt bekijken en beheren."
+          }
+        }
+      }
+    },
+    "NSRemovableVolumesUsageDescription" : {
+      "comment" : "Shown when macOS asks whether Treewise may read this place",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Dateien auf externen Laufwerken, damit du sie durchsuchen und verwalten kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise shows the files on external drives so you can browse and manage them."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de bestanden op externe schijven, zodat je ze kunt bekijken en beheren."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

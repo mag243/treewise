@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Enforces the commit message rules from CLAUDE.md:
+#   - conventional commit subject: type(scope): description
+#   - no AI attribution (Co-Authored-By trailers, "Generated with", session links)
+set -euo pipefail
+
+msg_file="$1"
+subject="$(grep -v '^#' "$msg_file" | head -n 1)"
+
+case "$subject" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
+esac
+
+pattern='^(feat|fix|test|docs|refactor|perf|build|chore|style|ci)(\([a-z0-9_-]+\))?!?: .+'
+if ! [[ "$subject" =~ $pattern ]]; then
+  echo "Commit subject must follow 'type(scope): description', e.g. 'feat(core): add transfer planner'." >&2
+  echo "Got: $subject" >&2
+  exit 1
+fi
+
+attribution='co-authored-by:|generated with|claude-session:|claude\.ai/code|noreply@anthropic\.com'
+if grep -v '^#' "$msg_file" | grep -qiE "$attribution"; then
+  echo "Commit message contains AI attribution, which is not allowed (see CLAUDE.md, Git and commits)." >&2
+  exit 1
+fi

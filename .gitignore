@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+*.xcresult
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Build output
+build/
+
+# Build-number counter (tools/xcode/stamp_build_timestamp.sh)
+.build-counter
+
+# Translation working files (tools/i18n/translate.py)
+tools/i18n/_translation_*.json
+
+# Python bytecode
+__pycache__/
+
+# Coverage output of swift test and instrumented runs
+*.profraw

@@ -1,0 +1,17 @@
+# Keys whose translation is deliberately the same as the English source,
+# grouped by why (tools/i18n/translate.py check). A key that reads Dutch or
+# German in the source never belongs here: that is the bug this check finds.
+
+# Apple keeps the English term in Dutch and German macOS.
+Split View
+
+# The word is the same in the language.
+Computer
+Details
+Document
+Name
+OK
+Open
+Open in Terminal
+Stop
+Volume

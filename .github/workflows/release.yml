@@ -1,0 +1,137 @@
+# Releases Treewise from a tag vX.Y.Z when started by hand (ADR 0014,
+# ADR 0040): checks the tag against the version and the changelog, runs
+# tools/build.sh ci, signs and notarizes the macOS app and its disk image
+# (ADR 0030, ADR 0034), and publishes them with tools/publish.sh: the releases
+# repository, the Sparkle appcast and the Homebrew cask (ADR 0031-0033).
+# Releases are made with tools/build.sh publish on the owner's Mac; this is for
+# when that Mac is not available.
+name: Release
+
+# Run workflow, with the tag as the ref.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  # Refuses a branch, and skips the macOS job when the owner's Mac already
+  # published the tag (ADR 0040).
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      published: ${{ steps.release.outputs.published }}
+    steps:
+      - id: release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != v* ]]; then
+            echo "Run the release workflow on a tag vX.Y.Z, not on $GITHUB_REF_NAME." >&2
+            exit 1
+          fi
+          if gh release view "$GITHUB_REF_NAME" --repo mag243/treewise-releases >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "$GITHUB_REF_NAME is already published; nothing to do." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    needs: check
+    if: needs.check.outputs.published != 'true'
+    runs-on: macos-26
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      # The build number is the build's local date and time (ADR 0013); the runner
+      # runs in UTC, so give it the owner's time zone to match local builds.
+      TZ: Europe/Amsterdam
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the tag against the version and changelog
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          marketing="$(grep -o 'MARKETING_VERSION = [^;]*' Treewise.xcodeproj/project.pbxproj | sort -u | sed 's/MARKETING_VERSION = //')"
+          if [[ "$marketing" != "$version" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match MARKETING_VERSION $marketing in Treewise.xcodeproj." >&2
+            exit 1
+          fi
+          tools/release_notes.sh "$version" > /dev/null
+
+      - name: Select the pinned Xcode
+        run: |
+          source tools/versions.env
+          app="/Applications/Xcode_${CI_XCODE_VERSION}.app"
+          if [[ ! -d "$app" ]]; then
+            echo "Xcode ${CI_XCODE_VERSION} is not on this runner. Available:" >&2
+            ls -d /Applications/Xcode*.app >&2
+            exit 1
+          fi
+          sudo xcode-select -s "$app"
+
+      - name: Set up the environment
+        run: tools/setup.sh --no-simulator
+
+      - name: Check, test, build
+        run: tools/build.sh ci
+
+      # The Developer ID certificate and the notary API key come from secrets and
+      # live only for this job: a keychain of its own and the runner's temp folder (ADR 0030).
+      - name: Set up signing and notarization
+        env:
+          DEVELOPER_ID_P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          NOTARY_KEY: ${{ secrets.NOTARY_KEY }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          password="$(uuidgen)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          printf '%s' "$DEVELOPER_ID_P12" | base64 --decode > "$RUNNER_TEMP/developer-id.p12"
+          security import "$RUNNER_TEMP/developer-id.p12" -k "$keychain" \
+            -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign
+          rm "$RUNNER_TEMP/developer-id.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          printf '%s' "$NOTARY_KEY" > "$RUNNER_TEMP/notary-key.p8"
+
+      - name: Package the macOS app
+        env:
+          NOTARY_KEY_PATH: ${{ runner.temp }}/notary-key.p8
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: tools/build.sh package
+
+      # The same publishing as tools/build.sh publish on the owner's Mac (ADR 0035):
+      # appcast, Release with the zip and the disk image, and the Homebrew cask.
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          gh auth setup-git
+          tools/publish.sh
+
+      - name: Remove the signing keychain and the keys
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/notary-key.p8"
+
+      - name: Keep logs and test results
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-logs
+          path: |
+            build/logs
+            build/reports
+          retention-days: 7

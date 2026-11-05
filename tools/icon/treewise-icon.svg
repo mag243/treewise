@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- The Treewise app icon: a yellow folder with an amber tree of folders on its front.
+       Drawn on the macOS grid: an 824 x 824 rounded square with a soft shadow.
+       tools/build.sh icon renders the AppIcon sets from this file. -->
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EEEAE2"/>
+    </linearGradient>
+    <linearGradient id="back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F0B429"/>
+      <stop offset="1" stop-color="#D9921A"/>
+    </linearGradient>
+    <linearGradient id="front" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE08A"/>
+      <stop offset="1" stop-color="#F7C843"/>
+    </linearGradient>
+    <linearGradient id="shadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Plate and its shadow; a full-bleed render swaps this group for an
+       edge-to-edge plate -->
+  <g id="plate">
+    <rect x="100" y="112" width="824" height="824" rx="185" fill="url(#shadow)"/>
+    <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#plate)"/>
+  </g>
+
+  <!-- Folder: the back with its tab, then the front -->
+  <path d="M232 296 Q232 268 260 268 L418 268 Q438 268 452 284 L476 312 L764 312 Q792 312 792 340 L792 700 L232 700 Z"
+        fill="url(#back)"/>
+  <rect x="204" y="360" width="616" height="420" rx="44" fill="url(#front)"/>
+  <rect x="204" y="360" width="616" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.35"/>
+
+  <!-- The tree: a trunk with branches at different heights, each ending in a folder -->
+  <path d="M494 744 C500 700 502 610 504 510 L520 510 C522 610 524 700 530 744 Q512 752 494 744 Z"
+        fill="#A0670E"/>
+  <g fill="none" stroke="#A0670E" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M510 676 C470 664 430 650 404 616" stroke-width="22"/>
+    <path d="M514 608 C556 596 598 584 622 548" stroke-width="20"/>
+  </g>
+  <g fill="#A0670E">
+    <path d="M338 556 Q338 546 348 546 L378 546 Q386 546 391 552 L397 560 L430 560 Q440 560 440 570 L440 612 Q440 622 430 622 L348 622 Q338 622 338 612 Z"/>
+    <path d="M462 452 Q462 442 472 442 L502 442 Q510 442 515 448 L521 456 L554 456 Q564 456 564 466 L564 508 Q564 518 554 518 L472 518 Q462 518 462 508 Z"/>
+    <path d="M590 486 Q590 476 600 476 L630 476 Q638 476 643 482 L649 490 L682 490 Q692 490 692 500 L692 542 Q692 552 682 552 L600 552 Q590 552 590 542 Z"/>
+  </g>
+</svg>

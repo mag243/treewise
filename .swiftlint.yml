@@ -1,0 +1,93 @@
+# SwiftLint rules for Treewise (ADR 0009). swift-format owns layout (.swift-format);
+# SwiftLint enforces the size, safety, and comment rules of the project.
+# tools/build.sh check runs `swiftlint lint --strict`, so every warning fails the check.
+
+included:
+  - Packages
+  - Apps
+  - UITests
+excluded:
+  - Packages/TreewiseKit/.build
+  - build
+
+# Rules that overlap with swift-format and would fight its output.
+disabled_rules:
+  - trailing_comma
+  - opening_brace
+  - line_length
+  - vertical_parameter_alignment
+  # TODO is allowed with a concrete description; the review checks the wording.
+  - todo
+
+opt_in_rules:
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - fatal_error_message
+  - empty_count
+  - empty_string
+  - first_where
+  - last_where
+  - contains_over_first_not_nil
+  - contains_over_filter_count
+  - sorted_first_last
+  - toggle_bool
+  - explicit_init
+  - discouraged_optional_boolean
+  - unowned_variable_capture
+  - private_swiftui_state
+  - unhandled_throwing_task
+  - weak_delegate
+
+# Swift style: functions under ~40 lines, files under ~300 lines,
+# at most three levels of nesting.
+function_body_length:
+  warning: 40
+  error: 80
+file_length:
+  warning: 300
+  error: 500
+  ignore_comment_only_lines: true
+type_body_length:
+  warning: 250
+  error: 400
+nesting:
+  type_level: 2
+  function_level: 3
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+
+force_cast: error
+force_try: error
+
+type_name:
+  # `ID` is the conventional name of an Identifiable identity (FileItem.ID).
+  excluded:
+    - ID
+
+identifier_name:
+  min_length: 2
+  excluded:
+    - id
+    - x
+    - y
+
+custom_rules:
+  no_print:
+    name: "No print"
+    regex: '\b(print|debugPrint|dump)\('
+    match_kinds: identifier
+    message: "Use os.Logger instead of print() (Swift style)."
+    severity: error
+  no_history_in_comments:
+    name: "No history in comments"
+    regex: '(?i)\b(previously|used to|now uses|no longer|changed from|fixed bug|refactored|new implementation)\b'
+    match_kinds: [comment, doccomment]
+    message: "Comments describe the code as it is now; history belongs in git."
+    severity: error
+  no_commented_out_code:
+    name: "No commented-out code"
+    regex: '^\s*//\s*(let|var|func|if|guard|return|import|for|while|switch|case)\b'
+    match_kinds: comment
+    message: "Delete commented-out code; git has it."
+    severity: error

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Blocks a commit when formatting, lint, or the dependency check fails.
+# Runs only the fast checks; tests run via tools/build.sh.
+set -euo pipefail
+exec "$(git rev-parse --show-toplevel)/tools/build.sh" check

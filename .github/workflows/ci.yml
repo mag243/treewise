@@ -1,0 +1,52 @@
+# Builds and tests Treewise when started by hand (Actions > CI > Run workflow).
+# Not on every push: macOS runner minutes are limited on the free plan
+# (ADR 0010). Day-to-day gating is local: tools/build.sh ci and the git hooks.
+# A release tag runs release.yml, which tests too (ADR 0014).
+name: CI
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-26
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      # The build number is the build's local date and time (ADR 0013); the runner
+      # runs in UTC, so give it the owner's time zone to match local builds.
+      TZ: Europe/Amsterdam
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select the pinned Xcode
+        run: |
+          source tools/versions.env
+          app="/Applications/Xcode_${CI_XCODE_VERSION}.app"
+          if [[ ! -d "$app" ]]; then
+            echo "Xcode ${CI_XCODE_VERSION} is not on this runner. Available:" >&2
+            ls -d /Applications/Xcode*.app >&2
+            exit 1
+          fi
+          sudo xcode-select -s "$app"
+
+      - name: Set up the environment
+        run: tools/setup.sh --no-simulator
+
+      - name: Check, test, build
+        run: tools/build.sh ci
+
+      - name: Keep logs and test results
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-logs
+          path: |
+            build/logs
+            build/reports
+          retention-days: 7

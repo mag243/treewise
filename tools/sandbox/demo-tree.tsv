@@ -1,0 +1,73 @@
+# The prototype's demo tree (seedFs) on the two sandbox volumes (ADR 0019).
+# Columns, tab-separated: path (HD/ or T7/ first), kind (folder, hidden folder,
+# app package, file, image, clips), modified (YYYY-MM-DD HH:MM), and for a
+# file optionally its size in MiB, or in KiB with a k (48k); other files hold
+# one line of text. An image is a picture made by tools/sandbox/make_image.py,
+# so the icon view and the details pane show a thumbnail. A clips row is
+# a folder of equal clips, with the size of each in MiB and their count: copying
+# it to the other volume takes long enough to see progress and to cancel.
+HD/Applications	folder	2026-10-20 09:12
+HD/Applications/Safari.app	app	2026-10-14 07:30
+HD/Applications/Xcode.app	app	2026-10-02 22:10
+HD/Applications/Mail.app	app	2026-09-15 10:02
+HD/Applications/Pages.app	app	2026-08-28 14:20
+HD/Applications/Preview.app	app	2026-09-15 10:02
+HD/Library	folder	2026-09-30 18:40
+HD/Library/Fonts	folder	2026-08-11 11:03
+HD/Library/Fonts/Inter-Variable.ttf	file	2026-08-11 11:03	812k
+HD/System	folder	2026-09-15 10:02
+HD/System/Library	folder	2026-09-15 10:02
+HD/Users	folder	2026-06-02 08:15
+HD/Users/Shared	folder	2026-05-19 12:00
+HD/Users/Home	folder	2026-10-25 18:40
+HD/Users/Home/Desktop	folder	2026-10-25 18:31
+HD/Users/Home/Desktop/Screenshot 2026-10-24 at 21.14.08.png	image	2026-10-24 21:14
+HD/Users/Home/Desktop/todo.txt	file	2026-10-25 18:31	2k
+HD/Users/Home/Documents	folder	2026-10-24 21:05
+HD/Users/Home/Documents/Invoices	folder	2026-10-01 09:00
+HD/Users/Home/Documents/Invoices/Invoice 2026-09.pdf	file	2026-10-01 09:00	186k
+HD/Users/Home/Documents/Invoices/Invoice 2026-08.pdf	file	2026-09-01 09:00	179k
+HD/Users/Home/Documents/Manuals	folder	2026-04-18 16:22
+HD/Users/Home/Documents/Manuals/Heat pump manual.pdf	file	2026-04-18 16:22	4
+HD/Users/Home/Documents/Budget 2026.xlsx	file	2026-10-24 21:05	48k
+HD/Users/Home/Documents/Notes.md	file	2026-10-23 08:47	3k
+HD/Users/Home/Documents/Lease agreement.pdf	file	2026-02-14 11:30	2
+HD/Users/Home/Documents/Presentation.key	file	2026-09-09 15:15	12
+HD/Users/Home/Downloads	folder	2026-10-25 17:52
+HD/Users/Home/Downloads/Xcode_26.1.xip	file	2026-10-25 17:52	96
+HD/Users/Home/Downloads/report-q3.pdf	file	2026-10-21 10:08	1
+HD/Users/Home/Downloads/photos-export.zip	file	2026-10-12 19:33	38
+HD/Users/Home/Downloads/Installer.dmg	file	2026-09-27 12:40	24
+HD/Users/Home/Downloads/Floor plan.pdf	file	2026-10-25 16:20	3
+HD/Users/Home/Movies	folder	2026-07-04 20:11
+HD/Users/Home/Movies/Ski trip.mov	file	2026-02-21 17:44	512
+HD/Users/Home/Movies/Raw footage	clips	2026-02-21 18:30	2	3000
+HD/Users/Home/Music	folder	2026-03-12 19:47
+HD/Users/Home/Music/Demo.mp3	file	2026-03-12 19:47	7
+HD/Users/Home/Pictures	folder	2026-10-19 13:26
+HD/Users/Home/Pictures/Wallpaper.jpg	image	2026-10-19 13:26
+HD/Users/Home/Pictures/Holiday 2026	folder	2026-08-30 20:15
+HD/Users/Home/Pictures/Holiday 2026/IMG_0412.heic	image	2026-08-14 11:02
+HD/Users/Home/Pictures/Holiday 2026/IMG_0413.heic	image	2026-08-14 11:03
+HD/Users/Home/Pictures/Holiday 2026/IMG_0431.heic	image	2026-08-16 19:48
+HD/Users/Home/Projects	folder	2026-10-25 18:58
+HD/Users/Home/Projects/Treewise	folder	2026-10-25 18:58
+HD/Users/Home/Projects/Treewise/Treewise.xcodeproj	file	2026-10-25 18:56	36k
+HD/Users/Home/Projects/Treewise/README.md	file	2026-10-25 18:57	5k
+HD/Users/Home/Projects/Treewise/Sources	folder	2026-10-25 18:58
+HD/Users/Home/Projects/Treewise/Sources/TreewiseApp.swift	file	2026-10-25 18:58	2k
+HD/Users/Home/Projects/Treewise/Sources/FileTreeView.swift	file	2026-10-25 18:58	9k
+HD/Users/Home/Projects/Treewise/Sources/DetailsListView.swift	file	2026-10-25 18:58	7k
+HD/Users/Home/Projects/website	folder	2026-10-24 22:30
+HD/Users/Home/Projects/website/index.html	file	2026-10-24 22:30	11k
+HD/Users/Home/Projects/website/style.css	file	2026-10-24 22:12	4k
+HD/Users/Home/Library	hidden	2026-10-25 12:04
+HD/Users/Home/Library/Mobile Documents	folder	2026-10-25 12:04
+HD/Users/Home/Library/Mobile Documents/com~apple~CloudDocs	folder	2026-10-25 12:04
+HD/Users/Home/Library/Mobile Documents/com~apple~CloudDocs/Scans	folder	2026-10-10 08:20
+HD/Users/Home/Library/Mobile Documents/com~apple~CloudDocs/Scans/Scan 2026-10-10.pdf	file	2026-10-10 08:20	860k
+HD/Users/Home/Library/Mobile Documents/com~apple~CloudDocs/Shopping list.txt	file	2026-10-25 12:04	1k
+T7/Backups	folder	2026-10-18 23:00
+T7/Backups/backup-2026-10-18.zip	file	2026-10-18 23:00	64
+T7/Footage	folder	2026-09-03 14:40
+T7/Footage/Clip_001.mov	file	2026-09-03 14:40
