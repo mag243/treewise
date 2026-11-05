@@ -1,0 +1,206 @@
+import Testing
+import TreewiseCore
+
+/// Reviewing proposed names: stepping, later arrivals, edits and approval (ADR 0057).
+@Suite struct NameProposalSessionTests {
+    private static let item: FileItem.ID = "/f/scan.pdf"
+
+    private func session() -> NameProposalSession {
+        NameProposalSession(items: [
+            .init(id: Self.item, folder: "/f", originalName: "scan.pdf", kind: .file)
+        ])
+    }
+
+    private func proposal(_ name: String, _ confidence: Double = 0.5) -> NameProposal {
+        NameProposal(name: name, moduleID: "test", confidence: confidence)
+    }
+
+    private func session(with names: String...) -> NameProposalSession {
+        var result = session()
+        result.add(names.map { proposal($0) }, to: Self.item)
+        return result
+    }
+
+    @Test func startsWithoutAName() {
+        let entry = session().entry(Self.item)
+        #expect(entry?.currentName == nil)
+        #expect(entry?.state == .pending)
+    }
+
+    @Test func choosesTheMostConfidentProposalFirst() {
+        var session = session()
+        session.add([proposal("Low", 0.2), proposal("High", 0.9)], to: Self.item)
+        #expect(session.entry(Self.item)?.currentName == "High.pdf")
+    }
+
+    @Test func dropsInvalidProposalsAndKeepsTheRest() {
+        var session = session()
+        session.add([proposal("a/b"), proposal("Good")], to: Self.item)
+        #expect(session.entry(Self.item)?.proposals.map(\.name) == ["Good.pdf"])
+    }
+
+    @Test func dropsAProposalThatChangesNothing() {
+        #expect(session(with: "scan").entry(Self.item)?.proposals.isEmpty == true)
+    }
+
+    @Test func keepsACaseOnlyChange() {
+        #expect(session(with: "Scan").entry(Self.item)?.currentName == "Scan.pdf")
+    }
+
+    @Test func mergesDuplicatesKeepingTheHigherConfidence() {
+        var session = session()
+        session.add([proposal("Same", 0.2), proposal("Other", 0.5)], to: Self.item)
+        session.add([proposal("same", 0.9)], to: Self.item)
+        #expect(session.entry(Self.item)?.proposals.map(\.name) == ["same.pdf", "Other.pdf"])
+    }
+
+    @Test func stepsForwardAndWrapsAround() {
+        var session = session(with: "A", "B")
+        session.step(Self.item, by: .next)
+        #expect(session.entry(Self.item)?.currentName == "B.pdf")
+        session.step(Self.item, by: .next)
+        #expect(session.entry(Self.item)?.currentName == "A.pdf")
+    }
+
+    @Test func stepsBackAndWrapsAround() {
+        var session = session(with: "A", "B")
+        session.step(Self.item, by: .previous)
+        #expect(session.entry(Self.item)?.currentName == "B.pdf")
+    }
+
+    @Test func steppingWithoutProposalsDoesNothing() {
+        var session = session()
+        session.step(Self.item, by: .next)
+        #expect(session.entry(Self.item)?.currentName == nil)
+    }
+
+    @Test func reportsThePositionAmongTheOptions() {
+        var session = session(with: "A", "B")
+        session.step(Self.item, by: .next)
+        #expect(session.entry(Self.item)?.position == .init(index: 1, count: 2))
+    }
+
+    @Test func aLaterProposalDoesNotMoveTheChoice() {
+        var session = session(with: "A", "B")
+        session.step(Self.item, by: .next)
+        session.add([proposal("Better", 0.9)], to: Self.item)
+        #expect(session.entry(Self.item)?.currentName == "B.pdf")
+    }
+
+    @Test func aLaterProposalDoesNotReplaceAnEdit() {
+        var session = session(with: "A")
+        session.edit(Self.item, to: "Mine.pdf")
+        session.add([proposal("Better", 0.9)], to: Self.item)
+        #expect(session.entry(Self.item)?.currentName == "Mine.pdf")
+    }
+
+    @Test func anEditStaysReachableWhileStepping() {
+        var session = session(with: "A")
+        session.edit(Self.item, to: "Mine.pdf")
+        session.step(Self.item, by: .next)
+        #expect(session.entry(Self.item)?.currentName == "A.pdf")
+        session.step(Self.item, by: .next)
+        #expect(session.entry(Self.item)?.currentName == "Mine.pdf")
+    }
+
+    @Test func discardingAnEditReturnsToTheBestProposal() {
+        var session = session(with: "A")
+        session.edit(Self.item, to: "Mine.pdf")
+        session.discardEdit(Self.item)
+        #expect(session.entry(Self.item)?.currentName == "A.pdf")
+        #expect(session.entry(Self.item)?.position == .init(index: 0, count: 1))
+    }
+
+    @Test func approvesAValidName() {
+        var session = session(with: "A")
+        #expect(session.approve(Self.item) == nil)
+        #expect(session.entry(Self.item)?.state == .approved)
+    }
+
+    @Test func refusesToApproveWithoutAName() {
+        var session = session()
+        #expect(session.approve(Self.item) == .noName)
+        #expect(session.entry(Self.item)?.state == .pending)
+    }
+
+    @Test func refusesToApproveAnInvalidEdit() {
+        var session = session(with: "A")
+        session.edit(Self.item, to: "a/b")
+        #expect(session.approve(Self.item) == .containsPathSeparator)
+    }
+
+    @Test func refusesToApproveAnUnchangedName() {
+        var session = session(with: "A")
+        session.edit(Self.item, to: "scan.pdf")
+        #expect(session.approve(Self.item) == .unchanged)
+    }
+
+    @Test(arguments: [true, false])
+    func changingTheNameNeedsApprovalAgain(_ edits: Bool) {
+        var session = session(with: "A", "B")
+        session.approve(Self.item)
+        if edits {
+            session.edit(Self.item, to: "Mine.pdf")
+        } else {
+            session.step(Self.item, by: .next)
+        }
+        #expect(session.entry(Self.item)?.state == .pending)
+    }
+
+    @Test func aLaterProposalKeepsAnApproval() {
+        var session = session(with: "A")
+        session.approve(Self.item)
+        session.add([proposal("Better", 0.9)], to: Self.item)
+        #expect(session.entry(Self.item)?.state == .approved)
+        #expect(session.entry(Self.item)?.currentName == "A.pdf")
+    }
+
+    @Test func skippingLeavesTheItemOutOfTheRenames() {
+        var session = session(with: "A")
+        session.approve(Self.item)
+        session.skip(Self.item)
+        #expect(session.entry(Self.item)?.state == .skipped)
+        #expect(session.approvedRenames.isEmpty)
+    }
+
+    @Test func approveAllTakesOnlyPendingItemsWithAValidName() {
+        var session = NameProposalSession(items: [
+            .init(id: "/f/a", folder: "/f", originalName: "a.pdf", kind: .file),
+            .init(id: "/f/b", folder: "/f", originalName: "b.pdf", kind: .file),
+            .init(id: "/f/c", folder: "/f", originalName: "c.pdf", kind: .file),
+            .init(id: "/f/d", folder: "/f", originalName: "d.pdf", kind: .file),
+        ])
+        session.add([proposal("A1")], to: "/f/a")
+        session.add([proposal("C1")], to: "/f/c")
+        session.skip("/f/c")
+        session.edit("/f/d", to: "x/y")
+        session.approveAll()
+        #expect(session.entry("/f/a")?.state == .approved)
+        #expect(session.entry("/f/b")?.state == .pending)
+        #expect(session.entry("/f/c")?.state == .skipped)
+        #expect(session.entry("/f/d")?.state == .pending)
+    }
+
+    @Test func approvedRenamesFollowTheItemsOrder() {
+        var session = NameProposalSession(items: [
+            .init(id: "/f/a", folder: "/f", originalName: "a.pdf", kind: .file),
+            .init(id: "/f/b", folder: "/f", originalName: "b.pdf", kind: .file),
+        ])
+        session.add([proposal("B1")], to: "/f/b")
+        session.add([proposal("A1")], to: "/f/a")
+        session.approveAll()
+        #expect(
+            session.approvedRenames == [
+                BatchRename(item: "/f/a", folder: "/f", from: "a.pdf", to: "A1.pdf"),
+                BatchRename(item: "/f/b", folder: "/f", from: "b.pdf", to: "B1.pdf"),
+            ])
+    }
+
+    @Test func ignoresAnUnknownItem() {
+        var session = session()
+        session.add([proposal("A")], to: "/gone")
+        session.step("/gone", by: .next)
+        #expect(session.approve("/gone") == .noName)
+        #expect(session.entry("/gone") == nil)
+    }
+}

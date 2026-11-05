@@ -31,7 +31,7 @@ public enum ConflictResolver {
 
     /// Splits a name into the part before its extension and the extension with
     /// its dot (`.md`); the extension is empty when the name has none.
-    private static func split(_ name: String, kind: ItemKind) -> (String, String) {
+    static func split(_ name: String, kind: ItemKind) -> (String, String) {
         guard kind != .folder else { return (name, "") }
         let lowercased = name.lowercased()
         for compound in compoundExtensions where lowercased.hasSuffix("." + compound) {
