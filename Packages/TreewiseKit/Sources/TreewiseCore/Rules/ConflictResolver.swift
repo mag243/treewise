@@ -39,9 +39,15 @@ public enum ConflictResolver {
             if !base.isEmpty { return (String(base), String(name.suffix(compound.count + 1))) }
         }
         guard let dot = name.lastIndex(of: "."), dot != name.startIndex,
-            name.index(after: dot) != name.endIndex
+            isExtension(name[name.index(after: dot)...])
         else { return (name, "") }
         return (String(name[..<dot]), String(name[dot...]))
+    }
+
+    /// Whether the text after a name's last dot is an extension. In a name like
+    /// `2026.04.28 Permit` or `Payroll 2026.09` the dot belongs to the name.
+    private static func isExtension(_ ending: Substring) -> Bool {
+        !ending.contains(" ") && ending.contains(where: \.isLetter)
     }
 
     /// The form two names share when the file system treats them as the same.

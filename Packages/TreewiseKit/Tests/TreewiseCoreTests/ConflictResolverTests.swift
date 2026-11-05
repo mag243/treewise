@@ -33,6 +33,11 @@ import TreewiseCore
         #expect(name(original, among: [original]) == "archive copy.\(pathExtension)")
     }
 
+    @Test(arguments: ["2026.04.28 Permit request", "Payroll 2026.09", "Report v1.2"])
+    func aDotInANameWithoutExtensionStartsNoExtension(_ original: String) {
+        #expect(name(original, among: [original]) == original + " copy")
+    }
+
     @Test func neverSplitsAFolderName() {
         #expect(name("v1.2", .folder, among: ["v1.2"]) == "v1.2 copy")
     }

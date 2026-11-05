@@ -8,6 +8,7 @@ All notable changes to Treewise are recorded here. The format follows
 
 ### Fixed
 - Copying a folder, or moving it to another volume, keeps the folder's Finder tags and other extended attributes.
+- A file name with a dot but no extension, like `2026.04.28 Permit`, gets `copy` at its end when a name is taken.
 
 ## [0.5.3] - 2026-11-05
 
