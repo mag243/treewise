@@ -86,6 +86,8 @@ public final class NameReviewModel {
     public internal(set) var dateInFileIsReliable = false
     /// What stands in the way of each name shown now.
     public internal(set) var conflicts: [FileItem.ID: BatchRenameConflict.Kind] = [:]
+    /// Whether the overview's window is closing.
+    public var isClosing = false
     /// What applying did, once it ran.
     public internal(set) var outcome: BatchRenameOutcome?
     /// What each item's plan says.

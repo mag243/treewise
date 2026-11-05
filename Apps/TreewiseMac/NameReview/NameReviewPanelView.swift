@@ -17,7 +17,9 @@ struct NameReviewPanelView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 if let entry {
-                    QuickLookPreview(item: entry.id).frame(height: Self.previewHeight)
+                    if !model.isClosing {
+                        QuickLookPreview(item: entry.id).frame(height: Self.previewHeight)
+                    }
                     messages(for: entry)
                     source(of: entry)
                     neighbours

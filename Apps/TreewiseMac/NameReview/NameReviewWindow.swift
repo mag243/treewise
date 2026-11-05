@@ -59,6 +59,9 @@ enum NameReviewWindow {
 /// Stops a review's reading when its window closes.
 @MainActor
 final class NameReviewWindowCloser: NSObject, NSWindowDelegate {
+    /// Long enough for SwiftUI to take the preview away after the window closed.
+    private static let previewTeardownDelay: TimeInterval = 1
+
     private let model: NameReviewModel
     private let onClose: (NSWindow) -> Void
 
@@ -69,6 +72,13 @@ final class NameReviewWindowCloser: NSObject, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         model.stop()
-        if let window = notification.object as? NSWindow { onClose(window) }
+        // Quick Look aborts the app when its preview goes away with a window that is
+        // already released. So the preview leaves first, while the window still exists.
+        model.isClosing = true
+        guard let window = notification.object as? NSWindow else { return }
+        let onClose = onClose
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.previewTeardownDelay) {
+            MainActor.assumeIsolated { onClose(window) }
+        }
     }
 }
