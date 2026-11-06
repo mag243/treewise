@@ -129,12 +129,12 @@ extension LaunchTests {
         app.tables.menus.menuItems["Rename with Suggestions"].click()
 
         // The free module proposes the folder's pattern, which keeps the photo's own word.
-        let option = app.menuItems.matching(
-            NSPredicate(format: "title ENDSWITH 'Lighthouse.heic' AND title != 'Lighthouse.heic'")
+        let option = app.buttons.matching(
+            NSPredicate(format: "label ENDSWITH 'Lighthouse.heic' AND label != 'Lighthouse.heic'")
         ).firstMatch
         XCTAssertTrue(option.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
-        let proposed = option.title
-        XCTAssertTrue(app.menuItems["Suggest Names…"].exists, "the overview is a click away")
+        let proposed = option.label
+        XCTAssertTrue(app.buttons["Suggest Names…"].exists, "the overview is a click away")
         option.click()
 
         let field = app.tables.textFields.firstMatch
@@ -148,6 +148,38 @@ extension LaunchTests {
             app.eventually {
                 FileManager.default.fileExists(atPath: folder.appendingPathComponent(proposed).path)
             }, "Return renames it")
+    }
+
+    @MainActor
+    func testOptionEscapeOffersProposalsToChooseWithTheKeyboard() throws {
+        let folder = try makeHolidayFolder()
+        let app = try launchApp()
+        let holiday = app.tables.staticTexts["Holiday"]
+        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        holiday.doubleClick()
+        let odd = app.tables.staticTexts[Self.oddName]
+        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        odd.click()
+        app.menuBarItems["File"].menuItems["Rename"].click()
+        let field = app.tables.textFields.firstMatch
+        XCTAssertTrue(
+            app.eventually { (field.value(forKey: "hasKeyboardFocus") as? Bool) == true },
+            "the name is edited")
+
+        app.typeKey(.escape, modifierFlags: .option)
+        let option = app.buttons.matching(
+            NSPredicate(format: "label ENDSWITH 'Lighthouse.heic' AND label != 'Lighthouse.heic'")
+        ).firstMatch
+        XCTAssertTrue(option.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
+        let proposed = option.label
+        app.typeKey(.downArrow, modifierFlags: [])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertEqual(field.value as? String, proposed, "Return takes the highlighted option")
+        XCTAssertFalse(option.exists, "and closes the list")
+        XCTAssertTrue(
+            FileManager.default.fileExists(
+                atPath: folder.appendingPathComponent(Self.oddName).path),
+            "but renames nothing yet")
     }
 
     /// Changes the free module's pattern in the overview's add-ons header.

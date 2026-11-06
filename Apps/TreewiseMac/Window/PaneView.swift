@@ -144,7 +144,7 @@ struct PaneView: View {
                 return browser.renameSuggests
             },
             suggestName: { item, field in
-                NameSuggestionMenu.show(
+                NameSuggestionList.show(
                     for: item, in: field, browser: browser, undoManager: undoManager)
             },
             contextMenu: { contextMenu.menu(for: $0) },
