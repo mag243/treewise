@@ -211,7 +211,10 @@ private final class SuggestionRowButton: NSButton {
     init(title: NSAttributedString) {
         let font = NSFont.menuFont(ofSize: 0)
         let plain = NSMutableAttributedString(attributedString: title)
-        plain.addAttribute(.font, value: font, range: NSRange(location: 0, length: plain.length))
+        let whole = NSRange(location: 0, length: plain.length)
+        plain.addAttribute(.font, value: font, range: whole)
+        // The list is never key, and a button there would draw its title as inactive.
+        plain.addAttribute(.foregroundColor, value: NSColor.labelColor, range: whole)
         plainTitle = plain
         super.init(frame: .zero)
         isBordered = false
@@ -232,11 +235,12 @@ private final class SuggestionRowButton: NSButton {
         super.updateTrackingAreas()
         for area in trackingAreas { removeTrackingArea(area) }
         addTrackingArea(
-            NSTrackingArea(
-                rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
+            NSTrackingArea(rect: bounds, options: [.mouseMoved, .activeAlways], owner: self))
     }
 
-    override func mouseEntered(with event: NSEvent) {
+    // Only a mouse that moves highlights a line, as in a menu: a list that opens under a
+    // resting pointer leaves the highlight to the keys.
+    override func mouseMoved(with event: NSEvent) {
         onHover?()
     }
 

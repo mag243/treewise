@@ -30,6 +30,8 @@ final class NameSuggestionList {
     private var asking: Task<Void, Never>?
     private var keyMonitor: Any?
     private var observers: [NSObjectProtocol] = []
+    /// Whether the list was closed, after which the add-ons' answer is not shown.
+    private var isClosed = false
 
     private init(
         item: FileItem, field: NSTextField, browser: BrowserState, undoManager: UndoManager?
@@ -64,6 +66,7 @@ final class NameSuggestionList {
     }
 
     private func close() {
+        isClosed = true
         asking?.cancel()
         model?.stop()
         if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
@@ -109,7 +112,7 @@ final class NameSuggestionList {
     }
 
     private func show(_ rows: [NameSuggestionPanel.Row]) {
-        guard let field else { return }
+        guard !isClosed, let field else { return }
         panel.show(rows, under: field)
     }
 
