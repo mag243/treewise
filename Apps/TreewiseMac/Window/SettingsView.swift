@@ -4,9 +4,10 @@ import TreewiseCore
 import TreewiseFileSystem
 import TreewiseUI
 
-/// The Settings window (⌘,): where folders open, the start folder, and how the
-/// list shows items (ADR 0022, ADR 0023), checking for updates (ADR 0032), and
-/// the terminal to open (ADR 0052), the way to change shortcuts (ADR 0029). Changes apply at once.
+/// The Settings window (⌘,), in two tabs. General: where folders open, the start folder,
+/// and how the list shows items (ADR 0022, ADR 0023), checking for updates (ADR 0032),
+/// the terminal to open (ADR 0052) and the way to change shortcuts (ADR 0029). Names: the
+/// saved patterns (ADR 0068) and names with personal data (ADR 0060). Changes apply at once.
 struct SettingsView: View {
     private static let width: CGFloat = 460
     /// The tallest the window gets; beyond it, its contents scroll.
@@ -18,10 +19,20 @@ struct SettingsView: View {
     @Bindable var settings: BrowserSettings
     @ObservedObject var updater: AppUpdater
     @State private var refusal: String?
-    /// The height of the form's contents, measured once, which the window takes.
-    @State private var contentHeight: CGFloat?
 
     var body: some View {
+        TabView {
+            general
+                .tabItem { Label("General", systemImage: "gearshape") }
+            names
+                .tabItem { Label("Names", systemImage: "textformat") }
+        }
+        .alert(refusal ?? "", isPresented: isRefusing) {
+            Button("OK") { refusal = nil }
+        }
+    }
+
+    private var general: some View {
         Form {
             Section {
                 Picker("Double-click opens folders in", selection: $settings.doubleClickOpensIn) {
@@ -53,18 +64,6 @@ struct SettingsView: View {
                     }
                 }
             }
-            SavedPatternsSection(settings: settings)
-            Section {
-                Picker("Names with personal data", selection: $settings.personalDataInNames) {
-                    Text("Leave out of Approve All").tag(PersonalDataInNames.leaveOutOfApproveAll)
-                    Text("Only warn").tag(PersonalDataInNames.onlyWarn)
-                }
-            } footer: {
-                Text(
-                    "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not."
-                )
-                .font(.caption).foregroundStyle(.secondary)
-            }
             Section {
                 Toggle("Check for updates automatically", isOn: $updater.checksAutomatically)
                     .disabled(!updater.isRunning)
@@ -84,19 +83,28 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .onScrollGeometryChange(for: CGFloat.self) { geometry in
-            // The form's margins are insets of its scroll view, outside its content size.
-            (geometry.contentSize.height + geometry.contentInsets.top
-                + geometry.contentInsets.bottom).rounded(.up)
-        } action: { _, height in
-            // Taken once: the window's height changes what the scroll view
-            // reports, and following that again and again crashes AppKit's layout.
-            if contentHeight == nil, height > 0 { contentHeight = height }
+        .fittingItsContents(width: Self.width, maximumHeight: Self.maximumHeight)
+    }
+
+    /// The saved patterns, which may grow past the window and then scroll, and names
+    /// with personal data.
+    private var names: some View {
+        Form {
+            SavedPatternsSection(settings: settings)
+            Section {
+                Picker("Names with personal data", selection: $settings.personalDataInNames) {
+                    Text("Leave out of Approve All").tag(PersonalDataInNames.leaveOutOfApproveAll)
+                    Text("Only warn").tag(PersonalDataInNames.onlyWarn)
+                }
+            } footer: {
+                Text(
+                    "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not."
+                )
+                .font(.caption).foregroundStyle(.secondary)
+            }
         }
-        .frame(width: Self.width, height: contentHeight.map { min($0, Self.maximumHeight) })
-        .alert(refusal ?? "", isPresented: isRefusing) {
-            Button("OK") { refusal = nil }
-        }
+        .formStyle(.grouped)
+        .fittingItsContents(width: Self.width, maximumHeight: Self.maximumHeight)
     }
 
     private var terminalApp: Binding<String> {
@@ -127,5 +135,32 @@ struct SettingsView: View {
             return
         }
         settings.startFolder = id
+    }
+}
+
+/// A form as tall as its contents, up to a height beyond which it scrolls. Its contents
+/// are measured once: the window's height changes what the scroll view reports, and
+/// following that again and again crashes AppKit's layout.
+private struct FittingItsContents: ViewModifier {
+    let width: CGFloat
+    let maximumHeight: CGFloat
+    @State private var contentHeight: CGFloat?
+
+    func body(content: Content) -> some View {
+        content
+            .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                // The form's margins are insets of its scroll view, outside its content size.
+                (geometry.contentSize.height + geometry.contentInsets.top
+                    + geometry.contentInsets.bottom).rounded(.up)
+            } action: { _, height in
+                if contentHeight == nil, height > 0 { contentHeight = height }
+            }
+            .frame(width: width, height: contentHeight.map { min($0, maximumHeight) })
+    }
+}
+
+extension View {
+    fileprivate func fittingItsContents(width: CGFloat, maximumHeight: CGFloat) -> some View {
+        modifier(FittingItsContents(width: width, maximumHeight: maximumHeight))
     }
 }
