@@ -52,5 +52,8 @@ extension LaunchTests {
             free.waitForExistence(timeout: Self.launchTimeout), "the free add-on is listed")
         XCTAssertFalse(free.isEnabled, "the last add-on that is on stays on (ADR 0070)")
         XCTAssertTrue(settings.staticTexts["Reads names only"].exists, "it says what it reads")
+        XCTAssertFalse(
+            settings.scrollBars.firstMatch.exists,
+            "the tab is measured with its add-ons, not before they load")
     }
 }

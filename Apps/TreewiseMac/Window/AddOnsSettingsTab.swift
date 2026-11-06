@@ -9,6 +9,9 @@ import UniformTypeIdentifiers
 /// folders or not, and dragged into the order folders without their own take.
 struct AddOnsSettingsTab: View {
     @Bindable var settings: BrowserSettings
+    /// How tall the tab is while the add-ons load.
+    private static let loadingHeight: CGFloat = 160
+
     @State private var modules: [NameModuleDescription] = []
 
     private var catalog: [String] { modules.map(\.id) }
@@ -18,6 +21,18 @@ struct AddOnsSettingsTab: View {
     }
 
     var body: some View {
+        // The window takes the height the form has when it first shows. The form therefore
+        // waits until the service has listed the add-ons, and is measured with them.
+        if modules.isEmpty {
+            ProgressView()
+                .frame(maxWidth: .infinity, minHeight: Self.loadingHeight)
+                .task { modules = (try? await NameReviewWindow.host.availableModules()) ?? [] }
+        } else {
+            list
+        }
+    }
+
+    private var list: some View {
         Form {
             Section {
                 ForEach(ordered, id: \.id) { module in
@@ -44,7 +59,6 @@ struct AddOnsSettingsTab: View {
             }
         }
         .formStyle(.grouped)
-        .task { modules = (try? await NameReviewWindow.host.availableModules()) ?? [] }
     }
 
     private func move(_ id: String, by offset: Int) {
