@@ -96,7 +96,11 @@ extension LaunchTests {
         let name = review.textFields.matching(NSPredicate(format: "value BEGINSWITH 'Trip - '"))
             .firstMatch
         XCTAssertTrue(name.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
-        name.click()
+        // A double click on the row edits its name.
+        review.outlines.staticTexts[Self.oddName].doubleClick()
+        XCTAssertTrue(
+            app.eventually { (name.value(forKey: "hasKeyboardFocus") as? Bool) == true },
+            "the name is edited")
         let first = name.value as? String
         name.typeKey(.downArrow, modifierFlags: [])
         let second = name.value as? String
@@ -115,7 +119,12 @@ extension LaunchTests {
     /// Changes the free module's pattern in the overview's add-ons header.
     @MainActor
     private func usePattern(_ pattern: String, in review: XCUIElement) {
-        let change = review.buttons["Change"].firstMatch
+        // The header closes to one line, `Add-ons: …`, once the folder has its add-ons.
+        let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
+            .firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: Self.launchTimeout), "the header shows")
+        if header.label.hasPrefix("Add-ons:") { header.click() }
+        let change = review.links["Change"].firstMatch
         XCTAssertTrue(change.waitForExistence(timeout: Self.launchTimeout), "the pattern shows")
         change.click()
         let field = review.textFields.firstMatch

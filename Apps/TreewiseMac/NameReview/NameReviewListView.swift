@@ -8,6 +8,8 @@ import TreewiseUI
 struct NameReviewListView: View {
     let model: NameReviewModel
     @Binding var showsHidden: Bool
+    /// The row whose name a double click asked to edit, until its field has the focus.
+    @State private var editing: FileItem.ID?
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -27,6 +29,15 @@ struct NameReviewListView: View {
                 }
             }
             .listStyle(.inset)
+            // A double click on a row edits its name at once.
+            .contextMenu(
+                forSelectionType: FileItem.ID.self, menu: { _ in },
+                primaryAction: { ids in
+                    guard let id = ids.first else { return }
+                    model.selectedID = id
+                    editing = id
+                }
+            )
             .onChange(of: model.selectedID) { _, id in
                 if let id { proxy.scrollTo(id) }
             }
@@ -40,7 +51,8 @@ struct NameReviewListView: View {
 
     private func row(for entry: NameProposalSession.Entry) -> some View {
         NameReviewRow(
-            entry: entry, model: model, isSelected: entry.id == model.selectedID
+            entry: entry, model: model, isSelected: entry.id == model.selectedID,
+            startsEditing: editing == entry.id, onStartedEditing: { editing = nil }
         )
         .tag(entry.id)
         .id(entry.id)
@@ -55,6 +67,7 @@ struct NameReviewListView: View {
     }
 
     private func handle(_ press: KeyPress) -> KeyPress.Result {
+        if press.key == .upArrow || press.key == .downArrow { return passToNameField(press) }
         let key: NameReviewKey
         switch press.key {
         case .leftArrow: key = .previous
@@ -67,6 +80,16 @@ struct NameReviewListView: View {
         let isTyping = NSApp.keyWindow?.firstResponder is NSText
         return model.handle(key, isTyping: isTyping) ? .handled : .ignored
     }
+
+    /// Hands ↑ and ↓ to the name being edited, which steps through its options (ADR 0064).
+    /// SwiftUI asks the list first, and the list would take them to move its selection.
+    private func passToNameField(_ press: KeyPress) -> KeyPress.Result {
+        guard let editor = NSApp.keyWindow?.firstResponder as? NSTextView else { return .ignored }
+        editor.doCommand(
+            by: press.key == .upArrow
+                ? #selector(NSResponder.moveUp(_:)) : #selector(NSResponder.moveDown(_:)))
+        return .handled
+    }
 }
 
 /// One file in the list.
@@ -77,6 +100,9 @@ struct NameReviewRow: View {
     let entry: NameProposalSession.Entry
     let model: NameReviewModel
     let isSelected: Bool
+    /// Whether the name's field is to take the focus, after a double click on the row.
+    let startsEditing: Bool
+    let onStartedEditing: () -> Void
 
     var body: some View {
         HStack(spacing: 8) {
@@ -122,6 +148,7 @@ struct NameReviewRow: View {
                 text: entry.currentName ?? "", placeholder: emptyText,
                 onChange: { model.edit(entry.id, to: $0) },
                 onFinish: { model.finishEditing(entry.id) },
+                startsEditing: startsEditing, onStartedEditing: onStartedEditing,
                 onStep: (entry.position?.count ?? 0) > 1
                     ? { direction in
                         model.step(entry.id, by: direction)
@@ -221,6 +248,9 @@ struct NameReviewField: NSViewRepresentable {
     let placeholder: String
     let onChange: (String) -> Void
     let onFinish: () -> Void
+    /// Whether the field is to take the focus, as asked by a double click on its row.
+    let startsEditing: Bool
+    let onStartedEditing: () -> Void
     /// Steps to another option and gives its name; nil when the row has one option.
     let onStep: ((StepDirection) -> String?)?
 
@@ -240,6 +270,13 @@ struct NameReviewField: NSViewRepresentable {
         context.coordinator.parent = self
         field.placeholderString = placeholder
         if field.currentEditor() == nil, field.stringValue != text { field.stringValue = text }
+        if startsEditing {
+            // After this update, so the field is in its window when it takes the focus.
+            Task { @MainActor in
+                field.window?.makeFirstResponder(field)
+                onStartedEditing()
+            }
+        }
     }
 
     @MainActor
