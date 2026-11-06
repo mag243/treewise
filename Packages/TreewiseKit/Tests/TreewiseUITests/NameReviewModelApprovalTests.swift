@@ -94,3 +94,14 @@ extension NameReviewModelTests {
         #expect(await store.settings(forFolderAt: "review")?.templates[Self.free] == "Doc {text}")
     }
 }
+
+/// What a module is told of the folder (ADR 0067).
+extension NameReviewModelTests {
+    @Test func tellsTheModuleTheFoldersNameAndPattern() async {
+        _ = addFile("scan.txt")
+        let host = host()
+        _ = await model(host)
+        #expect(host.requests.last?.folderName == "Review")
+        #expect(host.requests.last?.pattern == "Doc {text}")
+    }
+}

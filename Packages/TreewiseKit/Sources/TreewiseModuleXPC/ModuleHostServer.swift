@@ -38,14 +38,18 @@
             moduleID: String, names: Data, reply: @escaping @Sendable (Data?) -> Void
         ) {
             guard let module = modules.first(where: { $0.id == moduleID }),
-                let decoded = try? ModuleWire.decode([String].self, from: names)
+                let decoded = try? ModuleWire.decode(ModuleWire.NamesOfFolder.self, from: names)
             else {
                 reply(nil)
                 return
             }
             reply(
                 try? ModuleWire.encode(
-                    [module.derivedTemplate(fromNames: decoded)].compactMap(\.self)))
+                    [
+                        module.derivedTemplate(
+                            fromNames: decoded.names, folderName: decoded.folderName)
+                    ]
+                    .compactMap(\.self)))
         }
 
         /// Runs a module and replies with its sets of values, or nil when it fails.

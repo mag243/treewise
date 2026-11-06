@@ -10,13 +10,15 @@ public enum TemplateDeriver {
     private static let separator = " - "
     private static let wordAndNumber = #"^(.*\S)\s+([0-9]+)$"#
 
-    /// The template the names follow, or nil when they follow none.
-    public static func template(fromNames names: [String]) -> String? {
+    /// The template the names follow, or nil when they follow none. A word or a first part
+    /// that is the folder's name becomes `{folder}` (ADR 0067).
+    public static func template(fromNames names: [String], folderName: String) -> String? {
         let stems = names.map(ProposedName.stem(of:))
         guard stems.count >= minimumNames else { return nil }
         let required = Int((Double(stems.count) * requiredShare).rounded(.up))
         let candidate =
-            dated(stems, required: required) ?? wordAndNumberTemplate(stems, required: required)
+            dated(stems, required: required, folderName: folderName)
+            ?? wordAndNumberTemplate(stems, required: required, folderName: folderName)
         return candidate.flatMap { text in
             let parsed = NameTemplate.parse(
                 text, fields: FolderPatternModule.fields + NameTemplate.Field.suppliedByTreewise)
@@ -24,7 +26,7 @@ public enum TemplateDeriver {
         }
     }
 
-    private static func dated(_ stems: [String], required: Int) -> String? {
+    private static func dated(_ stems: [String], required: Int, folderName: String) -> String? {
         var best: (format: FileNameParts.DateFormat, rests: [String])?
         for format in FileNameParts.dateFormats {
             let rests = stems.compactMap { format.rest(afterDateIn: $0) }
@@ -32,7 +34,9 @@ public enum TemplateDeriver {
         }
         guard let best, best.rests.count >= required else { return nil }
         let field = "{date:\(best.format.template)}"
-        return shared(best.rests).map { "\(field) \($0)\(separator){text}" } ?? "\(field) {text}"
+        return shared(best.rests).map {
+            "\(field) \(withFolder($0, folderName))\(separator){text}"
+        } ?? "\(field) {text}"
     }
 
     /// The first part that nearly all names share, in names with more parts after it.
@@ -46,7 +50,17 @@ public enum TemplateDeriver {
         return counts.first { $0.value >= needed }?.key
     }
 
-    private static func wordAndNumberTemplate(_ stems: [String], required: Int) -> String? {
+    /// The folder's name as `{folder}`, also after a dash that follows the date.
+    private static func withFolder(_ part: String, _ folderName: String) -> String {
+        guard !folderName.isEmpty else { return part }
+        if part == folderName { return "{folder}" }
+        if part == "- " + folderName { return "- {folder}" }
+        return part
+    }
+
+    private static func wordAndNumberTemplate(
+        _ stems: [String], required: Int, folderName: String
+    ) -> String? {
         guard let expression = try? NSRegularExpression(pattern: wordAndNumber) else { return nil }
         let words = stems.compactMap { stem -> String? in
             let whole = NSRange(stem.startIndex..., in: stem)
@@ -56,6 +70,8 @@ public enum TemplateDeriver {
             return String(stem[word])
         }
         let counts = Dictionary(words.map { ($0, 1) }, uniquingKeysWith: +)
-        return counts.first { $0.value >= required }.map { "\($0.key) {number}" }
+        return counts.first { $0.value >= required }.map {
+            "\(withFolder($0.key, folderName)) {seq}"
+        }
     }
 }

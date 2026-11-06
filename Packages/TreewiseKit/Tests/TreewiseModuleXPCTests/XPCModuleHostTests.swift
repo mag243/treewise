@@ -46,14 +46,25 @@
         @Test func carriesADerivedTemplate() async throws {
             let harness = Harness(modules: [StubModule(id: "m", derived: "{text}")])
             defer { withExtendedLifetime(harness) {} }
-            let template = try await harness.host().derivedTemplate(moduleID: "m", names: ["a"])
+            let template = try await harness.host().derivedTemplate(
+                moduleID: "m", names: ["a"], folderName: "")
             #expect(template == "{text}")
+        }
+
+        @Test func carriesTheFolderNameToTheModule() async throws {
+            let harness = Harness(modules: [StubModule(id: "m", derived: "{text}")])
+            defer { withExtendedLifetime(harness) {} }
+            let template = try await harness.host().derivedTemplate(
+                moduleID: "m", names: ["a"], folderName: "Tax")
+            #expect(template == "Tax {text}")
         }
 
         @Test func aModuleWithoutADerivedTemplateGivesNone() async throws {
             let harness = Harness(modules: [StubModule(id: "m")])
             defer { withExtendedLifetime(harness) {} }
-            #expect(try await harness.host().derivedTemplate(moduleID: "m", names: ["a"]) == nil)
+            #expect(
+                try await harness.host().derivedTemplate(
+                    moduleID: "m", names: ["a"], folderName: "") == nil)
         }
 
         @Test func anUnknownModuleFails() async {

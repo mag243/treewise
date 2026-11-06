@@ -8,11 +8,13 @@ import TreewiseModuleInterface
     private let module = FolderPatternModule()
 
     private func request(
-        _ name: String, date: SuggestedDate? = nil, siblings: [String] = []
+        _ name: String, date: SuggestedDate? = nil, siblings: [String] = [],
+        folder: String = "Holiday 2026"
     ) -> NameRequest {
         NameRequest(
             id: "1", name: name, contentType: "public.data", byteCount: nil, created: nil,
-            modified: nil, suggestedDate: date, siblingNames: siblings, content: ModuleContent())
+            modified: nil, suggestedDate: date, siblingNames: siblings, content: ModuleContent(),
+            folderName: folder)
     }
 
     private func values(_ request: NameRequest) async throws -> [String: NameTemplate.Value] {
@@ -61,28 +63,34 @@ import TreewiseModuleInterface
         #expect(try await values(request(name))["text"] == nil)
     }
 
-    @Test func numbersAfterTheHighestSibling() async throws {
-        let request = request("new.pdf", siblings: ["Scan 12.pdf", "Scan 13.pdf", "Other.pdf"])
-        #expect(try await values(request)["number"] == .text("14"))
+    /// A number from the file is a field of modules that read files; the next number of
+    /// a series is Treewise's `{seq}` (ADR 0067).
+    @Test func fillsInTheDateAndTheTextOnly() {
+        #expect(module.description.fields.map(\.name) == ["date", "text"])
     }
 
-    @Test func keepsTheWidthOfNumbers() async throws {
-        let request = request("new.pdf", siblings: ["Scan 007.pdf", "Scan 009.pdf"])
-        #expect(try await values(request)["number"] == .text("010"))
+    @Test(arguments: [
+        ("2026.08.14 - Holiday 2026 - c.heic", "c"),
+        ("2026.08.14 - Holiday 202 - c.heic", "c"),
+        ("2026.08.14 - holliday 2026 - c.heic", "c"),
+        ("2026.08.14 Holiday - c.heic", "c"),
+        ("Holiday 2026_c.heic", "c"),
+        ("c - Holiday 2026.heic", "c"),
+        ("2026.08.14 - Holiday 2025 - c.heic", "Holiday 2025 - c"),
+        ("Holiday photos at the beach.heic", "Holiday photos at the beach"),
+    ])
+    func leavesTheFolderNameOutOfTheText(_ name: String, _ text: String) async throws {
+        #expect(try await values(request(name))["text"] == .text(text))
     }
 
-    @Test func startsNumberingAtOne() async throws {
-        #expect(try await values(request("new.pdf"))["number"] == .text("1"))
-    }
-
-    @Test func ignoresDatesWhenNumbering() async throws {
-        let request = request("new.pdf", siblings: ["2026.11.02 Notes.pdf"])
-        #expect(try await values(request)["number"] == .text("1"))
+    @Test func hasNoTextWhenTheNameIsOnlyTheFolderName() async throws {
+        #expect(try await values(request("2026.08.14 Holiday 2026.heic"))["text"] == nil)
     }
 
     @Test func derivesATemplateFromNames() {
         #expect(
-            module.derivedTemplate(fromNames: ["Scan 1.pdf", "Scan 2.pdf", "Scan 3.pdf"])
-                == "Scan {number}")
+            module.derivedTemplate(
+                fromNames: ["Scan 1.pdf", "Scan 2.pdf", "Scan 3.pdf"], folderName: "Scans")
+                == "Scan {seq}")
     }
 }

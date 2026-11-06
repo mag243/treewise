@@ -18,6 +18,12 @@
     /// How requests and answers are written for the trip. A binary property list
     /// keeps page images as raw bytes.
     enum ModuleWire {
+        /// A folder's names and its name, for recognizing a template.
+        struct NamesOfFolder: Codable {
+            let names: [String]
+            let folderName: String
+        }
+
         static func encode(_ value: some Encodable) throws -> Data {
             let encoder = PropertyListEncoder()
             encoder.outputFormat = .binary

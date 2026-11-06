@@ -16,7 +16,7 @@ public protocol NameModule: Sendable {
     /// the module has nothing to suggest.
     func fieldValues(for request: NameRequest) async throws -> [[String: NameTemplate.Value]]
     /// The template these names in a folder follow, or nil when the module recognizes none.
-    func derivedTemplate(fromNames names: [String]) -> String?
+    func derivedTemplate(fromNames names: [String], folderName: String) -> String?
 }
 
 extension NameModule {
@@ -24,5 +24,7 @@ extension NameModule {
     public var id: String { description.id }
 
     /// A module starts from its default template unless it can recognize one.
-    public func derivedTemplate(fromNames names: [String]) -> String? { nil }
+    public func derivedTemplate(fromNames names: [String], folderName: String) -> String? {
+        nil
+    }
 }

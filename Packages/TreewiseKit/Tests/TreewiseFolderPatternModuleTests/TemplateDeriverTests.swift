@@ -5,8 +5,8 @@ import TreewiseFolderPatternModule
 /// Recognizing a pattern in a folder's names (ADR 0057). The names are invented, in the
 /// shapes real folders have.
 @Suite struct TemplateDeriverTests {
-    private func derive(_ names: [String]) -> String? {
-        TemplateDeriver.template(fromNames: names)
+    private func derive(_ names: [String], folder: String = "Documents") -> String? {
+        TemplateDeriver.template(fromNames: names, folderName: folder)
     }
 
     private static let taxes = [
@@ -48,7 +48,29 @@ import TreewiseFolderPatternModule
     }
 
     @Test func findsAWordAndANumber() {
-        #expect(derive(["Scan 12.pdf", "Scan 13.pdf", "Scan 14.pdf"]) == "Scan {number}")
+        #expect(derive(["Scan 12.pdf", "Scan 13.pdf", "Scan 14.pdf"]) == "Scan {seq}")
+    }
+
+    @Test func findsTheFolderAndANumber() {
+        let names = ["Holiday 2026 01.heic", "Holiday 2026 02.heic", "Holiday 2026 03.heic"]
+        #expect(derive(names, folder: "Holiday 2026") == "{folder} {seq}")
+    }
+
+    @Test func findsADateAndTheFolder() {
+        let names = [
+            "2026.08.14 Holiday 2026 - a.heic", "2026.08.15 Holiday 2026 - b.heic",
+            "2026.08.16 Holiday 2026 - c.heic",
+        ]
+        #expect(derive(names, folder: "Holiday 2026") == "{date:yyyy.MM.dd} {folder} - {text}")
+    }
+
+    @Test func findsADateAndTheFolderBetweenDashes() {
+        let names = [
+            "2026.08.14 - Holiday 2026 - a.heic", "2026.08.15 - Holiday 2026 - b.heic",
+            "2026.08.16 - Holiday 2026 - c.heic",
+        ]
+        #expect(
+            derive(names, folder: "Holiday 2026") == "{date:yyyy.MM.dd} - {folder} - {text}")
     }
 
     @Test func findsNoPatternInVariedNames() {
@@ -74,7 +96,7 @@ import TreewiseFolderPatternModule
     }
 
     @Test func ignoresExtensionsWhenLooking() {
-        #expect(derive(["Scan 1.pdf", "Scan 2.PNG", "Scan 3"]) == "Scan {number}")
+        #expect(derive(["Scan 1.pdf", "Scan 2.PNG", "Scan 3"]) == "Scan {seq}")
     }
 
     @Test func whatItDerivesAlwaysParses() throws {

@@ -31,7 +31,9 @@ public final class ScriptedModuleHost: NameModuleHosting {
     }
 
     /// The scripted template, if any.
-    public func derivedTemplate(moduleID: String, names: [String]) async throws -> String? {
+    public func derivedTemplate(moduleID: String, names: [String], folderName: String)
+        async throws -> String?
+    {
         templates.withLock { $0[moduleID] }
     }
 

@@ -52,8 +52,11 @@
         }
 
         /// Asks a module which template names follow.
-        public func derivedTemplate(moduleID: String, names: [String]) async throws -> String? {
-            let encoded = try ModuleWire.encode(names)
+        public func derivedTemplate(moduleID: String, names: [String], folderName: String)
+            async throws -> String?
+        {
+            let encoded = try ModuleWire.encode(
+                ModuleWire.NamesOfFolder(names: names, folderName: folderName))
             let data = try await ask { service, reply in
                 service.derivedTemplate(moduleID: moduleID, names: encoded, reply: reply)
             }

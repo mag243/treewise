@@ -191,7 +191,7 @@ public final class NameReviewModel {
         -> NameReviewModule
     {
         let derived = try? await dependencies.host.derivedTemplate(
-            moduleID: description.id, names: names)
+            moduleID: description.id, names: names, folderName: folder.name)
         // The default module imposes no pattern on a folder that shows none.
         let isDefault = description.id == NameModuleDescription.defaultModuleID
         var module = NameReviewModule(
@@ -249,8 +249,10 @@ public final class NameReviewModel {
 
     private func read(_ item: FileItem, _ module: NameReviewModule) async {
         let visible = folderItems.filter { !$0.isHidden }
-        let request = await dependencies.makeRequest(
+        var request = await dependencies.makeRequest(
             item, visible, module.description.neededContent)
+        request.folderName = folder.name
+        request.pattern = module.template?.text
         do {
             let values = try await dependencies.host.fieldValues(
                 moduleID: module.id, request: request)

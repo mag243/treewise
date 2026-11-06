@@ -48,7 +48,10 @@
             self.derived = derived
         }
 
-        func derivedTemplate(fromNames names: [String]) -> String? { derived }
+        /// The scripted template, after the folder's name when there is one.
+        func derivedTemplate(fromNames names: [String], folderName: String) -> String? {
+            derived.map { folderName.isEmpty ? $0 : "\(folderName) \($0)" }
+        }
 
         init(id: String, neededContent: Set<ModuleContentKind> = [], answers: Bool = true) {
             description = Self.describe(id, neededContent: neededContent)
