@@ -100,7 +100,7 @@ struct SavedPatternsMenu: NSViewRepresentable {
                 ])
             for mark in FieldColors.marks(inPattern: choice.pattern.text) {
                 text.addAttribute(
-                    .backgroundColor, value: FieldColors.color(mark.colorIndex), range: mark.range)
+                    .backgroundColor, value: mark.color, range: mark.range)
             }
             title.append(text)
             item.attributedTitle = title

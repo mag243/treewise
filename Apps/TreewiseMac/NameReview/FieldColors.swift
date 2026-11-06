@@ -36,10 +36,42 @@ enum FieldColors {
     }
 }
 
-/// A stretch of a field's text in the colour of a pattern's field.
+/// A stretch of a field's text in the colour of a pattern's field, or of a gap or a date
+/// to look at, as the other rows of the review show them.
 struct ColoredRange: Equatable {
+    /// What a stretch is coloured for.
+    enum Tint: Equatable {
+        /// The field at this place in the pattern's order (ADR 0064).
+        case field(Int)
+        /// A gap for the user to fill in.
+        case gap
+        /// A date that comes from the file, to be checked (ADR 0058).
+        case dateToCheck
+    }
+
+    /// How see-through a gap's and a date's colour is, as in the other rows.
+    private static let lookOpacity: CGFloat = 0.25
+
     let range: NSRange
-    let colorIndex: Int
+    let tint: Tint
+
+    init(range: NSRange, colorIndex: Int) {
+        self.range = range
+        tint = .field(colorIndex)
+    }
+
+    init(range: NSRange, tint: Tint) {
+        self.range = range
+        self.tint = tint
+    }
+
+    @MainActor var color: NSColor {
+        switch tint {
+        case .field(let index): FieldColors.color(index)
+        case .gap: NSColor.controlAccentColor.withAlphaComponent(Self.lookOpacity)
+        case .dateToCheck: NSColor.systemOrange.withAlphaComponent(Self.lookOpacity)
+        }
+    }
 }
 
 /// A text field that colours stretches of its text, also while it is edited, where the
@@ -67,16 +99,14 @@ class MarkingTextField: NSTextField {
             layout.removeTemporaryAttribute(.backgroundColor, forCharacterRange: whole)
             for mark in fitting {
                 layout.addTemporaryAttribute(
-                    .backgroundColor, value: FieldColors.color(mark.colorIndex),
-                    forCharacterRange: mark.range)
+                    .backgroundColor, value: mark.color, forCharacterRange: mark.range)
             }
             return
         }
         let text = NSMutableAttributedString(
             string: stringValue, attributes: font.map { [.font: $0] } ?? [:])
         for mark in fitting {
-            text.addAttribute(
-                .backgroundColor, value: FieldColors.color(mark.colorIndex), range: mark.range)
+            text.addAttribute(.backgroundColor, value: mark.color, range: mark.range)
         }
         attributedStringValue = text
     }

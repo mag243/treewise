@@ -14,6 +14,9 @@ struct NameReviewField: NSViewRepresentable {
     /// What the pattern's fields filled in `text`, in their colours, until the user types
     /// (ADR 0064).
     let marks: [ColoredRange]
+    /// A gap and a date to check, coloured as in the other rows, also once the user types;
+    /// over the fields' colours.
+    let lookMarks: [ColoredRange]
     /// Whether the field is to take the focus, as asked by a double click on its row.
     let startsEditing: Bool
     let onStartedEditing: () -> Void
@@ -36,7 +39,8 @@ struct NameReviewField: NSViewRepresentable {
         context.coordinator.parent = self
         field.placeholderString = placeholder
         if field.currentEditor() == nil, field.stringValue != text { field.stringValue = text }
-        (field as? GapSelectingField)?.mark(context.coordinator.hasTyped ? [] : marks)
+        (field as? GapSelectingField)?.mark(
+            (context.coordinator.hasTyped ? [] : marks) + lookMarks)
         if startsEditing {
             // After this update, so the field is in its window when it takes the focus.
             Task { @MainActor in

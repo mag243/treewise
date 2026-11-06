@@ -219,6 +219,49 @@ extension LaunchTests {
             name.waitForExistence(timeout: Self.launchTimeout), "the folder takes the pattern")
     }
 
+    @MainActor
+    func testSpaceShowsTheFileOfARowInQuickLook() throws {
+        _ = try makeHolidayFolder()
+        let app = try launchApp()
+        let review = try openReview(of: Self.oddName, in: app)
+        review.outlines.staticTexts[Self.oddName].click()
+        let windows = app.windows.count
+        app.typeKey(" ", modifierFlags: [])
+        XCTAssertTrue(
+            app.eventually { app.windows.count == windows + 1 }, "the Quick Look panel opens")
+    }
+
+    @MainActor
+    func testReturnEditsTheNameOfTheSelectedRow() throws {
+        _ = try makeHolidayFolder()
+        let app = try launchApp()
+        let review = try openReview(of: Self.oddName, in: app)
+        review.outlines.staticTexts[Self.oddName].click()
+        app.typeKey(.return, modifierFlags: [])
+        let name = review.outlines.textFields.firstMatch
+        XCTAssertTrue(
+            app.eventually { (name.value(forKey: "hasKeyboardFocus") as? Bool) == true },
+            "the name is edited")
+    }
+
+    /// Opens Holiday, and the overview for one of its files.
+    @MainActor
+    private func openReview(of file: String, in app: XCUIApplication) throws -> XCUIElement {
+        let holiday = app.tables.staticTexts["Holiday"]
+        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        holiday.doubleClick()
+        let row = app.tables.staticTexts[file]
+        XCTAssertTrue(row.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        row.rightClick()
+        app.tables.menus.menuItems["Suggest Names…"].click()
+        let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
+            .firstMatch
+        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        let shown = review.outlines.staticTexts[file]
+        XCTAssertTrue(shown.waitForExistence(timeout: Self.launchTimeout), "it lists the file")
+        return review
+    }
+
     /// Changes the free module's pattern in the overview's add-ons header.
     @MainActor
     private func usePattern(_ pattern: String, in review: XCUIElement) {

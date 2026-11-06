@@ -207,7 +207,7 @@ struct NameReviewAddOnsView: View {
         var text = AttributedString(pattern)
         for mark in FieldColors.marks(inPattern: pattern) {
             guard let range = Range(mark.range, in: text) else { continue }
-            text[range].backgroundColor = Color(nsColor: FieldColors.color(mark.colorIndex))
+            text[range].backgroundColor = Color(nsColor: mark.color)
         }
         return text
     }

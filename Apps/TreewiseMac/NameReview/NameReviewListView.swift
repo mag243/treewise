@@ -39,7 +39,11 @@ struct NameReviewListView: View {
                 }
             )
             .onChange(of: model.selectedID) { _, id in
-                if let id { proxy.scrollTo(id) }
+                if let id {
+                    proxy.scrollTo(id)
+                    // A Quick Look panel that is shown follows the selection, as in the list.
+                    QuickLookSource.shared.follow([URL(fileURLWithPath: id.rawValue)])
+                }
             }
             .onKeyPress(action: handle)
         }
@@ -68,6 +72,21 @@ struct NameReviewListView: View {
 
     private func handle(_ press: KeyPress) -> KeyPress.Result {
         if press.key == .upArrow || press.key == .downArrow { return passToNameField(press) }
+        // SwiftUI asks the list before the name's field, so the field has to be ruled out here.
+        let isTyping = NSApp.keyWindow?.firstResponder is NSText
+        if !isTyping, press.modifiers.isEmpty, let id = model.selectedID {
+            // As in the file list: Return edits the name, Space shows the file.
+            if press.key == .return, let entry = model.session?.entry(id),
+                !entry.isOutOfScope, !entry.restsFitting
+            {
+                editing = id
+                return .handled
+            }
+            if press.key == .space {
+                QuickLookSource.shared.toggle([URL(fileURLWithPath: id.rawValue)])
+                return .handled
+            }
+        }
         let key: NameReviewKey
         switch press.key {
         case .leftArrow: key = .previous
@@ -76,8 +95,6 @@ struct NameReviewListView: View {
         case KeyEquivalent("s"): key = .skip
         default: return .ignored
         }
-        // SwiftUI asks the list before the name's field, so the field has to be ruled out here.
-        let isTyping = NSApp.keyWindow?.firstResponder is NSText
         return model.handle(key, isTyping: isTyping) ? .handled : .ignored
     }
 
@@ -153,6 +170,7 @@ struct NameReviewRow: View {
                         range: NSRange($0.range, in: entry.currentName ?? ""),
                         colorIndex: $0.colorIndex)
                 },
+                lookMarks: lookMarks(in: entry.currentName ?? ""),
                 startsEditing: startsEditing, onStartedEditing: onStartedEditing,
                 onStep: (entry.position?.count ?? 0) > 1
                     ? { direction in
@@ -174,6 +192,17 @@ struct NameReviewRow: View {
         return model.readingCount > 0
             ? String(localized: "Reading the file…")
             : String(localized: "No proposal. Type a name.")
+    }
+
+    /// The gap, or the date of a name whose date needs a look, for the field being edited.
+    private func lookMarks(in name: String) -> [ColoredRange] {
+        let text = name as NSString
+        let gap = text.range(of: NameTemplate.gap)
+        if gap.location != NSNotFound { return [ColoredRange(range: gap, tint: .gap)] }
+        guard needsLook else { return [] }
+        let date = text.range(of: dateText(in: name))
+        return date.location == NSNotFound || date.length == text.length
+            ? [] : [ColoredRange(range: date, tint: .dateToCheck)]
     }
 
     /// Colours a gap, and the date of a name whose date needs a look.

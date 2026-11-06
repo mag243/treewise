@@ -34,7 +34,7 @@ enum NameReviewWindow {
     private static func present(
         _ model: NameReviewModel, browser: BrowserState, undoManager: UndoManager?
     ) {
-        let window = NSWindow(
+        let window = NameReviewNSWindow(
             contentRect: NSRect(origin: .zero, size: defaultSize),
             styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered,
             defer: false)
