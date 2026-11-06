@@ -11,10 +11,6 @@ extension LaunchTests {
             app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
-        // Settings opens at the tab chosen last, which another test may have changed.
-        let general = settings.toolbars.buttons["General"]
-        XCTAssertTrue(general.waitForExistence(timeout: Self.launchTimeout))
-        general.click()
         XCTAssertTrue(
             settings.staticTexts["Show hidden files"].waitForExistence(timeout: Self.launchTimeout))
         XCTAssertFalse(settings.scrollBars.firstMatch.exists)
@@ -52,8 +48,23 @@ extension LaunchTests {
             free.waitForExistence(timeout: Self.launchTimeout), "the free add-on is listed")
         XCTAssertFalse(free.isEnabled, "the last add-on that is on stays on (ADR 0070)")
         XCTAssertTrue(settings.staticTexts["Reads names only"].exists, "it says what it reads")
-        XCTAssertFalse(
-            settings.scrollBars.firstMatch.exists,
-            "the tab is measured with its add-ons, not before they load")
+        XCTAssertFalse(settings.scrollBars.firstMatch.exists, "the add-ons fit")
+    }
+
+    @MainActor
+    func testSettingsKeepsItsSizeFromTabToTab() throws {
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+        app.typeKey(",", modifierFlags: .command)
+        let settings = app.windows[Self.settingsWindow]
+        XCTAssertTrue(
+            settings.staticTexts["Show hidden files"].waitForExistence(timeout: Self.launchTimeout),
+            "Settings opens at General")
+        let size = settings.frame.size
+        for tab in ["Names", "Add-ons", "General"] {
+            settings.toolbars.buttons[tab].click()
+            XCTAssertEqual(settings.frame.size, size, "\(tab) keeps the window's size")
+        }
     }
 }

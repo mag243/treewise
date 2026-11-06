@@ -20,16 +20,29 @@ struct SettingsView: View {
     @Bindable var settings: BrowserSettings
     @ObservedObject var updater: AppUpdater
     @State private var refusal: String?
+    /// The tab shown, General each time Settings opens, so its height is known first.
+    @State private var tab = Tab.general
+    /// The height of General's contents, measured once, which every tab takes, so the
+    /// window keeps its size from tab to tab; a longer tab scrolls.
+    @State private var height: CGFloat?
+
+    private enum Tab {
+        case general, names, addOns
+    }
 
     var body: some View {
-        TabView {
+        TabView(selection: $tab) {
             general
                 .tabItem { Label("General", systemImage: "gearshape") }
+                .tag(Tab.general)
             names
+                .frame(width: Self.width, height: tabHeight)
                 .tabItem { Label("Names", systemImage: "textformat") }
+                .tag(Tab.names)
             AddOnsSettingsTab(settings: settings)
-                .fittingItsContents(width: Self.width, maximumHeight: Self.maximumHeight)
+                .frame(width: Self.width, height: tabHeight)
                 .tabItem { Label("Add-ons", systemImage: "puzzlepiece.extension") }
+                .tag(Tab.addOns)
         }
         .alert(refusal ?? "", isPresented: isRefusing) {
             Button("OK") { refusal = nil }
@@ -87,7 +100,20 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .fittingItsContents(width: Self.width, maximumHeight: Self.maximumHeight)
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            // The form's margins are insets of its scroll view, outside its content size.
+            (geometry.contentSize.height + geometry.contentInsets.top
+                + geometry.contentInsets.bottom).rounded(.up)
+        } action: { _, measured in
+            // Taken once: the window's height changes what the scroll view reports, and
+            // following that again and again crashes AppKit's layout.
+            if height == nil, measured > 0 { height = measured }
+        }
+        .frame(width: Self.width, height: tabHeight)
+    }
+
+    private var tabHeight: CGFloat? {
+        height.map { min($0, Self.maximumHeight) }
     }
 
     /// The saved patterns, which may grow past the window and then scroll, and names
@@ -108,7 +134,6 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .fittingItsContents(width: Self.width, maximumHeight: Self.maximumHeight)
     }
 
     private var terminalApp: Binding<String> {
@@ -139,32 +164,5 @@ struct SettingsView: View {
             return
         }
         settings.startFolder = id
-    }
-}
-
-/// A form as tall as its contents, up to a height beyond which it scrolls. Its contents
-/// are measured once: the window's height changes what the scroll view reports, and
-/// following that again and again crashes AppKit's layout.
-private struct FittingItsContents: ViewModifier {
-    let width: CGFloat
-    let maximumHeight: CGFloat
-    @State private var contentHeight: CGFloat?
-
-    func body(content: Content) -> some View {
-        content
-            .onScrollGeometryChange(for: CGFloat.self) { geometry in
-                // The form's margins are insets of its scroll view, outside its content size.
-                (geometry.contentSize.height + geometry.contentInsets.top
-                    + geometry.contentInsets.bottom).rounded(.up)
-            } action: { _, height in
-                if contentHeight == nil, height > 0 { contentHeight = height }
-            }
-            .frame(width: width, height: contentHeight.map { min($0, maximumHeight) })
-    }
-}
-
-extension View {
-    fileprivate func fittingItsContents(width: CGFloat, maximumHeight: CGFloat) -> some View {
-        modifier(FittingItsContents(width: width, maximumHeight: maximumHeight))
     }
 }
