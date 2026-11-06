@@ -238,3 +238,19 @@ import TreewiseCore
             try JSONDecoder().decode([String: NameTemplate.Value].self, from: data) == Self.values)
     }
 }
+
+/// A pattern judged on its form alone, for the list of saved patterns, which belongs to no
+/// module (ADR 0068).
+@Suite struct NameTemplateFormTests {
+    @Test(
+        arguments: [
+            ("{date:yyyy.MM.dd} {company} - {text}", nil),
+            ("Tax - <Sales {year}.Q{seq:4}|{text}>", nil),
+            ("{text", NameTemplate.Problem.unbalancedBraces),
+            ("[{text}]", .nothingRequired),
+            ("{date:qq} {text}", .invalidFormat),
+        ] as [(String, NameTemplate.Problem?)])
+    func judgesTheFormOfAPattern(_ text: String, _ problem: NameTemplate.Problem?) {
+        #expect(NameTemplate.problemInForm(of: text) == problem)
+    }
+}

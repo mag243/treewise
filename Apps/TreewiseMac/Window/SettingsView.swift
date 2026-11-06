@@ -53,15 +53,7 @@ struct SettingsView: View {
                     }
                 }
             }
-            Section {
-                TextField("Default name pattern", text: $settings.defaultNamePattern)
-                    .font(.body.monospaced())
-            } footer: {
-                Text(
-                    "For a folder without a pattern of its own, when you choose it or select files there."
-                )
-                .font(.caption).foregroundStyle(.secondary)
-            }
+            SavedPatternsSection(settings: settings)
             Section {
                 Picker("Names with personal data", selection: $settings.personalDataInNames) {
                     Text("Leave out of Approve All").tag(PersonalDataInNames.leaveOutOfApproveAll)

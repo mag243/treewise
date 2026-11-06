@@ -51,4 +51,18 @@ extension NameTemplate {
         var seen: Set<String> = []
         return fieldTokens(in: text).map(\.key).filter { seen.insert($0).inserted }
     }
+
+    /// What is wrong with a pattern's form, whatever module fills it in, or nil: every
+    /// field it names counts as known, `{date}` as a date and the rest as text.
+    public static func problemInForm(of text: String) -> Problem? {
+        let supplied = Set(Field.suppliedByTreewise.map(\.name))
+        let named = Set(text.matches(of: /\{([^{}:|]+)/).map { String($0.1) })
+            .union(text.matches(of: /\|([^{}:|<>]+)[|}]/).map { String($0.1) })
+            .subtracting(supplied)
+        let fields = named.map { Field(name: $0, kind: $0 == "date" ? .date : .text) }
+        if case .failure(let problem) = parse(text, fields: fields + Field.suppliedByTreewise) {
+            return problem
+        }
+        return nil
+    }
 }

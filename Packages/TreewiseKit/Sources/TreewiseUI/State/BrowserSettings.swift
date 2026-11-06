@@ -58,7 +58,10 @@ public final class BrowserSettings {
         static let lastSession = "lastSession"
         static let favoriteFolders = "favoriteFolders"
         static let terminalApp = "terminalApp"
+        /// The single default pattern kept before the saved patterns, read when there
+        /// is no list yet (ADR 0068).
         static let defaultNamePattern = "defaultNamePattern"
+        static let savedPatterns = "savedPatterns"
         static let personalDataInNames = "personalDataInNames"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
@@ -102,19 +105,24 @@ public final class BrowserSettings {
         didSet { store.setSetting(terminalApp, for: Key.terminalApp) }
     }
 
-    /// The pattern a folder without one of its own gets when the user asks for it, or
-    /// when names are suggested for selected files there (ADR 0057).
-    public var defaultNamePattern: String {
-        didSet { store.setSetting(defaultNamePattern, for: Key.defaultNamePattern) }
+    /// The user's named patterns, one of them the default (ADR 0068).
+    public var savedPatterns: SavedPatterns {
+        didSet {
+            let json = (try? JSONEncoder().encode(savedPatterns)).flatMap {
+                String(data: $0, encoding: .utf8)
+            }
+            store.setSetting(json, for: Key.savedPatterns)
+        }
     }
+
+    /// The pattern a folder without one of its own gets when the user asks for it, or
+    /// when names are suggested for selected files there (ADR 0057): the saved default.
+    public var defaultNamePattern: String { savedPatterns.defaultPattern.text }
 
     /// What Approve All does with a proposed name that holds personal data (ADR 0060).
     public var personalDataInNames: PersonalDataInNames {
         didSet { store.setSetting(personalDataInNames.rawValue, for: Key.personalDataInNames) }
     }
-
-    /// The pattern `defaultNamePattern` starts as.
-    public static let standardNamePattern = "{date:yyyy.MM.dd} {text}"
 
     /// The Favorites the user chose, as JSON (ADR 0050); `nil` until the first
     /// change, while the provider's built-in favorites show.
@@ -155,7 +163,12 @@ public final class BrowserSettings {
             store.setting(Key.doubleClickOpensIn) == "otherPane" ? .otherPane : .samePane
         showsDetails = store.setting(Key.showsDetails) == "true"
         terminalApp = store.setting(Key.terminalApp)
-        defaultNamePattern = store.setting(Key.defaultNamePattern) ?? Self.standardNamePattern
+        savedPatterns =
+            store.setting(Key.savedPatterns).flatMap {
+                try? JSONDecoder().decode(SavedPatterns.self, from: Data($0.utf8))
+            }
+            ?? store.setting(Key.defaultNamePattern).map { SavedPatterns(keeping: $0) }
+            ?? .examples()
         personalDataInNames =
             store.setting(Key.personalDataInNames).flatMap(PersonalDataInNames.init)
             ?? .leaveOutOfApproveAll
