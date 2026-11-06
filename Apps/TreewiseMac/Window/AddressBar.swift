@@ -34,14 +34,17 @@ struct AddressBar: View {
     }
 
     private var crumbsRow: some View {
-        HStack(spacing: 2) {
-            ForEach(Array(crumbs.enumerated()), id: \.offset) { index, crumb in
-                let isLast = index == crumbs.count - 1
-                crumbButton(crumb, isLast: isLast)
-                // As in Explorer, the folder shown ends the path: its own
-                // subfolders are in the list.
-                if !isLast { separator(after: crumb) }
+        let crumbs = self.crumbs
+        return HStack(spacing: 2) {
+            // The first path that fits at full names: the folders at the start go behind
+            // `«` one by one (ADR 0069). Without one that fits, the last, which shows only
+            // the folder itself, is cut short in the middle.
+            ViewThatFits(in: .horizontal) {
+                ForEach(0..<crumbs.count, id: \.self) { hidden in
+                    path(crumbs, hiding: hidden)
+                }
             }
+            .layoutPriority(1)
             Color.clear
                 .contentShape(Rectangle())
                 .onTapGesture { isEditing = true }
@@ -53,22 +56,65 @@ struct AddressBar: View {
         .task(id: folder) { await loadSubfolders() }
     }
 
+    /// The path with its first `hidden` folders behind `«`.
+    private func path(_ crumbs: [PathComponent], hiding hidden: Int) -> some View {
+        HStack(spacing: 2) {
+            if hidden > 0 {
+                overflow(crumbs[..<hidden])
+                separator(after: crumbs[hidden - 1])
+            }
+            ForEach(hidden..<crumbs.count, id: \.self) { index in
+                let isLast = index == crumbs.count - 1
+                crumbButton(crumbs[index], isLast: isLast)
+                // As in Explorer, the folder shown ends the path: its own
+                // subfolders are in the list.
+                if !isLast { separator(after: crumbs[index]) }
+            }
+        }
+    }
+
+    /// `«`, with a menu of the folders it stands for, the nearest last.
+    private func overflow(_ hidden: ArraySlice<PathComponent>) -> some View {
+        Menu {
+            ForEach(Array(hidden), id: \.path) { crumb in
+                Button {
+                    Task { await browser.navigate(pane: paneIndex, to: FileItem.ID(crumb.path)) }
+                } label: {
+                    Label {
+                        Text(crumb.name)
+                    } icon: {
+                        Image(nsImage: FolderIcon.image(for: FileItem.ID(crumb.path)))
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "chevron.left.2").accessibilityLabel(Text("Folders Above"))
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help(Text("Folders Above"))
+    }
+
     private func crumbButton(_ crumb: PathComponent, isLast: Bool) -> some View {
-        Button {
+        // This Mac starts every path on a volume, so its icon says enough (ADR 0069).
+        let iconOnly = !isLast && crumb.path == FileItem.ID.computer.rawValue
+        return Button {
             Task { await browser.navigate(pane: paneIndex, to: FileItem.ID(crumb.path)) }
         } label: {
             HStack(spacing: 4) {
                 FolderIcon(id: FileItem.ID(crumb.path), size: Self.iconSize)
-                Text(crumb.name)
-                    .fontWeight(isLast ? .semibold : .regular)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                if !iconOnly {
+                    Text(crumb.name)
+                        .fontWeight(isLast ? .semibold : .regular)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             }
         }
         .buttonStyle(.borderless)
-        // The folder shown keeps its name longest; the ones above it shorten
-        // first ("Long Folder Na…").
-        .layoutPriority(isLast ? 1 : 0)
+        .help(iconOnly ? crumb.name : "")
+        .accessibilityLabel(Text(crumb.name))
         .dropOutline(dropTarget == crumb.path, cornerRadius: Self.outlineRadius)
         .onDrop(
             of: DropRouting.contentTypes,
@@ -108,28 +154,11 @@ struct AddressBar: View {
             })
     }
 
-    /// This Mac, then the volume and the folders on it, as Explorer starts
-    /// with This PC (ADR 0044); a boundary folder that is not a volume starts
-    /// the path itself.
+    /// The path from where it starts to the folder (ADR 0069).
     private var crumbs: [PathComponent] {
-        let thisMac = PathComponent(
-            name: FileItem.computer().name, path: FileItem.ID.computer.rawValue)
-        guard folder != .computer else { return [thisMac] }
-        let path = pathCrumbs
-        let volumes = Set(browser.locations.filter { $0.kind == .volume }.map(\.id.rawValue))
-        guard let first = path.first, volumes.contains(first.path) else { return path }
-        return [thisMac] + path
-    }
-
-    private var pathCrumbs: [PathComponent] {
-        // A boundary folder starts the path like a volume: nothing above it is shown.
         let boundary = (LaunchOptions.boundary ?? []).map {
             MountPoint(path: $0.path, name: $0.lastPathComponent)
         }
-        let mounts =
-            browser.locations.filter { $0.kind == .volume }.map {
-                MountPoint(path: $0.id.rawValue, name: $0.name)
-            } + boundary
-        return PathComponents.breadcrumbs(for: folder.rawValue, mountPoints: mounts)
+        return browser.addressPath(of: folder, boundary: boundary)
     }
 }
