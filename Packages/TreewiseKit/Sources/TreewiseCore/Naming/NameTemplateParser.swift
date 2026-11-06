@@ -53,28 +53,38 @@ struct NameTemplateParser {
         }
     }
 
+    /// Reads a field, or a choice of fields separated by `|` (ADR 0063).
     private mutating func readField() -> NameTemplate.Problem? {
         guard let end = rest.firstIndex(of: "}") else { return .unbalancedBraces }
         let inner = rest[..<end]
         rest = rest[rest.index(after: end)...]
-        let pieces = inner.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
-        let name = String(pieces[0])
-        guard !name.isEmpty, name.allSatisfy({ $0.isLetter || $0.isNumber }) else {
-            return .unbalancedBraces
-        }
-        guard let field = fields.first(where: { $0.name == name }) else {
-            return .unknownField(name)
-        }
-        var format: DateTemplate?
-        if pieces.count > 1 {
-            guard field.kind == .date, let parsed = DateTemplate(String(pieces[1])) else {
-                return .invalidFormat
+        var alternatives: [NameTemplate.Part] = []
+        for piece in inner.split(separator: "|", omittingEmptySubsequences: false) {
+            switch field(in: piece) {
+            case .success(let part): alternatives.append(part)
+            case .failure(let problem): return problem
             }
-            format = parsed
         }
         flushText()
-        append(.field(field, format: format))
+        append(alternatives.count == 1 ? alternatives[0] : .choice(alternatives))
         return nil
+    }
+
+    /// One field with its format, as written between braces or between `|`.
+    private func field(in text: Substring) -> Result<NameTemplate.Part, NameTemplate.Problem> {
+        let pieces = text.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+        let name = String(pieces[0])
+        guard !name.isEmpty, name.allSatisfy({ $0.isLetter || $0.isNumber }) else {
+            return .failure(.unbalancedBraces)
+        }
+        guard let field = fields.first(where: { $0.name == name }) else {
+            return .failure(.unknownField(name))
+        }
+        guard pieces.count > 1 else { return .success(.field(field, format: nil)) }
+        guard field.kind == .date, let format = DateTemplate(String(pieces[1])) else {
+            return .failure(.invalidFormat)
+        }
+        return .success(.field(field, format: format))
     }
 
     private mutating func flushText() {
@@ -94,7 +104,7 @@ struct NameTemplateParser {
     private static func isRequirement(_ part: NameTemplate.Part) -> Bool {
         switch part {
         case .text(let text): !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        case .field: true
+        case .field, .choice: true
         case .optional: false
         }
     }

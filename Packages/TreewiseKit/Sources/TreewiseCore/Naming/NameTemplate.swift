@@ -1,7 +1,8 @@
 import Foundation
 
 /// A pattern for file names, written like `{date:yyyy.MM.dd} {company}[ - {number}]`:
-/// fields, fixed text, and optional parts that fall away when a field is empty. It both
+/// fields, fixed text, and optional parts that fall away when a field is empty. A field can
+/// name alternatives, as in `{number|company}`, and the first with a value is written. It both
 /// makes a name from values and recognizes one, so Treewise can judge whether a name
 /// fits without running a module or reading a file (ADR 0057).
 ///
@@ -67,6 +68,8 @@ public struct NameTemplate: Hashable, Sendable {
     enum Part: Hashable, Sendable {
         case text(String)
         case field(Field, format: DateTemplate?)
+        /// Fields of which the first with a value is written (ADR 0063).
+        case choice([Part])
         case optional([Part])
     }
 
@@ -139,7 +142,7 @@ public struct NameTemplate: Hashable, Sendable {
             switch part {
             case .field(let field, let format) where field.kind == .date:
                 return format ?? .standard
-            case .optional(let inner):
+            case .optional(let inner), .choice(let inner):
                 if let format = firstDateFormat(in: inner) { return format }
             default:
                 continue
@@ -158,7 +161,7 @@ public struct NameTemplate: Hashable, Sendable {
             switch part {
             case .text: []
             case .field(let field, _): [field]
-            case .optional(let inner): fields(in: inner)
+            case .optional(let inner), .choice(let inner): fields(in: inner)
             }
         }
     }
@@ -173,6 +176,16 @@ public struct NameTemplate: Hashable, Sendable {
                 result += text
             case .field(let field, let format):
                 if let filled = write(values[field.name], for: field, format: format) {
+                    result += filled
+                } else if leavingGaps {
+                    result += gap
+                } else {
+                    return nil
+                }
+            case .choice(let alternatives):
+                if let filled = alternatives.lazy.compactMap({
+                    fill([$0], with: values, leavingGaps: false)
+                }).first {
                     result += filled
                 } else if leavingGaps {
                     result += gap
@@ -204,6 +217,10 @@ public struct NameTemplate: Hashable, Sendable {
             return NSRegularExpression.escapedPattern(for: text)
         case .optional(let inner):
             return "(?:" + inner.map { pattern(for: $0, fixed: fixed) }.joined() + ")?"
+        case .choice(let alternatives):
+            return "(?:"
+                + alternatives.map { pattern(for: $0, fixed: fixed) }.joined(separator: "|")
+                + ")"
         case .field(let field, let format):
             switch field.kind {
             // The group lets `date(in:)` find it; it is the template's only one.
