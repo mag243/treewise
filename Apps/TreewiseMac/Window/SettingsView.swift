@@ -63,6 +63,17 @@ struct SettingsView: View {
                 .font(.caption).foregroundStyle(.secondary)
             }
             Section {
+                Picker("Names with personal data", selection: $settings.personalDataInNames) {
+                    Text("Leave out of Approve All").tag(PersonalDataInNames.leaveOutOfApproveAll)
+                    Text("Only warn").tag(PersonalDataInNames.onlyWarn)
+                }
+            } footer: {
+                Text(
+                    "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not."
+                )
+                .font(.caption).foregroundStyle(.secondary)
+            }
+            Section {
                 Toggle("Check for updates automatically", isOn: $updater.checksAutomatically)
                     .disabled(!updater.isRunning)
             }

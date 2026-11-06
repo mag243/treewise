@@ -64,4 +64,14 @@ enum NameReviewText {
         case .nameTaken: String(localized: "This folder already has a file with this name")
         }
     }
+
+    /// What personal data a proposed name holds (ADR 0060).
+    static func text(for data: PersonalData) -> String {
+        switch data {
+        case .emailAddress: String(localized: "This name contains an e-mail address")
+        case .iban: String(localized: "This name contains a bank account number")
+        case .paymentCard: String(localized: "This name contains a payment card number")
+        case .phoneNumber: String(localized: "This name contains a phone number")
+        }
+    }
 }

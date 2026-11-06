@@ -158,7 +158,7 @@ struct NameReviewRow: View {
     }
 
     private var hasProblem: Bool {
-        model.conflicts[entry.id] != nil
+        model.conflicts[entry.id] != nil || !entry.personalData.isEmpty
             || (entry.currentName != nil && entry.problem != nil && entry.problem != .unchanged)
     }
 

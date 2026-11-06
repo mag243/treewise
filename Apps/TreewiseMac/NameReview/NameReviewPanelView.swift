@@ -37,6 +37,7 @@ struct NameReviewPanelView: View {
         } else if let problem = entry.problem, let text = NameReviewText.text(for: problem) {
             warning(text)
         }
+        ForEach(entry.personalData, id: \.self) { warning(NameReviewText.text(for: $0)) }
         if entry.isOutOfScope { Text("Not for these add-ons. Stays as it is.").font(.caption) }
         switch entry.currentDateSource {
         case .fileSystem:
