@@ -135,9 +135,10 @@ public struct NameTemplate: Hashable, Sendable {
     let parts: [Part]
 
     /// Reads a template, for a module's fields and those in `Field.suppliedByTreewise`
-    /// that are passed.
+    /// that are passed. Spaces count as in the names it makes, single and none at the
+    /// ends, so a stray space does not keep it from recognizing its own names.
     public static func parse(_ text: String, fields: [Field]) -> Result<NameTemplate, Problem> {
-        var parser = NameTemplateParser(text: text, fields: fields)
+        var parser = NameTemplateParser(text: singleSpaced(text), fields: fields)
         return parser.parse().map { NameTemplate(text: text, parts: $0) }
     }
 

@@ -118,6 +118,20 @@ import TreewiseCore
         #expect(template.matches(try #require(template.name(from: Self.values))))
     }
 
+    /// A name is made with single spaces and none at its ends, so a pattern with a stray
+    /// space has to recognize it all the same, or every name it makes is proposed again.
+    @Test(arguments: [
+        "{date:yyyy.MM.dd} - {company} - {description} ",
+        " {date:yyyy.MM.dd} - {company} - {description}",
+        "{date:yyyy.MM.dd}  -  {company} - {description}",
+    ])
+    func recognizesWhatItMakesDespiteStraySpaces(_ text: String) throws {
+        let template = try template(text)
+        let name = try #require(template.name(from: Self.values))
+        #expect(name == "2026.11.02 - Northwind - Cables")
+        #expect(template.matches(name))
+    }
+
     @Test func comparesFixedTextAsWritten() throws {
         #expect(try !template("Scan {number}").matches("scan 12"))
     }
