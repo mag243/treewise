@@ -103,6 +103,13 @@ extension NameProposalSession {
             return proposals.first { Self.key($0.name) == key }?.dateSource
         }
 
+        /// The personal data in the chosen proposal (ADR 0060). A name the user typed is
+        /// left alone, because the user wrote it on purpose.
+        public var personalData: [PersonalData] {
+            guard case .proposal = selection, let name = currentName else { return [] }
+            return PersonalData.found(in: name)
+        }
+
         /// The current name's place among the options, or nil before there is one.
         public var position: Position? {
             guard let index = selectedIndex else { return nil }

@@ -59,6 +59,7 @@ public final class BrowserSettings {
         static let favoriteFolders = "favoriteFolders"
         static let terminalApp = "terminalApp"
         static let defaultNamePattern = "defaultNamePattern"
+        static let personalDataInNames = "personalDataInNames"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
     }
@@ -107,6 +108,11 @@ public final class BrowserSettings {
         didSet { store.setSetting(defaultNamePattern, for: Key.defaultNamePattern) }
     }
 
+    /// What Approve All does with a proposed name that holds personal data (ADR 0060).
+    public var personalDataInNames: PersonalDataInNames {
+        didSet { store.setSetting(personalDataInNames.rawValue, for: Key.personalDataInNames) }
+    }
+
     /// The pattern `defaultNamePattern` starts as.
     public static let standardNamePattern = "{date:yyyy.MM.dd} {text}"
 
@@ -150,6 +156,9 @@ public final class BrowserSettings {
         showsDetails = store.setting(Key.showsDetails) == "true"
         terminalApp = store.setting(Key.terminalApp)
         defaultNamePattern = store.setting(Key.defaultNamePattern) ?? Self.standardNamePattern
+        personalDataInNames =
+            store.setting(Key.personalDataInNames).flatMap(PersonalDataInNames.init)
+            ?? .leaveOutOfApproveAll
         favoriteFolders = store.setting(Key.favoriteFolders)
             .flatMap { try? JSONDecoder().decode([String].self, from: Data($0.utf8)) }?
             .map { FileItem.ID($0) }

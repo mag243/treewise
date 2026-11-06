@@ -77,9 +77,14 @@ extension NameReviewModel {
         return type.conforms(to: .image)
     }
 
-    /// Approves every row with a usable name, a date to check included (ADR 0058).
+    /// Approves every row with a usable name, a date to check included (ADR 0058). A name
+    /// with personal data is left out unless the user chose only a warning (ADR 0060).
     public func approveAll() {
-        session?.approveAll(except: Set(conflicts.keys))
+        var excluded = Set(conflicts.keys)
+        if dependencies.personalDataInNames == .leaveOutOfApproveAll, let session {
+            excluded.formUnion(session.entries.filter { !$0.personalData.isEmpty }.map(\.id))
+        }
+        session?.approveAll(except: excluded)
     }
 
     /// Whether anything approved can be applied now.

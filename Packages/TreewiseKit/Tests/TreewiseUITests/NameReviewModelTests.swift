@@ -59,12 +59,14 @@ import TreewiseUI
 
     func model(
         _ host: ScriptedModuleHost, scope: NameReviewRules.Scope = .wholeFolder,
-        selection: [FileItem] = [], suggestedDate: SuggestedDate? = nil
+        selection: [FileItem] = [], suggestedDate: SuggestedDate? = nil,
+        personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll
     ) async -> NameReviewModel {
         let model = NameReviewModel(
             folder: folder, scope: scope, selection: selection,
             dependencies: .init(
                 operations: fileSystem, host: host, store: store, defaultPattern: "Std {text}",
+                personalDataInNames: personalDataInNames,
                 makeRequest: { item, siblings, needed in
                     NameRequest(
                         id: item.id.rawValue, name: item.name,

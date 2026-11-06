@@ -16,18 +16,22 @@ public struct NameReviewDependencies: Sendable {
     let store: any FolderSettingsStoring
     /// The user's pattern for a folder without one.
     let defaultPattern: String
+    /// What Approve All does with a name that holds personal data.
+    let personalDataInNames: PersonalDataInNames
     let makeRequest: MakeRequest
 
     /// Creates the dependencies.
     public init(
         operations: any FileOperating, host: any NameModuleHosting,
         store: any FolderSettingsStoring, defaultPattern: String,
+        personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
         makeRequest: @escaping MakeRequest
     ) {
         self.operations = operations
         self.host = host
         self.store = store
         self.defaultPattern = defaultPattern
+        self.personalDataInNames = personalDataInNames
         self.makeRequest = makeRequest
     }
 }
