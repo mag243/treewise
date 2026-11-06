@@ -20,7 +20,8 @@ extension NameReviewModel {
     public func setTemplate(_ id: String, to text: String) async {
         guard let index = modules.firstIndex(where: { $0.id == id }) else { return }
         modules[index].templateText = text
-        let parsed = NameTemplate.parse(text, fields: modules[index].description.fields + [.folder])
+        let parsed = NameTemplate.parse(
+            text, fields: modules[index].description.fields + NameTemplate.Field.suppliedByTreewise)
         switch parsed {
         case .failure(let problem):
             modules[index].templateProblem = problem
@@ -110,9 +111,11 @@ extension NameReviewModel {
             session?.replaceProposals([], from: moduleID, for: item.id)
             return
         }
+        let siblings = folderItems.filter { !$0.isHidden && $0.id != item.id }.map(\.name)
         let proposals = NameProposal.make(
             from: values, template: template, moduleID: moduleID, folderName: folder.name,
-            suggestedDate: facts[item.id]?.suggestedDate)
+            suggestedDate: facts[item.id]?.suggestedDate, siblingNames: siblings,
+            currentName: item.name)
         session?.replaceProposals(proposals, from: moduleID, for: item.id)
     }
 

@@ -224,7 +224,9 @@ public final class NameReviewModel {
     }
 
     static func parse(_ text: String, for description: NameModuleDescription) -> NameTemplate? {
-        try? NameTemplate.parse(text, fields: description.fields + [.folder]).get()
+        try? NameTemplate.parse(
+            text, fields: description.fields + NameTemplate.Field.suppliedByTreewise
+        ).get()
     }
 
     /// Runs while a module's answer arrives; one that fails leaves the rest.

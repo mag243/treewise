@@ -28,21 +28,31 @@ public struct NameProposal: Hashable, Sendable {
         self.dateSource = dateSource
     }
 
-    /// Makes the proposals for a module's ranked sets of values, in their order. A set
-    /// without any value gives none. Treewise supplies the folder's name itself, so a
-    /// module never sees it. A date equal to `suggestedDate` keeps that date's source.
+    /// Makes the proposals for a module's ranked sets of values, in their order, each with
+    /// a name per part of a choice of parts (ADR 0064). A set without any value gives none.
+    /// Treewise supplies the folder's name and the next period itself, so a module never
+    /// sees them. A date equal to `suggestedDate`, or a year taken from it, keeps that
+    /// date's source.
+    ///
+    /// - Parameters:
+    ///   - siblingNames: The names of the other items in the folder, for the series.
+    ///   - currentName: The item's name, which puts the part it fits first.
     public static func make(
         from valueSets: [[String: NameTemplate.Value]], template: NameTemplate, moduleID: String,
-        folderName: String, suggestedDate: SuggestedDate?
+        folderName: String, suggestedDate: SuggestedDate?, siblingNames: [String] = [],
+        currentName: String = ""
     ) -> [NameProposal] {
-        valueSets.compactMap { values in
+        let context = NameTemplate.Context(
+            siblingNames: siblingNames.map(ProposedName.stem(of:)),
+            currentName: ProposedName.stem(of: currentName), fileYear: suggestedDate?.year)
+        return valueSets.flatMap { values in
             var all = values
             all[NameTemplate.Field.folder.name] = .text(folderName)
-            let source = suggestedDate.flatMap { date in
-                template.uses(date: date.value, in: all) ? date.source : nil
-            }
-            return template.name(from: all).map {
-                NameProposal(name: $0, moduleID: moduleID, dateSource: source)
+            let usesDate = suggestedDate.map { template.uses(date: $0.value, in: all) } ?? false
+            return template.names(from: all, context: context).map { made in
+                NameProposal(
+                    name: made.name, moduleID: moduleID,
+                    dateSource: usesDate || made.usesFileYear ? suggestedDate?.source : nil)
             }
         }
     }

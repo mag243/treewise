@@ -41,3 +41,22 @@ extension NameReviewModelTests {
         #expect(model.canApply)
     }
 }
+
+/// A choice of parts and the next period in the overview (ADR 0064).
+extension NameReviewModelTests {
+    @Test func offersEachPartWithTheNextPeriodOfItsSeries() async {
+        _ = addFile("Tax - Sales 2025.Q3.txt")
+        let item = addFile("scan.txt")
+        let date = SuggestedDate(year: 2026, month: 1, day: 31, source: .insideFile)
+        let model = await model(host(), suggestedDate: date)
+        await model.setTemplate(
+            Self.free, to: "Tax - <Sales {year}.Q{seq:4}|Payroll {year}.{seq:12}|{text}>")
+        let proposals = model.session?.entry(item.id)?.proposals ?? []
+        #expect(
+            proposals.map(\.name) == [
+                "Tax - Sales 2025.Q4.txt", "Tax - Payroll 2026.01.txt", "Tax - New.txt",
+            ])
+        // Only the new series took its year from the file's date.
+        #expect(proposals.map(\.dateSource) == [nil, .insideFile, nil])
+    }
+}

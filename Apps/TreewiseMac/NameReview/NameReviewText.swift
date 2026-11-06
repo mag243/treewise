@@ -38,9 +38,14 @@ enum NameReviewText {
         case .unbalancedBraces: String(localized: "Every { needs its }")
         case .unbalancedBrackets: String(localized: "Every [ needs its ]")
         case .nestedOptionalParts: String(localized: "Optional parts cannot nest")
+        case .unbalancedAngleBrackets: String(localized: "Every < needs its >")
+        case .emptyAlternative: String(localized: "A choice between < and > has an empty part")
+        case .nestedChoiceOfParts:
+            String(localized: "A choice between < and > cannot hold [ ] or another choice")
         case .unknownField(let field): String(localized: "This add-on has no field {\(field)}")
         case .containsPathSeparator: String(localized: "A pattern cannot hold :")
-        case .invalidFormat: String(localized: "This is not a date format")
+        case .invalidFormat:
+            String(localized: "After : comes a date format, or a number from 2 after {seq}")
         }
     }
 
