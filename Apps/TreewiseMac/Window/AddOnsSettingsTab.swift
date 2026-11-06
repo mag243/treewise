@@ -73,7 +73,7 @@ private struct AddOnRow: View {
                 )
                 .toggleStyle(.checkbox)
                 .disabled(isLast)
-                .help(isLast ? Text("At least one add-on stays on") : Text(""))
+                .help(isLast ? Text("At least one add-on stays on") : Text(verbatim: ""))
                 Spacer()
                 Text(module.isFree ? "Free" : "Paid").font(.caption).foregroundStyle(.secondary)
             }

@@ -1,6 +1,210 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld files already fit" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Dateien passen bereits"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bestanden passen al"
+          }
+        }
+      }
+    },
+    "%lld files already fit, %lld always skipped" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld Dateien passen bereits, %2$lld immer übersprungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld files already fit, %2$lld always skipped"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld bestanden passen al, %2$lld altijd overgeslagen"
+          }
+        }
+      }
+    },
+    "%lld items renamed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Objekte umbenannt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld onderdelen hernoemd"
+          }
+        }
+      }
+    },
+    "%lld of %lld approved" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld von %2$lld bestätigt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld approved"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld van %2$lld goedgekeurd"
+          }
+        }
+      }
+    },
+    "A choice between < and > cannot hold [ ] or another choice" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Auswahl zwischen < und > kann keine [ ] und keine andere Auswahl enthalten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een keuze tussen < en > kan geen [ ] of andere keuze bevatten"
+          }
+        }
+      }
+    },
+    "A choice between < and > has an empty part" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Auswahl zwischen < und > hat einen leeren Teil"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een keuze tussen < en > heeft een leeg deel"
+          }
+        }
+      }
+    },
+    "A name cannot hold :" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Name darf kein : enthalten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een naam kan geen : bevatten"
+          }
+        }
+      }
+    },
+    "A name cannot hold control characters" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Name darf keine Steuerzeichen enthalten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een naam kan geen stuurtekens bevatten"
+          }
+        }
+      }
+    },
+    "A name starting with a dot would hide the file" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Name, der mit einem Punkt beginnt, würde die Datei ausblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een naam die met een punt begint, verbergt het bestand"
+          }
+        }
+      }
+    },
+    "A pattern cannot hold :" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Muster darf kein : enthalten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een patroon kan geen : bevatten"
+          }
+        }
+      }
+    },
+    "A pattern needs something that is not optional" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Muster braucht etwas, das nicht optional ist"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een patroon heeft iets nodig dat niet optioneel is"
+          }
+        }
+      }
+    },
+    "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein vorgeschlagener Name mit einer E-Mail-Adresse, Telefonnummer, Konto- oder Kartennummer wird markiert. Ein Name, den du selbst eingibst, nicht."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een voorgestelde naam met een e-mailadres, telefoonnummer, bankrekening- of betaalkaartnummer wordt gemarkeerd. Een naam die je zelf typt niet."
+          }
+        }
+      }
+    },
     "Actions" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -14,6 +218,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Acties"
+          }
+        }
+      }
+    },
+    "Add Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg patroon toe"
           }
         }
       }
@@ -34,6 +254,70 @@
         }
       }
     },
+    "Add-ons" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons"
+          }
+        }
+      }
+    },
+    "Add-ons and their patterns" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons und ihre Muster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons en hun patronen"
+          }
+        }
+      }
+    },
+    "Add-ons see only files they handle, and cannot reach the internet." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons sehen nur Dateien, die sie verarbeiten, und können nicht ins Internet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons zien alleen bestanden die ze aankunnen, en kunnen niet op internet."
+          }
+        }
+      }
+    },
+    "Add-ons: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons: %@"
+          }
+        }
+      }
+    },
     "Address" : {
       "localizations" : {
         "de" : {
@@ -46,6 +330,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adres"
+          }
+        }
+      }
+    },
+    "After : comes a date format, or a number from 2 after {seq}" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach : folgt ein Datumsformat oder nach {seq} eine Zahl ab 2"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na : komt een datumnotatie, of na {seq} een getal vanaf 2"
+          }
+        }
+      }
+    },
+    "Already fits" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passt bereits"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past al"
+          }
+        }
+      }
+    },
+    "Already fits %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passt bereits zu %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past al bij %@"
+          }
+        }
+      }
+    },
+    "Always Skip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immer überspringen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sla altijd over"
+          }
+        }
+      }
+    },
+    "An add-on that is off is offered in no folder. Drag to set the order for folders without their own." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein ausgeschaltetes Add-on wird in keinem Ordner angeboten. Ziehe, um die Reihenfolge für Ordner ohne eigene festzulegen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een add-on die uit staat, wordt in geen enkele map aangeboden. Sleep om de volgorde te bepalen voor mappen zonder eigen volgorde."
           }
         }
       }
@@ -67,6 +431,22 @@
         }
       }
     },
+    "Another file in this list wants this name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine andere Datei in dieser Liste soll diesen Namen bekommen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een ander bestand in deze lijst wil deze naam"
+          }
+        }
+      }
+    },
     "Apply to All" : {
       "comment" : "Conflict dialog checkbox",
       "localizations" : {
@@ -80,6 +460,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pas toe op alles"
+          }
+        }
+      }
+    },
+    "Approve" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keur goed"
+          }
+        }
+      }
+    },
+    "Approve All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle bestätigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keur alles goed"
           }
         }
       }
@@ -100,6 +512,22 @@
         }
       }
     },
+    "At least one add-on stays on" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mindestens ein Add-on bleibt eingeschaltet"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er blijft minstens één add-on aan"
+          }
+        }
+      }
+    },
     "Back" : {
       "comment" : "A button that goes back in the browsing history.",
       "isCommentAutoGenerated" : true,
@@ -114,6 +542,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terug"
+          }
+        }
+      }
+    },
+    "Back in List" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zurück in die Liste"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terug in lijst"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuleer"
+          }
+        }
+      }
+    },
+    "Change" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ändern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig"
           }
         }
       }
@@ -146,6 +622,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zoek automatisch naar updates"
+          }
+        }
+      }
+    },
+    "Choose a Saved Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichertes Muster auswählen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kies een bewaard patroon"
           }
         }
       }
@@ -266,6 +758,70 @@
         }
       }
     },
+    "Date from the PDF, check it" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum aus dem PDF, bitte prüfen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum uit de pdf, controleer het"
+          }
+        }
+      }
+    },
+    "Date from the photo, check it" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum aus dem Foto, bitte prüfen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum uit de foto, controleer het"
+          }
+        }
+      }
+    },
+    "Date of the file, check it" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum der Datei, bitte prüfen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum van het bestand, controleer het"
+          }
+        }
+      }
+    },
+    "Default" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standaard"
+          }
+        }
+      }
+    },
     "Descending" : {
       "localizations" : {
         "de" : {
@@ -331,6 +887,22 @@
         }
       }
     },
+    "Done" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fertig"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gereed"
+          }
+        }
+      }
+    },
     "Double-click opens folders in" : {
       "localizations" : {
         "de" : {
@@ -360,6 +932,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wordt gedownload"
+          }
+        }
+      }
+    },
+    "Drag to change the order of the add-ons" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziehen, um die Reihenfolge der Add-ons zu ändern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep om de volgorde van de add-ons te wijzigen"
+          }
+        }
+      }
+    },
+    "Edit Saved Patterns…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesicherte Muster bearbeiten …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig bewaarde patronen…"
           }
         }
       }
@@ -398,6 +1002,54 @@
         }
       }
     },
+    "Every < needs its >" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes < braucht ein >"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke < heeft een > nodig"
+          }
+        }
+      }
+    },
+    "Every [ needs its ]" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes [ braucht ein ]"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke [ heeft een ] nodig"
+          }
+        }
+      }
+    },
+    "Every { needs its }" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes { braucht ein }"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke { heeft een } nodig"
+          }
+        }
+      }
+    },
     "Favorites" : {
       "comment" : "Sidebar section",
       "localizations" : {
@@ -411,6 +1063,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Favorieten"
+          }
+        }
+      }
+    },
+    "Fields: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felder: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velden: %@"
+          }
+        }
+      }
+    },
+    "Fill in the gap to approve" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fülle die Lücke aus, um zu bestätigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vul het gat in om goed te keuren"
           }
         }
       }
@@ -431,6 +1115,54 @@
         }
       }
     },
+    "Fits %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passt zu %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past bij %@"
+          }
+        }
+      }
+    },
+    "Folder Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnermuster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mappatroon"
+          }
+        }
+      }
+    },
+    "Folders Above" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergeordnete Ordner"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bovenliggende mappen"
+          }
+        }
+      }
+    },
     "Folders in %@" : {
       "localizations" : {
         "de" : {
@@ -443,6 +1175,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mappen in %@"
+          }
+        }
+      }
+    },
+    "For %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor %@"
           }
         }
       }
@@ -461,6 +1209,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vooruit"
+          }
+        }
+      }
+    },
+    "Free" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kostenlos"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratis"
+          }
+        }
+      }
+    },
+    "From: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Van: %@"
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allgemein"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algemeen"
           }
         }
       }
@@ -497,6 +1293,22 @@
         }
       }
     },
+    "Hide Preview" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschau ausblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verberg voorvertoning"
+          }
+        }
+      }
+    },
     "Home" : {
       "localizations" : {
         "de" : {
@@ -525,6 +1337,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kies in Toetscombinaties de optie App-toetscombinaties, voeg Treewise toe en typ de naam van een menuonderdeel zoals het menu hem toont."
+          }
+        }
+      }
+    },
+    "In This Folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In diesem Ordner"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In deze map"
           }
         }
       }
@@ -595,6 +1423,22 @@
         }
       }
     },
+    "Leave out of Approve All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht bei „Alle bestätigen“"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet bij Keur alles goed"
+          }
+        }
+      }
+    },
     "Left Pane" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -625,6 +1469,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Locaties"
+          }
+        }
+      }
+    },
+    "Make Default" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Standard festlegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maak standaard"
           }
         }
       }
@@ -661,6 +1521,22 @@
         }
       }
     },
+    "Move Down" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach unten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omlaag"
+          }
+        }
+      }
+    },
     "Move Item Here" : {
       "localizations" : {
         "de" : {
@@ -689,6 +1565,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Treewise naar Programma's verplaatsen?"
+          }
+        }
+      }
+    },
+    "Move Up" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach oben"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omhoog"
           }
         }
       }
@@ -760,6 +1652,54 @@
         }
       }
     },
+    "Name Patterns" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namensmuster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naampatronen"
+          }
+        }
+      }
+    },
+    "Names" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen"
+          }
+        }
+      }
+    },
+    "Names with personal data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen mit persönlichen Daten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen met persoonsgegevens"
+          }
+        }
+      }
+    },
     "New" : {
       "localizations" : {
         "de" : {
@@ -790,6 +1730,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nieuwe map"
+          }
+        }
+      }
+    },
+    "New Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Muster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuw patroon"
           }
         }
       }
@@ -828,6 +1784,70 @@
         }
       }
     },
+    "No proposal." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Vorschlag."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen voorstel."
+          }
+        }
+      }
+    },
+    "No proposal. Type a name." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Vorschlag. Gib einen Namen ein."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen voorstel. Typ een naam."
+          }
+        }
+      }
+    },
+    "Not for these add-ons." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht für diese Add-ons."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet voor deze add-ons."
+          }
+        }
+      }
+    },
+    "Not for these add-ons. Stays as it is." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht für diese Add-ons. Bleibt unverändert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet voor deze add-ons. Blijft zoals het is."
+          }
+        }
+      }
+    },
     "OK" : {
       "comment" : "The label of a button that dismisses an alert.",
       "isCommentAutoGenerated" : true,
@@ -846,6 +1866,54 @@
         }
       }
     },
+    "Off" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uit"
+          }
+        }
+      }
+    },
+    "On" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aan"
+          }
+        }
+      }
+    },
+    "On in new folders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In neuen Ordnern ein"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aan in nieuwe mappen"
+          }
+        }
+      }
+    },
     "Only online" : {
       "comment" : "A file's cloud status",
       "localizations" : {
@@ -859,6 +1927,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alleen online"
+          }
+        }
+      }
+    },
+    "Only warn" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur warnen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alleen waarschuwen"
           }
         }
       }
@@ -960,6 +2044,22 @@
         }
       }
     },
+    "Optional parts cannot nest" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionale Teile können nicht verschachtelt werden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionele delen kunnen niet in elkaar staan"
+          }
+        }
+      }
+    },
     "Order" : {
       "localizations" : {
         "de" : {
@@ -972,6 +2072,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Volgorde"
+          }
+        }
+      }
+    },
+    "Paid" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kostenpflichtig"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Betaald"
           }
         }
       }
@@ -1024,6 +2140,102 @@
         }
       }
     },
+    "Reading %lld files…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Dateien werden gelesen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bestanden lezen…"
+          }
+        }
+      }
+    },
+    "Reading the file…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei wird gelesen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestand lezen…"
+          }
+        }
+      }
+    },
+    "Reads names and the pages of a file" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liest Namen und die Seiten einer Datei"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leest namen en de pagina's van een bestand"
+          }
+        }
+      }
+    },
+    "Reads names and the text of a file" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liest Namen und den Text einer Datei"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leest namen en de tekst van een bestand"
+          }
+        }
+      }
+    },
+    "Reads names only" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liest nur Namen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leest alleen namen"
+          }
+        }
+      }
+    },
+    "Recognize Again" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut erkennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herken opnieuw"
+          }
+        }
+      }
+    },
     "Redo" : {
       "localizations" : {
         "de" : {
@@ -1052,6 +2264,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vernieuw"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder"
+          }
+        }
+      }
+    },
+    "Remove %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ entfernen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder %@"
           }
         }
       }
@@ -1086,6 +2330,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wijzig naam"
+          }
+        }
+      }
+    },
+    "Rename %lld Items" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Objekte umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam van %lld onderdelen"
+          }
+        }
+      }
+    },
+    "Rename with Suggestions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Vorschlägen umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam met voorstellen"
           }
         }
       }
@@ -1188,6 +2464,70 @@
         }
       }
     },
+    "Save" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar"
+          }
+        }
+      }
+    },
+    "Save Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster sichern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar patroon"
+          }
+        }
+      }
+    },
+    "Save Pattern…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster sichern …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar patroon…"
+          }
+        }
+      }
+    },
+    "Saved Patterns" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesicherte Muster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaarde patronen"
+          }
+        }
+      }
+    },
     "Search %@" : {
       "comment" : "Placeholder of the search field; %@ is the folder's name",
       "localizations" : {
@@ -1282,6 +2622,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toon volgend tabblad"
+          }
+        }
+      }
+    },
+    "Show Preview" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschau einblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon voorvertoning"
           }
         }
       }
@@ -1419,6 +2775,22 @@
         }
       }
     },
+    "Skip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überspringen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sla over"
+          }
+        }
+      }
+    },
     "Small" : {
       "localizations" : {
         "de" : {
@@ -1503,6 +2875,70 @@
         }
       }
     },
+    "Stopped: a name could not be given, and the rest stayed as it was." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestoppt: Ein Name konnte nicht vergeben werden, der Rest blieb unverändert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt: een naam kon niet worden gegeven, en de rest bleef zoals het was."
+          }
+        }
+      }
+    },
+    "Stopped: a name could not be given. A file is left as %@; Undo Rename puts it back." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestoppt: Ein Name konnte nicht vergeben werden. Eine Datei heißt jetzt %@; „Umbenennen widerrufen“ stellt sie wieder her."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt: een naam kon niet worden gegeven. Een bestand heet nu %@; Herstel naamswijziging zet het terug."
+          }
+        }
+      }
+    },
+    "Suggest Names: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen vorschlagen: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel namen voor: %@"
+          }
+        }
+      }
+    },
+    "Suggest Names…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen vorschlagen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel namen voor…"
+          }
+        }
+      }
+    },
     "Terminal app" : {
       "localizations" : {
         "de" : {
@@ -1515,6 +2951,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminal-app"
+          }
+        }
+      }
+    },
+    "The default" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Standard"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De standaard"
+          }
+        }
+      }
+    },
+    "The default is offered to a folder without a pattern of its own. Folders keep their own copy of a pattern." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Standard wird einem Ordner ohne eigenes Muster angeboten. Ordner behalten ihre eigene Kopie eines Musters."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De standaard wordt aangeboden in een map zonder eigen patroon. Mappen houden hun eigen kopie van een patroon."
           }
         }
       }
@@ -1548,6 +3016,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Het andere venster"
+          }
+        }
+      }
+    },
+    "The pattern is kept under this name, to pick in other folders." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Muster wird unter diesem Namen gesichert, um es in anderen Ordnern auszuwählen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het patroon wordt onder deze naam bewaard, om in andere mappen te kiezen."
           }
         }
       }
@@ -1586,6 +3070,150 @@
         }
       }
     },
+    "This add-on has no field {%@}" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Add-on hat kein Feld {%@}"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze add-on heeft geen veld {%@}"
+          }
+        }
+      }
+    },
+    "This folder already has a file with this name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Ordner enthält bereits eine Datei mit diesem Namen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze map heeft al een bestand met deze naam"
+          }
+        }
+      }
+    },
+    "This is the name it already has" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das ist bereits ihr Name"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit is de naam die het al heeft"
+          }
+        }
+      }
+    },
+    "This name already fits." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name passt bereits."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam past al."
+          }
+        }
+      }
+    },
+    "This name contains a bank account number" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine Kontonummer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een bankrekeningnummer"
+          }
+        }
+      }
+    },
+    "This name contains a payment card number" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine Kartennummer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een betaalkaartnummer"
+          }
+        }
+      }
+    },
+    "This name contains a phone number" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine Telefonnummer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een telefoonnummer"
+          }
+        }
+      }
+    },
+    "This name contains an e-mail address" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine E-Mail-Adresse"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een e-mailadres"
+          }
+        }
+      }
+    },
+    "This name is too long" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name ist zu lang"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam is te lang"
+          }
+        }
+      }
+    },
     "This window" : {
       "localizations" : {
         "de" : {
@@ -1614,6 +3242,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vensters naast elkaar"
+          }
+        }
+      }
+    },
+    "Treewise" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise"
           }
         }
       }
@@ -1698,6 +3342,70 @@
         }
       }
     },
+    "Undo Rename" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbenennen widerrufen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel naamswijziging"
+          }
+        }
+      }
+    },
+    "Undo Skip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überspringen widerrufen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel overslaan"
+          }
+        }
+      }
+    },
+    "Use Default" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard verwenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik standaard"
+          }
+        }
+      }
+    },
+    "Use Your Default: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deinen Standard verwenden: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik je standaard: %@"
+          }
+        }
+      }
+    },
     "View" : {
       "localizations" : {
         "de" : {
@@ -1714,6 +3422,22 @@
         }
       }
     },
+    "Warning" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warnung"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waarschuwing"
+          }
+        }
+      }
+    },
     "Window Beside" : {
       "localizations" : {
         "de" : {
@@ -1726,6 +3450,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Venster ernaast"
+          }
+        }
+      }
+    },
+    "You" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jij"
+          }
+        }
+      }
+    },
+    "add-on's default" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard des Add-ons"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "standaard van de add-on"
+          }
+        }
+      }
+    },
+    "all files" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alle Dateien"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alle bestanden"
           }
         }
       }
@@ -1758,6 +3530,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "als lijst"
+          }
+        }
+      }
+    },
+    "changed by you" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "von dir geändert"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gewijzigd door jou"
+          }
+        }
+      }
+    },
+    "no pattern recognized in this folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kein Muster in diesem Ordner erkannt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "geen patroon herkend in deze map"
+          }
+        }
+      }
+    },
+    "recognized in this folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in diesem Ordner erkannt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herkend in deze map"
+          }
+        }
+      }
+    },
+    "your default, as files were selected" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dein Standard, da Dateien ausgewählt waren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "jouw standaard, omdat er bestanden geselecteerd waren"
+          }
+        }
+      }
+    },
+    "{%@}" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{%@}"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{%@}"
           }
         }
       }

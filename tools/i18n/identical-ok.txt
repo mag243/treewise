@@ -15,3 +15,13 @@ Open
 Open in Terminal
 Stop
 Volume
+
+# The app's own term for its extensions, kept in Dutch and German as in other apps.
+Add-ons
+Add-ons: %@
+
+# The app's name.
+Treewise
+
+# A field of a pattern, which is never translated.
+{%@}
