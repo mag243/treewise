@@ -25,6 +25,10 @@ import TreewiseModuleInterface
         #expect(module.description.neededContent.isEmpty)
     }
 
+    @Test func isFree() {
+        #expect(module.description.isFree)
+    }
+
     @Test func handlesEveryItem() {
         #expect(module.description.contentTypes == ["public.item"])
     }

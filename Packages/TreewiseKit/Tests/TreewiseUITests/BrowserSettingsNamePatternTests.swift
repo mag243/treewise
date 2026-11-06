@@ -28,3 +28,18 @@ import TreewiseUI
         #expect(BrowserSettings(store: store).defaultNamePattern == "{text} - {seq}")
     }
 }
+
+/// What the user chose for the add-ons across the app (ADR 0070).
+@MainActor
+@Suite struct BrowserSettingsAddOnsTests {
+    @Test func startsWithEveryAddOnOn() {
+        #expect(BrowserSettings(store: MemorySettingsStore()).addOns == AddOnPreferences())
+    }
+
+    @Test func keepsTheUsersChoices() {
+        let store = MemorySettingsStore()
+        let settings = BrowserSettings(store: store)
+        settings.addOns.setOn("paid", on: false, catalog: ["free", "paid"])
+        #expect(!BrowserSettings(store: store).addOns.isOn("paid"))
+    }
+}

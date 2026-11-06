@@ -62,6 +62,7 @@ public final class BrowserSettings {
         /// is no list yet (ADR 0068).
         static let defaultNamePattern = "defaultNamePattern"
         static let savedPatterns = "savedPatterns"
+        static let addOns = "addOns"
         static let personalDataInNames = "personalDataInNames"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
@@ -112,6 +113,16 @@ public final class BrowserSettings {
                 String(data: $0, encoding: .utf8)
             }
             store.setSetting(json, for: Key.savedPatterns)
+        }
+    }
+
+    /// What the user chose for the add-ons across the app (ADR 0070).
+    public var addOns: AddOnPreferences {
+        didSet {
+            let json = (try? JSONEncoder().encode(addOns)).flatMap {
+                String(data: $0, encoding: .utf8)
+            }
+            store.setSetting(json, for: Key.addOns)
         }
     }
 
@@ -169,6 +180,10 @@ public final class BrowserSettings {
             }
             ?? store.setting(Key.defaultNamePattern).map { SavedPatterns(keeping: $0) }
             ?? .examples()
+        addOns =
+            store.setting(Key.addOns).flatMap {
+                try? JSONDecoder().decode(AddOnPreferences.self, from: Data($0.utf8))
+            } ?? AddOnPreferences()
         personalDataInNames =
             store.setting(Key.personalDataInNames).flatMap(PersonalDataInNames.init)
             ?? .leaveOutOfApproveAll

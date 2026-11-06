@@ -16,17 +16,20 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     public let fields: [NameTemplate.Field]
     /// The template it starts from, until the user changes it.
     public let defaultTemplate: String
+    /// Whether it comes without paying, as Settings shows (ADR 0055, ADR 0070).
+    public let isFree: Bool
 
     /// Creates a description.
     public init(
         id: String, contentTypes: Set<String>, neededContent: Set<ModuleContentKind>,
-        fields: [NameTemplate.Field], defaultTemplate: String
+        fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false
     ) {
         self.id = id
         self.contentTypes = contentTypes
         self.neededContent = neededContent
         self.fields = fields
         self.defaultTemplate = defaultTemplate
+        self.isFree = isFree
     }
 }
 

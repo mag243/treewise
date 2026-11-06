@@ -42,6 +42,7 @@ extension BrowserState {
                 operations: operations, host: host, store: store,
                 defaultPattern: settings.defaultNamePattern,
                 personalDataInNames: settings.personalDataInNames,
+                addOns: settings.addOns,
                 savedPatterns: { [settings] in settings.savedPatterns },
                 savePattern: { [settings] name, text in
                     if case .failure(let problem) = settings.savedPatterns.save(

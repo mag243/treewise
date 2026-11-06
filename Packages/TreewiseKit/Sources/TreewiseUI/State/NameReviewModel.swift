@@ -21,6 +21,8 @@ public struct NameReviewDependencies: Sendable {
     /// What Approve All does with a name that holds personal data.
     let personalDataInNames: PersonalDataInNames
     let makeRequest: MakeRequest
+    /// What Settings decides for the add-ons across the app (ADR 0070).
+    let addOns: AddOnPreferences
     /// The user's saved patterns (ADR 0068).
     let savedPatterns: @MainActor @Sendable () -> SavedPatterns
     let savePattern: SavePattern
@@ -30,6 +32,7 @@ public struct NameReviewDependencies: Sendable {
         operations: any FileOperating, host: any NameModuleHosting,
         store: any FolderSettingsStoring, defaultPattern: String,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
+        addOns: AddOnPreferences = AddOnPreferences(),
         savedPatterns: @escaping @MainActor @Sendable () -> SavedPatterns = { .examples() },
         savePattern: @escaping SavePattern = { _, _ in nil },
         makeRequest: @escaping MakeRequest
@@ -40,6 +43,7 @@ public struct NameReviewDependencies: Sendable {
         self.defaultPattern = defaultPattern
         self.personalDataInNames = personalDataInNames
         self.makeRequest = makeRequest
+        self.addOns = addOns
         self.savedPatterns = savedPatterns
         self.savePattern = savePattern
     }
@@ -161,14 +165,23 @@ public final class NameReviewModel {
         items = (scope == .selection ? selection : visible.filter { !$0.isContainer }).sorted {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
         }
-        let descriptions = (try? await dependencies.host.availableModules()) ?? []
+        // An add-on turned off in Settings is offered in no folder (ADR 0070).
+        let addOns = dependencies.addOns
+        let all = (try? await dependencies.host.availableModules()) ?? []
+        let catalog = addOns.available(all.map(\.id))
+        let descriptions = all.filter { catalog.contains($0.id) }
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
         isFirstReview = saved == nil
-        settings = saved ?? .new(defaultModuleID: NameModuleDescription.defaultModuleID)
+        let fresh = addOns.newFolder(
+            catalog: all.map(\.id), defaultID: NameModuleDescription.defaultModuleID)
+        settings = saved ?? fresh
+        settings.enabledModules = settings.enabledModules.filter(catalog.contains)
+        if settings.enabledModules.isEmpty { settings.enabledModules = fresh.enabledModules }
         let names = visible.map(\.name)
         modules = []
-        // The folder's order of the add-ons (ADR 0065), with one new to it last.
-        let order = settings.ordered(descriptions.map(\.id))
+        // The folder's order of the add-ons (ADR 0065), or else the default order, with
+        // one new to the folder last.
+        let order = settings.ordered(catalog)
         for description in descriptions.sorted(by: {
             (order.firstIndex(of: $0.id) ?? 0) < (order.firstIndex(of: $1.id) ?? 0)
         }) {

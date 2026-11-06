@@ -62,7 +62,8 @@ import TreewiseUI
     func model(
         _ host: ScriptedModuleHost, scope: NameReviewRules.Scope = .wholeFolder,
         selection: [FileItem] = [], suggestedDate: SuggestedDate? = nil,
-        personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll
+        personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
+        addOns: AddOnPreferences = AddOnPreferences()
     ) async -> NameReviewModel {
         let patterns = savedPatterns
         let model = NameReviewModel(
@@ -70,6 +71,7 @@ import TreewiseUI
             dependencies: .init(
                 operations: fileSystem, host: host, store: store, defaultPattern: "Std {text}",
                 personalDataInNames: personalDataInNames,
+                addOns: addOns,
                 savedPatterns: { patterns.list },
                 savePattern: { patterns.save(name: $0, text: $1) },
                 makeRequest: { item, siblings, needed in

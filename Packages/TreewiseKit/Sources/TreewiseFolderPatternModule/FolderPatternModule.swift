@@ -22,7 +22,7 @@ public struct FolderPatternModule: NameModule {
     /// What this module is.
     public let description = NameModuleDescription(
         id: NameModuleDescription.defaultModuleID, contentTypes: ["public.item"], neededContent: [],
-        fields: fields, defaultTemplate: "{date:yyyy.MM.dd} {text}")
+        fields: fields, defaultTemplate: "{date:yyyy.MM.dd} {text}", isFree: true)
 
     /// Creates the module.
     public init() {}
