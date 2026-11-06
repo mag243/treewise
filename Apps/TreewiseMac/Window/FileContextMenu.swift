@@ -167,6 +167,15 @@ struct FileContextMenu {
             ) {
                 browser.renameRequest = items.first?.id
             })
+        // Renaming with the add-ons' proposals at once, for one file (ADR 0066).
+        menu.addItem(
+            ClosureMenuItem(
+                String(localized: "Rename with Suggestions"), symbol: "text.badge.star",
+                enabled: items.count == 1 && changeable && browser.canSuggestName(for: items[0])
+            ) {
+                browser.renameSuggests = true
+                browser.renameRequest = items.first?.id
+            })
         menu.addItem(
             item("Move to Trash", symbol: "trash", enabled: changeable) {
                 await browser.moveSelectionToTrash(undoManager: undoManager)

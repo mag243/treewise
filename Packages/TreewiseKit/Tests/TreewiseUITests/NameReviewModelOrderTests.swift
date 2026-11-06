@@ -43,3 +43,22 @@ extension NameReviewModelTests {
         #expect(again.modules.map(\.id) == [Self.paid, Self.free])
     }
 }
+
+/// The proposals of one file, as the menu while renaming shows them (ADR 0066).
+extension NameReviewModelTests {
+    @Test func givesEachOptionWithItsColoursAndWarnings() async {
+        let item = addFile("scan.txt")
+        let model = await model(
+            host(answers: [
+                Self.free: .success([["text": .text("jan@example.com")], ["text": .text("Letter")]])
+            ]), scope: .selection, selection: [item])
+        await model.setTemplate(Self.free, to: "Doc {text} {number}")
+        let options = model.options(of: item.id)
+        #expect(options.map(\.name) == ["Doc jan@example.com ▮.txt", "Doc Letter ▮.txt"])
+        #expect(options.map(\.personalData) == [[.emailAddress], []])
+        #expect(options.allSatisfy { $0.hasGap })
+        let first = options[0]
+        #expect(first.marks.map { String(first.name[$0.range]) } == ["jan@example.com", "▮"])
+        #expect(first.marks.map(\.colorIndex) == [0, 1])
+    }
+}

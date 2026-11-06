@@ -37,6 +37,9 @@ public final class BrowserState {
     /// An item the list should start renaming, such as a new folder; the
     /// list sets it back to `nil` when it starts.
     public var renameRequest: FileItem.ID?
+    /// Whether the rename `renameRequest` asks for opens the proposals at once, as Rename
+    /// with Suggestions does (ADR 0066); the list sets it back when it starts.
+    public var renameSuggests = false
 
     /// The settings the window follows, such as showing hidden items.
     public let settings: BrowserSettings

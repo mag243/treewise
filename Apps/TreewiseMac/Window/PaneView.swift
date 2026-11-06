@@ -138,7 +138,15 @@ struct PaneView: View {
             rename: { item, name in
                 Task { await browser.rename(item, to: name, undoManager: undoManager) }
             },
-            renameStarted: { browser.renameRequest = nil },
+            renameStarted: {
+                browser.renameRequest = nil
+                defer { browser.renameSuggests = false }
+                return browser.renameSuggests
+            },
+            suggestName: { item, field in
+                NameSuggestionMenu.show(
+                    for: item, in: field, browser: browser, undoManager: undoManager)
+            },
             contextMenu: { contextMenu.menu(for: $0) },
             drop: DropRouting.action(for: browser, undoManager: undoManager))
     }

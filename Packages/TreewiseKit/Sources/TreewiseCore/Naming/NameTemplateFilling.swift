@@ -207,11 +207,12 @@ extension NameTemplate {
     }
 
     /// A named group for the first field of its kind, so a name can be read back.
-    /// A field's pattern, in a plain group when every field is captured.
+    /// A field's pattern, in a plain group when every field is captured. Then a field may
+    /// also be a gap, as in a proposal it could not fill in.
     private static func plain(_ body: String, field: String, captured: inout Capture) -> String {
         guard captured.everyField else { return body }
         captured.addGroup(for: field)
-        return "(" + body + ")"
+        return "(" + body + "|" + NSRegularExpression.escapedPattern(for: gap) + ")"
     }
 
     private static func group(

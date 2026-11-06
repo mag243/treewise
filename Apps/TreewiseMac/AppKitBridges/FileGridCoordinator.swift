@@ -107,8 +107,10 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
         if let request = view.renameRequest,
             let index = items.firstIndex(where: { $0.id == request })
         {
-            view.actions.renameStarted()
-            DispatchQueue.main.async { [weak self] in self?.beginRename(index: index) }
+            let suggests = view.actions.renameStarted()
+            DispatchQueue.main.async { [weak self] in
+                self?.beginRename(index: index, suggests: suggests)
+            }
         }
     }
 

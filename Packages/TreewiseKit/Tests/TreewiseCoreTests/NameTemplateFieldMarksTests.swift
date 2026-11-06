@@ -37,6 +37,12 @@ import TreewiseCore
         #expect(try marked("Invoice {number|company}", "Invoice Northwind") == ["number=Northwind"])
     }
 
+    @Test func marksAGapAsItsField() throws {
+        #expect(
+            try marked("{text} {number}", "Letter \(NameTemplate.gap)")
+                == ["text=Letter", "number=\(NameTemplate.gap)"])
+    }
+
     @Test func marksNothingInANameThatDoesNotFit() throws {
         #expect(try marked("Invoice {number}", "Holiday") == [])
     }

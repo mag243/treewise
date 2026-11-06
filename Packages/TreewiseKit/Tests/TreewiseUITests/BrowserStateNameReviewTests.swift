@@ -18,6 +18,26 @@ import TreewiseUI
         #expect(review?.folder.id == "documents")
     }
 
+    @Test func proposesForOneFileBeingRenamed() async throws {
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        let parent = try await fileSystem.item(at: "documents")
+        let item = FileItem(
+            id: "documents/a", name: "a.txt", kind: .file, parentID: parent.id,
+            volume: parent.volume)
+        fileSystem.add(item)
+        let proposals = await browser.makeNameProposals(
+            for: item, host: host, store: MemoryFolderSettings())
+        #expect(proposals?.scope == .selection)
+        await proposals?.start()
+        #expect(proposals?.session?.entries.map(\.id) == [item.id])
+    }
+
+    @Test func proposesNothingForAFolderBeingRenamed() async throws {
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        let folder = try await fileSystem.item(at: "documents")
+        #expect(!browser.canSuggestName(for: folder))
+    }
+
     @Test func offersSuggestionsWhereItemsCanBeAdded() async {
         #expect(await makeBrowser(fileSystem: fileSystem).canSuggestNames)
     }

@@ -15,7 +15,11 @@ struct FileTableActions {
     var canPaste: () -> Bool
     var rename: (FileItem, String) -> Void
     /// Called when the list starts renaming the item it was asked to.
-    var renameStarted: () -> Void
+    /// The list started the rename it was asked for; says whether that rename asks for
+    /// proposals at once, as Rename with Suggestions does (ADR 0066).
+    var renameStarted: () -> Bool
+    /// Asks for proposals for the item being renamed in this field (ADR 0066).
+    var suggestName: (FileItem, NSTextField) -> Void
     /// The context menu for the given items, or for the folder when empty.
     var contextMenu: ([FileItem]) -> NSMenu
     var drop: DropAction

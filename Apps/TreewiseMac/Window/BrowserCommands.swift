@@ -42,6 +42,15 @@ struct BrowserActions {
         Task { await browser.moveSelectionToTrash(undoManager: undoManager) }
     }
     func rename() { browser.renameRequest = browser.selectedItems.first?.id }
+    /// Whether one file is selected that proposals can be asked for (ADR 0066).
+    var canRenameWithSuggestions: Bool {
+        let selected = browser.selectedItems
+        return selected.count == 1 && browser.canSuggestName(for: selected[0])
+    }
+    func renameWithSuggestions() {
+        browser.renameSuggests = true
+        browser.renameRequest = browser.selectedItems.first?.id
+    }
     /// Whether a terminal can open for the selection (ADR 0052).
     var canOpenTerminal: Bool { TerminalOpener.isAvailable && browser.terminalFolder != nil }
     func openTerminal() { TerminalOpener.open(browser.terminalFolder, settings: browser.settings) }
@@ -128,6 +137,8 @@ struct BrowserCommands: Commands {
                 .disabled(!(actions?.canSuggestNames ?? false))
             Button("Rename") { actions?.rename() }
                 .disabled(!(actions?.canRename ?? false))
+            Button("Rename with Suggestions") { actions?.renameWithSuggestions() }
+                .disabled(!(actions?.canRenameWithSuggestions ?? false))
             Button("Eject") { actions?.eject() }
                 .keyboardShortcut("e", modifiers: .command)
                 .disabled(actions?.ejectableSelection.isEmpty ?? true)

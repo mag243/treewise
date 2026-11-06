@@ -91,8 +91,10 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         if view.isActive { PaneFocus.follow(table) }
         if let request = view.renameRequest, let row = items.firstIndex(where: { $0.id == request })
         {
-            view.actions.renameStarted()
-            DispatchQueue.main.async { [weak self] in self?.beginRename(row: row) }
+            let suggests = view.actions.renameStarted()
+            DispatchQueue.main.async { [weak self] in
+                self?.beginRename(row: row, suggests: suggests)
+            }
         }
     }
 

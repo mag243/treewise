@@ -12,8 +12,8 @@ enum NameReviewWindow {
     private static let defaultSize = NSSize(width: 980, height: 620)
     private static let minimumSize = NSSize(width: 720, height: 420)
     /// One connection to the modules' service, for every review.
-    private static let host = XPCModuleHost()
-    private static let store = FolderSettingsStore(directory: FolderSettingsStore.defaultDirectory)
+    static let host = XPCModuleHost()
+    static let store = FolderSettingsStore(directory: FolderSettingsStore.defaultDirectory)
     /// The open windows, kept until they close.
     private static var open: [Open] = []
 
