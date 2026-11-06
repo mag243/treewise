@@ -26,6 +26,15 @@ public enum NearlySameText {
         return isCutOff(text, of: expected) || isTypo(text, of: expected)
     }
 
+    /// The lengths text can have to be nearly `expected` characters long, the closest
+    /// first, so a whole name is tried before a part of it.
+    public static func lengths(near expected: Int) -> [Int] {
+        guard expected >= shortestWithTypo else { return [expected] }
+        let longest = expected + (expected >= shortestWithTwoTypos ? 2 : 1)
+        return Array(Swift.min(shortestStart, expected)...longest)
+            .sorted { abs($0 - expected) < abs($1 - expected) }
+    }
+
     private static func isCutOff(_ text: [Character], of expected: [Character]) -> Bool {
         guard text.count >= shortestStart, text.count < expected.count,
             Array(expected.prefix(text.count)) == text

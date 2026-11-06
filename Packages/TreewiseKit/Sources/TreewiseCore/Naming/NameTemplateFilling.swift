@@ -22,6 +22,11 @@ extension NameTemplate {
         var keys: [String] = []
         /// The field a choice of fields counts as while it is built: its first.
         var tokenKey: String?
+        /// For a name that nearly fits, the text each loose group should hold, in the
+        /// order of the groups; nil when fixed text has to be there exactly.
+        var loose: [String]?
+        /// The length each loose group takes, when it is tried with lengths.
+        var looseLengths: [Int] = []
 
         /// Notes a plain group for `field`, or for the choice it belongs to.
         mutating func addGroup(for field: String) {
@@ -158,14 +163,15 @@ extension NameTemplate {
         return (match, captured.keys)
     }
 
-    private static func pattern(
+    static func pattern(
         for part: Part, fixed: [String: String], captured: inout Capture
     )
         -> String
     {
         switch part {
         case .text(let text):
-            return NSRegularExpression.escapedPattern(for: text)
+            return captured.loose == nil
+                ? NSRegularExpression.escapedPattern(for: text) : loosePattern(for: text, &captured)
         case .optional(let inner):
             return "(?:"
                 + inner.map { pattern(for: $0, fixed: fixed, captured: &captured) }.joined()
@@ -203,6 +209,7 @@ extension NameTemplate {
         case .text: return plain(".+?", field: field.name, captured: &captured)
         case .fixed:
             guard let value = fixed[field.name] else { return matchNothing }
+            if captured.loose != nil { return looseGroup(for: value, &captured) }
             let body = NSRegularExpression.escapedPattern(for: value)
             guard captured.everyField else { return body }
             captured.addGroup(for: field.name)
