@@ -36,7 +36,9 @@ public struct NameProposal: Hashable, Sendable {
     ///
     /// - Parameters:
     ///   - siblingNames: The names of the other items in the folder, for the series.
-    ///   - currentName: The item's name, which puts the part it fits first.
+    ///   - currentName: The item's name, which puts the part it fits first. When it nearly
+    ///     fits, it comes first itself, with the template's fixed text and the folder's name
+    ///     written right.
     public static func make(
         from valueSets: [[String: NameTemplate.Value]], template: NameTemplate, moduleID: String,
         folderName: String, suggestedDate: SuggestedDate?, siblingNames: [String] = [],
@@ -45,7 +47,11 @@ public struct NameProposal: Hashable, Sendable {
         let context = NameTemplate.Context(
             siblingNames: siblingNames.map(ProposedName.stem(of:)),
             currentName: ProposedName.stem(of: currentName), fileYear: suggestedDate?.year)
-        return valueSets.flatMap { values in
+        // A name that nearly fits comes first, written right (ADR 0067).
+        let corrected = template.correctedName(
+            context.currentName, fixed: [NameTemplate.Field.folder.name: folderName]
+        ).map { NameProposal(name: $0, moduleID: moduleID) }
+        let made = valueSets.flatMap { values in
             var all = values
             all[NameTemplate.Field.folder.name] = .text(folderName)
             let usesDate = suggestedDate.map { template.uses(date: $0.value, in: all) } ?? false
@@ -55,5 +61,7 @@ public struct NameProposal: Hashable, Sendable {
                     dateSource: usesDate || made.usesFileYear ? suggestedDate?.source : nil)
             }
         }
+        guard let corrected else { return made }
+        return [corrected] + made.filter { $0.name != corrected.name }
     }
 }

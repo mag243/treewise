@@ -172,3 +172,43 @@ import TreewiseCore
         #expect(made.first?.dateSource == nil)
     }
 }
+
+/// A name that nearly fits is offered written right, first (ADR 0067).
+@Suite struct NameProposalNearlyFittingTests {
+    private static let fields = [
+        NameTemplate.Field(name: "date", kind: .date),
+        NameTemplate.Field(name: "text", kind: .text),
+    ]
+
+    private func proposals(values: [[String: NameTemplate.Value]]) throws -> [String] {
+        let template = try NameTemplate.parse(
+            "{date:yyyy.MM.dd} - {folder} - {text}",
+            fields: Self.fields + NameTemplate.Field.suppliedByTreewise
+        ).get()
+        return NameProposal.make(
+            from: values, template: template, moduleID: "m", folderName: "Holiday 2026",
+            suggestedDate: nil, currentName: "2026.08.14 - Holiday 202 - c.heic"
+        ).map(\.name)
+    }
+
+    @Test func offersTheNameWrittenRightFirst() throws {
+        let values: [[String: NameTemplate.Value]] = [
+            ["date": .date(year: 2026, month: 8, day: 14), "text": .text("Beach")]
+        ]
+        #expect(
+            try proposals(values: values) == [
+                "2026.08.14 - Holiday 2026 - c", "2026.08.14 - Holiday 2026 - Beach",
+            ])
+    }
+
+    @Test func offersTheSameNameOnce() throws {
+        let values: [[String: NameTemplate.Value]] = [
+            ["date": .date(year: 2026, month: 8, day: 14), "text": .text("c")]
+        ]
+        #expect(try proposals(values: values) == ["2026.08.14 - Holiday 2026 - c"])
+    }
+
+    @Test func offersItWithoutValuesToo() throws {
+        #expect(try proposals(values: []) == ["2026.08.14 - Holiday 2026 - c"])
+    }
+}
