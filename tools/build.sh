@@ -39,6 +39,10 @@
 #   ci          check + test + build + apptest: when the owner says the UI tests may
 #               take the screen, before a push and at the end of a plan. The default.
 #   all         ci + export.
+#   official    The official build (ADR 0057): the macOS app from the workspace in the
+#               private treewise-modules folder beside this one (TREEWISE_MODULES_DIR),
+#               with its own DerivedData, then the private packages' tests, and a check
+#               that the catalog lists a paid module.
 #   screenshots The download page's screenshots (ADR 0041): makes the sandbox volumes
 #               afresh, runs ScreenshotTests on them and saves the images as
 #               build/screenshots/<name>.png. Takes the screen, as ci does.
@@ -75,11 +79,15 @@ SWIFT_DIRS=(Packages Apps UITests)
 # -suppress-warnings to package dependencies, which clashes with -warnings-as-errors.
 SWIFT_TEST_FLAGS=(-Xswiftc -warnings-as-errors)
 DERIVED_DATA="$BUILD_DIR/DerivedData"
+# The private modules and the workspace of an official build (ADR 0057).
+MODULES_DIR="${TREEWISE_MODULES_DIR:-$ROOT_DIR/../treewise-modules}"
+OFFICIAL_WORKSPACE="$MODULES_DIR/Treewise.xcworkspace"
+OFFICIAL_DERIVED_DATA="$BUILD_DIR/DerivedData-official"
 LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume coverage build apptest iostest run package export fixture sandbox icon publish screenshots quick verify ci all clean help "
+COMMANDS=" check format test crossvolume coverage build apptest iostest run package export fixture sandbox icon publish screenshots official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
@@ -120,18 +128,22 @@ timed() {
 }
 
 # Runs xcodebuild on the project with the shared DerivedData, logging to build/logs/[1].log.
+xcode() {
+  local log="$1"; shift
+  xcodebuild_logged "$log" -project "$XCODE_PROJECT" -derivedDataPath "$DERIVED_DATA" "$@"
+}
+
+# Runs xcodebuild with the arguments after [1], logging to build/logs/[1].log.
 # Output is shown through xcbeautify when it is installed.
 # Post: fails the build with the log's tail when xcodebuild fails.
-xcode() {
+xcodebuild_logged() {
   local log="$LOG_DIR/$1.log"; shift
   mkdir -p "$LOG_DIR"
   local rc=0
   if has xcbeautify; then
-    (cd "$ROOT_DIR" && xcodebuild -project "$XCODE_PROJECT" -derivedDataPath "$DERIVED_DATA" "$@" 2>&1) |
-      tee "$log" | xcbeautify --quiet || rc=${PIPESTATUS[0]}
+    (cd "$ROOT_DIR" && xcodebuild "$@" 2>&1) | tee "$log" | xcbeautify --quiet || rc=${PIPESTATUS[0]}
   else
-    (cd "$ROOT_DIR" && xcodebuild -project "$XCODE_PROJECT" -derivedDataPath "$DERIVED_DATA" "$@" >"$log" 2>&1) \
-      || rc=$?
+    (cd "$ROOT_DIR" && xcodebuild "$@" >"$log" 2>&1) || rc=$?
   fi
   ((rc == 0)) || { tail -n 30 "$log" >&2; fail "xcodebuild failed; log: ${log#"$ROOT_DIR"/}"; }
 }
@@ -681,6 +693,34 @@ cmd_sandbox() {
   ok "Attached $(sandbox_mount HD) and $(sandbox_mount T7)"
 }
 
+# The official build (ADR 0057): the app from the private workspace, the private
+# packages' tests, and the catalog asked whether it lists a paid module.
+cmd_official() {
+  step "Official build"
+  [[ -d "$OFFICIAL_WORKSPACE" ]] \
+    || fail "No ${OFFICIAL_WORKSPACE}: the private treewise-modules folder belongs beside treewise."
+  xcodebuild_logged build-official -workspace "$OFFICIAL_WORKSPACE" \
+    -derivedDataPath "$OFFICIAL_DERIVED_DATA" -scheme "$MAC_SCHEME" \
+    -destination "$MAC_DESTINATION" build
+  ok "$MAC_SCHEME, from the workspace"
+  local package name log
+  for package in "$MODULES_DIR"/Packages/*/; do
+    [[ -d "$package/Tests" ]] || continue
+    name="$(basename "$package")"
+    log="$LOG_DIR/official-$name.log"
+    (cd "$package" && swift test --scratch-path "$BUILD_DIR/official/$name" \
+      "${SWIFT_TEST_FLAGS[@]}" >"$log" 2>&1) \
+      || { tail -n 30 "$log" >&2; fail "$name's tests failed; log: ${log#"$ROOT_DIR"/}"; }
+    ok "$name's tests"
+  done
+  local catalog
+  catalog="$(cd "$MODULES_DIR/Packages/TreewiseModuleCatalog" \
+    && swift run --quiet --scratch-path "$BUILD_DIR/official/TreewiseModuleCatalog" treewise-catalog)" \
+    || fail "The catalog could not be asked for its modules."
+  grep -q " paid$" <<<"$catalog" || fail "The catalog lists no paid module: $catalog"
+  ok "The catalog lists $(grep -c . <<<"$catalog") modules, a paid one among them"
+}
+
 cmd_clean() {
   step "Clean"
   if [[ -d "$SANDBOX_DIR" ]]; then cmd_sandbox eject; fi
@@ -706,6 +746,7 @@ run_command() {
     sandbox) timed sandbox cmd_sandbox "${2:-}" ;;
     icon) timed icon cmd_icon ;;
     clean) timed clean cmd_clean ;;
+    official) timed official cmd_official ;;
     quick) run_command check; run_command test ;;
     verify) run_command check; run_command test; run_command build ;;
     ci) run_command verify; run_command apptest ;;
