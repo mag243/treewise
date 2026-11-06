@@ -10,6 +10,8 @@ public struct NameReviewDependencies: Sendable {
     /// Builds what a module may see of an item: a file's facts and declared contents.
     public typealias MakeRequest =
         @Sendable (FileItem, [FileItem], Set<ModuleContentKind>) async -> NameRequest
+    /// Saves a pattern under a name; returns why not, or nil when it did (ADR 0068).
+    public typealias SavePattern = @MainActor @Sendable (String, String) -> SavedPatterns.Problem?
 
     let operations: any FileOperating
     let host: any NameModuleHosting
@@ -19,12 +21,17 @@ public struct NameReviewDependencies: Sendable {
     /// What Approve All does with a name that holds personal data.
     let personalDataInNames: PersonalDataInNames
     let makeRequest: MakeRequest
+    /// The user's saved patterns (ADR 0068).
+    let savedPatterns: @MainActor @Sendable () -> SavedPatterns
+    let savePattern: SavePattern
 
     /// Creates the dependencies.
     public init(
         operations: any FileOperating, host: any NameModuleHosting,
         store: any FolderSettingsStoring, defaultPattern: String,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
+        savedPatterns: @escaping @MainActor @Sendable () -> SavedPatterns = { .examples() },
+        savePattern: @escaping SavePattern = { _, _ in nil },
         makeRequest: @escaping MakeRequest
     ) {
         self.operations = operations
@@ -33,6 +40,8 @@ public struct NameReviewDependencies: Sendable {
         self.defaultPattern = defaultPattern
         self.personalDataInNames = personalDataInNames
         self.makeRequest = makeRequest
+        self.savedPatterns = savedPatterns
+        self.savePattern = savePattern
     }
 }
 

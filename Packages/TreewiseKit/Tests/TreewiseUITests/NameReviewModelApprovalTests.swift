@@ -105,3 +105,34 @@ extension NameReviewModelTests {
         #expect(host.requests.last?.pattern == "Doc {text}")
     }
 }
+
+/// Picking and saving patterns in the add-ons header (ADR 0068).
+extension NameReviewModelTests {
+    @Test func offersTheSavedPatternsWithThoseAnAddOnCannotUse() async throws {
+        _ = addFile("scan.txt")
+        let model = await model(host())
+        let choices = model.savedPatternChoices(for: Self.free)
+        #expect(choices.map(\.pattern.name) == ["Doc", "Company"])
+        #expect(choices.map(\.problem) == [nil, .unknownField("company")])
+        #expect(choices.map(\.isCurrent) == [true, false])
+    }
+
+    @Test func usesASavedPatternInThisFolder() async throws {
+        let item = addFile("scan.txt")
+        let model = await model(host())
+        await model.setTemplate(Self.free, to: "Other {text}")
+        let doc = try #require(model.savedPatternChoices(for: Self.free).first)
+        await model.useSavedPattern(doc.pattern.id, for: Self.free)
+        #expect(model.modules.first?.templateText == "Doc {text}")
+        #expect(model.session?.entry(item.id)?.currentName == "Doc New.txt")
+    }
+
+    @Test func savesTheAddOnsPatternUnderAName() async throws {
+        _ = addFile("scan.txt")
+        let model = await model(host())
+        await model.setTemplate(Self.free, to: "Mine {text}")
+        #expect(model.savePattern(of: Self.free, as: "Mine") == nil)
+        #expect(model.savedPatternChoices(for: Self.free).last?.pattern.text == "Mine {text}")
+        #expect(model.savePattern(of: Self.free, as: " ") == .emptyName)
+    }
+}

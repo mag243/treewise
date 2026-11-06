@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 import TreewiseCore
 import TreewiseModuleInterface
@@ -22,6 +23,7 @@ import TreewiseUI
 
     let fileSystem = ChangingFileSystem()
     let store = MemoryFolderSettings()
+    let savedPatterns = SavedPatternsBox()
     let folder: FileItem
 
     init() async throws {
@@ -62,11 +64,14 @@ import TreewiseUI
         selection: [FileItem] = [], suggestedDate: SuggestedDate? = nil,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll
     ) async -> NameReviewModel {
+        let patterns = savedPatterns
         let model = NameReviewModel(
             folder: folder, scope: scope, selection: selection,
             dependencies: .init(
                 operations: fileSystem, host: host, store: store, defaultPattern: "Std {text}",
                 personalDataInNames: personalDataInNames,
+                savedPatterns: { patterns.list },
+                savePattern: { patterns.save(name: $0, text: $1) },
                 makeRequest: { item, siblings, needed in
                     NameRequest(
                         id: item.id.rawValue, name: item.name,
@@ -227,5 +232,29 @@ import TreewiseUI
         await model.resetTemplate(Self.free)
         #expect(model.modules.first?.templateText == "Scan {text}")
         #expect(model.modules.first?.origin == .derived)
+    }
+}
+
+/// The user's saved patterns for a test: `Doc {text}`, the default, and `Co {company}`.
+final class SavedPatternsBox: Sendable {
+    private let state: Mutex<SavedPatterns>
+
+    init() {
+        var list = SavedPatterns.examples()
+        let examples = list.patterns.map(\.id)
+        let doc = (try? list.save(name: "Doc", text: "Doc {text}").get()) ?? ""
+        _ = list.save(name: "Company", text: "Co {company}")
+        list.makeDefault(doc)
+        for id in examples { list.remove(id) }
+        state = Mutex(list)
+    }
+
+    var list: SavedPatterns { state.withLock { $0 } }
+
+    func save(name: String, text: String) -> SavedPatterns.Problem? {
+        state.withLock { list in
+            if case .failure(let problem) = list.save(name: name, text: text) { return problem }
+            return nil
+        }
     }
 }

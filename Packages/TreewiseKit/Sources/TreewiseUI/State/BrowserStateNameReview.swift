@@ -42,6 +42,15 @@ extension BrowserState {
                 operations: operations, host: host, store: store,
                 defaultPattern: settings.defaultNamePattern,
                 personalDataInNames: settings.personalDataInNames,
+                savedPatterns: { [settings] in settings.savedPatterns },
+                savePattern: { [settings] name, text in
+                    if case .failure(let problem) = settings.savedPatterns.save(
+                        name: name, text: text)
+                    {
+                        return problem
+                    }
+                    return nil
+                },
                 makeRequest: { item, siblings, needed in
                     // Reading a scan is slow, so it happens away from the main actor.
                     await Task.detached {
