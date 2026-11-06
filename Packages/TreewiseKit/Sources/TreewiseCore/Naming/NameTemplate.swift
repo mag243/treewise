@@ -172,6 +172,20 @@ public struct NameTemplate: Hashable, Sendable {
         return variants.contains { Self.match(name, $0.parts, fixed: fixed) != nil }
     }
 
+    /// Where the fields sit in a name without its extension, in the first part of a choice
+    /// that it fits: what a module or the series filled in, not fixed text and not
+    /// `{folder}`. A name that does not fit gives none.
+    public func fieldRanges(in name: String, fixed: [String: String] = [:])
+        -> [Range<String.Index>]
+    {
+        for variant in variants {
+            guard let match = Self.match(name, variant.parts, fixed: fixed, everyField: true)
+            else { continue }
+            return (1..<match.numberOfRanges).compactMap { Range(match.range(at: $0), in: name) }
+        }
+        return []
+    }
+
     /// The date in a name that fits this template, or nil when there is none.
     public func date(in name: String) -> Value? {
         for variant in variants {

@@ -60,3 +60,22 @@ extension NameReviewModelTests {
         #expect(proposals.map(\.dateSource) == [nil, .insideFile, nil])
     }
 }
+
+/// Where the fields sit in a proposed name, to mark them while it is edited.
+extension NameReviewModelTests {
+    @Test func marksTheFieldsOfAProposal() async {
+        let item = addFile("scan.txt")
+        let model = await model(host())
+        await model.setTemplate(Self.free, to: "{folder} - {text}")
+        let name = model.session?.entry(item.id)?.currentName ?? ""
+        #expect(name == "Review - New.txt")
+        #expect(model.fieldRanges(of: item.id).map { String(name[$0]) } == ["New"])
+    }
+
+    @Test func marksNothingInTheUsersOwnName() async {
+        let item = addFile("scan.txt")
+        let model = await model(host())
+        model.edit(item.id, to: "Doc Mine.txt")
+        #expect(model.fieldRanges(of: item.id).isEmpty)
+    }
+}

@@ -139,3 +139,19 @@ public enum NameReviewProblem: Hashable, Sendable {
     /// The name collides with another.
     case conflict(BatchRenameConflict.Kind)
 }
+
+extension NameReviewModel {
+    /// Where the fields of the pattern sit in an item's proposed name, to mark them while
+    /// it is edited: what a module or the series filled in, not fixed text or the folder's
+    /// name. A name the user typed has none.
+    public func fieldRanges(of id: FileItem.ID) -> [Range<String.Index>] {
+        guard let entry = session?.entry(id), let name = entry.currentName,
+            let index = entry.position?.index, index < entry.proposals.count,
+            let moduleID = entry.proposals[index].moduleIDs.first,
+            let template = modules.first(where: { $0.id == moduleID })?.template
+        else { return [] }
+        // The extension comes after the stem, so ranges in the stem hold in the name.
+        return template.fieldRanges(
+            in: ProposedName.stem(of: name), fixed: [NameTemplate.Field.folder.name: folder.name])
+    }
+}
