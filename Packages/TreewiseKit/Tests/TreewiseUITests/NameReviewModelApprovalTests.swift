@@ -63,19 +63,23 @@ extension NameReviewModelTests {
 
 /// Where the fields sit in a proposed name, to mark them while it is edited.
 extension NameReviewModelTests {
-    @Test func marksTheFieldsOfAProposal() async {
+    @Test func marksTheFieldsOfAProposalInTheColoursOfThePattern() async {
         let item = addFile("scan.txt")
-        let model = await model(host())
-        await model.setTemplate(Self.free, to: "{folder} - {text}")
+        let model = await model(
+            host(answers: [
+                Self.free: .success([["text": .text("New"), "number": .text("F1")]])
+            ]))
+        await model.setTemplate(Self.free, to: "{folder} - {number} {text} {number}")
         let name = model.session?.entry(item.id)?.currentName ?? ""
-        #expect(name == "Review - New.txt")
-        #expect(model.fieldRanges(of: item.id).map { String(name[$0]) } == ["New"])
+        #expect(name == "Review - F1 New F1.txt")
+        let marks = model.fieldMarks(of: item.id).map { "\(name[$0.range])=\($0.colorIndex)" }
+        #expect(marks == ["F1=0", "New=1", "F1=0"])
     }
 
     @Test func marksNothingInTheUsersOwnName() async {
         let item = addFile("scan.txt")
         let model = await model(host())
         model.edit(item.id, to: "Doc Mine.txt")
-        #expect(model.fieldRanges(of: item.id).isEmpty)
+        #expect(model.fieldMarks(of: item.id).isEmpty)
     }
 }

@@ -140,18 +140,29 @@ public enum NameReviewProblem: Hashable, Sendable {
     case conflict(BatchRenameConflict.Kind)
 }
 
+/// A part of a proposed name a field filled in, with the colour of its field.
+public struct NameFieldMark: Hashable, Sendable {
+    /// Where it sits in the name.
+    public let range: Range<String.Index>
+    /// Its field's place among the fields of the pattern, which picks the colour the
+    /// pattern shows it in too.
+    public let colorIndex: Int
+}
+
 extension NameReviewModel {
-    /// Where the fields of the pattern sit in an item's proposed name, to mark them while
-    /// it is edited: what a module or the series filled in, not fixed text or the folder's
-    /// name. A name the user typed has none.
-    public func fieldRanges(of id: FileItem.ID) -> [Range<String.Index>] {
+    /// The parts of an item's proposed name that fields of the pattern filled in, to mark
+    /// them while it is edited: what a module or the series filled in, not fixed text or the
+    /// folder's name. A name the user typed has none.
+    public func fieldMarks(of id: FileItem.ID) -> [NameFieldMark] {
         guard let entry = session?.entry(id), let name = entry.currentName,
             let index = entry.position?.index, index < entry.proposals.count,
             let moduleID = entry.proposals[index].moduleIDs.first,
             let template = modules.first(where: { $0.id == moduleID })?.template
         else { return [] }
         // The extension comes after the stem, so ranges in the stem hold in the name.
-        return template.fieldRanges(
-            in: ProposedName.stem(of: name), fixed: [NameTemplate.Field.folder.name: folder.name])
+        let order = NameTemplate.fieldOrder(in: template.text)
+        return template.fieldMarks(
+            in: ProposedName.stem(of: name), fixed: [NameTemplate.Field.folder.name: folder.name]
+        ).map { NameFieldMark(range: $0.range, colorIndex: order.firstIndex(of: $0.key) ?? 0) }
     }
 }

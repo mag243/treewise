@@ -18,6 +18,15 @@ extension NameTemplate {
     struct Capture {
         var named: Set<String> = []
         let everyField: Bool
+        /// With `everyField`, the field each plain group stands for, in the order of the groups.
+        var keys: [String] = []
+        /// The field a choice of fields counts as while it is built: its first.
+        var tokenKey: String?
+
+        /// Notes a plain group for `field`, or for the choice it belongs to.
+        mutating func addGroup(for field: String) {
+            keys.append(tokenKey ?? field)
+        }
     }
 
     /// A regular expression that fits nothing.
@@ -130,15 +139,23 @@ extension NameTemplate {
 
     /// The match of a whole name against parts without a choice of parts, with a group for
     /// the first date, year and sequence.
-    static func match(
-        _ name: String, _ parts: [Part], fixed: [String: String], everyField: Bool = false
-    ) -> NSTextCheckingResult? {
+    static func match(_ name: String, _ parts: [Part], fixed: [String: String])
+        -> NSTextCheckingResult?
+    {
+        matchCapturing(name, parts, fixed: fixed, everyField: false)?.match
+    }
+
+    /// The match, and with `everyField` the field of each of its groups.
+    static func matchCapturing(
+        _ name: String, _ parts: [Part], fixed: [String: String], everyField: Bool
+    ) -> (match: NSTextCheckingResult, keys: [String])? {
         var captured = Capture(everyField: everyField)
         let body = parts.map { pattern(for: $0, fixed: fixed, captured: &captured) }.joined()
-        guard let expression = try? NSRegularExpression(pattern: "^" + body + "$") else {
-            return nil
-        }
-        return expression.firstMatch(in: name, range: NSRange(name.startIndex..., in: name))
+        guard let expression = try? NSRegularExpression(pattern: "^" + body + "$"),
+            let match = expression.firstMatch(
+                in: name, range: NSRange(name.startIndex..., in: name))
+        else { return nil }
+        return (match, captured.keys)
     }
 
     private static func pattern(
@@ -154,6 +171,8 @@ extension NameTemplate {
                 + inner.map { pattern(for: $0, fixed: fixed, captured: &captured) }.joined()
                 + ")?"
         case .choice(let inner):
+            captured.tokenKey = fields(in: inner).first?.name
+            defer { captured.tokenKey = nil }
             return "(?:"
                 + inner.map { pattern(for: $0, fixed: fixed, captured: &captured) }
                 .joined(separator: "|") + ")"
@@ -164,7 +183,7 @@ extension NameTemplate {
                 }
                 .joined(separator: "|") + ")"
         case .counter:
-            return group(seqGroup, "[0-9]+", captured: &captured)
+            return group(seqGroup, "[0-9]+", field: Field.seq.name, captured: &captured)
         case .field(let field, let format):
             return pattern(for: field, format: format, fixed: fixed, captured: &captured)
         }
@@ -175,19 +194,30 @@ extension NameTemplate {
         captured: inout Capture
     ) -> String {
         switch field.kind {
-        case .date: return group(dateGroup, (format ?? .standard).pattern, captured: &captured)
-        case .year: return group(yearGroup, "[0-9]{4}", captured: &captured)
-        case .sequence: return group(seqGroup, "[0-9]+", captured: &captured)
-        case .number: return captured.everyField ? "([^ ]*[0-9][^ ]*)" : "[^ ]*[0-9][^ ]*"
-        case .text: return captured.everyField ? "(.+?)" : ".+?"
+        case .date:
+            return group(
+                dateGroup, (format ?? .standard).pattern, field: field.name, captured: &captured)
+        case .year: return group(yearGroup, "[0-9]{4}", field: field.name, captured: &captured)
+        case .sequence: return group(seqGroup, "[0-9]+", field: field.name, captured: &captured)
+        case .number: return plain("[^ ]*[0-9][^ ]*", field: field.name, captured: &captured)
+        case .text: return plain(".+?", field: field.name, captured: &captured)
         case .fixed:
             return fixed[field.name].map(NSRegularExpression.escapedPattern(for:)) ?? matchNothing
         }
     }
 
     /// A named group for the first field of its kind, so a name can be read back.
-    private static func group(_ name: String, _ body: String, captured: inout Capture) -> String {
-        if captured.everyField { return "(" + body + ")" }
+    /// A field's pattern, in a plain group when every field is captured.
+    private static func plain(_ body: String, field: String, captured: inout Capture) -> String {
+        guard captured.everyField else { return body }
+        captured.addGroup(for: field)
+        return "(" + body + ")"
+    }
+
+    private static func group(
+        _ name: String, _ body: String, field: String, captured: inout Capture
+    ) -> String {
+        if captured.everyField { return plain(body, field: field, captured: &captured) }
         guard captured.named.insert(name).inserted else { return "(?:" + body + ")" }
         return "(?<" + name + ">" + body + ")"
     }

@@ -148,8 +148,10 @@ struct NameReviewRow: View {
                 text: entry.currentName ?? "", placeholder: emptyText,
                 onChange: { model.edit(entry.id, to: $0) },
                 onFinish: { model.finishEditing(entry.id) },
-                marks: model.fieldRanges(of: entry.id).map {
-                    NSRange($0, in: entry.currentName ?? "")
+                marks: model.fieldMarks(of: entry.id).map {
+                    ColoredRange(
+                        range: NSRange($0.range, in: entry.currentName ?? ""),
+                        colorIndex: $0.colorIndex)
                 },
                 startsEditing: startsEditing, onStartedEditing: onStartedEditing,
                 onStep: (entry.position?.count ?? 0) > 1

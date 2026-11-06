@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import TreewiseCore
 
 /// What to insert into a pattern, at the place of the cursor. A new id asks again.
 struct PatternInsertion: Equatable {
@@ -27,6 +28,8 @@ struct PatternField: NSViewRepresentable {
     func updateNSView(_ field: SelectionKeepingField, context: Context) {
         context.coordinator.parent = self
         if field.currentEditor() == nil, field.stringValue != text { field.stringValue = text }
+        // Each field in its colour, as the name of the selected row shows what it filled.
+        field.mark(FieldColors.marks(inPattern: field.stringValue))
         guard let insertion, insertion != context.coordinator.handled else { return }
         context.coordinator.handled = insertion
         field.insert(insertion.token)
@@ -46,7 +49,10 @@ struct PatternField: NSViewRepresentable {
         }
 
         func controlTextDidChange(_ notification: Notification) {
-            if let field = notification.object as? NSTextField { parent.text = field.stringValue }
+            if let field = notification.object as? SelectionKeepingField {
+                field.mark(FieldColors.marks(inPattern: field.stringValue))
+                parent.text = field.stringValue
+            }
         }
 
         func control(
@@ -61,7 +67,7 @@ struct PatternField: NSViewRepresentable {
 
 /// A text field that remembers its selection after it loses the focus, as it does when
 /// a button beside it is clicked.
-final class SelectionKeepingField: NSTextField {
+final class SelectionKeepingField: MarkingTextField {
     var lastSelection = NSRange(location: 0, length: 0)
 
     @objc func textViewDidChangeSelection(_ notification: Notification) {

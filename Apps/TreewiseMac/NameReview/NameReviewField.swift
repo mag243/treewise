@@ -11,8 +11,9 @@ struct NameReviewField: NSViewRepresentable {
     let placeholder: String
     let onChange: (String) -> Void
     let onFinish: () -> Void
-    /// Where the pattern's fields sit in `text`, marked until the user types (ADR 0064).
-    let marks: [NSRange]
+    /// What the pattern's fields filled in `text`, in their colours, until the user types
+    /// (ADR 0064).
+    let marks: [ColoredRange]
     /// Whether the field is to take the focus, as asked by a double click on its row.
     let startsEditing: Bool
     let onStartedEditing: () -> Void
@@ -93,54 +94,11 @@ struct NameReviewField: NSViewRepresentable {
 
 /// A field that selects a name's gap as soon as it gets the focus, by a click or by Tab,
 /// so what is typed replaces the gap.
-final class GapSelectingField: NSTextField {
-    /// Treewise's yellow, from its icon, under a field of the pattern in the name; see
-    /// through, so the text stays readable in light and dark.
-    private static let markColor = NSColor(name: nil) { appearance in
-        let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-        return NSColor(
-            srgbRed: markRed, green: markGreen, blue: markBlue,
-            alpha: isDark ? markDarkOpacity : markLightOpacity)
-    }
-    private static let markRed = 247.0 / 255, markGreen = 200.0 / 255, markBlue = 67.0 / 255
-    private static let markLightOpacity = 0.45, markDarkOpacity = 0.35
-    private var marks: [NSRange] = []
-
+final class GapSelectingField: MarkingTextField {
     override func becomeFirstResponder() -> Bool {
         let became = super.becomeFirstResponder()
-        if became {
-            showMarks()
-            selectGap()
-        }
+        if became { selectGap() }
         return became
-    }
-
-    /// Marks these ranges of the text; none clears them.
-    func mark(_ ranges: [NSRange]) {
-        guard ranges != marks else { return }
-        marks = ranges
-        showMarks()
-    }
-
-    /// Shows the marks on the text, or in the editor while editing, where they are drawn
-    /// over the text without becoming part of it.
-    private func showMarks() {
-        let whole = NSRange(location: 0, length: (stringValue as NSString).length)
-        let fitting = marks.filter { NSMaxRange($0) <= whole.length }
-        if let editor = currentEditor() as? NSTextView, let layout = editor.layoutManager {
-            layout.removeTemporaryAttribute(.backgroundColor, forCharacterRange: whole)
-            for range in fitting {
-                layout.addTemporaryAttribute(
-                    .backgroundColor, value: Self.markColor, forCharacterRange: range)
-            }
-            return
-        }
-        let text = NSMutableAttributedString(
-            string: stringValue, attributes: font.map { [.font: $0] } ?? [:])
-        for range in fitting {
-            text.addAttribute(.backgroundColor, value: Self.markColor, range: range)
-        }
-        attributedStringValue = text
     }
 
     override func mouseDown(with event: NSEvent) {

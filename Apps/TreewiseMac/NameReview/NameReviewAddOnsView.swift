@@ -76,8 +76,8 @@ struct NameReviewAddOnsView: View {
             .toggleStyle(.checkbox)
             .disabled(module.isOn && model.modules.filter(\.isOn).count == 1)
             .frame(minWidth: 130, alignment: .leading)
-            Text(module.templateText).font(.caption.monospaced()).lineLimit(1).opacity(
-                module.isOn ? 1 : 0.5)
+            Text(Self.colored(module.templateText)).font(.caption.monospaced()).lineLimit(1)
+                .opacity(module.isOn ? 1 : 0.5)
             Text(NameReviewText.origin(of: module)).font(.caption)
                 .foregroundStyle(module.origin == .user ? Color.accentColor : .secondary)
             if module.isOn, module.origin == .notRecognized, editing != module.id {
@@ -131,6 +131,16 @@ struct NameReviewAddOnsView: View {
             }
         }
         .padding(.leading, 140)
+    }
+
+    /// A pattern with each field in its colour, as the name it made shows them.
+    private static func colored(_ pattern: String) -> AttributedString {
+        var text = AttributedString(pattern)
+        for mark in FieldColors.marks(inPattern: pattern) {
+            guard let range = Range(mark.range, in: text) else { continue }
+            text[range].backgroundColor = Color(nsColor: FieldColors.color(mark.colorIndex))
+        }
+        return text
     }
 
     private func token(_ field: NameTemplate.Field) -> String {
