@@ -15,6 +15,18 @@ extension NameReviewModel {
         await saveSettings()
     }
 
+    /// Moves a module to a place in the folder's order (ADR 0065). A row that waits for an
+    /// approval shows the first option of the new order.
+    public func moveModule(_ id: String, to index: Int) async {
+        let catalog = modules.map(\.id)
+        settings.moveModule(id, to: index, catalog: catalog)
+        let order = settings.ordered(catalog)
+        modules.sort { (order.firstIndex(of: $0.id) ?? 0) < (order.firstIndex(of: $1.id) ?? 0) }
+        session?.reorderModules(settings.enabledModules)
+        refreshConflicts()
+        await saveSettings()
+    }
+
     /// Takes what was typed as a module's template. One that cannot be used shows why,
     /// and the last usable one stays in force. Names follow without asking the module.
     public func setTemplate(_ id: String, to text: String) async {

@@ -158,7 +158,11 @@ public final class NameReviewModel {
         settings = saved ?? .new(defaultModuleID: NameModuleDescription.defaultModuleID)
         let names = visible.map(\.name)
         modules = []
-        for description in descriptions {
+        // The folder's order of the add-ons (ADR 0065), with one new to it last.
+        let order = settings.ordered(descriptions.map(\.id))
+        for description in descriptions.sorted(by: {
+            (order.firstIndex(of: $0.id) ?? 0) < (order.firstIndex(of: $1.id) ?? 0)
+        }) {
             modules.append(await makeModule(description, names: names))
         }
         for item in items {

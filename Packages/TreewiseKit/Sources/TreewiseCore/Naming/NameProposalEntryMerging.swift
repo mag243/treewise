@@ -16,6 +16,13 @@ extension NameProposalSession.Entry {
         selectBestIfNone()
     }
 
+    /// Takes the best proposal in place of a chosen one; the user's own edit stays.
+    mutating func chooseFirstProposal(moduleOrder: [String]) {
+        guard case .proposal = selection else { return }
+        selection = .none
+        add([], moduleOrder: moduleOrder)
+    }
+
     /// Replaces what one module proposed. A chosen proposal that is gone gives way to the
     /// best one, which waits for an approval. The user's own edit stays as it is.
     mutating func replaceProposals(

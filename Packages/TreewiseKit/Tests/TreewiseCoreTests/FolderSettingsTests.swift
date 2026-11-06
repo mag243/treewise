@@ -75,6 +75,39 @@ import TreewiseCore
         #expect(try JSONDecoder().decode(FolderSettings.self, from: data) == settings)
     }
 
+    @Test func ordersModulesAsTheCatalogWithoutAnOrderOfItsOwn() {
+        let settings = FolderSettings(enabledModules: ["a"], templates: [:])
+        #expect(settings.ordered(["a", "b", "c"]) == ["a", "b", "c"])
+    }
+
+    @Test func keepsTheUsersOrderAndPutsAModuleNewToTheFolderLast() {
+        var settings = FolderSettings(enabledModules: ["a", "b"], templates: [:])
+        settings.moveModule("b", to: 0, catalog: ["a", "b"])
+        #expect(settings.ordered(["a", "b", "c"]) == ["b", "a", "c"])
+    }
+
+    @Test func movingAModuleReordersTheModulesThatAreOn() {
+        var settings = FolderSettings(enabledModules: ["a", "c"], templates: [:])
+        settings.moveModule("c", to: 0, catalog: ["a", "b", "c"])
+        #expect(settings.enabledModules == ["c", "a"])
+        #expect(settings.moduleOrder == ["c", "a", "b"])
+    }
+
+    @Test func aModuleTurnedOnAgainComesBackAtItsPlace() {
+        var settings = FolderSettings(enabledModules: ["a", "b"], templates: [:])
+        settings.moveModule("b", to: 0, catalog: ["a", "b"])
+        settings.setModule("b", on: false, order: settings.ordered(["a", "b"]))
+        settings.setModule("b", on: true, order: settings.ordered(["a", "b"]))
+        #expect(settings.enabledModules == ["b", "a"])
+    }
+
+    @Test func settingsStoredWithoutAnOrderStillLoad() throws {
+        let stored = Data(#"{"enabledModules":["a"],"templates":{}}"#.utf8)
+        let settings = try JSONDecoder().decode(FolderSettings.self, from: stored)
+        #expect(settings.moduleOrder.isEmpty)
+        #expect(settings.alwaysSkipped.isEmpty)
+    }
+
     @Test func settingsSurviveEncoding() throws {
         var settings = FolderSettings(enabledModules: ["a"], templates: ["a": "{number}"])
         settings.alwaysSkipped = ["b"]

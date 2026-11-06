@@ -49,6 +49,16 @@ public struct NameProposalSession: Hashable, Sendable {
         for index in entries.indices { entries[index].add([], moduleOrder: order) }
     }
 
+    /// Puts the modules in a new order chosen by the user (ADR 0065). A row that waits for
+    /// an approval takes the first option of the new order; an approved row and a name the
+    /// user typed stay as they are.
+    public mutating func reorderModules(_ order: [String]) {
+        setModuleOrder(order)
+        for index in entries.indices where entries[index].state == .pending {
+            entries[index].chooseFirstProposal(moduleOrder: order)
+        }
+    }
+
     /// Moves an item to its next or previous option. This needs a new approval.
     public mutating func step(_ id: FileItem.ID, by direction: StepDirection) {
         update(id) { $0.step(by: direction) }

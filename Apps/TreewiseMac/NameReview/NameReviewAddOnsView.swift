@@ -67,6 +67,12 @@ struct NameReviewAddOnsView: View {
     @ViewBuilder
     private func row(for module: NameReviewModule) -> some View {
         HStack(spacing: 10) {
+            if model.modules.count > 1 {
+                // The grip moves the add-on: the first one gives the first name (ADR 0065).
+                Image(systemName: "line.3.horizontal").foregroundStyle(.tertiary)
+                    .help("Drag to change the order of the add-ons")
+                    .draggable(module.id)
+            }
             Toggle(
                 NameReviewText.name(of: module),
                 isOn: Binding(
@@ -80,21 +86,40 @@ struct NameReviewAddOnsView: View {
                 .opacity(module.isOn ? 1 : 0.5)
             Text(NameReviewText.origin(of: module)).font(.caption)
                 .foregroundStyle(module.origin == .user ? Color.accentColor : .secondary)
-            if module.isOn, module.origin == .notRecognized, editing != module.id {
-                Button("Use Your Default: \(model.defaultPattern)") {
-                    Task { await model.useDefaultPattern(module.id) }
-                }
-                .buttonStyle(.link).font(.caption)
-            }
-            if module.isOn, editing != module.id {
-                Button("Change") {
-                    draft = module.templateText
-                    editing = module.id
-                }
-                .buttonStyle(.link).font(.caption)
-            }
+            links(for: module)
         }
+        .dropDestination(for: String.self) { ids, _ in
+            guard let id = ids.first, id != module.id,
+                let place = model.modules.firstIndex(where: { $0.id == module.id })
+            else { return false }
+            Task { await model.moveModule(id, to: place) }
+            return true
+        }
+        .accessibilityAction(named: Text("Move Up")) { move(module, by: -1) }
+        .accessibilityAction(named: Text("Move Down")) { move(module, by: 1) }
         if editing == module.id { editor(for: module) }
+    }
+
+    @ViewBuilder
+    private func links(for module: NameReviewModule) -> some View {
+        if module.isOn, module.origin == .notRecognized, editing != module.id {
+            Button("Use Your Default: \(model.defaultPattern)") {
+                Task { await model.useDefaultPattern(module.id) }
+            }
+            .buttonStyle(.link).font(.caption)
+        }
+        if module.isOn, editing != module.id {
+            Button("Change") {
+                draft = module.templateText
+                editing = module.id
+            }
+            .buttonStyle(.link).font(.caption)
+        }
+    }
+
+    private func move(_ module: NameReviewModule, by offset: Int) {
+        guard let place = model.modules.firstIndex(where: { $0.id == module.id }) else { return }
+        Task { await model.moveModule(module.id, to: place + offset) }
     }
 
     private func editor(for module: NameReviewModule) -> some View {

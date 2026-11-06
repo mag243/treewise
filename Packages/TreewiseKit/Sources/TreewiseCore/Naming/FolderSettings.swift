@@ -29,6 +29,9 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     public var templates: [String: String]
     /// The names, on disk, of the files a whole-folder review always skips.
     public var alwaysSkipped: Set<String> = []
+    /// The user's order of the modules, those that are off included (ADR 0065); empty
+    /// until the user changes it, when the catalog's order counts.
+    public var moduleOrder: [String] = []
 
     /// The settings of a folder reviewed for the first time.
     public static func new(defaultModuleID: String) -> FolderSettings {
@@ -43,10 +46,42 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         enabledModules = order.filter(enabled.contains)
     }
 
+    /// The modules of `catalog` in the user's order: those the user ordered first, then
+    /// the rest in the catalog's order, so a module new to the folder comes last.
+    public func ordered(_ catalog: [String]) -> [String] {
+        moduleOrder.filter(catalog.contains) + catalog.filter { !moduleOrder.contains($0) }
+    }
+
+    /// Moves a module to a place in the order of `catalog`, and the modules that are on
+    /// follow it.
+    public mutating func moveModule(_ id: String, to index: Int, catalog: [String]) {
+        var order = ordered(catalog)
+        guard let from = order.firstIndex(of: id) else { return }
+        order.remove(at: from)
+        order.insert(id, at: min(max(0, index), order.count))
+        moduleOrder = order
+        let enabled = Set(enabledModules)
+        enabledModules = order.filter(enabled.contains)
+    }
+
     /// Creates settings.
     public init(enabledModules: [String], templates: [String: String]) {
         self.enabledModules = enabledModules
         self.templates = templates
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case enabledModules, templates, alwaysSkipped, moduleOrder
+    }
+
+    /// Reads settings; those stored before a field existed get its default.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        enabledModules = try container.decode([String].self, forKey: .enabledModules)
+        templates = try container.decode([String: String].self, forKey: .templates)
+        alwaysSkipped =
+            try container.decodeIfPresent(Set<String>.self, forKey: .alwaysSkipped) ?? []
+        moduleOrder = try container.decodeIfPresent([String].self, forKey: .moduleOrder) ?? []
     }
 
     /// Decides how a folder relates to the record of the id on it.
