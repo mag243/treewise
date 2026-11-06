@@ -3,8 +3,9 @@ import SwiftUI
 import TreewiseCore
 
 /// The name of the selected row, as text to edit. Starting on a gap selects the gap.
-/// Until the user types, ↑ and ↓ step to the previous and next option and select what
-/// changed (ADR 0064); after that, and with one option, they do what they always do.
+/// Until the user types, ↑ and ↓ step to the previous and next option and put the cursor
+/// at the end of its name (ADR 0064); after that, and with one option, they do what they
+/// always do.
 struct NameReviewField: NSViewRepresentable {
     let text: String
     let placeholder: String
@@ -79,10 +80,12 @@ struct NameReviewField: NSViewRepresentable {
             guard !hasTyped, let onStep = parent.onStep, let field = control as? NSTextField,
                 let name = onStep(direction)
             else { return false }
-            let old = field.stringValue
             // Set on the field, not typed into the editor, so it is no edit of the user's.
             field.stringValue = name
-            textView.selectedRange = NSRange(ChangedText.range(from: old, to: name), in: name)
+            // The cursor goes before the extension: a selection would be replaced by the
+            // first key, and the marks already show what changes.
+            let stem = ProposedName.stem(of: name) as NSString
+            textView.selectedRange = NSRange(location: stem.length, length: 0)
             return true
         }
     }
@@ -91,9 +94,16 @@ struct NameReviewField: NSViewRepresentable {
 /// A field that selects a name's gap as soon as it gets the focus, by a click or by Tab,
 /// so what is typed replaces the gap.
 final class GapSelectingField: NSTextField {
-    /// The colour of a field of the pattern in the name: quiet, as gaps and dates to
-    /// check have stronger ones.
-    private static let markColor = NSColor.quaternarySystemFill
+    /// Treewise's yellow, from its icon, under a field of the pattern in the name; see
+    /// through, so the text stays readable in light and dark.
+    private static let markColor = NSColor(name: nil) { appearance in
+        let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        return NSColor(
+            srgbRed: markRed, green: markGreen, blue: markBlue,
+            alpha: isDark ? markDarkOpacity : markLightOpacity)
+    }
+    private static let markRed = 247.0 / 255, markGreen = 200.0 / 255, markBlue = 67.0 / 255
+    private static let markLightOpacity = 0.45, markDarkOpacity = 0.35
     private var marks: [NSRange] = []
 
     override func becomeFirstResponder() -> Bool {
