@@ -182,6 +182,43 @@ extension LaunchTests {
             "but renames nothing yet")
     }
 
+    @MainActor
+    func testASavedPatternIsPickedFromTheAddOnsHeader() throws {
+        _ = try makeHolidayFolder()
+        let app = try launchApp()
+        let holiday = app.tables.staticTexts["Holiday"]
+        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        holiday.doubleClick()
+        let odd = app.tables.staticTexts[Self.oddName]
+        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        odd.rightClick()
+        app.tables.menus.menuItems["Suggest Names…"].click()
+        let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
+            .firstMatch
+        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
+            .firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: Self.launchTimeout), "the header shows")
+        if header.label.hasPrefix("Add-ons:") { header.click() }
+
+        let menu = review.buttons.matching(
+            NSPredicate(format: "label IN {'Saved Patterns', 'Choose a Saved Pattern'}")
+        ).firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: Self.launchTimeout), "the menu shows")
+        menu.click()
+        let example = app.menuItems.matching(
+            NSPredicate(format: "title BEGINSWITH 'Folder and Number'")
+        ).firstMatch
+        XCTAssertTrue(
+            example.waitForExistence(timeout: Self.launchTimeout), "it lists the examples")
+        example.click()
+        let name = review.descendants(matching: .any).matching(
+            NSPredicate(format: "value == 'Holiday 1.heic' OR label == 'Holiday 1.heic'")
+        ).firstMatch
+        XCTAssertTrue(
+            name.waitForExistence(timeout: Self.launchTimeout), "the folder takes the pattern")
+    }
+
     /// Changes the free module's pattern in the overview's add-ons header.
     @MainActor
     private func usePattern(_ pattern: String, in review: XCUIElement) {

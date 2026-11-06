@@ -13,6 +13,10 @@ struct NameReviewAddOnsView: View {
     @State private var editing: String?
     @State private var draft = ""
     @State private var insertion: PatternInsertion?
+    /// The add-on whose pattern is being saved, while its name is asked (ADR 0068).
+    @State private var savingFor: String?
+    @State private var savedName = ""
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -46,6 +50,43 @@ struct NameReviewAddOnsView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
+        .alert("Save Pattern", isPresented: isSaving) {
+            TextField("Name", text: $savedName)
+            Button("Save") {
+                if let savingFor { _ = model.savePattern(of: savingFor, as: savedName) }
+                savingFor = nil
+            }
+            .disabled(savedName.trimmingCharacters(in: .whitespaces).isEmpty)
+            Button("Cancel", role: .cancel) { savingFor = nil }
+        } message: {
+            Text("The pattern is kept under this name, to pick in other folders.")
+        }
+    }
+
+    private var isSaving: Binding<Bool> {
+        Binding(get: { savingFor != nil }, set: { if !$0 { savingFor = nil } })
+    }
+
+    /// The menu of saved patterns for an add-on, as an icon or under a title.
+    private func savedPatterns(for module: NameReviewModule, title: String? = nil) -> some View {
+        SavedPatternsMenu(
+            title: title,
+            choices: { model.savedPatternChoices(for: module.id) },
+            use: { id in
+                Task {
+                    await model.useSavedPattern(id, for: module.id)
+                    if editing == module.id {
+                        draft = model.modules.first { $0.id == module.id }?.templateText ?? draft
+                    }
+                }
+            },
+            save: {
+                savedName = ""
+                savingFor = module.id
+            },
+            edit: { openSettings() }
+        )
+        .fixedSize()
     }
 
     private var mustStayOpen: Bool {
@@ -107,6 +148,9 @@ struct NameReviewAddOnsView: View {
                 Task { await model.useDefaultPattern(module.id) }
             }
             .buttonStyle(.link).font(.caption)
+            savedPatterns(for: module, title: String(localized: "Choose a Saved Pattern"))
+        } else if module.isOn {
+            savedPatterns(for: module)
         }
         if module.isOn, editing != module.id {
             Button("Change") {
