@@ -11,6 +11,10 @@ extension LaunchTests {
             app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
+        // Settings opens at the tab chosen last, which another test may have changed.
+        let general = settings.toolbars.buttons["General"]
+        XCTAssertTrue(general.waitForExistence(timeout: Self.launchTimeout))
+        general.click()
         XCTAssertTrue(
             settings.staticTexts["Show hidden files"].waitForExistence(timeout: Self.launchTimeout))
         XCTAssertFalse(settings.scrollBars.firstMatch.exists)
