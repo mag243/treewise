@@ -28,8 +28,8 @@ import TreewiseCore
         #expect(marks == ["date=2026.01.31", "year=2025", "seq=4"])
     }
 
-    @Test func leavesTheFolderUnmarked() throws {
-        #expect(try marked("{folder} {text}", "Tax Letter") == ["text=Letter"])
+    @Test func marksTheFolderLikeAnyField() throws {
+        #expect(try marked("{folder} {text}", "Tax Letter") == ["folder=Tax", "text=Letter"])
     }
 
     @Test func aChoiceOfFieldsIsOneKeyWhicheverWasWritten() throws {
@@ -50,10 +50,10 @@ import TreewiseCore
     @Test func findsTheFieldsInTheTextOfATemplate() {
         let text = "{date:yyyy.MM.dd} {folder} <Sales {year}|{number|company}> {year}"
         let tokens = NameTemplate.fieldTokens(in: text)
-        #expect(tokens.map(\.key) == ["date", "year", "number", "year"])
+        #expect(tokens.map(\.key) == ["date", "folder", "year", "number", "year"])
         #expect(
             tokens.map { String(text[$0.range]) } == [
-                "{date:yyyy.MM.dd}", "{year}", "{number|company}", "{year}",
+                "{date:yyyy.MM.dd}", "{folder}", "{year}", "{number|company}", "{year}",
             ])
     }
 

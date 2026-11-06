@@ -202,7 +202,11 @@ extension NameTemplate {
         case .number: return plain("[^ ]*[0-9][^ ]*", field: field.name, captured: &captured)
         case .text: return plain(".+?", field: field.name, captured: &captured)
         case .fixed:
-            return fixed[field.name].map(NSRegularExpression.escapedPattern(for:)) ?? matchNothing
+            guard let value = fixed[field.name] else { return matchNothing }
+            let body = NSRegularExpression.escapedPattern(for: value)
+            guard captured.everyField else { return body }
+            captured.addGroup(for: field.name)
+            return "(" + body + ")"
         }
     }
 

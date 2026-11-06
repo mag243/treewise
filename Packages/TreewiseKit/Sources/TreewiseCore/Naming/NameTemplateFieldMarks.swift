@@ -12,8 +12,8 @@ extension NameTemplate {
     }
 
     /// The parts of a name without its extension that fields filled in, in the first part
-    /// of a choice of parts that it fits. `{folder}` and fixed text are not marked, and a
-    /// name that does not fit gives none.
+    /// of a choice of parts that it fits. Fixed text is not marked, and a name that does
+    /// not fit gives none.
     public func fieldMarks(in name: String, fixed: [String: String] = [:]) -> [FieldMark] {
         for variant in variants {
             guard
@@ -27,7 +27,7 @@ extension NameTemplate {
         return []
     }
 
-    /// The fields in a template's text, `{folder}` left out, as they are written, so text
+    /// The fields in a template's text, as they are written, so text
     /// being typed can show them too; an unfinished field is none yet.
     public static func fieldTokens(in text: String) -> [FieldMark] {
         var tokens: [FieldMark] = []
@@ -37,7 +37,7 @@ extension NameTemplate {
         {
             let inner = text[text.index(after: open)..<close]
             let key = String(inner.prefix { $0 != "|" && $0 != ":" })
-            if !key.isEmpty, key != Field.folder.name {
+            if !key.isEmpty {
                 tokens.append(FieldMark(key: key, range: open..<text.index(after: close)))
             }
             rest = text[text.index(after: close)...]

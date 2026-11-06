@@ -73,7 +73,7 @@ extension NameReviewModelTests {
         let name = model.session?.entry(item.id)?.currentName ?? ""
         #expect(name == "Review - F1 New F1.txt")
         let marks = model.fieldMarks(of: item.id).map { "\(name[$0.range])=\($0.colorIndex)" }
-        #expect(marks == ["F1=0", "New=1", "F1=0"])
+        #expect(marks == ["Review=0", "F1=1", "New=2", "F1=1"])
     }
 
     @Test func marksNothingInTheUsersOwnName() async {
