@@ -77,6 +77,55 @@ extension LaunchTests {
         XCTAssertEqual(app.state, .runningForeground, "and Treewise keeps running")
     }
 
+    @MainActor
+    func testArrowKeysStepThroughThePartsOfAChoice() throws {
+        _ = try makeHolidayFolder()
+        let app = try launchApp()
+        let holiday = app.tables.staticTexts["Holiday"]
+        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        holiday.doubleClick()
+        let odd = app.tables.staticTexts[Self.oddName]
+        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        odd.rightClick()
+        app.tables.menus.menuItems["Suggest Names…"].click()
+        let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
+            .firstMatch
+        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        usePattern("Trip - <Sea|Land>", in: review)
+
+        let name = review.textFields.matching(NSPredicate(format: "value BEGINSWITH 'Trip - '"))
+            .firstMatch
+        XCTAssertTrue(name.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
+        name.click()
+        let first = name.value as? String
+        name.typeKey(.downArrow, modifierFlags: [])
+        let second = name.value as? String
+        XCTAssertNotEqual(first, second, "↓ goes to the other part")
+        XCTAssertEqual(Set([first, second]), ["Trip - Sea.heic", "Trip - Land.heic"])
+        name.typeKey(.downArrow, modifierFlags: [])
+        XCTAssertEqual(name.value as? String, first, "and from the last back to the first")
+
+        name.typeKey(.end, modifierFlags: [])
+        name.typeText("x")
+        let typed = name.value as? String
+        name.typeKey(.upArrow, modifierFlags: [])
+        XCTAssertEqual(name.value as? String, typed, "once typed, ↑ leaves the text alone")
+    }
+
+    /// Changes the free module's pattern in the overview's add-ons header.
+    @MainActor
+    private func usePattern(_ pattern: String, in review: XCUIElement) {
+        let change = review.buttons["Change"].firstMatch
+        XCTAssertTrue(change.waitForExistence(timeout: Self.launchTimeout), "the pattern shows")
+        change.click()
+        let field = review.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: Self.launchTimeout), "it can be changed")
+        field.click()
+        field.typeKey("a", modifierFlags: .command)
+        field.typeText(pattern)
+        review.buttons["Done"].firstMatch.click()
+    }
+
     /// Approves the one proposed name in the overview, renames and closes it.
     @MainActor
     private func renameInOverview(in app: XCUIApplication) {

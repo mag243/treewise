@@ -121,7 +121,12 @@ struct NameReviewRow: View {
             NameReviewField(
                 text: entry.currentName ?? "", placeholder: emptyText,
                 onChange: { model.edit(entry.id, to: $0) },
-                onFinish: { model.finishEditing(entry.id) }
+                onFinish: { model.finishEditing(entry.id) },
+                onStep: (entry.position?.count ?? 0) > 1
+                    ? { direction in
+                        model.step(entry.id, by: direction)
+                        return model.session?.entry(entry.id)?.currentName
+                    } : nil
             )
             .frame(height: Self.lineHeight)
         } else if let name = entry.restsFitting ? entry.originalName : entry.currentName {
@@ -209,11 +214,15 @@ struct NameReviewRow: View {
 }
 
 /// The name of the selected row, as text to edit. Starting on a gap selects the gap.
+/// Until the user types, ↑ and ↓ step to the previous and next option and select what
+/// changed (ADR 0064); after that, and with one option, they do what they always do.
 struct NameReviewField: NSViewRepresentable {
     let text: String
     let placeholder: String
     let onChange: (String) -> Void
     let onFinish: () -> Void
+    /// Steps to another option and gives its name; nil when the row has one option.
+    let onStep: ((StepDirection) -> String?)?
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -236,6 +245,8 @@ struct NameReviewField: NSViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, NSTextFieldDelegate {
         var parent: NameReviewField
+        /// Whether the user typed since the field got the focus, so the text is their own.
+        private var hasTyped = false
 
         init(_ parent: NameReviewField) {
             self.parent = parent
@@ -243,12 +254,33 @@ struct NameReviewField: NSViewRepresentable {
 
         func controlTextDidChange(_ notification: Notification) {
             if let field = notification.object as? NSTextField {
+                hasTyped = true
                 parent.onChange(field.stringValue)
             }
         }
 
         func controlTextDidEndEditing(_ notification: Notification) {
+            hasTyped = false
             parent.onFinish()
+        }
+
+        func control(
+            _ control: NSControl, textView: NSTextView, doCommandBy selector: Selector
+        ) -> Bool {
+            let direction: StepDirection
+            switch selector {
+            case #selector(NSResponder.moveUp(_:)): direction = .previous
+            case #selector(NSResponder.moveDown(_:)): direction = .next
+            default: return false
+            }
+            guard !hasTyped, let onStep = parent.onStep, let field = control as? NSTextField,
+                let name = onStep(direction)
+            else { return false }
+            let old = field.stringValue
+            // Set on the field, not typed into the editor, so it is no edit of the user's.
+            field.stringValue = name
+            textView.selectedRange = NSRange(ChangedText.range(from: old, to: name), in: name)
+            return true
         }
     }
 }

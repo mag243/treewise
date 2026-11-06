@@ -105,7 +105,9 @@ struct NameReviewAddOnsView: View {
                     Task { await model.setTemplate(module.id, to: text) }
                 }
             HStack(spacing: 5) {
-                ForEach(module.description.fields + [.folder], id: \.name) { field in
+                ForEach(
+                    module.description.fields + NameTemplate.Field.suppliedByTreewise, id: \.name
+                ) { field in
                     Button("{\(field.name)}") { insertion = PatternInsertion(token: token(field)) }
                         .font(.caption.monospaced()).controlSize(.small)
                 }
