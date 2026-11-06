@@ -83,3 +83,14 @@ extension NameReviewModelTests {
         #expect(model.fieldMarks(of: item.id).isEmpty)
     }
 }
+
+/// A pattern has no spaces at its ends (ADR 0057).
+extension NameReviewModelTests {
+    @Test func keepsAPatternWithoutSpacesAtItsEnds() async {
+        _ = addFile("scan.txt")
+        let model = await model(host())
+        await model.setTemplate(Self.free, to: " Doc {text} ")
+        #expect(model.modules.first?.templateText == "Doc {text}")
+        #expect(await store.settings(forFolderAt: "review")?.templates[Self.free] == "Doc {text}")
+    }
+}

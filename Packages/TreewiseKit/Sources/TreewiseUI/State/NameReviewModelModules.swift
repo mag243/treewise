@@ -29,8 +29,11 @@ extension NameReviewModel {
 
     /// Takes what was typed as a module's template. One that cannot be used shows why,
     /// and the last usable one stays in force. Names follow without asking the module.
-    public func setTemplate(_ id: String, to text: String) async {
+    /// Spaces at its ends are dropped.
+    public func setTemplate(_ id: String, to written: String) async {
         guard let index = modules.firstIndex(where: { $0.id == id }) else { return }
+        // A space at either end belongs to no name, so the pattern does not keep it.
+        let text = written.trimmingCharacters(in: .whitespaces)
         modules[index].templateText = text
         let parsed = NameTemplate.parse(
             text, fields: modules[index].description.fields + NameTemplate.Field.suppliedByTreewise)
