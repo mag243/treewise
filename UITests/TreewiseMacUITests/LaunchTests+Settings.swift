@@ -35,4 +35,22 @@ extension LaunchTests {
             settings.staticTexts["Name Patterns"].waitForExistence(timeout: Self.launchTimeout),
             "the saved patterns are there (ADR 0068)")
     }
+
+    @MainActor
+    func testSettingsListsTheAddOnsWithWhatTheyRead() throws {
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+        app.typeKey(",", modifierFlags: .command)
+        let settings = app.windows[Self.settingsWindow]
+        let tab = settings.toolbars.buttons["Add-ons"]
+        XCTAssertTrue(
+            tab.waitForExistence(timeout: Self.launchTimeout), "Settings has an Add-ons tab")
+        tab.click()
+        let free = settings.checkBoxes["Folder Pattern"]
+        XCTAssertTrue(
+            free.waitForExistence(timeout: Self.launchTimeout), "the free add-on is listed")
+        XCTAssertFalse(free.isEnabled, "the last add-on that is on stays on (ADR 0070)")
+        XCTAssertTrue(settings.staticTexts["Reads names only"].exists, "it says what it reads")
+    }
 }

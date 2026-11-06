@@ -7,7 +7,8 @@ import TreewiseUI
 /// The Settings window (⌘,), in two tabs. General: where folders open, the start folder,
 /// and how the list shows items (ADR 0022, ADR 0023), checking for updates (ADR 0032),
 /// the terminal to open (ADR 0052) and the way to change shortcuts (ADR 0029). Names: the
-/// saved patterns (ADR 0068) and names with personal data (ADR 0060). Changes apply at once.
+/// saved patterns (ADR 0068) and names with personal data (ADR 0060). Add-ons: which are
+/// offered, on in new folders and in what order (ADR 0070). Changes apply at once.
 struct SettingsView: View {
     private static let width: CGFloat = 460
     /// The tallest the window gets; beyond it, its contents scroll.
@@ -26,6 +27,9 @@ struct SettingsView: View {
                 .tabItem { Label("General", systemImage: "gearshape") }
             names
                 .tabItem { Label("Names", systemImage: "textformat") }
+            AddOnsSettingsTab(settings: settings)
+                .fittingItsContents(width: Self.width, maximumHeight: Self.maximumHeight)
+                .tabItem { Label("Add-ons", systemImage: "puzzlepiece.extension") }
         }
         .alert(refusal ?? "", isPresented: isRefusing) {
             Button("OK") { refusal = nil }

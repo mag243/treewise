@@ -7,9 +7,14 @@ import TreewiseUI
 enum NameReviewText {
     /// A module's name. The folder pattern module's is here; a paid module brings its own later.
     static func name(of module: NameReviewModule) -> String {
-        module.id == NameModuleDescription.defaultModuleID
+        name(ofModule: module.id)
+    }
+
+    /// The name of the add-on with this id.
+    static func name(ofModule id: String) -> String {
+        id == NameModuleDescription.defaultModuleID
             ? String(localized: "Folder Pattern")
-            : module.id.components(separatedBy: ".").last ?? module.id
+            : id.components(separatedBy: ".").last ?? id
     }
 
     /// Names the modules behind an option.
