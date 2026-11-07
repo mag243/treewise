@@ -14,6 +14,8 @@ struct PatternField: NSViewRepresentable {
     @Binding var text: String
     let insertion: PatternInsertion?
     let onSubmit: () -> Void
+    /// Called when the field loses the focus.
+    var onEndEditing: () -> Void = {}
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -53,6 +55,10 @@ struct PatternField: NSViewRepresentable {
                 field.mark(FieldColors.marks(inPattern: field.stringValue))
                 parent.text = field.stringValue
             }
+        }
+
+        func controlTextDidEndEditing(_ notification: Notification) {
+            parent.onEndEditing()
         }
 
         func control(

@@ -78,7 +78,9 @@ struct SavedPatternsSection: View {
     }
 }
 
-/// The name and the pattern of the selected saved pattern.
+/// The name and the pattern of the selected saved pattern. A pattern is kept when the user
+/// commits it, with Return, by leaving the field or by leaving the pattern, not with each
+/// key, as each change of the text is a version that folders are offered (ADR 0068).
 private struct SavedPatternEditor: View {
     @Bindable var settings: BrowserSettings
     let pattern: SavedPattern
@@ -98,14 +100,11 @@ private struct SavedPatternEditor: View {
             }
             LabeledContent("Pattern") {
                 VStack(alignment: .leading, spacing: 4) {
-                    PatternField(text: $text, insertion: nil, onSubmit: {})
-                        .frame(height: 22)
-                        .accessibilityLabel(Text("Pattern"))
-                        .onChange(of: text) { _, new in
-                            if NameTemplate.problemInForm(of: new) == nil {
-                                settings.savedPatterns.change(pattern.id, to: new)
-                            }
-                        }
+                    PatternField(
+                        text: $text, insertion: nil, onSubmit: commit, onEndEditing: commit
+                    )
+                    .frame(height: 22)
+                    .accessibilityLabel(Text("Pattern"))
                     if let problem = NameTemplate.problemInForm(of: text) {
                         Text(NameReviewText.text(for: problem))
                             .font(.caption).foregroundStyle(.red)
@@ -117,5 +116,12 @@ private struct SavedPatternEditor: View {
             name = pattern.name
             text = pattern.text
         }
+        .onDisappear(perform: commit)
+    }
+
+    /// Keeps the typed pattern when it can be read; the same text makes no new version.
+    private func commit() {
+        guard NameTemplate.problemInForm(of: text) == nil else { return }
+        settings.savedPatterns.change(pattern.id, to: text)
     }
 }
