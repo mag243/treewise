@@ -50,10 +50,18 @@
             self.needsLicence = needsLicence
         }
 
-        func licenceState(keys: [String], trialStart: Date?) -> ModuleLicenceState? {
+        func licenceState(licence: LicenceContext) -> ModuleLicenceState? {
             guard needsLicence else { return nil }
-            if keys.contains("good") { return .licensed(licensee: "Ada") }
-            return trialStart == nil ? .trial(daysLeft: 14) : .unlicensed
+            if licence.keys.contains("good") { return .licensed(licensee: "Ada") }
+            return licence.trialStart == nil ? .trial(daysLeft: 14) : .unlicensed
+        }
+
+        /// The scripted template, or none without a licence when it needs one.
+        func derivedTemplate(
+            fromNames names: [String], folderName: String, licence: LicenceContext
+        ) -> String? {
+            if needsLicence, !licence.keys.contains("good") { return nil }
+            return derivedTemplate(fromNames: names, folderName: folderName)
         }
 
         init(id: String, derived: String) {

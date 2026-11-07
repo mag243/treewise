@@ -23,6 +23,8 @@ public struct NameReviewDependencies: Sendable {
     let makeRequest: MakeRequest
     /// What Settings decides for the add-ons across the app (ADR 0070).
     let addOns: AddOnPreferences
+    /// The licence keys and the trial's dates, for paid modules (ADR 0071).
+    let licence: LicenceContext
     /// The user's saved patterns (ADR 0068).
     let savedPatterns: @MainActor @Sendable () -> SavedPatterns
     let savePattern: SavePattern
@@ -33,6 +35,7 @@ public struct NameReviewDependencies: Sendable {
         store: any FolderSettingsStoring, defaultPattern: String,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
         addOns: AddOnPreferences = AddOnPreferences(),
+        licence: LicenceContext = .none,
         savedPatterns: @escaping @MainActor @Sendable () -> SavedPatterns = { .examples() },
         savePattern: @escaping SavePattern = { _, _ in nil },
         makeRequest: @escaping MakeRequest
@@ -44,6 +47,7 @@ public struct NameReviewDependencies: Sendable {
         self.personalDataInNames = personalDataInNames
         self.makeRequest = makeRequest
         self.addOns = addOns
+        self.licence = licence
         self.savedPatterns = savedPatterns
         self.savePattern = savePattern
     }
@@ -228,7 +232,8 @@ public final class NameReviewModel {
         -> NameReviewModule
     {
         let derived = try? await dependencies.host.derivedTemplate(
-            moduleID: description.id, names: names, folderName: folder.name)
+            moduleID: description.id, names: names, folderName: folder.name,
+            licence: dependencies.licence)
         // The default module imposes no pattern on a folder that shows none.
         let isDefault = description.takesTheDefaultModulesPart
         var module = NameReviewModule(
@@ -290,6 +295,7 @@ public final class NameReviewModel {
             item, visible, module.description.neededContent)
         request.folderName = folder.name
         request.pattern = module.template?.text
+        request.licence = dependencies.licence
         do {
             let values = try await dependencies.host.fieldValues(
                 moduleID: module.id, request: request)

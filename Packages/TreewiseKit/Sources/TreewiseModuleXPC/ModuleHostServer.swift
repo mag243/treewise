@@ -47,7 +47,8 @@
                 try? ModuleWire.encode(
                     [
                         module.derivedTemplate(
-                            fromNames: decoded.names, folderName: decoded.folderName)
+                            fromNames: decoded.names, folderName: decoded.folderName,
+                            licence: decoded.licence)
                     ]
                     .compactMap(\.self)))
         }
@@ -57,13 +58,12 @@
             moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void
         ) {
             guard let module = modules.first(where: { $0.id == moduleID }),
-                let decoded = try? ModuleWire.decode(
-                    ModuleWire.LicenceQuestion.self, from: question)
+                let decoded = try? ModuleWire.decode(LicenceContext.self, from: question)
             else {
                 reply(nil)
                 return
             }
-            let state = module.licenceState(keys: decoded.keys, trialStart: decoded.trialStart)
+            let state = module.licenceState(licence: decoded)
             reply(try? ModuleWire.encode([state].compactMap(\.self)))
         }
 

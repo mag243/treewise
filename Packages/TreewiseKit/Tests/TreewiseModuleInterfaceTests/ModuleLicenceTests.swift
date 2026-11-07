@@ -16,7 +16,9 @@ import TreewiseModuleInterface
     }
 
     @Test func aModuleWithoutALicenceHasNoState() {
-        #expect(FreeModule().licenceState(keys: ["TW1-x"], trialStart: nil) == nil)
+        #expect(
+            FreeModule().licenceState(
+                licence: LicenceContext(keys: ["TW1-x"], trialStart: nil, lastSeen: nil)) == nil)
     }
 
     @Test func aModuleSaysWhereToBuyIt() {

@@ -1,5 +1,6 @@
 #if os(macOS)
     import Foundation
+    import TreewiseModuleInterface
 
     /// What the app asks the modules' service over XPC (ADR 0057). Everything travels
     /// as `ModuleWire` data: the service gets no object that leads back to the app.
@@ -26,12 +27,7 @@
         struct NamesOfFolder: Codable {
             let names: [String]
             let folderName: String
-        }
-
-        /// The licence keys and the trial's start, for a module's licence state.
-        struct LicenceQuestion: Codable {
-            let keys: [String]
-            let trialStart: Date?
+            let licence: LicenceContext
         }
 
         static func encode(_ value: some Encodable) throws -> Data {

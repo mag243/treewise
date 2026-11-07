@@ -18,9 +18,12 @@ public protocol NameModule: Sendable {
     func fieldValues(for request: NameRequest) async throws -> [[String: NameTemplate.Value]]
     /// The template these names in a folder follow, or nil when the module recognizes none.
     func derivedTemplate(fromNames names: [String], folderName: String) -> String?
-    /// What it may do with these licence keys and a trial that started then, or nil when
-    /// it needs no licence (ADR 0071).
-    func licenceState(keys: [String], trialStart: Date?) -> ModuleLicenceState?
+    /// The template, for a module whose licence decides whether it recognizes one; a paid
+    /// module without a licence gives none (ADR 0071).
+    func derivedTemplate(fromNames names: [String], folderName: String, licence: LicenceContext)
+        -> String?
+    /// What its licence lets it do, or nil when it needs no licence (ADR 0071).
+    func licenceState(licence: LicenceContext) -> ModuleLicenceState?
 }
 
 extension NameModule {
@@ -32,8 +35,15 @@ extension NameModule {
         nil
     }
 
+    /// A module that needs no licence recognizes whatever its licence.
+    public func derivedTemplate(
+        fromNames names: [String], folderName: String, licence: LicenceContext
+    ) -> String? {
+        derivedTemplate(fromNames: names, folderName: folderName)
+    }
+
     /// A module needs no licence unless it says so.
-    public func licenceState(keys: [String], trialStart: Date?) -> ModuleLicenceState? {
+    public func licenceState(licence: LicenceContext) -> ModuleLicenceState? {
         nil
     }
 }

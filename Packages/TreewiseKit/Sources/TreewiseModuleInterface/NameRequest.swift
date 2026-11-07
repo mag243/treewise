@@ -27,6 +27,8 @@ public struct NameRequest: Hashable, Sendable, Codable {
     public var folderName: String
     /// The folder's pattern for this module, which it may follow, or nil when it has none.
     public var pattern: String?
+    /// The keys and the trial's dates, for a paid module (ADR 0071).
+    public var licence: LicenceContext = .none
 
     /// Creates a request.
     public init(

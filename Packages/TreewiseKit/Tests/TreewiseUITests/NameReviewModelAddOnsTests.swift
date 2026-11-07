@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import TreewiseCore
 import TreewiseModuleInterface
@@ -96,5 +97,16 @@ extension NameReviewModelTests {
                 modules: [Self.freeDescription, Self.paidDescription, Self.advancedDescription],
                 answers: [:]), addOns: addOns)
         #expect(model.modules.map(\.id) == [Self.paid, "advanced"])
+    }
+}
+
+/// The licence goes with every question to a module (ADR 0071).
+extension NameReviewModelTests {
+    @Test func asksAModuleWithTheLicenceKeysAndTheTrialsDates() async {
+        _ = addFile("scan.txt")
+        let licence = LicenceContext(keys: ["TW1-x"], trialStart: Date(), lastSeen: Date())
+        let host = host()
+        _ = await model(host, licence: licence)
+        #expect(host.requests.last?.licence == licence)
     }
 }

@@ -52,23 +52,22 @@
         }
 
         /// Asks a module which template names follow.
-        public func derivedTemplate(moduleID: String, names: [String], folderName: String)
-            async throws -> String?
-        {
+        public func derivedTemplate(
+            moduleID: String, names: [String], folderName: String, licence: LicenceContext
+        ) async throws -> String? {
             let encoded = try ModuleWire.encode(
-                ModuleWire.NamesOfFolder(names: names, folderName: folderName))
+                ModuleWire.NamesOfFolder(names: names, folderName: folderName, licence: licence))
             let data = try await ask { service, reply in
                 service.derivedTemplate(moduleID: moduleID, names: encoded, reply: reply)
             }
             return try decode([String].self, from: data).first
         }
 
-        /// Asks a module what it may do with these keys and the trial's start.
-        public func licenceState(moduleID: String, keys: [String], trialStart: Date?)
+        /// Asks a module what its licence lets it do.
+        public func licenceState(moduleID: String, licence: LicenceContext)
             async throws -> ModuleLicenceState?
         {
-            let encoded = try ModuleWire.encode(
-                ModuleWire.LicenceQuestion(keys: keys, trialStart: trialStart))
+            let encoded = try ModuleWire.encode(licence)
             let data = try await ask { service, reply in
                 service.licenceState(moduleID: moduleID, question: encoded, reply: reply)
             }

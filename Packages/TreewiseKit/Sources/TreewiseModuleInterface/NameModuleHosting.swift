@@ -85,10 +85,10 @@ public protocol NameModuleHosting: Sendable {
     func fieldValues(moduleID: String, request: NameRequest) async throws
         -> [[String: NameTemplate.Value]]
     /// Asks a module which template a folder's names follow; nil when it recognizes none.
-    func derivedTemplate(moduleID: String, names: [String], folderName: String) async throws
-        -> String?
-    /// Asks a module what it may do with these licence keys and the trial's start; nil
-    /// when it needs no licence (ADR 0071).
-    func licenceState(moduleID: String, keys: [String], trialStart: Date?) async throws
+    func derivedTemplate(
+        moduleID: String, names: [String], folderName: String, licence: LicenceContext
+    ) async throws -> String?
+    /// Asks a module what its licence lets it do; nil when it needs no licence (ADR 0071).
+    func licenceState(moduleID: String, licence: LicenceContext) async throws
         -> ModuleLicenceState?
 }

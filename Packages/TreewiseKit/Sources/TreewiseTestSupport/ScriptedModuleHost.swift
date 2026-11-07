@@ -33,9 +33,9 @@ public final class ScriptedModuleHost: NameModuleHosting {
     }
 
     /// The scripted template, if any.
-    public func derivedTemplate(moduleID: String, names: [String], folderName: String)
-        async throws -> String?
-    {
+    public func derivedTemplate(
+        moduleID: String, names: [String], folderName: String, licence: LicenceContext
+    ) async throws -> String? {
         templates.withLock { $0[moduleID] }
     }
 
@@ -47,10 +47,10 @@ public final class ScriptedModuleHost: NameModuleHosting {
     }
 
     /// Records the keys and gives the scripted licence state, if any.
-    public func licenceState(moduleID: String, keys: [String], trialStart: Date?)
+    public func licenceState(moduleID: String, licence: LicenceContext)
         async throws -> ModuleLicenceState?
     {
-        askedKeys.withLock { $0.append(keys) }
+        askedKeys.withLock { $0.append(licence.keys) }
         return licences.withLock { $0[moduleID] }
     }
 
