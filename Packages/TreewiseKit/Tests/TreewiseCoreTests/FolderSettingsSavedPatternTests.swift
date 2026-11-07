@@ -39,6 +39,15 @@ import TreewiseCore
         #expect(settings.newerVersion(for: Self.module, in: [Self.second]) == nil)
     }
 
+    @Test func aNewerVersionWithTheFoldersTextIsTakenSilently() {
+        var settings = picked()
+        let same = SavedPattern(id: "p", name: "Doc", text: "Doc {text}", version: 3)
+        #expect(settings.newerVersion(for: Self.module, in: [same]) == nil)
+        settings.dropLinks(notIn: [same], usable: Self.usable)
+        #expect(settings.savedPatternLinks[Self.module] == .init(id: "p", version: 3))
+        #expect(settings.templates[Self.module] == "Doc {text}")
+    }
+
     @Test func aSkippedVersionIsNotOfferedAgainButTheNextIs() {
         var settings = picked()
         settings.skip(version: 2, for: Self.module)

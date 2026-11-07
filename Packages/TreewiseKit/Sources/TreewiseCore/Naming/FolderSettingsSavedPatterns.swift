@@ -50,7 +50,8 @@ extension FolderSettings {
     public func newerVersion(for module: String, in patterns: [SavedPattern]) -> SavedPattern? {
         guard let link = savedPatternLinks[module], !link.isChanged,
             let pattern = patterns.first(where: { $0.id == link.id }),
-            pattern.version > link.version, pattern.version != link.skippedVersion
+            pattern.version > link.version, pattern.version != link.skippedVersion,
+            pattern.text != templates[module]
         else { return nil }
         return pattern
     }
@@ -61,7 +62,8 @@ extension FolderSettings {
     }
 
     /// Ends the links to saved patterns that are gone, or that `usable` says the module
-    /// cannot use any more; each module keeps its copy of the text.
+    /// cannot use; each module keeps its copy of the text. A newer version with the text the
+    /// folder has is taken without asking, as nothing changes.
     ///
     /// - Parameters:
     ///   - patterns: The saved patterns now.
@@ -75,6 +77,10 @@ extension FolderSettings {
             else {
                 savedPatternLinks[module] = nil
                 continue
+            }
+            if !link.isChanged, pattern.version > link.version, pattern.text == templates[module] {
+                savedPatternLinks[module] = SavedPatternLink(
+                    id: pattern.id, version: pattern.version)
             }
         }
     }

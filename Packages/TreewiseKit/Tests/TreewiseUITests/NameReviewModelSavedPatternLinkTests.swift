@@ -92,4 +92,16 @@ extension NameReviewModelTests {
         #expect(again.modules.first?.templateText == "Found {text}")
         #expect(again.newerSavedPattern(for: Self.free) == nil)
     }
+
+    @Test func aNewerVersionWithTheSameTextIsNotOffered() async throws {
+        _ = addFile("scan.txt")
+        let first = await model(host())
+        let doc = try doc(in: first)
+        await first.useSavedPattern(doc.id, for: Self.free)
+        savedPatterns.change(doc.id, to: "Doc {text} v2")
+        savedPatterns.change(doc.id, to: "Doc {text}")
+        let again = await model(host())
+        #expect(again.newerSavedPattern(for: Self.free) == nil)
+        #expect(again.modules.first?.templateText == "Doc {text}")
+    }
 }

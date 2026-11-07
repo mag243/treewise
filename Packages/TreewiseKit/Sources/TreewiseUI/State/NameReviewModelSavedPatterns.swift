@@ -90,7 +90,8 @@ extension NameReviewModel {
     }
 
     /// Ends the links to saved patterns that are gone, or that their module cannot use;
-    /// each keeps its copy of the text.
+    /// each keeps its copy of the text. A newer version with the folder's own text is taken
+    /// without asking.
     func dropStaleSavedPatternLinks(_ descriptions: [NameModuleDescription]) async {
         guard !settings.savedPatternLinks.isEmpty else { return }
         let before = settings
