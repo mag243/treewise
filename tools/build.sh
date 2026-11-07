@@ -21,6 +21,8 @@
 #   run         Build the macOS app and start it. Every word after run goes to the
 #               app: tools/build.sh run -TreewiseRoot /tmp/fixture. `run sandbox`
 #               starts it confined to the sandbox volumes, attached first (ADR 0019).
+#   run-official The same as run, with the official build from the private workspace
+#               (ADR 0057): tools/build.sh run-official sandbox.
 #   package     Release archive of the macOS app, signed with the Developer ID,
 #               notarized and stapled, zipped as build/release/Treewise-<version>-<build>.zip,
 #               and a notarized .dmg beside it (ADR 0014, ADR 0030, ADR 0034).
@@ -87,7 +89,7 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume coverage build apptest iostest run package export fixture sandbox icon publish screenshots official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume coverage build apptest iostest run package export fixture sandbox icon publish screenshots official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
@@ -352,9 +354,23 @@ cmd_run() {
   step "Run"
   require_project
   xcode build-mac -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" build
+  launch_app "$DERIVED_DATA" "$@"
+}
+
+# Runs the official build (ADR 0057), as cmd_run runs the open one.
+cmd_run_official() {
+  step "Run the official build"
+  build_official
+  launch_app "$OFFICIAL_DERIVED_DATA" "$@"
+}
+
+# Starts the Debug app built in the DerivedData [1], with the words after it as its
+# arguments; `sandbox` first confines it to the sandbox volumes, attached first.
+launch_app() {
+  local derived="$1"; shift
   local app
-  app="$(find "$DERIVED_DATA/Build/Products/Debug" -maxdepth 1 -name "$APP_NAME.app" -print -quit 2>/dev/null)"
-  [[ -n "$app" ]] || fail "No $APP_NAME.app in build/DerivedData/Build/Products/Debug"
+  app="$(find "$derived/Build/Products/Debug" -maxdepth 1 -name "$APP_NAME.app" -print -quit 2>/dev/null)"
+  [[ -n "$app" ]] || fail "No $APP_NAME.app in ${derived#"$ROOT_DIR"/}/Build/Products/Debug"
   local exe; exe="$app/Contents/MacOS/$(defaults read "$app/Contents/Info" CFBundleExecutable)"
   if [[ "${1:-}" == sandbox ]]; then
     shift
@@ -693,16 +709,21 @@ cmd_sandbox() {
   ok "Attached $(sandbox_mount HD) and $(sandbox_mount T7)"
 }
 
-# The official build (ADR 0057): the app from the private workspace, the private
-# packages' tests, and the catalog asked whether it lists a paid module.
-cmd_official() {
-  step "Official build"
+# Builds the macOS app from the private workspace, with its own DerivedData (ADR 0057).
+build_official() {
   [[ -d "$OFFICIAL_WORKSPACE" ]] \
     || fail "No ${OFFICIAL_WORKSPACE}: the private treewise-modules folder belongs beside treewise."
   xcodebuild_logged build-official -workspace "$OFFICIAL_WORKSPACE" \
     -derivedDataPath "$OFFICIAL_DERIVED_DATA" -scheme "$MAC_SCHEME" \
     -destination "$MAC_DESTINATION" build
   ok "$MAC_SCHEME, from the workspace"
+}
+
+# The official build (ADR 0057): the app from the private workspace, the private
+# packages' tests, and the catalog asked whether it lists a paid module.
+cmd_official() {
+  step "Official build"
+  build_official
   local package name log
   for package in "$MODULES_DIR"/Packages/*/; do
     [[ -d "$package/Tests" ]] || continue
@@ -761,6 +782,9 @@ while (($#)); do
   c="$1"; shift
   if [[ "$c" == run ]]; then
     cmd_run "$@"
+    exit 0
+  elif [[ "$c" == run-official ]]; then
+    cmd_run_official "$@"
     exit 0
   elif [[ ( "$c" == test || "$c" == apptest ) && -n "${1:-}" && "$COMMANDS" != *" $1 "* ]]; then
     # test and apptest take an optional filter as their next word, unless that
