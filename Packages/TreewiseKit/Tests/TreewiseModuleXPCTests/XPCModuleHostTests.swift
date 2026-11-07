@@ -19,6 +19,26 @@
             #expect(modules == [StubModule(id: "m", neededContent: [.text]).description])
         }
 
+        @Test func carriesTheKeysToTheModuleAndItsLicenceStateBack() async throws {
+            let harness = Harness(modules: [StubModule(id: "m", needsLicence: true)])
+            defer { withExtendedLifetime(harness) {} }
+            let host = harness.host()
+            #expect(
+                try await host.licenceState(moduleID: "m", keys: ["bad", "good"], trialStart: nil)
+                    == .licensed(licensee: "Ada"))
+            #expect(
+                try await host.licenceState(moduleID: "m", keys: [], trialStart: Date())
+                    == .unlicensed)
+        }
+
+        @Test func aModuleWithoutALicenceGivesNoState() async throws {
+            let harness = Harness(modules: [StubModule(id: "m", needsLicence: false)])
+            defer { withExtendedLifetime(harness) {} }
+            #expect(
+                try await harness.host().licenceState(moduleID: "m", keys: [], trialStart: nil)
+                    == nil)
+        }
+
         @Test func carriesTheRequestToTheModuleAndTheProposalsBack() async throws {
             let harness = Harness(modules: [
                 StubModule(id: "m") { [["text": .text($0.content.text ?? "")]] }

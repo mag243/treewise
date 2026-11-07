@@ -1,3 +1,4 @@
+import Foundation
 import TreewiseCore
 
 /// A module as the app knows it, without running it (ADR 0057).
@@ -22,12 +23,14 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     public let name: String?
     /// The ids of the modules it replaces, which the app then does not offer (ADR 0067).
     public let replaces: Set<String>
+    /// Where it can be bought, for a paid module (ADR 0071).
+    public let purchaseURL: String?
 
     /// Creates a description.
     public init(
         id: String, contentTypes: Set<String>, neededContent: Set<ModuleContentKind>,
         fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false,
-        name: String? = nil, replaces: Set<String> = []
+        name: String? = nil, replaces: Set<String> = [], purchaseURL: String? = nil
     ) {
         self.id = id
         self.contentTypes = contentTypes
@@ -37,6 +40,7 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
         self.isFree = isFree
         self.name = name
         self.replaces = replaces
+        self.purchaseURL = purchaseURL
     }
 
     /// Whether it plays the default module's part: on in a new folder, imposing no
@@ -83,4 +87,8 @@ public protocol NameModuleHosting: Sendable {
     /// Asks a module which template a folder's names follow; nil when it recognizes none.
     func derivedTemplate(moduleID: String, names: [String], folderName: String) async throws
         -> String?
+    /// Asks a module what it may do with these licence keys and the trial's start; nil
+    /// when it needs no licence (ADR 0071).
+    func licenceState(moduleID: String, keys: [String], trialStart: Date?) async throws
+        -> ModuleLicenceState?
 }

@@ -9,6 +9,8 @@ public final class ScriptedModuleHost: NameModuleHosting {
     private let answers: [String: Result<[[String: NameTemplate.Value]], NameModuleHostError>]
     private let received = Mutex<[NameRequest]>([])
     private let templates = Mutex<[String: String]>([:])
+    private let licences = Mutex<[String: ModuleLicenceState]>([:])
+    private let askedKeys = Mutex<[[String]]>([])
 
     /// Creates a host with modules and each module's answer. A module without an
     /// answer fails with `moduleFailed`.
@@ -35,6 +37,21 @@ public final class ScriptedModuleHost: NameModuleHosting {
         async throws -> String?
     {
         templates.withLock { $0[moduleID] }
+    }
+
+    /// The keys each licence question carried, in order.
+    public var licenceKeys: [[String]] { askedKeys.withLock { $0 } }
+    /// Scripts a module's licence state; a module without one needs no licence.
+    public func setLicenceState(_ state: ModuleLicenceState, for moduleID: String) {
+        licences.withLock { $0[moduleID] = state }
+    }
+
+    /// Records the keys and gives the scripted licence state, if any.
+    public func licenceState(moduleID: String, keys: [String], trialStart: Date?)
+        async throws -> ModuleLicenceState?
+    {
+        askedKeys.withLock { $0.append(keys) }
+        return licences.withLock { $0[moduleID] }
     }
 
     /// The scripted modules.

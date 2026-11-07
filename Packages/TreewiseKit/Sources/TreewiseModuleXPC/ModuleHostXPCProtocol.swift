@@ -13,6 +13,10 @@
         /// not known.
         func derivedTemplate(
             moduleID: String, names: Data, reply: @escaping @Sendable (Data?) -> Void)
+        /// Replies with an encoded list of at most one licence state, or nil when the
+        /// module is not known.
+        func licenceState(
+            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void)
     }
 
     /// How requests and answers are written for the trip. A binary property list
@@ -22,6 +26,12 @@
         struct NamesOfFolder: Codable {
             let names: [String]
             let folderName: String
+        }
+
+        /// The licence keys and the trial's start, for a module's licence state.
+        struct LicenceQuestion: Codable {
+            let keys: [String]
+            let trialStart: Date?
         }
 
         static func encode(_ value: some Encodable) throws -> Data {

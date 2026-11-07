@@ -42,6 +42,19 @@
         }
 
         var derived: String?
+        /// Whether it needs a licence, which a key "good" gives.
+        var needsLicence = false
+
+        init(id: String, needsLicence: Bool) {
+            description = Self.describe(id)
+            self.needsLicence = needsLicence
+        }
+
+        func licenceState(keys: [String], trialStart: Date?) -> ModuleLicenceState? {
+            guard needsLicence else { return nil }
+            if keys.contains("good") { return .licensed(licensee: "Ada") }
+            return trialStart == nil ? .trial(daysLeft: 14) : .unlicensed
+        }
 
         init(id: String, derived: String) {
             description = Self.describe(id)

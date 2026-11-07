@@ -63,6 +63,18 @@
             return try decode([String].self, from: data).first
         }
 
+        /// Asks a module what it may do with these keys and the trial's start.
+        public func licenceState(moduleID: String, keys: [String], trialStart: Date?)
+            async throws -> ModuleLicenceState?
+        {
+            let encoded = try ModuleWire.encode(
+                ModuleWire.LicenceQuestion(keys: keys, trialStart: trialStart))
+            let data = try await ask { service, reply in
+                service.licenceState(moduleID: moduleID, question: encoded, reply: reply)
+            }
+            return try decode([ModuleLicenceState].self, from: data).first
+        }
+
         private func decode<Value: Decodable>(_ type: Value.Type, from data: Data) throws -> Value {
             guard data.count <= Self.maximumResponseBytes,
                 let value = try? ModuleWire.decode(type, from: data)

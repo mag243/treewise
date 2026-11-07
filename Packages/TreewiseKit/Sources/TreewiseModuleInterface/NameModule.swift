@@ -1,3 +1,4 @@
+import Foundation
 import TreewiseCore
 
 /// A module that finds what a file's name should say (ADR 0057). It receives data
@@ -17,6 +18,9 @@ public protocol NameModule: Sendable {
     func fieldValues(for request: NameRequest) async throws -> [[String: NameTemplate.Value]]
     /// The template these names in a folder follow, or nil when the module recognizes none.
     func derivedTemplate(fromNames names: [String], folderName: String) -> String?
+    /// What it may do with these licence keys and a trial that started then, or nil when
+    /// it needs no licence (ADR 0071).
+    func licenceState(keys: [String], trialStart: Date?) -> ModuleLicenceState?
 }
 
 extension NameModule {
@@ -25,6 +29,11 @@ extension NameModule {
 
     /// A module starts from its default template unless it can recognize one.
     public func derivedTemplate(fromNames names: [String], folderName: String) -> String? {
+        nil
+    }
+
+    /// A module needs no licence unless it says so.
+    public func licenceState(keys: [String], trialStart: Date?) -> ModuleLicenceState? {
         nil
     }
 }

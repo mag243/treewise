@@ -15,6 +15,16 @@ import TreewiseTestSupport
         #expect(host.requests == [request])
     }
 
+    @Test func givesTheScriptedLicenceStateAndRecordsTheKeys() async throws {
+        let host = ScriptedModuleHost(modules: [], answers: [:])
+        host.setLicenceState(.trial(daysLeft: 5), for: "m")
+        #expect(
+            try await host.licenceState(moduleID: "m", keys: ["k"], trialStart: nil)
+                == .trial(daysLeft: 5))
+        #expect(try await host.licenceState(moduleID: "other", keys: [], trialStart: nil) == nil)
+        #expect(host.licenceKeys == [["k"], []])
+    }
+
     @Test func failsForAModuleWithoutAnAnswer() async {
         let host = ScriptedModuleHost(modules: [], answers: [:])
         await #expect(throws: NameModuleHostError.moduleFailed) {

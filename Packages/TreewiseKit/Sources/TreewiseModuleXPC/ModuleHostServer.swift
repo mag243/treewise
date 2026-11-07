@@ -52,6 +52,21 @@
                     .compactMap(\.self)))
         }
 
+        /// Replies with a module's licence state, as a list of at most one.
+        public func licenceState(
+            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void
+        ) {
+            guard let module = modules.first(where: { $0.id == moduleID }),
+                let decoded = try? ModuleWire.decode(
+                    ModuleWire.LicenceQuestion.self, from: question)
+            else {
+                reply(nil)
+                return
+            }
+            let state = module.licenceState(keys: decoded.keys, trialStart: decoded.trialStart)
+            reply(try? ModuleWire.encode([state].compactMap(\.self)))
+        }
+
         /// Runs a module and replies with its sets of values, or nil when it fails.
         public func fieldValues(
             moduleID: String, request: Data, reply: @escaping @Sendable (Data?) -> Void
