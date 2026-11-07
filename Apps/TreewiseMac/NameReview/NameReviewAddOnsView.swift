@@ -163,6 +163,9 @@ struct NameReviewAddOnsView: View {
         .accessibilityAction(named: Text("Move Up")) { move(module, by: -1) }
         .accessibilityAction(named: Text("Move Down")) { move(module, by: 1) }
         if editing == module.id { editor(for: module) }
+        if module.isOn, let newer = model.newerSavedPattern(for: module.id) {
+            NewerPatternVersion(model: model, pattern: newer, moduleID: module.id)
+        }
     }
 
     /// The licence of a paid add-on: quiet in its trial, a lock and the way to a licence
@@ -249,7 +252,7 @@ struct NameReviewAddOnsView: View {
     }
 
     /// A pattern with each field in its colour, as the name it made shows them.
-    private static func colored(_ pattern: String) -> AttributedString {
+    static func colored(_ pattern: String) -> AttributedString {
         var text = AttributedString(pattern)
         for mark in FieldColors.marks(inPattern: pattern) {
             guard let range = Range(mark.range, in: text) else { continue }

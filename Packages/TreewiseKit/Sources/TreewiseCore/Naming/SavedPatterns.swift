@@ -8,12 +8,29 @@ public struct SavedPattern: Hashable, Sendable, Codable, Identifiable {
     public var name: String
     /// The text of the pattern, without spaces at its ends.
     public var text: String
+    /// Which version of its text this is: 1 at first, one more with each change of the
+    /// text, so a folder can tell a newer one (ADR 0068).
+    public var version: Int
 
     /// Creates a saved pattern.
-    public init(id: String, name: String, text: String) {
+    public init(id: String, name: String, text: String, version: Int = 1) {
         self.id = id
         self.name = name
         self.text = text
+        self.version = version
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, text, version
+    }
+
+    /// Reads a pattern; one stored before versions existed is version 1.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        text = try container.decode(String.self, forKey: .text)
+        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
     }
 }
 
@@ -116,10 +133,13 @@ public struct SavedPatterns: Hashable, Sendable, Codable {
         return nil
     }
 
-    /// Changes the text of a pattern. Folders that use it unchanged follow it (ADR 0068).
+    /// Changes the text of a pattern, which makes a new version of it; a folder that uses
+    /// it is offered that version (ADR 0068). The same text makes none.
     public mutating func change(_ id: SavedPattern.ID, to text: String) {
-        if let index = patterns.firstIndex(where: { $0.id == id }) {
-            patterns[index].text = Self.trimmed(text)
+        let text = Self.trimmed(text)
+        if let index = patterns.firstIndex(where: { $0.id == id }), patterns[index].text != text {
+            patterns[index].text = text
+            patterns[index].version += 1
         }
     }
 

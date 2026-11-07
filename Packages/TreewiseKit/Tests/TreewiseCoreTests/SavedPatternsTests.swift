@@ -54,6 +54,21 @@ import TreewiseCore
         #expect(patterns.patterns[2].text == "{folder} - {seq}")
     }
 
+    @Test func changingTheTextMakesANewVersion() {
+        var patterns = examples
+        let id = patterns.patterns[2].id
+        #expect(patterns.patterns[2].version == 1)
+        patterns.change(id, to: "{folder} - {seq}")
+        #expect(patterns.patterns[2].version == 2)
+        patterns.change(id, to: "{folder} - {seq} ")
+        #expect(patterns.patterns[2].version == 2, "the same text makes no version")
+    }
+
+    @Test func aPatternStoredBeforeVersionsIsTheFirst() throws {
+        let data = Data(#"{"id":"p","name":"Doc","text":"Doc {text}"}"#.utf8)
+        #expect(try JSONDecoder().decode(SavedPattern.self, from: data).version == 1)
+    }
+
     @Test func removesAPattern() {
         var patterns = examples
         let id = patterns.patterns[1].id

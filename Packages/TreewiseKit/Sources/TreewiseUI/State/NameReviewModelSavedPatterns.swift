@@ -35,7 +35,7 @@ extension NameReviewModel {
         else { return }
         await setTemplate(moduleID, to: pattern.text)
         guard modules.first(where: { $0.id == moduleID })?.templateProblem == nil else { return }
-        settings.use(savedPattern: id, text: pattern.text, for: moduleID)
+        settings.use(pattern, for: moduleID)
         await saveSettings()
     }
 
@@ -60,7 +60,26 @@ extension NameReviewModel {
             let text = modules.first(where: { $0.id == moduleID })?.templateText
         else { return }
         dependencies.changeSavedPattern(pattern.id, text)
-        settings.savedPatternLinks[moduleID]?.isChanged = false
+        if let updated = linkedSavedPattern(of: moduleID) { settings.use(updated, for: moduleID) }
+        await saveSettings()
+    }
+
+    /// The newer version of the saved pattern the add-on uses here unchanged, to offer with
+    /// Use It and Keep Mine (ADR 0068); nil when there is none to offer.
+    public func newerSavedPattern(for moduleID: String) -> SavedPattern? {
+        settings.newerVersion(for: moduleID, in: dependencies.savedPatterns().patterns)
+    }
+
+    /// Takes the newer version of the add-on's saved pattern in this folder.
+    public func useNewerSavedPattern(for moduleID: String) async {
+        guard let pattern = newerSavedPattern(for: moduleID) else { return }
+        await useSavedPattern(pattern.id, for: moduleID)
+    }
+
+    /// Keeps the add-on's pattern here and does not offer this newer version again.
+    public func keepPatternInsteadOfNewer(for moduleID: String) async {
+        guard let pattern = newerSavedPattern(for: moduleID) else { return }
+        settings.skip(version: pattern.version, for: moduleID)
         await saveSettings()
     }
 
@@ -70,14 +89,12 @@ extension NameReviewModel {
         return dependencies.savedPatterns().patterns.first { $0.id == link.id }
     }
 
-    /// Gives each module that uses a saved pattern unchanged that pattern as it is now.
-    func followSavedPatterns(_ descriptions: [NameModuleDescription]) async {
+    /// Ends the links to saved patterns that are gone, or that their module cannot use;
+    /// each keeps its copy of the text.
+    func dropStaleSavedPatternLinks(_ descriptions: [NameModuleDescription]) async {
         guard !settings.savedPatternLinks.isEmpty else { return }
         let before = settings
-        let texts = Dictionary(
-            dependencies.savedPatterns().patterns.map { ($0.id, $0.text) }
-        ) { first, _ in first }
-        settings.follow(savedPatterns: texts) { moduleID, text in
+        settings.dropLinks(notIn: dependencies.savedPatterns().patterns) { moduleID, text in
             descriptions.first { $0.id == moduleID }.map { Self.parse(text, for: $0) != nil }
                 ?? false
         }

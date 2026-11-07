@@ -201,7 +201,7 @@ public final class NameReviewModel {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
         }
         let (descriptions, catalog) = await loadSettings()
-        await followSavedPatterns(descriptions)
+        await dropStaleSavedPatternLinks(descriptions)
         // Subfolders get no names proposed, so they do not count against a pattern.
         let names = visible.filter { !$0.isContainer }.map(\.name)
         modules = []
