@@ -63,6 +63,8 @@ public final class BrowserSettings {
         static let defaultNamePattern = "defaultNamePattern"
         static let savedPatterns = "savedPatterns"
         static let addOns = "addOns"
+        static let licenceKeys = "licenceKeys"
+        static let licenceTrialStart = "licenceTrialStart"
         static let personalDataInNames = "personalDataInNames"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
@@ -126,6 +128,22 @@ public final class BrowserSettings {
         }
     }
 
+    /// The licence keys the user entered, which the closed modules check (ADR 0071).
+    public var licenceKeys: [String] {
+        didSet {
+            let json = (try? JSONEncoder().encode(licenceKeys)).flatMap {
+                String(data: $0, encoding: .utf8)
+            }
+            store.setSetting(json, for: Key.licenceKeys)
+        }
+    }
+
+    /// When the trial of paid add-ons started, as ISO 8601, kept here and in the keychain
+    /// (ADR 0071).
+    public var licenceTrialStart: String? {
+        didSet { store.setSetting(licenceTrialStart, for: Key.licenceTrialStart) }
+    }
+
     /// The pattern a folder without one of its own gets when the user asks for it, or
     /// when names are suggested for selected files there (ADR 0057): the saved default.
     public var defaultNamePattern: String { savedPatterns.defaultPattern.text }
@@ -180,6 +198,11 @@ public final class BrowserSettings {
             }
             ?? store.setting(Key.defaultNamePattern).map { SavedPatterns(keeping: $0) }
             ?? .examples()
+        licenceKeys =
+            store.setting(Key.licenceKeys).flatMap {
+                try? JSONDecoder().decode([String].self, from: Data($0.utf8))
+            } ?? []
+        licenceTrialStart = store.setting(Key.licenceTrialStart)
         addOns =
             store.setting(Key.addOns).flatMap {
                 try? JSONDecoder().decode(AddOnPreferences.self, from: Data($0.utf8))
