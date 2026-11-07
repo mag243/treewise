@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ needs a licence." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ benötigt eine Lizenz."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ heeft een licentie nodig."
+          }
+        }
+      }
+    },
     "%lld files already fit" : {
       "localizations" : {
         "de" : {
@@ -73,6 +89,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld van %2$lld goedgekeurd"
+          }
+        }
+      }
+    },
+    "%lld of %lld names" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld von %2$lld Namen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld names"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld van %2$lld namen"
           }
         }
       }
@@ -218,6 +256,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Acties"
+          }
+        }
+      }
+    },
+    "Add" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg toe"
           }
         }
       }
@@ -558,6 +612,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terug in lijst"
+          }
+        }
+      }
+    },
+    "Buy…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaufen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koop…"
           }
         }
       }
@@ -1002,6 +1072,38 @@
         }
       }
     },
+    "Enter Licence Key" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenzschlüssel eingeben"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer licentiesleutel in"
+          }
+        }
+      }
+    },
+    "Enter Licence Key…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenzschlüssel eingeben …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer licentiesleutel in…"
+          }
+        }
+      }
+    },
     "Every < needs its >" : {
       "localizations" : {
         "de" : {
@@ -1213,6 +1315,22 @@
         }
       }
     },
+    "Found in This Folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In diesem Ordner gefunden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gevonden in deze map"
+          }
+        }
+      }
+    },
     "Free" : {
       "localizations" : {
         "de" : {
@@ -1374,6 +1492,22 @@
         }
       }
     },
+    "Keep Mine" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meins behalten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Houd de mijne"
+          }
+        }
+      }
+    },
     "Keyboard shortcuts" : {
       "localizations" : {
         "de" : {
@@ -1452,6 +1586,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Linkerpaneel"
+          }
+        }
+      }
+    },
+    "Licence key" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenzschlüssel"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licentiesleutel"
+          }
+        }
+      }
+    },
+    "Licensed to %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenziert für %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licentie op naam van %@"
           }
         }
       }
@@ -1700,6 +1866,22 @@
         }
       }
     },
+    "Needs a licence" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenz erforderlich"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licentie nodig"
+          }
+        }
+      }
+    },
     "New" : {
       "localizations" : {
         "de" : {
@@ -1867,6 +2049,7 @@
       }
     },
     "Off" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1883,6 +2066,7 @@
       }
     },
     "On" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2108,6 +2292,38 @@
         }
       }
     },
+    "Paste the licence key from the e-mail you received." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge den Lizenzschlüssel aus der E-Mail ein, die du erhalten hast."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plak de licentiesleutel uit de e-mail die je hebt ontvangen."
+          }
+        }
+      }
+    },
+    "Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patroon"
+          }
+        }
+      }
+    },
     "Pause" : {
       "localizations" : {
         "de" : {
@@ -2285,6 +2501,7 @@
       }
     },
     "Remove %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2296,6 +2513,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verwijder %@"
+          }
+        }
+      }
+    },
+    "Remove Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster entfernen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder patroon"
           }
         }
       }
@@ -2508,6 +2741,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bewaar patroon…"
+          }
+        }
+      }
+    },
+    "Save as New Pattern…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als neues Muster sichern …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar als nieuw patroon…"
+          }
+        }
+      }
+    },
+    "Saved" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichert"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaard"
           }
         }
       }
@@ -2956,6 +3221,7 @@
       }
     },
     "The default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2971,7 +3237,24 @@
         }
       }
     },
+    "The default is offered to a folder without a pattern of its own. A folder keeps the version of a pattern it uses, and is offered a newer one." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Standard wird einem Ordner ohne eigenes Muster angeboten. Ein Ordner behält die Version eines Musters, die er verwendet, und bekommt eine neuere angeboten."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De standaard wordt aangeboden in een map zonder eigen patroon. Een map houdt de versie van een patroon die hij gebruikt, en krijgt een nieuwere aangeboden."
+          }
+        }
+      }
+    },
     "The default is offered to a folder without a pattern of its own. Folders keep their own copy of a pattern." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3102,6 +3385,22 @@
         }
       }
     },
+    "This is not a Treewise licence key." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das ist kein Lizenzschlüssel von Treewise."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit is geen licentiesleutel van Treewise."
+          }
+        }
+      }
+    },
     "This is the name it already has" : {
       "localizations" : {
         "de" : {
@@ -3114,6 +3413,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dit is de naam die het al heeft"
+          }
+        }
+      }
+    },
+    "This key unlocks none of your add-ons. It may be for another add-on, or withdrawn." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Schlüssel schaltet keines deiner Add-ons frei. Er gilt vielleicht für ein anderes Add-on oder wurde zurückgezogen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze sleutel ontgrendelt geen van je add-ons. Hij is misschien voor een andere add-on, of ingetrokken."
           }
         }
       }
@@ -3310,6 +3625,22 @@
         }
       }
     },
+    "Trial: %lld days left" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testphase: noch %lld Tage"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proefperiode: nog %lld dagen"
+          }
+        }
+      }
+    },
     "Type a path" : {
       "localizations" : {
         "de" : {
@@ -3374,6 +3705,44 @@
         }
       }
     },
+    "Unlocked %@ for %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ für %2$@ freigeschaltet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unlocked %1$@ for %2$@."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ontgrendeld voor %2$@."
+          }
+        }
+      }
+    },
+    "Update “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ aktualisieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werk “%@” bij"
+          }
+        }
+      }
+    },
     "Use Default" : {
       "localizations" : {
         "de" : {
@@ -3386,6 +3755,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebruik standaard"
+          }
+        }
+      }
+    },
+    "Use It" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik deze"
           }
         }
       }
@@ -3566,6 +3951,28 @@
         }
       }
     },
+    "recognized from %lld of %lld names" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aus %1$lld von %2$lld Namen erkannt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "recognized from %1$lld of %2$lld names"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herkend uit %1$lld van %2$lld namen"
+          }
+        }
+      }
+    },
     "recognized in this folder" : {
       "localizations" : {
         "de" : {
@@ -3610,6 +4017,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "{%@}"
+          }
+        }
+      }
+    },
+    "“%@” has a newer version:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von „%@“ gibt es eine neuere Version:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Van “%@” is er een nieuwere versie:"
           }
         }
       }

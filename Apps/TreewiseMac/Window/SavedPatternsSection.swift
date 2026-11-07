@@ -71,7 +71,7 @@ struct SavedPatternsSection: View {
             Text("Name Patterns")
         } footer: {
             Text(
-                "The default is offered to a folder without a pattern of its own. Folders keep their own copy of a pattern."
+                "The default is offered to a folder without a pattern of its own. A folder keeps the version of a pattern it uses, and is offered a newer one."
             )
             .font(.caption).foregroundStyle(.secondary)
         }
