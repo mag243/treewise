@@ -264,7 +264,7 @@ extension LaunchTests {
 
     /// Changes the free module's pattern in the overview's add-ons header.
     @MainActor
-    private func usePattern(_ pattern: String, in review: XCUIElement) {
+    func usePattern(_ pattern: String, in review: XCUIElement) {
         // The header closes to one line, `Add-ons: …`, once the folder has its add-ons.
         let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
             .firstMatch
