@@ -7,8 +7,9 @@ import TreewiseUI
 /// this folder, each with how many names fit it (ADR 0067), then the saved patterns by name
 /// (ADR 0068), each with its text in the colours of its fields and the current one checked;
 /// a saved one the add-on cannot use is dimmed, with the reason as its tooltip. Then Save
-/// Pattern… and Edit Saved Patterns…. A menu of our own, as SwiftUI's shows no colours in its
-/// items.
+/// Pattern… and Edit Saved Patterns…; when the folder changed a pattern picked from a saved
+/// one, Update "name" and Save as New Pattern… in place of Save Pattern…. A menu of our own,
+/// as SwiftUI's shows no colours in its items.
 struct SavedPatternsMenu: NSViewRepresentable {
     /// The button's text, or nil for an icon.
     let title: String?
@@ -18,6 +19,9 @@ struct SavedPatternsMenu: NSViewRepresentable {
     let use: (SavedPattern.ID) -> Void
     /// Takes a found pattern for this folder.
     let useFound: (String) -> Void
+    /// The name of the saved pattern this folder changed, which Update gives the folder's text.
+    let toUpdate: () -> String?
+    let update: () -> Void
     let save: () -> Void
     let edit: () -> Void
 
@@ -31,6 +35,8 @@ struct SavedPatternsMenu: NSViewRepresentable {
         button.found = found
         button.use = use
         button.useFound = useFound
+        button.toUpdate = toUpdate
+        button.update = update
         button.save = save
         button.edit = edit
     }
@@ -46,6 +52,8 @@ struct SavedPatternsMenu: NSViewRepresentable {
         var found: () -> (candidates: [PatternCandidate], current: String) = { ([], "") }
         var use: (SavedPattern.ID) -> Void = { _ in }
         var useFound: (String) -> Void = { _ in }
+        var toUpdate: () -> String? = { nil }
+        var update: () -> Void = {}
         var save: () -> Void = {}
         var edit: () -> Void = {}
 
@@ -93,7 +101,12 @@ struct SavedPatternsMenu: NSViewRepresentable {
             }
             for choice in choices() { menu.addItem(item(for: choice)) }
             menu.addItem(.separator())
-            menu.addItem(action("Save Pattern…", #selector(saveChosen)))
+            if let name = toUpdate() {
+                menu.addItem(action("Update “\(name)”", #selector(updateChosen)))
+                menu.addItem(action("Save as New Pattern…", #selector(saveChosen)))
+            } else {
+                menu.addItem(action("Save Pattern…", #selector(saveChosen)))
+            }
             menu.addItem(action("Edit Saved Patterns…", #selector(editChosen)))
             let below = isFlipped ? bounds.maxY + Self.menuGap : bounds.minY - Self.menuGap
             menu.popUp(positioning: nil, at: CGPoint(x: bounds.minX, y: below), in: self)
@@ -177,6 +190,8 @@ struct SavedPatternsMenu: NSViewRepresentable {
         }
 
         @objc private func saveChosen() { save() }
+
+        @objc private func updateChosen() { update() }
 
         @objc private func editChosen() { edit() }
     }

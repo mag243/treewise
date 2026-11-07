@@ -1,4 +1,5 @@
 import TreewiseCore
+import TreewiseModuleInterface
 
 /// A saved pattern as an add-on's menu offers it (ADR 0068).
 public struct SavedPatternChoice: Identifiable, Hashable, Sendable {
@@ -33,6 +34,54 @@ extension NameReviewModel {
         guard let pattern = dependencies.savedPatterns().patterns.first(where: { $0.id == id })
         else { return }
         await setTemplate(moduleID, to: pattern.text)
+        guard modules.first(where: { $0.id == moduleID })?.templateProblem == nil else { return }
+        settings.use(savedPattern: id, text: pattern.text, for: moduleID)
+        await saveSettings()
+    }
+
+    /// Takes a pattern found in the folder; the folder follows no saved pattern then.
+    public func useFoundPattern(_ text: String, for moduleID: String) async {
+        await setTemplate(moduleID, to: text)
+        settings.unlinkSavedPattern(for: moduleID)
+        await saveSettings()
+    }
+
+    /// The saved pattern the add-on's pattern here was picked from, when it has been changed
+    /// since, for Update "name" (ADR 0068); nil otherwise.
+    public func savedPatternToUpdate(for moduleID: String) -> SavedPattern? {
+        guard settings.savedPatternLinks[moduleID]?.isChanged == true else { return nil }
+        return linkedSavedPattern(of: moduleID)
+    }
+
+    /// Gives the saved pattern the add-on's pattern was picked from this folder's text, and
+    /// the folder follows it again, as do the folders that use it unchanged.
+    public func updateSavedPattern(for moduleID: String) async {
+        guard let pattern = savedPatternToUpdate(for: moduleID),
+            let text = modules.first(where: { $0.id == moduleID })?.templateText
+        else { return }
+        dependencies.changeSavedPattern(pattern.id, text)
+        settings.savedPatternLinks[moduleID]?.isChanged = false
+        await saveSettings()
+    }
+
+    /// The saved pattern a module's pattern here was picked from, if it still exists.
+    func linkedSavedPattern(of moduleID: String) -> SavedPattern? {
+        guard let link = settings.savedPatternLinks[moduleID] else { return nil }
+        return dependencies.savedPatterns().patterns.first { $0.id == link.id }
+    }
+
+    /// Gives each module that uses a saved pattern unchanged that pattern as it is now.
+    func followSavedPatterns(_ descriptions: [NameModuleDescription]) async {
+        guard !settings.savedPatternLinks.isEmpty else { return }
+        let before = settings
+        let texts = Dictionary(
+            dependencies.savedPatterns().patterns.map { ($0.id, $0.text) }
+        ) { first, _ in first }
+        settings.follow(savedPatterns: texts) { moduleID, text in
+            descriptions.first { $0.id == moduleID }.map { Self.parse(text, for: $0) != nil }
+                ?? false
+        }
+        if settings != before { await saveSettings() }
     }
 
     /// Saves an add-on's pattern in this folder under a name; returns why not, or nil.

@@ -32,6 +32,8 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     /// The user's order of the modules, those that are off included (ADR 0065); empty
     /// until the user changes it, when the catalog's order counts.
     public var moduleOrder: [String] = []
+    /// The saved pattern each module's template was picked from, by module id (ADR 0068).
+    public var savedPatternLinks: [String: SavedPatternLink] = [:]
 
     /// The settings of a folder reviewed for the first time.
     public static func new(defaultModuleID: String) -> FolderSettings {
@@ -85,7 +87,9 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         enabledModules = enabled
         if let pattern = templates.removeValue(forKey: replaced), templates[replacing] == nil {
             templates[replacing] = pattern
+            savedPatternLinks[replacing] = savedPatternLinks[replaced]
         }
+        savedPatternLinks[replaced] = nil
         var order: [String] = []
         for id in moduleOrder.map({ $0 == replaced ? replacing : $0 }) where !order.contains(id) {
             order.append(id)
@@ -100,7 +104,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case enabledModules, templates, alwaysSkipped, moduleOrder
+        case enabledModules, templates, alwaysSkipped, moduleOrder, savedPatternLinks
     }
 
     /// Reads settings; those stored before a field existed get its default.
@@ -111,6 +115,9 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         alwaysSkipped =
             try container.decodeIfPresent(Set<String>.self, forKey: .alwaysSkipped) ?? []
         moduleOrder = try container.decodeIfPresent([String].self, forKey: .moduleOrder) ?? []
+        savedPatternLinks =
+            try container.decodeIfPresent(
+                [String: SavedPatternLink].self, forKey: .savedPatternLinks) ?? [:]
     }
 
     /// Decides how a folder relates to the record of the id on it.

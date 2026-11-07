@@ -116,7 +116,7 @@ public struct SavedPatterns: Hashable, Sendable, Codable {
         return nil
     }
 
-    /// Changes the text of a pattern. The folders that use it keep their own copy.
+    /// Changes the text of a pattern. Folders that use it unchanged follow it (ADR 0068).
     public mutating func change(_ id: SavedPattern.ID, to text: String) {
         if let index = patterns.firstIndex(where: { $0.id == id }) {
             patterns[index].text = Self.trimmed(text)

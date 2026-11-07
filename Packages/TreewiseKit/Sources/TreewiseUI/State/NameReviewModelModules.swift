@@ -47,7 +47,7 @@ extension NameReviewModel {
             modules[index].template = template
             modules[index].origin =
                 text == modules[index].recognized ? modules[index].origin : .user
-            settings.templates[id] = text
+            settings.changeTemplate(text, for: id, savedText: linkedSavedPattern(of: id)?.text)
             replan()
             await saveSettings()
         }
@@ -57,6 +57,7 @@ extension NameReviewModel {
     public func resetTemplate(_ id: String) async {
         guard let index = modules.firstIndex(where: { $0.id == id }) else { return }
         settings.templates[id] = nil
+        settings.unlinkSavedPattern(for: id)
         applyRecognized(to: &modules[index])
         replan()
         await saveSettings()

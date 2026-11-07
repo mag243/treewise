@@ -12,6 +12,8 @@ public struct NameReviewDependencies: Sendable {
         @Sendable (FileItem, [FileItem], Set<ModuleContentKind>) async -> NameRequest
     /// Saves a pattern under a name; returns why not, or nil when it did (ADR 0068).
     public typealias SavePattern = @MainActor @Sendable (String, String) -> SavedPatterns.Problem?
+    /// Gives a saved pattern another text.
+    public typealias ChangeSavedPattern = @MainActor @Sendable (SavedPattern.ID, String) -> Void
 
     let operations: any FileOperating
     let host: any NameModuleHosting
@@ -30,6 +32,8 @@ public struct NameReviewDependencies: Sendable {
     /// The user's saved patterns (ADR 0068).
     let savedPatterns: @MainActor @Sendable () -> SavedPatterns
     let savePattern: SavePattern
+    /// Gives a saved pattern another text.
+    let changeSavedPattern: ChangeSavedPattern
 
     /// Creates the dependencies.
     public init(
@@ -41,6 +45,7 @@ public struct NameReviewDependencies: Sendable {
         startTrial: @escaping @MainActor @Sendable () -> LicenceContext = { .none },
         savedPatterns: @escaping @MainActor @Sendable () -> SavedPatterns = { .examples() },
         savePattern: @escaping SavePattern = { _, _ in nil },
+        changeSavedPattern: @escaping ChangeSavedPattern = { _, _ in },
         makeRequest: @escaping MakeRequest
     ) {
         self.operations = operations
@@ -54,6 +59,7 @@ public struct NameReviewDependencies: Sendable {
         self.startTrial = startTrial
         self.savedPatterns = savedPatterns
         self.savePattern = savePattern
+        self.changeSavedPattern = changeSavedPattern
     }
 }
 
@@ -93,31 +99,8 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     /// The templates it recognized in the folder, the best first, to pick from (ADR 0067).
     public internal(set) var candidates: [PatternCandidate] = []
 
-    /// How many of the folder's files fit the pattern in force, when it is the one the
-    /// module recognized.
-    public var recognizedFit: PatternCandidate? {
-        guard origin == .derived else { return nil }
-        return candidates.first { $0.text == templateText }
-    }
-
-    /// Whether the recognized pattern fits so many files that the overview need not say how
-    /// many (ADR 0067); true when it says nothing of a fit.
-    public var isClearlyRecognized: Bool {
-        recognizedFit.map { PatternFit.isClear(fits: $0.fits, of: $0.of) } ?? true
-    }
-
     /// The module's id.
     public var id: String { description.id }
-}
-
-/// A template a module recognized in a folder, with how many of the folder's names fit it.
-public struct PatternCandidate: Hashable, Sendable {
-    /// The template's text.
-    public let text: String
-    /// How many of the folder's names fit it.
-    public let fits: Int
-    /// How many names the folder has.
-    public let of: Int
 }
 
 /// The state of the review overview: proposals for a folder or a selection, the user's
@@ -218,6 +201,7 @@ public final class NameReviewModel {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
         }
         let (descriptions, catalog) = await loadSettings()
+        await followSavedPatterns(descriptions)
         // Subfolders get no names proposed, so they do not count against a pattern.
         let names = visible.filter { !$0.isContainer }.map(\.name)
         modules = []

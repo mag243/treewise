@@ -83,6 +83,7 @@ import TreewiseUI
                 },
                 savedPatterns: { patterns.list },
                 savePattern: { patterns.save(name: $0, text: $1) },
+                changeSavedPattern: { patterns.change($0, to: $1) },
                 makeRequest: { item, siblings, needed in
                     NameRequest(
                         id: item.id.rawValue, name: item.name,
@@ -261,6 +262,10 @@ final class SavedPatternsBox: Sendable {
     }
 
     var list: SavedPatterns { state.withLock { $0 } }
+
+    func change(_ id: SavedPattern.ID, to text: String) {
+        state.withLock { $0.change(id, to: text) }
+    }
 
     func save(name: String, text: String) -> SavedPatterns.Problem? {
         state.withLock { list in

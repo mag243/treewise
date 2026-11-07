@@ -93,10 +93,12 @@ struct NameReviewAddOnsView: View {
             },
             useFound: { text in
                 Task {
-                    await model.setTemplate(module.id, to: text)
+                    await model.useFoundPattern(text, for: module.id)
                     if editing == module.id { draft = text }
                 }
             },
+            toUpdate: { model.savedPatternToUpdate(for: module.id)?.name },
+            update: { Task { await model.updateSavedPattern(for: module.id) } },
             save: {
                 savedName = ""
                 savingFor = module.id

@@ -54,6 +54,9 @@ extension BrowserState {
                     }
                     return nil
                 },
+                changeSavedPattern: { [settings] id, text in
+                    settings.savedPatterns.change(id, to: text)
+                },
                 makeRequest: { item, siblings, needed in
                     // Reading a scan is slow, so it happens away from the main actor.
                     await Task.detached {
