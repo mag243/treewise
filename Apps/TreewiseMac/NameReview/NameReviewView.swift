@@ -33,7 +33,7 @@ struct NameReviewView: View {
                 NameReviewResultView(
                     outcome: outcome, model: model, undoManager: undoManager, close: close)
             } else {
-                NameReviewAddOnsView(model: model, isOpen: panelIsOpen)
+                NameReviewAddOnsView(model: model, isOpen: panelIsOpen, licences: browser.licences)
                 Divider()
                 HStack(spacing: 0) {
                     NameReviewListView(model: model, showsHidden: $showsHiddenRows)

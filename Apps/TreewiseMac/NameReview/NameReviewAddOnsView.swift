@@ -10,6 +10,9 @@ struct NameReviewAddOnsView: View {
 
     let model: NameReviewModel
     @Binding var isOpen: Bool
+    /// The app's licences, for Enter Licence Key… (ADR 0071).
+    let licences: LicenceKeeper?
+    @State private var entersKey = false
     @State private var editing: String?
     @State private var draft = ""
     @State private var insertion: PatternInsertion?
@@ -50,6 +53,10 @@ struct NameReviewAddOnsView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
+        .licenceKeyEntry(
+            isPresented: $entersKey, keeper: licences, host: NameReviewWindow.host,
+            onUnlocked: { Task { await model.start() } }
+        )
         .alert("Save Pattern", isPresented: isSaving) {
             TextField("Name", text: $savedName)
             Button("Save") {
@@ -121,12 +128,17 @@ struct NameReviewAddOnsView: View {
                     set: { isOn in Task { await model.setModule(module.id, on: isOn) } })
             )
             .toggleStyle(.checkbox)
-            .disabled(module.isOn && model.modules.filter(\.isOn).count == 1)
+            // One without a licence cannot be turned on (ADR 0071).
+            .disabled(
+                module.licence == .unlicensed
+                    || (module.isOn && model.modules.filter(\.isOn).count == 1)
+            )
             .frame(minWidth: 130, alignment: .leading)
             Text(Self.colored(module.templateText)).font(.caption.monospaced()).lineLimit(1)
                 .opacity(module.isOn ? 1 : 0.5)
             Text(NameReviewText.origin(of: module)).font(.caption)
                 .foregroundStyle(module.origin == .user ? Color.accentColor : .secondary)
+            licence(of: module)
             links(for: module)
         }
         .dropDestination(for: String.self) { ids, _ in
@@ -139,6 +151,28 @@ struct NameReviewAddOnsView: View {
         .accessibilityAction(named: Text("Move Up")) { move(module, by: -1) }
         .accessibilityAction(named: Text("Move Down")) { move(module, by: 1) }
         if editing == module.id { editor(for: module) }
+    }
+
+    /// The licence of a paid add-on: quiet in its trial, a lock and the way to a licence
+    /// when it needs one, nothing when licensed (ADR 0071).
+    @ViewBuilder
+    private func licence(of module: NameReviewModule) -> some View {
+        switch module.licence {
+        case .trial(let days):
+            Text(LicenceText.state(.trial(daysLeft: days))).font(.caption).foregroundStyle(
+                .secondary)
+        case .unlicensed:
+            Label(LicenceText.state(.unlicensed), systemImage: "lock.fill")
+                .font(.caption).foregroundStyle(.orange)
+            if module.description.purchaseURL != nil {
+                Button("Buy…") { LicenceText.buy(module.description) }
+                    .buttonStyle(.link).font(.caption)
+            }
+            Button("Enter Licence Key…") { entersKey = true }
+                .buttonStyle(.link).font(.caption)
+        case .licensed, nil:
+            EmptyView()
+        }
     }
 
     @ViewBuilder

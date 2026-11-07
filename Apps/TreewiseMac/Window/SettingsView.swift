@@ -39,10 +39,12 @@ struct SettingsView: View {
                 .frame(width: Self.width, height: tabHeight)
                 .tabItem { Label("Names", systemImage: "textformat") }
                 .tag(Tab.names)
-            AddOnsSettingsTab(settings: settings)
-                .frame(width: Self.width, height: tabHeight)
-                .tabItem { Label("Add-ons", systemImage: "puzzlepiece.extension") }
-                .tag(Tab.addOns)
+            AddOnsSettingsTab(
+                settings: settings, licences: LaunchOptions.licenceKeeper(for: settings)
+            )
+            .frame(width: Self.width, height: tabHeight)
+            .tabItem { Label("Add-ons", systemImage: "puzzlepiece.extension") }
+            .tag(Tab.addOns)
         }
         .alert(refusal ?? "", isPresented: isRefusing) {
             Button("OK") { refusal = nil }
