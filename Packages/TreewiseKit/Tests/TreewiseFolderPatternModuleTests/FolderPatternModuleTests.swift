@@ -97,4 +97,10 @@ import TreewiseModuleInterface
                 fromNames: ["Scan 1.pdf", "Scan 2.pdf", "Scan 3.pdf"], folderName: "Scans")
                 == "Scan {seq}")
     }
+
+    @Test func keepsAPeriodAfterTheTextInTheText() async throws {
+        let text = try await values(
+            request("2026.02.23 Tax Ofice - Payroll 2026.01.pdf", folder: "Taxes"))["text"]
+        #expect(text == .text("Tax Ofice - Payroll 2026.01"))
+    }
 }

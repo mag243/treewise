@@ -24,6 +24,8 @@ final class ScreenshotTests: XCTestCase {
     @MainActor func testTabsDark() throws { try tabs(dark: true) }
     @MainActor func testTwoWindowsBesideLight() throws { try twoWindowsBeside(dark: false) }
     @MainActor func testTwoWindowsBesideDark() throws { try twoWindowsBeside(dark: true) }
+    @MainActor func testNameSuggestionsLight() throws { try nameSuggestions(dark: false) }
+    @MainActor func testNameSuggestionsDark() throws { try nameSuggestions(dark: true) }
 
     // MARK: - Scenes
 
@@ -69,6 +71,34 @@ final class ScreenshotTests: XCTestCase {
         keep(
             try crop(XCUIScreen.main.screenshot(), to: first.frame.union(second.frame)),
             as: name("04-beside", dark: dark))
+    }
+
+    /// The overview of a folder's names, with the pattern the free add-on recognized in its
+    /// header, a name with a typo offered written right and one offered its pattern.
+    @MainActor
+    private func nameSuggestions(dark: Bool) throws {
+        let app = try launch(dark: dark)
+        go(to: "Documents/Taxes", in: app)
+        XCTAssertTrue(
+            app.tables.staticTexts["Payment reminder.pdf"].waitForExistence(timeout: Self.timeout))
+        // Nothing selected, so the whole folder is reviewed.
+        let file = app.menuBarItems["File"]
+        file.click()
+        file.menuItems["Suggest Names…"].click()
+        let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
+            .firstMatch
+        XCTAssertTrue(review.waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(
+            review.outlines.staticTexts["Payment reminder.pdf"].waitForExistence(
+                timeout: Self.timeout))
+        let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons:'"))
+            .firstMatch
+        if header.waitForExistence(timeout: Self.timeout) { header.click() }
+        // The list gets the whole width, so the proposed names show in full.
+        let hidePreview = review.buttons["Hide Preview"]
+        if hidePreview.exists { hidePreview.click() }
+        settleScene()
+        keep(review.screenshot(), as: name("05-names", dark: dark))
     }
 
     @MainActor

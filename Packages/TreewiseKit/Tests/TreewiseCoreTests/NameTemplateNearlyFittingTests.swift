@@ -31,6 +31,13 @@ import TreewiseCore
                 == "2026.01.16 Belastingdienst - VAT")
     }
 
+    @Test func keepsANumberAfterTheTypoInTheText() throws {
+        #expect(
+            try corrected(
+                "{date:yyyy.MM.dd} Tax Office - {text}", "2026.02.23 Tax Ofice - Payroll 2026.01")
+                == "2026.02.23 Tax Office - Payroll 2026.01")
+    }
+
     @Test func writesTheCaseOfFixedTextRight() throws {
         #expect(try corrected("{folder} {text}", "holiday 2026 Beach") == "Holiday 2026 Beach")
     }
