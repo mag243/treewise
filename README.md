@@ -36,6 +36,19 @@ The specification of the app's keys (ADR 0022).
 | ⌃⌘S | Show or hide the sidebar |
 | ⌘, | Settings |
 
+## Name suggestions
+
+*Suggest Names…* in a file's or folder's context menu proposes names for its files from a pattern, such as `{date:yyyy.MM.dd} {folder} - {text}`, which Treewise recognizes in the names already there or you type yourself. You approve each name before anything is renamed. While renaming a file, ⌥Esc offers the proposals for that one file.
+
+- **Patterns** hold dates in several forms, also with month names in English, Dutch and German, the folder's name, a running number per year, quarter or month, optional parts and choices between parts.
+- **Saved patterns** in Settings > Names: pick one for a folder from the menu beside the pattern. A folder keeps the version it uses and is offered a newer one when you change it.
+- **Add-ons** give the values a pattern needs. The free add-on reads the file's date and its current name, and recognizes the patterns of a folder's names. Paid add-ons will follow, with a one-time licence checked on your Mac.
+
+### Privacy
+
+- Add-ons run in a separate service that has no access to the internet and sees only the files it handles, one at a time; it never gets a path, only names and what it needs from the file.
+- Treewise sends nothing about you or your files.
+
 ## Toolbar
 
 The toolbar has Back, Forward, Enclosing Folder, Refresh and search. Under the tab bar are the address bar and Explorer's command bar: *New* (New Folder), Cut, Copy, Paste, Rename, Share and Move to Trash, each enabled when its menu item is, *Sort* (column and direction), *View* (icons or list, row size, hidden files, file extensions), *Window Beside* and *Details*, the details pane at the right of the window. *Help > Treewise Website* opens the download page.
@@ -62,7 +75,8 @@ tools/build.sh --help   # every command
 | Path | Contents |
 |---|---|
 | `Apps/TreewiseMac`, `Apps/TreewiseiOS` | The app shells |
-| `Packages/TreewiseKit` | The shared modules: `TreewiseCore`, `TreewiseFileSystem`, `TreewiseUI`, `TreewiseTestSupport` |
+| `Packages/TreewiseKit` | The shared modules: `TreewiseCore`, `TreewiseFileSystem`, `TreewiseUI`, `TreewiseTestSupport`, the add-on interface `TreewiseModuleInterface` and its XPC connection `TreewiseModuleXPC`, and the free add-on `TreewiseFolderPatternModule` |
+| `Apps/TreewiseModuleHost`, `Packages/TreewiseModuleCatalog` | The service that runs the add-ons, and the list of add-ons it holds |
 | `UITests/` | XCUITest smoke tests for the macOS app |
 | `tools/` | Setup, build, and check scripts, pinned versions, git hooks |
 
