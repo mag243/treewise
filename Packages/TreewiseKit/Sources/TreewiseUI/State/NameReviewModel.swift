@@ -165,18 +165,7 @@ public final class NameReviewModel {
         items = (scope == .selection ? selection : visible.filter { !$0.isContainer }).sorted {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
         }
-        // An add-on turned off in Settings is offered in no folder (ADR 0070).
-        let addOns = dependencies.addOns
-        let all = (try? await dependencies.host.availableModules()) ?? []
-        let catalog = addOns.available(all.map(\.id))
-        let descriptions = all.filter { catalog.contains($0.id) }
-        let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
-        isFirstReview = saved == nil
-        let fresh = addOns.newFolder(
-            catalog: all.map(\.id), defaultID: NameModuleDescription.defaultModuleID)
-        settings = saved ?? fresh
-        settings.enabledModules = settings.enabledModules.filter(catalog.contains)
-        if settings.enabledModules.isEmpty { settings.enabledModules = fresh.enabledModules }
+        let (descriptions, catalog) = await loadSettings()
         let names = visible.map(\.name)
         modules = []
         // The folder's order of the add-ons (ADR 0065), or else the default order, with
@@ -209,13 +198,39 @@ public final class NameReviewModel {
         reading?.cancel()
     }
 
+    /// Reads the folder's settings and the modules it is offered: none that another module
+    /// replaces, whose settings go to the one that replaces it (ADR 0067), and none turned
+    /// off in Settings (ADR 0070).
+    private func loadSettings() async -> (descriptions: [NameModuleDescription], catalog: [String])
+    {
+        let offered = NameModuleDescription.offered(
+            (try? await dependencies.host.availableModules()) ?? [])
+        var addOns = dependencies.addOns
+        let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
+        isFirstReview = saved == nil
+        settings = saved ?? FolderSettings(enabledModules: [], templates: [:])
+        for module in offered {
+            for replaced in module.replaces {
+                addOns.handOver(from: replaced, to: module.id)
+                settings.handOver(from: replaced, to: module.id)
+            }
+        }
+        let catalog = addOns.available(offered.map(\.id))
+        let fresh = addOns.newFolder(
+            catalog: offered.map(\.id), defaultID: NameModuleDescription.defaultID(among: offered))
+        if saved == nil { settings = fresh }
+        settings.enabledModules = settings.enabledModules.filter(catalog.contains)
+        if settings.enabledModules.isEmpty { settings.enabledModules = fresh.enabledModules }
+        return (offered.filter { catalog.contains($0.id) }, catalog)
+    }
+
     private func makeModule(_ description: NameModuleDescription, names: [String]) async
         -> NameReviewModule
     {
         let derived = try? await dependencies.host.derivedTemplate(
             moduleID: description.id, names: names, folderName: folder.name)
         // The default module imposes no pattern on a folder that shows none.
-        let isDefault = description.id == NameModuleDescription.defaultModuleID
+        let isDefault = description.takesTheDefaultModulesPart
         var module = NameReviewModule(
             description: description, isOn: settings.enabledModules.contains(description.id),
             templateText: "", origin: .notRecognized,

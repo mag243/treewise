@@ -182,7 +182,7 @@ struct NameReviewAddOnsView: View {
                 }
                 Spacer()
                 Button(
-                    module.id == NameModuleDescription.defaultModuleID
+                    module.description.takesTheDefaultModulesPart
                         ? "Recognize Again" : "Use Default"
                 ) {
                     Task {

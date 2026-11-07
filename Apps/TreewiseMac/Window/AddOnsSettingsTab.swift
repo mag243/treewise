@@ -21,11 +21,14 @@ struct AddOnsSettingsTab: View {
         Form {
             Section {
                 ForEach(ordered, id: \.id) { module in
-                    AddOnRow(settings: settings, module: module, catalog: catalog)
-                        .accessibilityActions {
-                            Button("Move Up") { move(module.id, by: -1) }
-                            Button("Move Down") { move(module.id, by: 1) }
-                        }
+                    AddOnRow(
+                        settings: settings, module: module, catalog: catalog,
+                        defaultID: NameModuleDescription.defaultID(among: modules)
+                    )
+                    .accessibilityActions {
+                        Button("Move Up") { move(module.id, by: -1) }
+                        Button("Move Down") { move(module.id, by: 1) }
+                    }
                 }
                 .onMove { source, destination in
                     guard let from = source.first else { return }
@@ -44,7 +47,20 @@ struct AddOnsSettingsTab: View {
             }
         }
         .formStyle(.grouped)
-        .task { modules = (try? await NameReviewWindow.host.availableModules()) ?? [] }
+        .task { await load() }
+    }
+
+    /// The add-ons offered, none that another replaces; the choices made for a replaced
+    /// one go to the one that replaces it (ADR 0067).
+    private func load() async {
+        let offered = NameModuleDescription.offered(
+            (try? await NameReviewWindow.host.availableModules()) ?? [])
+        for module in offered {
+            for replaced in module.replaces {
+                settings.addOns.handOver(from: replaced, to: module.id)
+            }
+        }
+        modules = offered
     }
 
     private func move(_ id: String, by offset: Int) {
@@ -58,6 +74,8 @@ private struct AddOnRow: View {
     @Bindable var settings: BrowserSettings
     let module: NameModuleDescription
     let catalog: [String]
+    /// The add-on that plays the default module's part (ADR 0067).
+    let defaultID: String
 
     private var isOn: Bool { settings.addOns.isOn(module.id) }
     private var isLast: Bool { isOn && settings.addOns.available(catalog).count == 1 }
@@ -66,7 +84,7 @@ private struct AddOnRow: View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Toggle(
-                    NameReviewText.name(ofModule: module.id),
+                    NameReviewText.name(of: module),
                     isOn: Binding(
                         get: { isOn },
                         set: { settings.addOns.setOn(module.id, on: $0, catalog: catalog) })
@@ -89,12 +107,12 @@ private struct AddOnRow: View {
                 isOn: Binding(
                     get: {
                         settings.addOns.isOnInNewFolders(
-                            module.id, defaultID: NameModuleDescription.defaultModuleID)
+                            module.id, defaultID: defaultID)
                     },
                     set: {
                         settings.addOns.setOnInNewFolders(
                             module.id, on: $0, catalog: catalog,
-                            defaultID: NameModuleDescription.defaultModuleID)
+                            defaultID: defaultID)
                     })
             )
             .toggleStyle(.checkbox)

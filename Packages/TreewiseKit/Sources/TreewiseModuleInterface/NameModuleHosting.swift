@@ -18,11 +18,16 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     public let defaultTemplate: String
     /// Whether it comes without paying, as Settings shows (ADR 0055, ADR 0070).
     public let isFree: Bool
+    /// The name the app shows for it, or nil when the app names it itself.
+    public let name: String?
+    /// The ids of the modules it replaces, which the app then does not offer (ADR 0067).
+    public let replaces: Set<String>
 
     /// Creates a description.
     public init(
         id: String, contentTypes: Set<String>, neededContent: Set<ModuleContentKind>,
-        fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false
+        fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false,
+        name: String? = nil, replaces: Set<String> = []
     ) {
         self.id = id
         self.contentTypes = contentTypes
@@ -30,6 +35,27 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
         self.fields = fields
         self.defaultTemplate = defaultTemplate
         self.isFree = isFree
+        self.name = name
+        self.replaces = replaces
+    }
+
+    /// Whether it plays the default module's part: on in a new folder, imposing no
+    /// pattern on a folder that shows none. The default module does, and a module that
+    /// replaces it (ADR 0067).
+    public var takesTheDefaultModulesPart: Bool {
+        id == Self.defaultModuleID || replaces.contains(Self.defaultModuleID)
+    }
+
+    /// The modules the app offers, in the order given: those no other module replaces.
+    public static func offered(_ all: [NameModuleDescription]) -> [NameModuleDescription] {
+        let replaced = Set(all.filter { !$0.replaces.isEmpty }.flatMap(\.replaces))
+        return all.filter { !replaced.contains($0.id) }
+    }
+
+    /// The id that plays the default module's part among offered modules: the module
+    /// that replaces it, or the default module's own id.
+    public static func defaultID(among offered: [NameModuleDescription]) -> String {
+        offered.first { $0.takesTheDefaultModulesPart }?.id ?? defaultModuleID
     }
 }
 

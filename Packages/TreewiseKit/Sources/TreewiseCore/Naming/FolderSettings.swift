@@ -64,6 +64,26 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         enabledModules = order.filter(enabled.contains)
     }
 
+    /// Gives what was chosen for a module to the module that replaces it (ADR 0067): whether
+    /// it is on, its pattern unless the other has one of its own, and its place in the
+    /// order.
+    public mutating func handOver(from replaced: String, to replacing: String) {
+        var enabled: [String] = []
+        for id in enabledModules.map({ $0 == replaced ? replacing : $0 })
+        where !enabled.contains(id) {
+            enabled.append(id)
+        }
+        enabledModules = enabled
+        if let pattern = templates.removeValue(forKey: replaced), templates[replacing] == nil {
+            templates[replacing] = pattern
+        }
+        var order: [String] = []
+        for id in moduleOrder.map({ $0 == replaced ? replacing : $0 }) where !order.contains(id) {
+            order.append(id)
+        }
+        moduleOrder = order
+    }
+
     /// Creates settings.
     public init(enabledModules: [String], templates: [String: String]) {
         self.enabledModules = enabledModules

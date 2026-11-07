@@ -82,3 +82,19 @@ import TreewiseCore
         #expect(try JSONDecoder().decode(AddOnPreferences.self, from: data) == preferences)
     }
 }
+
+/// Settings' choices for a module that another replaces go to that one (ADR 0067, ADR 0070).
+@Suite struct AddOnPreferencesHandOverTests {
+    @Test func handsTheChoicesForAReplacedModuleOver() {
+        let catalog = ["free", "invoices"]
+        var preferences = AddOnPreferences()
+        preferences.setOnInNewFolders("invoices", on: true, catalog: catalog, defaultID: "free")
+        preferences.move("invoices", to: 0, catalog: catalog)
+        preferences.setOn("free", on: false, catalog: catalog)
+        preferences.handOver(from: "free", to: "advanced")
+        let next = ["advanced", "invoices"]
+        #expect(!preferences.isOn("advanced"))
+        #expect(preferences.isOnInNewFolders("advanced", defaultID: "advanced"))
+        #expect(preferences.ordered(next) == ["invoices", "advanced"])
+    }
+}

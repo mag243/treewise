@@ -115,3 +115,25 @@ import TreewiseCore
         #expect(try JSONDecoder().decode(FolderSettings.self, from: data) == settings)
     }
 }
+
+/// A folder's settings for a module that another replaces go to that one (ADR 0067).
+@Suite struct FolderSettingsHandOverTests {
+    @Test func handsTheModuleOnItsPatternAndItsPlaceOver() {
+        var settings = FolderSettings(
+            enabledModules: ["free", "invoices"], templates: ["free": "A {text}"])
+        settings.moduleOrder = ["invoices", "free"]
+        settings.handOver(from: "free", to: "advanced")
+        #expect(Set(settings.enabledModules) == ["advanced", "invoices"])
+        #expect(settings.templates == ["advanced": "A {text}"])
+        #expect(settings.moduleOrder == ["invoices", "advanced"])
+    }
+
+    @Test func keepsTheReplacingModulesOwnPattern() {
+        var settings = FolderSettings(
+            enabledModules: ["free", "advanced"],
+            templates: ["free": "A {text}", "advanced": "B {text}"])
+        settings.handOver(from: "free", to: "advanced")
+        #expect(settings.enabledModules == ["advanced"])
+        #expect(settings.templates == ["advanced": "B {text}"])
+    }
+}

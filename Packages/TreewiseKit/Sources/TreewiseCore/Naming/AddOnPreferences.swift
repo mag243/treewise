@@ -66,6 +66,14 @@ public struct AddOnPreferences: Hashable, Sendable, Codable {
         order = all
     }
 
+    /// Gives the choices for a module to the module that replaces it (ADR 0067): whether
+    /// it is on, whether it is on in new folders, and its place in the default order.
+    public mutating func handOver(from replaced: String, to replacing: String) {
+        if turnedOff.remove(replaced) != nil { turnedOff.insert(replacing) }
+        if onInNewFolders?.remove(replaced) != nil { onInNewFolders?.insert(replacing) }
+        order = order.map { $0 == replaced ? replacing : $0 }
+    }
+
     /// The settings of a folder reviewed for the first time: the add-ons on in new
     /// folders that are offered, in the default order, or else the first that is offered.
     public func newFolder(catalog: [String], defaultID: String) -> FolderSettings {
