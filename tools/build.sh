@@ -48,6 +48,12 @@
 #   screenshots The download page's screenshots (ADR 0041): makes the sandbox volumes
 #               afresh, runs ScreenshotTests on them and saves the images as
 #               build/screenshots/<name>.png. Takes the screen, as ci does.
+#   benchmark   How long the add-ons take for a folder of 100 files (M7): the free
+#               module in the package, Advanced Folder Pattern in treewise-modules when
+#               it is beside this folder, and Suggest Names… in the app from the menu to
+#               the last proposal. Sets no limit; the times go to build/reports/benchmarks.
+#               Takes the screen, as ci does; `benchmark package` leaves out the app and
+#               the screen.
 #   fixture     Fill build/fixtures/large with 10,000 files and a few folders, for
 #               the list's performance: tools/build.sh run -TreewiseRoot "$PWD/build/fixtures/large"
 #   sandbox     Attach the two sandbox volumes, Treewise Sandbox HD and T7: disk
@@ -89,9 +95,10 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume coverage build apptest iostest run package export fixture sandbox icon publish screenshots official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark coverage build apptest iostest run package export fixture sandbox icon publish screenshots official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
+BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
 declare -a SUMMARY=()
 
@@ -264,6 +271,52 @@ cmd_crossvolume() {
   ok "Cross-volume tests passed"
 }
 
+# How long the add-ons take for a folder of 100 files (M7, speed targets). The package
+# benchmarks run only with TREEWISE_BENCHMARK=1 and leave their times as attachments; the
+# app's are XCTest metrics in the result bundle. It reports times and sets no limit.
+cmd_benchmark() {
+  local only="${1:-}"
+  step "Benchmarks${only:+ ($only)}"
+  require_project
+  [[ -z "$only" || "$only" == package ]] || fail "benchmark takes nothing or package"
+  local out="$REPORT_DIR/benchmarks" rc=0 package
+  rm -rf "$out"
+  mkdir -p "$out" "$LOG_DIR"
+  TREEWISE_BENCHMARK=1 swift test --package-path "$PACKAGE_DIR" "${SWIFT_TEST_FLAGS[@]}" \
+    --filter Benchmarks --attachments-path "$out" >"$LOG_DIR/benchmark.log" 2>&1 || rc=$?
+  ((rc == 0)) || fail "Package benchmarks failed; log: build/logs/benchmark.log"
+  package="$MODULES_DIR/Packages/TreewiseFolderPatternAdvancedModule"
+  if [[ -d "$package" ]]; then
+    (cd "$package" && TREEWISE_BENCHMARK=1 swift test --scratch-path "$BUILD_DIR/official/benchmark" \
+      "${SWIFT_TEST_FLAGS[@]}" --filter Benchmarks --attachments-path "$out" \
+      >"$LOG_DIR/benchmark-advanced.log" 2>&1) \
+      || fail "Advanced Folder Pattern's benchmarks failed; log: build/logs/benchmark-advanced.log"
+  fi
+  local file
+  for file in "$out"/*.txt; do [[ -f "$file" ]] && info "$(cat "$file")"; done
+  if [[ "$only" == package ]]; then
+    ok "Times in ${out#"$ROOT_DIR"/}"
+    return
+  fi
+  local bundle="$REPORT_DIR/Benchmarks.xcresult"
+  rm -rf "$bundle"
+  xcode benchmark -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" \
+    -resultBundlePath "$bundle" -only-testing:"$BENCHMARK_TESTS" test
+  xcrun xcresulttool get test-results metrics --path "$bundle" >"$out/app-metrics.json"
+  python3 - "$out/app-metrics.json" <<'PY'
+import json, statistics, sys
+for test in json.load(open(sys.argv[1])):
+    for run in test.get("testRuns", []):
+        for metric in run.get("metrics", []):
+            values = metric.get("measurements", [])
+            if values:
+                print(f"    {test['testIdentifier']}: {metric['displayName']} "
+                      f"median {statistics.median(values):.3f} {metric.get('unitOfMeasurement', '')} "
+                      f"of {len(values)}")
+PY
+  ok "Times in ${out#"$ROOT_DIR"/}"
+}
+
 cmd_build() {
   step "Build"
   require_project
@@ -282,7 +335,7 @@ cmd_apptest() {
   IFS=, read -ra tests <<<"$filter"
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseMacUITests/$test"); done
   xcode apptest -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" -resultBundlePath "$bundle" \
-    -skip-testing:"$SCREENSHOT_TESTS" "${only[@]}" test
+    -skip-testing:"$SCREENSHOT_TESTS" -skip-testing:"$BENCHMARK_TESTS" "${only[@]}" test
   ok "$MAC_SCHEME tests passed. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
@@ -755,6 +808,7 @@ run_command() {
     format) timed format cmd_format ;;
     test) timed test cmd_test "${2:-}" ;;
     crossvolume) timed crossvolume cmd_crossvolume ;;
+    benchmark) timed benchmark cmd_benchmark "${2:-}" ;;
     coverage) timed coverage cmd_coverage ;;
     build) timed build cmd_build ;;
     apptest) timed apptest cmd_apptest "${2:-}" ;;
@@ -789,6 +843,8 @@ while (($#)); do
   elif [[ ( "$c" == test || "$c" == apptest ) && -n "${1:-}" && "$COMMANDS" != *" $1 "* ]]; then
     # test and apptest take an optional filter as their next word, unless that
     # word is a command.
+    run_command "$c" "$1"; shift
+  elif [[ "$c" == benchmark && "${1:-}" == package ]]; then
     run_command "$c" "$1"; shift
   elif [[ "$c" == sandbox && ( "${1:-}" == reset || "${1:-}" == eject ) ]]; then
     run_command "$c" "$1"; shift
