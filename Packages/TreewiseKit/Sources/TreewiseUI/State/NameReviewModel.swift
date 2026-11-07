@@ -93,6 +93,19 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     /// The templates it recognized in the folder, the best first, to pick from (ADR 0067).
     public internal(set) var candidates: [PatternCandidate] = []
 
+    /// How many of the folder's files fit the pattern in force, when it is the one the
+    /// module recognized.
+    public var recognizedFit: PatternCandidate? {
+        guard origin == .derived else { return nil }
+        return candidates.first { $0.text == templateText }
+    }
+
+    /// Whether the recognized pattern fits so many files that the overview need not say how
+    /// many (ADR 0067); true when it says nothing of a fit.
+    public var isClearlyRecognized: Bool {
+        recognizedFit.map { PatternFit.isClear(fits: $0.fits, of: $0.of) } ?? true
+    }
+
     /// The module's id.
     public var id: String { description.id }
 }
@@ -205,7 +218,8 @@ public final class NameReviewModel {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
         }
         let (descriptions, catalog) = await loadSettings()
-        let names = visible.map(\.name)
+        // Subfolders get no names proposed, so they do not count against a pattern.
+        let names = visible.filter { !$0.isContainer }.map(\.name)
         modules = []
         // The folder's order of the add-ons (ADR 0065), or else the default order, with
         // one new to the folder last.

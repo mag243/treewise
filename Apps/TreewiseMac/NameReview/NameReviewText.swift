@@ -33,7 +33,12 @@ enum NameReviewText {
     /// Where a module's pattern comes from.
     static func origin(of module: NameReviewModule) -> String {
         switch module.origin {
-        case .derived: String(localized: "recognized in this folder")
+        case .derived:
+            if !module.isClearlyRecognized, let fit = module.recognizedFit {
+                String(localized: "recognized from \(fit.fits) of \(fit.of) names")
+            } else {
+                String(localized: "recognized in this folder")
+            }
         case .moduleDefault: String(localized: "add-on's default")
         case .user: String(localized: "changed by you")
         case .notRecognized: String(localized: "no pattern recognized in this folder")

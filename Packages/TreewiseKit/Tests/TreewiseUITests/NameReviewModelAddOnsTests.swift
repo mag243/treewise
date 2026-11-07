@@ -200,3 +200,39 @@ extension NameReviewModelTests {
         #expect(candidates.first?.of == 3)
     }
 }
+
+/// Only files count when a module recognizes a folder's pattern (ADR 0067).
+extension NameReviewModelTests {
+    @Test func asksTheModuleAboutTheFilesNotTheSubfolders() async {
+        _ = addFile("Doc One.txt")
+        fileSystem.add(
+            FileItem(
+                id: "review/Sub", name: "Sub", kind: .folder, parentID: folder.id,
+                volume: folder.volume))
+        let host = host()
+        _ = await model(host)
+        #expect(host.namesAskedAbout.last == ["Doc One.txt"])
+    }
+
+    @Test func saysHowManyFilesFitAPatternThatFewerThanFourFifthsFit() async {
+        for name in ["Scan 1.txt", "Scan 2.txt", "Scan 3.txt", "Other.txt"] { _ = addFile(name) }
+        let host = host()
+        host.setDerivedTemplate("Scan {seq}", for: Self.free)
+        let model = await model(host)
+        let module = model.modules.first
+        let fit = module?.recognizedFit
+        #expect(fit?.text == "Scan {seq}")
+        #expect(fit?.fits == 3)
+        #expect(fit?.of == 4)
+        #expect(module?.isClearlyRecognized == false)
+    }
+
+    @Test func aPatternEveryFileFitsIsClearlyRecognized() async {
+        for name in ["Scan 1.txt", "Scan 2.txt", "Scan 3.txt"] { _ = addFile(name) }
+        let host = host()
+        host.setDerivedTemplate("Scan {seq}", for: Self.free)
+        let model = await model(host)
+        #expect(model.modules.first?.recognizedFit?.fits == 3)
+        #expect(model.modules.first?.isClearlyRecognized == true)
+    }
+}

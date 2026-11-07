@@ -82,17 +82,42 @@ import TreewiseFolderPatternModule
         #expect(derive([]) == nil)
     }
 
-    @Test func aMajorityIsNotEnough() {
+    @Test func aMinorityIsNotEnough() {
         let names = ["2026.01.01 a.pdf", "2026.01.02 b.pdf", "c.pdf", "d.pdf", "e.pdf"]
         #expect(derive(names) == nil)
     }
 
-    @Test func aSharedWordNeedsNearlyEveryName() {
+    @Test func halfIsNotEnough() {
+        let names = [
+            "2026.01.01 a.pdf", "2026.01.02 b.pdf", "2026.01.03 c.pdf", "d.pdf", "e.pdf", "f.pdf",
+        ]
+        #expect(derive(names) == nil)
+    }
+
+    @Test func aMajorityOfAtLeastThreeIsEnough() {
+        let names = ["2026.01.01 a.pdf", "2026.01.02 b.pdf", "2026.01.03 c.pdf", "d.pdf", "e.pdf"]
+        #expect(derive(names) == "{date:yyyy.MM.dd} {text}")
+    }
+
+    @Test func oneOddNameInFourLeavesThePattern() {
+        let names = ["Scan 1.pdf", "Scan 2.pdf", "Scan 3.pdf", "Lighthouse.heic"]
+        #expect(derive(names) == "Scan {seq}")
+    }
+
+    @Test func aSharedWordNeedsAMajorityOfTheNames() {
         let names = [
             "2026.01.01 Taxes - a.pdf", "2026.01.02 Taxes - b.pdf", "2026.01.03 Bank - c.pdf",
             "2026.01.04 Bank - d.pdf",
         ]
         #expect(derive(names) == "{date:yyyy.MM.dd} {text}")
+    }
+
+    @Test func aSharedWordOfAMajorityIsKept() {
+        let names = [
+            "2026.01.01 Taxes - a.pdf", "2026.01.02 Taxes - b.pdf", "2026.01.03 Taxes - c.pdf",
+            "2026.01.04 Bank - d.pdf",
+        ]
+        #expect(derive(names) == "{date:yyyy.MM.dd} Taxes - {text}")
     }
 
     @Test func ignoresExtensionsWhenLooking() {

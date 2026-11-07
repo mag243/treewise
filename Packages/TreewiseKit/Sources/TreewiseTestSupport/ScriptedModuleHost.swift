@@ -11,6 +11,7 @@ public final class ScriptedModuleHost: NameModuleHosting {
     private let templates = Mutex<[String: [String]]>([:])
     private let licences = Mutex<[String: ModuleLicenceState]>([:])
     private let askedKeys = Mutex<[[String]]>([])
+    private let askedNames = Mutex<[[String]]>([])
 
     /// Creates a host with modules and each module's answer. A module without an
     /// answer fails with `moduleFailed`.
@@ -38,11 +39,15 @@ public final class ScriptedModuleHost: NameModuleHosting {
         templates.withLock { $0[moduleID] = list }
     }
 
+    /// The names each question for templates carried, in order.
+    public var namesAskedAbout: [[String]] { askedNames.withLock { $0 } }
+
     /// The scripted templates, if any.
     public func derivedTemplates(
         moduleID: String, names: [String], folderName: String, licence: LicenceContext
     ) async throws -> [String] {
-        templates.withLock { $0[moduleID] ?? [] }
+        askedNames.withLock { $0.append(names) }
+        return templates.withLock { $0[moduleID] ?? [] }
     }
 
     /// The keys each licence question carried, in order.
