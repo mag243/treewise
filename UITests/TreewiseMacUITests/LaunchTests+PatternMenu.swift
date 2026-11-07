@@ -4,7 +4,7 @@ import XCTest
 extension LaunchTests {
     @MainActor
     func testThePatternMenuListsWhatTheAddOnFoundWithHowManyNamesFit() throws {
-        // A fourth name that fits makes 80%, so the add-on recognizes the folder's pattern.
+        // A fourth name that fits: four of the five names fit the pattern the add-on finds.
         let folder = try makeHolidayFolder()
         try writePhoto(to: folder.appendingPathComponent("2026.08.17 Holiday - Pier.heic"))
         let app = try launchApp()
