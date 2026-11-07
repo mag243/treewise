@@ -79,12 +79,22 @@ struct NameReviewAddOnsView: View {
         SavedPatternsMenu(
             title: title,
             choices: { model.savedPatternChoices(for: module.id) },
+            found: {
+                let now = model.modules.first { $0.id == module.id }
+                return (now?.candidates ?? [], now?.templateText ?? "")
+            },
             use: { id in
                 Task {
                     await model.useSavedPattern(id, for: module.id)
                     if editing == module.id {
                         draft = model.modules.first { $0.id == module.id }?.templateText ?? draft
                     }
+                }
+            },
+            useFound: { text in
+                Task {
+                    await model.setTemplate(module.id, to: text)
+                    if editing == module.id { draft = text }
                 }
             },
             save: {

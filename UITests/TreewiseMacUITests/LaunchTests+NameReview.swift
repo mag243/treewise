@@ -220,6 +220,29 @@ extension LaunchTests {
     }
 
     @MainActor
+    func testThePatternMenuListsWhatTheAddOnFoundWithHowManyNamesFit() throws {
+        _ = try makeHolidayFolder()
+        let app = try launchApp()
+        let review = try openReview(of: Self.oddName, in: app)
+        let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
+            .firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: Self.launchTimeout), "the header shows")
+        if header.label.hasPrefix("Add-ons:") { header.click() }
+        let menu = review.buttons.matching(
+            NSPredicate(format: "label IN {'Saved Patterns', 'Choose a Saved Pattern'}")
+        ).firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: Self.launchTimeout), "the menu shows")
+        menu.click()
+        XCTAssertTrue(
+            app.menuItems["Found in This Folder"].waitForExistence(timeout: Self.launchTimeout),
+            "the found patterns come first")
+        let found = app.menuItems.matching(NSPredicate(format: "title ENDSWITH ' names'"))
+            .firstMatch
+        XCTAssertTrue(found.exists, "a found pattern says how many names fit it")
+        app.typeKey(.escape, modifierFlags: [])
+    }
+
+    @MainActor
     func testSpaceShowsTheFileOfARowInQuickLook() throws {
         _ = try makeHolidayFolder()
         let app = try launchApp()

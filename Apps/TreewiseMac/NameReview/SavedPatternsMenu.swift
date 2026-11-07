@@ -3,15 +3,21 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// The menu of saved patterns beside an add-on's pattern (ADR 0068): each by its name,
-/// with its text in the colours of its fields and the current one checked; one the add-on
-/// cannot use is dimmed, with the reason as its tooltip. Then Save Pattern… and Edit Saved
-/// Patterns…. A menu of our own, as SwiftUI's shows no colours in its items.
+/// The menu of patterns beside an add-on's pattern: first the patterns the add-on found in
+/// this folder, each with how many names fit it (ADR 0067), then the saved patterns by name
+/// (ADR 0068), each with its text in the colours of its fields and the current one checked;
+/// a saved one the add-on cannot use is dimmed, with the reason as its tooltip. Then Save
+/// Pattern… and Edit Saved Patterns…. A menu of our own, as SwiftUI's shows no colours in its
+/// items.
 struct SavedPatternsMenu: NSViewRepresentable {
     /// The button's text, or nil for an icon.
     let title: String?
     let choices: () -> [SavedPatternChoice]
+    /// The patterns found in this folder, and the one in force.
+    let found: () -> (candidates: [PatternCandidate], current: String)
     let use: (SavedPattern.ID) -> Void
+    /// Takes a found pattern for this folder.
+    let useFound: (String) -> Void
     let save: () -> Void
     let edit: () -> Void
 
@@ -22,7 +28,9 @@ struct SavedPatternsMenu: NSViewRepresentable {
     func updateNSView(_ button: MenuButton, context: Context) {
         button.show(title: title)
         button.choices = choices
+        button.found = found
         button.use = use
+        button.useFound = useFound
         button.save = save
         button.edit = edit
     }
@@ -35,7 +43,9 @@ struct SavedPatternsMenu: NSViewRepresentable {
         private static let separator = "   "
 
         var choices: () -> [SavedPatternChoice] = { [] }
+        var found: () -> (candidates: [PatternCandidate], current: String) = { ([], "") }
         var use: (SavedPattern.ID) -> Void = { _ in }
+        var useFound: (String) -> Void = { _ in }
         var save: () -> Void = {}
         var edit: () -> Void = {}
 
@@ -73,12 +83,59 @@ struct SavedPatternsMenu: NSViewRepresentable {
         @objc private func showMenu() {
             let menu = NSMenu()
             menu.autoenablesItems = false
+            let (candidates, current) = found()
+            if !candidates.isEmpty {
+                menu.addItem(.sectionHeader(title: String(localized: "Found in This Folder")))
+                for candidate in candidates {
+                    menu.addItem(item(for: candidate, isCurrent: candidate.text == current))
+                }
+                menu.addItem(.sectionHeader(title: String(localized: "Saved")))
+            }
             for choice in choices() { menu.addItem(item(for: choice)) }
             menu.addItem(.separator())
             menu.addItem(action("Save Pattern…", #selector(saveChosen)))
             menu.addItem(action("Edit Saved Patterns…", #selector(editChosen)))
             let below = isFlipped ? bounds.maxY + Self.menuGap : bounds.minY - Self.menuGap
             menu.popUp(positioning: nil, at: CGPoint(x: bounds.minX, y: below), in: self)
+        }
+
+        /// A pattern found in the folder, in the colours of its fields, with how many of the
+        /// folder's names fit it.
+        private func item(for candidate: PatternCandidate, isCurrent: Bool) -> NSMenuItem {
+            let item = NSMenuItem(
+                title: candidate.text, action: #selector(useFoundChosen(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = candidate.text
+            item.state = isCurrent ? .on : .off
+            let title = NSMutableAttributedString(attributedString: Self.coloured(candidate.text))
+            title.append(
+                NSAttributedString(
+                    string: Self.separator
+                        + String(localized: "\(candidate.fits) of \(candidate.of) names"),
+                    attributes: [
+                        .font: NSFont.menuFont(ofSize: NSFont.smallSystemFontSize),
+                        .foregroundColor: NSColor.secondaryLabelColor,
+                    ]))
+            item.attributedTitle = title
+            return item
+        }
+
+        /// A pattern's text, with each field in its colour.
+        private static func coloured(_ pattern: String) -> NSAttributedString {
+            let text = NSMutableAttributedString(
+                string: pattern,
+                attributes: [
+                    .font: NSFont.monospacedSystemFont(
+                        ofSize: NSFont.smallSystemFontSize, weight: .regular)
+                ])
+            for mark in FieldColors.marks(inPattern: pattern) {
+                text.addAttribute(.backgroundColor, value: mark.color, range: mark.range)
+            }
+            return text
+        }
+
+        @objc private func useFoundChosen(_ item: NSMenuItem) {
+            if let text = item.representedObject as? String { useFound(text) }
         }
 
         private func item(for choice: SavedPatternChoice) -> NSMenuItem {
