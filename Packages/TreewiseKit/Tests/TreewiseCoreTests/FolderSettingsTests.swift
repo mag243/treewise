@@ -137,3 +137,19 @@ import TreewiseCore
         #expect(settings.templates == ["advanced": "B {text}"])
     }
 }
+
+/// A module not shown, as one turned off in Settings, keeps its place among those on
+/// (ADR 0070).
+@Suite struct FolderSettingsUnshownTests {
+    @Test func movingKeepsAModuleNotShownOn() {
+        var settings = FolderSettings(enabledModules: ["a", "hidden"], templates: [:])
+        settings.moveModule("b", to: 0, catalog: ["a", "b"])
+        #expect(settings.enabledModules.contains("hidden"))
+    }
+
+    @Test func turningOnKeepsAModuleNotShownOn() {
+        var settings = FolderSettings(enabledModules: ["a", "hidden"], templates: [:])
+        settings.setModule("b", on: true, order: ["a", "b"])
+        #expect(Set(settings.enabledModules) == ["a", "b", "hidden"])
+    }
+}

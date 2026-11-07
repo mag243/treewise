@@ -4,13 +4,15 @@ import TreewiseFileSystem
 import TreewiseModuleInterface
 
 extension NameReviewModel {
-    /// Turns a module on or off, for this folder. The last one stays on.
+    /// Turns a module on or off, for this folder. The last one that may work stays on, and
+    /// one that may not work, as without a licence, cannot be turned on (ADR 0071).
     public func setModule(_ id: String, on: Bool) async {
+        guard working.contains(id), on || enabled != [id] else { return }
         settings.setModule(id, on: on, order: modules.map(\.id))
         for index in modules.indices {
-            modules[index].isOn = settings.enabledModules.contains(modules[index].id)
+            modules[index].isOn = enabled.contains(modules[index].id)
         }
-        session?.setModuleOrder(settings.enabledModules)
+        session?.setModuleOrder(enabled)
         replan()
         await saveSettings()
     }
@@ -22,7 +24,7 @@ extension NameReviewModel {
         settings.moveModule(id, to: index, catalog: catalog)
         let order = settings.ordered(catalog)
         modules.sort { (order.firstIndex(of: $0.id) ?? 0) < (order.firstIndex(of: $1.id) ?? 0) }
-        session?.reorderModules(settings.enabledModules)
+        session?.reorderModules(enabled)
         refreshConflicts()
         await saveSettings()
     }

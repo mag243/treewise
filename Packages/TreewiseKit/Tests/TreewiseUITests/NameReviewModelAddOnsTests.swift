@@ -110,3 +110,77 @@ extension NameReviewModelTests {
         #expect(host.requests.last?.licence == licence)
     }
 }
+
+/// What was chosen for an add-on that may not work stays chosen (ADR 0070, ADR 0071).
+extension NameReviewModelTests {
+    @Test func keepsTheFoldersChoiceForAnAddOnTurnedOffInSettings() async {
+        _ = addFile("scan.pdf")
+        await store.save(
+            FolderSettings(enabledModules: [Self.free, Self.paid], templates: [:]),
+            forFolderAt: "review")
+        var addOns = AddOnPreferences()
+        addOns.setOn(Self.paid, on: false, catalog: [Self.free, Self.paid])
+        let model = await model(
+            host(modules: [Self.freeDescription, Self.paidDescription]), addOns: addOns)
+        await model.moveModule(Self.free, to: 0)
+        #expect(
+            await store.settings(forFolderAt: "review")?.enabledModules.contains(Self.paid) == true)
+    }
+}
+
+/// An add-on without a licence (ADR 0071).
+extension NameReviewModelTests {
+    private func unlicensedHost(_ modules: [NameModuleDescription]) -> ScriptedModuleHost {
+        let host = host(
+            modules: modules,
+            answers: [
+                Self.free: .success([["text": .text("New")]]),
+                Self.paid: .success([["company": .text("Co")]]),
+            ])
+        host.setLicenceState(.unlicensed, for: Self.paid)
+        return host
+    }
+
+    @Test func showsAnAddOnWithoutALicenceAsOffAndAsksItNothing() async {
+        _ = addFile("scan.pdf")
+        await store.save(
+            FolderSettings(enabledModules: [Self.free, Self.paid], templates: [:]),
+            forFolderAt: "review")
+        let host = unlicensedHost([Self.freeDescription, Self.paidDescription])
+        let model = await model(host)
+        let paid = model.modules.first { $0.id == Self.paid }
+        #expect(paid?.isOn == false)
+        #expect(paid?.licence == .unlicensed)
+        #expect(model.modules.first { $0.id == Self.free }?.isOn == true)
+        await model.setModule(Self.paid, on: true)
+        #expect(model.modules.first { $0.id == Self.paid }?.isOn == false, "it cannot be turned on")
+        #expect(
+            await store.settings(forFolderAt: "review")?.enabledModules.contains(Self.paid) == true)
+    }
+
+    @Test func startsTheTrialTheFirstTimeAPaidAddOnIsOffered() async {
+        _ = addFile("scan.pdf")
+        let host = host(modules: [Self.freeDescription, Self.paidDescription])
+        host.setLicenceState(.trial(daysLeft: 14), for: Self.paid)
+        let started = TrialStarts()
+        _ = await model(host, startTrial: { started.count += 1 })
+        #expect(started.count == 1)
+    }
+
+    @Test func aReplacingAddOnWithoutALicenceGivesTheFreeOneBack() async {
+        _ = addFile("scan.txt")
+        let host = host(
+            modules: [Self.freeDescription, Self.advancedDescription],
+            answers: [Self.free: .success([["text": .text("New")]])])
+        host.setLicenceState(.unlicensed, for: "advanced")
+        let model = await model(host)
+        #expect(model.modules.first { $0.id == Self.free }?.isOn == true)
+        #expect(model.modules.first { $0.id == "advanced" }?.licence == .unlicensed)
+    }
+}
+
+/// Counts the trial's starts, for a test.
+@MainActor
+final class TrialStarts {
+    var count = 0
+}

@@ -38,12 +38,22 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         FolderSettings(enabledModules: [defaultModuleID], templates: [:])
     }
 
-    /// Turns a module on or off, keeping `order`. Invariant: at least one stays on.
+    /// Turns a module on or off, keeping `order`; modules on that `order` does not hold, as
+    /// one turned off in Settings, stay on after them. Invariant: at least one stays on.
     public mutating func setModule(_ id: String, on: Bool, order: [String]) {
         var enabled = Set(enabledModules)
         if on { enabled.insert(id) } else { enabled.remove(id) }
         guard !enabled.isEmpty else { return }
-        enabledModules = order.filter(enabled.contains)
+        enabledModules = Self.inOrder(enabled, order, after: enabledModules)
+    }
+
+    /// The modules of `enabled` in `order`, then those `order` does not hold, as `before`
+    /// had them.
+    private static func inOrder(_ enabled: Set<String>, _ order: [String], after before: [String])
+        -> [String]
+    {
+        order.filter(enabled.contains)
+            + before.filter { enabled.contains($0) && !order.contains($0) }
     }
 
     /// The modules of `catalog` in the user's order: those the user ordered first, then
@@ -60,8 +70,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         order.remove(at: from)
         order.insert(id, at: min(max(0, index), order.count))
         moduleOrder = order
-        let enabled = Set(enabledModules)
-        enabledModules = order.filter(enabled.contains)
+        enabledModules = Self.inOrder(Set(enabledModules), order, after: enabledModules)
     }
 
     /// Gives what was chosen for a module to the module that replaces it (ADR 0067): whether

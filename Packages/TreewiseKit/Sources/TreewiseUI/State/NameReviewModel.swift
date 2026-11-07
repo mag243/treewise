@@ -24,7 +24,9 @@ public struct NameReviewDependencies: Sendable {
     /// What Settings decides for the add-ons across the app (ADR 0070).
     let addOns: AddOnPreferences
     /// The licence keys and the trial's dates, for paid modules (ADR 0071).
-    let licence: LicenceContext
+    let licence: @MainActor @Sendable () -> LicenceContext
+    /// Starts the trial of paid modules, and gives the dates after.
+    let startTrial: @MainActor @Sendable () -> LicenceContext
     /// The user's saved patterns (ADR 0068).
     let savedPatterns: @MainActor @Sendable () -> SavedPatterns
     let savePattern: SavePattern
@@ -35,7 +37,8 @@ public struct NameReviewDependencies: Sendable {
         store: any FolderSettingsStoring, defaultPattern: String,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
         addOns: AddOnPreferences = AddOnPreferences(),
-        licence: LicenceContext = .none,
+        licence: @escaping @MainActor @Sendable () -> LicenceContext = { .none },
+        startTrial: @escaping @MainActor @Sendable () -> LicenceContext = { .none },
         savedPatterns: @escaping @MainActor @Sendable () -> SavedPatterns = { .examples() },
         savePattern: @escaping SavePattern = { _, _ in nil },
         makeRequest: @escaping MakeRequest
@@ -48,6 +51,7 @@ public struct NameReviewDependencies: Sendable {
         self.makeRequest = makeRequest
         self.addOns = addOns
         self.licence = licence
+        self.startTrial = startTrial
         self.savedPatterns = savedPatterns
         self.savePattern = savePattern
     }
@@ -83,6 +87,9 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     var template: NameTemplate?
     /// The template it had before the user changed it, if it had one.
     var recognized: String?
+    /// What its licence lets it do, for a paid module; an unlicensed one is off and cannot
+    /// be turned on (ADR 0071).
+    public internal(set) var licence: ModuleLicenceState?
 
     /// The module's id.
     public var id: String { description.id }
@@ -121,6 +128,22 @@ public final class NameReviewModel {
     var plans: [FileItem.ID: NameReviewRules.Plan] = [:]
     /// The folder's settings.
     var settings = FolderSettings(enabledModules: [], templates: [:])
+    /// The keys and the trial's dates this review asks paid modules with (ADR 0071).
+    var licence = LicenceContext.none
+    /// What each paid module's licence lets it do.
+    var licenceStates: [String: ModuleLicenceState] = [:]
+    /// The modules that may work in this review: offered, on in Settings and licensed or
+    /// in their trial.
+    var working: [String] = []
+    /// What a folder seen for the first time would have on, for when none of its own may work.
+    var freshEnabled: [String] = []
+
+    /// The modules on in this folder that may work. The folder's settings keep what was
+    /// chosen for the others, so it comes back when they may work again (ADR 0070, 0071).
+    var enabled: [String] {
+        let chosen = settings.enabledModules.filter(working.contains)
+        return chosen.isEmpty ? freshEnabled : chosen
+    }
     /// The folder's items, for the names around a new name and for conflicts.
     var folderItems: [FileItem] = []
     /// The items under review.
@@ -187,7 +210,7 @@ public final class NameReviewModel {
             items: items.map {
                 .init(id: $0.id, folder: folder.id, originalName: $0.name, kind: $0.kind)
             },
-            moduleOrder: settings.enabledModules)
+            moduleOrder: enabled)
         replan()
         selectedID = rows.first?.id
     }
@@ -202,30 +225,66 @@ public final class NameReviewModel {
         reading?.cancel()
     }
 
-    /// Reads the folder's settings and the modules it is offered: none that another module
-    /// replaces, whose settings go to the one that replaces it (ADR 0067), and none turned
-    /// off in Settings (ADR 0070).
+    /// Reads the folder's settings and the modules it is offered, after asking the paid
+    /// ones about their licence and starting the trial the first time one is offered
+    /// (ADR 0071). No module that another replaces is offered, while that one may work, and
+    /// the settings go to the one that may (ADR 0067); none turned off in Settings is
+    /// offered (ADR 0070). One without a licence comes last, off.
     private func loadSettings() async -> (descriptions: [NameModuleDescription], catalog: [String])
     {
-        let offered = NameModuleDescription.offered(
-            (try? await dependencies.host.availableModules()) ?? [])
+        let all = (try? await dependencies.host.availableModules()) ?? []
+        let states = await licenceStates(of: all)
+        let mayWork = { (module: NameModuleDescription) in states[module.id] != .unlicensed }
+        let offered = NameModuleDescription.offered(all.filter(mayWork))
         var addOns = dependencies.addOns
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
         isFirstReview = saved == nil
         settings = saved ?? FolderSettings(enabledModules: [], templates: [:])
+        for module in all where !mayWork(module) {
+            for replaced in module.replaces {
+                addOns.handOver(from: module.id, to: replaced)
+                settings.handOver(from: module.id, to: replaced)
+            }
+        }
         for module in offered {
             for replaced in module.replaces {
                 addOns.handOver(from: replaced, to: module.id)
                 settings.handOver(from: replaced, to: module.id)
             }
         }
-        let catalog = addOns.available(offered.map(\.id))
-        let fresh = addOns.newFolder(
-            catalog: offered.map(\.id), defaultID: NameModuleDescription.defaultID(among: offered))
-        if saved == nil { settings = fresh }
-        settings.enabledModules = settings.enabledModules.filter(catalog.contains)
-        if settings.enabledModules.isEmpty { settings.enabledModules = fresh.enabledModules }
-        return (offered.filter { catalog.contains($0.id) }, catalog)
+        working = addOns.available(offered.map(\.id))
+        freshEnabled =
+            addOns.newFolder(
+                catalog: offered.map(\.id),
+                defaultID: NameModuleDescription.defaultID(among: offered)
+            ).enabledModules
+        if saved == nil { settings = FolderSettings(enabledModules: freshEnabled, templates: [:]) }
+        let locked = all.filter { !mayWork($0) && addOns.isOn($0.id) }
+        return (offered.filter { working.contains($0.id) } + locked, working + locked.map(\.id))
+    }
+
+    /// Each paid module's licence state, with the trial started when one is in it and it
+    /// has not started yet; the context they were asked with is kept for the review.
+    private func licenceStates(of modules: [NameModuleDescription]) async
+        -> [String: ModuleLicenceState]
+    {
+        func ask(_ context: LicenceContext) async -> [String: ModuleLicenceState] {
+            var states: [String: ModuleLicenceState] = [:]
+            for module in modules where !module.isFree {
+                states[module.id] = try? await dependencies.host.licenceState(
+                    moduleID: module.id, licence: context)
+            }
+            return states
+        }
+        licence = dependencies.licence()
+        var states = await ask(licence)
+        let inTrial = states.values.contains { if case .trial = $0 { true } else { false } }
+        if inTrial, licence.trialStart == nil {
+            licence = dependencies.startTrial()
+            states = await ask(licence)
+        }
+        licenceStates = states
+        return states
     }
 
     private func makeModule(_ description: NameModuleDescription, names: [String]) async
@@ -233,13 +292,14 @@ public final class NameReviewModel {
     {
         let derived = try? await dependencies.host.derivedTemplate(
             moduleID: description.id, names: names, folderName: folder.name,
-            licence: dependencies.licence)
+            licence: licence)
         // The default module imposes no pattern on a folder that shows none.
         let isDefault = description.takesTheDefaultModulesPart
         var module = NameReviewModule(
-            description: description, isOn: settings.enabledModules.contains(description.id),
+            description: description, isOn: enabled.contains(description.id),
             templateText: "", origin: .notRecognized,
             recognized: derived ?? (isDefault ? nil : description.defaultTemplate))
+        module.licence = licenceStates[description.id]
         if let own = settings.templates[description.id] {
             module.templateText = own
             module.origin = .user
@@ -295,7 +355,7 @@ public final class NameReviewModel {
             item, visible, module.description.neededContent)
         request.folderName = folder.name
         request.pattern = module.template?.text
-        request.licence = dependencies.licence
+        request.licence = licence
         do {
             let values = try await dependencies.host.fieldValues(
                 moduleID: module.id, request: request)
