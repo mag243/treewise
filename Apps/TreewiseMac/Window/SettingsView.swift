@@ -7,8 +7,9 @@ import TreewiseUI
 /// The Settings window (⌘,), in two tabs. General: where folders open, the start folder,
 /// and how the list shows items (ADR 0022, ADR 0023), checking for updates (ADR 0032),
 /// the terminal to open (ADR 0052) and the way to change shortcuts (ADR 0029). Names: the
-/// saved patterns (ADR 0068) and names with personal data (ADR 0060). Add-ons: which are
-/// offered, on in new folders and in what order (ADR 0070). Changes apply at once.
+/// saved patterns (ADR 0068), names with personal data (ADR 0060) and clearing folder
+/// settings (ADR 0072). Add-ons: which are offered, on in new folders and in what order
+/// (ADR 0070). Changes apply at once.
 struct SettingsView: View {
     /// Wide enough for long add-on names and patterns.
     private static let width: CGFloat = 600
@@ -137,6 +138,7 @@ struct SettingsView: View {
                 )
                 .font(.caption).foregroundStyle(.secondary)
             }
+            FolderSettingsSection()
         }
         .formStyle(.grouped)
     }

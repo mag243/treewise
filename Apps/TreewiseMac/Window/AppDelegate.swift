@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         MainActor.assumeIsolated {
             if let appearance = LaunchOptions.appearance { NSApp.appearance = appearance }
             ApplicationsMover.offerIfNeeded()
+            FolderSettingsCleaner.start(with: NameReviewWindow.store)
         }
     }
 

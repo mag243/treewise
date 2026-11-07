@@ -728,6 +728,54 @@
         }
       }
     },
+    "Clear Folder Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnereinstellungen löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wis mapinstellingen"
+          }
+        }
+      }
+    },
+    "Clear Folder Settings…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnereinstellungen löschen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wis mapinstellingen…"
+          }
+        }
+      }
+    },
+    "Clear the settings of every folder?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Einstellungen aller Ordner löschen?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De instellingen van alle mappen wissen?"
+          }
+        }
+      }
+    },
     "Close Tab" : {
       "comment" : "A button that closes a tab.",
       "extractionState" : "stale",
@@ -1022,6 +1070,22 @@
         }
       }
     },
+    "Each folder starts again with the add-ons that are on in new folders, and its pattern is recognized again. Saved patterns stay." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeder Ordner beginnt wieder mit den Add-ons, die in neuen Ordnern eingeschaltet sind, und sein Muster wird neu erkannt. Gesicherte Muster bleiben erhalten."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke map begint opnieuw met de add-ons die aan staan in nieuwe mappen, en het patroon wordt opnieuw herkend. Bewaarde patronen blijven."
+          }
+        }
+      }
+    },
     "Edit Saved Patterns…" : {
       "localizations" : {
         "de" : {
@@ -1293,6 +1357,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voor %@"
+          }
+        }
+      }
+    },
+    "For each folder you suggest names in, Treewise keeps which add-ons are on and their patterns. Those of a folder not seen for 30 days go by themselves." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für jeden Ordner, in dem du Namen vorschlagen lässt, merkt sich Treewise, welche Add-ons eingeschaltet sind, und ihre Muster. Die eines Ordners, der 30 Tage nicht gesehen wurde, verschwinden von selbst."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor elke map waarin je namen laat voorstellen, onthoudt Treewise welke add-ons aan staan en hun patronen. Die van een map die 30 dagen niet is gezien, verdwijnen vanzelf."
           }
         }
       }

@@ -6,6 +6,8 @@ import os
 /// random id in an extended attribute on the folder, so a folder that is shared carries
 /// nothing about its patterns (ADR 0057). A volume that refuses the attribute makes the
 /// path the key, and the settings then follow a folder only when Treewise moves it.
+/// The settings of a folder long unseen go on their own, and all of them on request
+/// (ADR 0072).
 public actor FolderSettingsStore: FolderSettingsStoring {
     /// The name of the file that holds the settings.
     public static let fileName = "folder-settings.json"
@@ -18,6 +20,24 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         /// Whether the id is on the folder. If not, the path is all that finds it.
         var isOnFolder: Bool
         var settings: FolderSettings
+        /// When the folder was last seen. A record saved without one counts as seen when
+        /// it is read, which starts its time.
+        var lastSeen: Date
+
+        init(path: String, isOnFolder: Bool, settings: FolderSettings, lastSeen: Date) {
+            self.path = path
+            self.isOnFolder = isOnFolder
+            self.settings = settings
+            self.lastSeen = lastSeen
+        }
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            path = try container.decode(String.self, forKey: .path)
+            isOnFolder = try container.decode(Bool.self, forKey: .isOnFolder)
+            settings = try container.decode(FolderSettings.self, forKey: .settings)
+            lastSeen = try container.decodeIfPresent(Date.self, forKey: .lastSeen) ?? Date()
+        }
     }
 
     private let file: URL
@@ -54,12 +74,51 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         loadIfNeeded()
         if let id = settledID(forFolderAt: path) {
             records?[id]?.settings = settings
+            records?[id]?.lastSeen = Date()
         } else {
             let id = UUID().uuidString
             let isOnFolder = Self.write(id, toFolderAt: path)
-            records?[id] = Record(path: path, isOnFolder: isOnFolder, settings: settings)
+            records?[id] = Record(
+                path: path, isOnFolder: isOnFolder, settings: settings, lastSeen: Date())
         }
         persist()
+    }
+
+    /// Drops the settings of every folder that has not been seen for a while on a disk that
+    /// is attached, and marks the folders found at their paths as seen (ADR 0072).
+    public func dropSettingsOfUnseenFolders(now: Date) {
+        loadIfNeeded()
+        guard let current = records else { return }
+        for (id, record) in current {
+            let verdict = FolderSettingsCleanup.verdict(
+                isThere: Self.isThere(record, id: id),
+                diskIsAttached: FileManager.default.fileExists(
+                    atPath: FolderSettingsCleanup.disk(of: record.path)),
+                lastSeen: record.lastSeen, now: now)
+            switch verdict {
+            case .seen: records?[id]?.lastSeen = now
+            case .keep: break
+            case .drop: records?[id] = nil
+            }
+        }
+        persist()
+    }
+
+    /// Removes the settings of every folder. The ids on the folders stay and mean nothing
+    /// without their records (ADR 0072).
+    public func clearAll() {
+        records = [:]
+        persist()
+    }
+
+    /// Whether a record's folder is at its path: a folder, carrying the record's id when
+    /// the record's id is on its folder.
+    private static func isThere(_ record: Record, id: String) -> Bool {
+        var isFolder: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: record.path, isDirectory: &isFolder),
+            isFolder.boolValue
+        else { return false }
+        return !record.isOnFolder || Self.id(onFolderAt: record.path) == id
     }
 
     /// The id whose record belongs to this folder, after bringing the record up to date.
@@ -79,6 +138,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         case .moved:
             guard let id else { return nil }
             records?[id]?.path = path
+            records?[id]?.lastSeen = Date()
             persist()
             return id
         case .copy:
@@ -90,7 +150,8 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         guard let record = records?[id] else { return nil }
         let new = UUID().uuidString
         guard Self.write(new, toFolderAt: path) else { return nil }
-        records?[new] = Record(path: path, isOnFolder: true, settings: record.settings)
+        records?[new] = Record(
+            path: path, isOnFolder: true, settings: record.settings, lastSeen: Date())
         persist()
         return new
     }
