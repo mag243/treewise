@@ -26,6 +26,10 @@ enum LaunchOptions {
     private static let sandboxHome = "Users/Home"
     /// The defaults suite of the sandbox's settings, apart from the real ones.
     private static let sandboxSettingsSuite = "me.m-domain.treewise.sandbox"
+    /// The end of the name of a temporary folder of folder settings.
+    private static let folderSettingsSuffix = "-folder-settings"
+    /// The folder of the sandbox's folder settings, inside the real ones' folder.
+    private static let sandboxFolderSettings = "Sandbox"
 
     /// The folder given with `-TreewiseRoot`, standardized, if any.
     static var root: URL? {
@@ -124,6 +128,27 @@ enum LaunchOptions {
         if !sandboxVolumes.isEmpty { return KeychainStore(service: sandboxKeychainService) }
         return KeychainStore()
     }()
+
+    /// Where the folder settings are kept (ADR 0057, ADR 0072): as the settings are, apart
+    /// from the real ones for UI tests, screenshots and the sandbox, so none of them reads,
+    /// changes or clears the user's. A UI test's folder is named after its root, so a
+    /// test that starts the app again finds what it saved.
+    static var folderSettingsDirectory: URL {
+        let temporary = FileManager.default.temporaryDirectory
+        if let root {
+            return temporary.appendingPathComponent(
+                root.lastPathComponent + folderSettingsSuffix, isDirectory: true)
+        }
+        if UserDefaults.standard.bool(forKey: freshSettingsArgument) {
+            return temporary.appendingPathComponent(
+                UUID().uuidString + folderSettingsSuffix, isDirectory: true)
+        }
+        if !sandboxVolumes.isEmpty {
+            return FolderSettingsStore.defaultDirectory.appendingPathComponent(
+                sandboxFolderSettings, isDirectory: true)
+        }
+        return FolderSettingsStore.defaultDirectory
+    }
 
     /// The trial's start given at launch, in a Debug build only, to try a trial's days.
     static var trialStart: Date? {
