@@ -68,4 +68,28 @@ extension LaunchTests {
             XCTAssertEqual(settings.frame.size, size, "\(tab) keeps the window's size")
         }
     }
+
+    @MainActor
+    func testANamePatternIsChosenInTheListAndEditedBelow() throws {
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+        app.typeKey(",", modifierFlags: .command)
+        let settings = app.windows[Self.settingsWindow]
+        let names = settings.toolbars.buttons["Names"]
+        XCTAssertTrue(names.waitForExistence(timeout: Self.launchTimeout))
+        names.click()
+        let example = settings.staticTexts["Folder and Number"]
+        XCTAssertTrue(
+            example.waitForExistence(timeout: Self.launchTimeout), "the list shows its names")
+        example.click()
+        let name = settings.textFields["Name"]
+        XCTAssertTrue(
+            app.eventually { name.value as? String == "Folder and Number" },
+            "the chosen one's name is edited below")
+        settings.buttons["Add Pattern"].click()
+        XCTAssertTrue(
+            app.eventually { name.value as? String == "New Pattern" }, "a new one is chosen at once"
+        )
+    }
 }

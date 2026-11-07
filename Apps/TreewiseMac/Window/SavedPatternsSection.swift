@@ -2,21 +2,70 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// The saved patterns in Settings (ADR 0068): each with its name and its pattern in the
-/// colours of its fields, the default chosen with its radio button, put in order by
-/// dragging, added to and removed from. The last pattern stays.
+/// The saved patterns in Settings (ADR 0068), as Mail lists its rules: a list of their
+/// names, the default marked, put in order by dragging; + and − below it, Make Default,
+/// and the selected one's name and pattern in labelled fields beneath, the pattern in the
+/// colours of its fields and with the problem of its form. The last pattern stays.
 struct SavedPatternsSection: View {
+    private static let listHeight: CGFloat = 150
+
     @Bindable var settings: BrowserSettings
+    @State private var selection: SavedPattern.ID?
+
+    private var patterns: SavedPatterns { settings.savedPatterns }
+    private var selected: SavedPattern? {
+        patterns.patterns.first { $0.id == selection } ?? patterns.patterns.first
+    }
 
     var body: some View {
         Section {
-            ForEach(settings.savedPatterns.patterns) { pattern in
-                SavedPatternRow(settings: settings, pattern: pattern)
+            List(selection: $selection) {
+                ForEach(patterns.patterns) { pattern in
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(Color.accentColor)
+                            .opacity(pattern.id == patterns.defaultPattern.id ? 1 : 0)
+                            .accessibilityHidden(pattern.id != patterns.defaultPattern.id)
+                            .accessibilityLabel(Text("Default"))
+                        Text(pattern.name)
+                    }
+                    .tag(pattern.id)
+                }
+                .onMove { settings.savedPatterns.move(fromOffsets: $0, toOffset: $1) }
             }
-            .onMove { settings.savedPatterns.move(fromOffsets: $0, toOffset: $1) }
-            Button("Add Pattern") {
-                _ = settings.savedPatterns.save(
-                    name: String(localized: "New Pattern"), text: "{date:yyyy.MM.dd} {text}")
+            .frame(height: Self.listHeight)
+            .listStyle(.bordered)
+            HStack(spacing: 4) {
+                Button {
+                    if case .success(let id) = settings.savedPatterns.save(
+                        name: String(localized: "New Pattern"), text: "{date:yyyy.MM.dd} {text}")
+                    {
+                        selection = id
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .help(Text("Add Pattern"))
+                .accessibilityLabel(Text("Add Pattern"))
+                Button {
+                    guard let selected else { return }
+                    settings.savedPatterns.remove(selected.id)
+                    selection = settings.savedPatterns.patterns.first?.id
+                } label: {
+                    Image(systemName: "minus")
+                }
+                .disabled(patterns.patterns.count == 1)
+                .help(Text("Remove"))
+                .accessibilityLabel(Text("Remove Pattern"))
+                Spacer()
+                Button("Make Default") {
+                    if let selected { settings.savedPatterns.makeDefault(selected.id) }
+                }
+                .disabled(selected?.id == patterns.defaultPattern.id)
+            }
+            .buttonStyle(.borderless)
+            if let selected {
+                SavedPatternEditor(settings: settings, pattern: selected).id(selected.id)
             }
         } header: {
             Text("Name Patterns")
@@ -29,73 +78,44 @@ struct SavedPatternsSection: View {
     }
 }
 
-/// One saved pattern.
-private struct SavedPatternRow: View {
+/// The name and the pattern of the selected saved pattern.
+private struct SavedPatternEditor: View {
     @Bindable var settings: BrowserSettings
     let pattern: SavedPattern
     @State private var name = ""
     @State private var text = ""
 
-    private var patterns: SavedPatterns { settings.savedPatterns }
-    private var isDefault: Bool { patterns.defaultPattern.id == pattern.id }
-
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Button {
-                settings.savedPatterns.makeDefault(pattern.id)
-            } label: {
-                Image(systemName: isDefault ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(isDefault ? Color.accentColor : .secondary)
-            }
-            .buttonStyle(.plain)
-            .help(isDefault ? Text("The default") : Text("Make Default"))
-            .accessibilityLabel(Text("Default"))
-            .accessibilityValue(isDefault ? Text("On") : Text("Off"))
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 8) {
+            LabeledContent("Name") {
                 TextField("Name", text: $name)
+                    .textFieldStyle(.roundedBorder)
+                    .labelsHidden()
                     // An empty name is not taken: the last one given stays.
                     .onChange(of: name) { _, new in
                         settings.savedPatterns.rename(pattern.id, to: new)
                     }
-                PatternField(text: $text, insertion: nil, onSubmit: {})
-                    .frame(height: 20)
-                    .onChange(of: text) { _, new in
-                        if NameTemplate.problemInForm(of: new) == nil {
-                            settings.savedPatterns.change(pattern.id, to: new)
+            }
+            LabeledContent("Pattern") {
+                VStack(alignment: .leading, spacing: 4) {
+                    PatternField(text: $text, insertion: nil, onSubmit: {})
+                        .frame(height: 22)
+                        .accessibilityLabel(Text("Pattern"))
+                        .onChange(of: text) { _, new in
+                            if NameTemplate.problemInForm(of: new) == nil {
+                                settings.savedPatterns.change(pattern.id, to: new)
+                            }
                         }
+                    if let problem = NameTemplate.problemInForm(of: text) {
+                        Text(NameReviewText.text(for: problem))
+                            .font(.caption).foregroundStyle(.red)
                     }
-                if let problem = NameTemplate.problemInForm(of: text) {
-                    Text(NameReviewText.text(for: problem))
-                        .font(.caption).foregroundStyle(.red)
                 }
             }
-            Button {
-                settings.savedPatterns.remove(pattern.id)
-            } label: {
-                Image(systemName: "minus.circle")
-            }
-            .buttonStyle(.plain)
-            .disabled(patterns.patterns.count == 1)
-            .help(Text("Remove"))
-            .accessibilityLabel(Text("Remove \(pattern.name)"))
         }
         .onAppear {
             name = pattern.name
             text = pattern.text
         }
-        .accessibilityActions {
-            Button("Move Up") { move(by: -1) }
-            Button("Move Down") { move(by: 1) }
-        }
-    }
-
-    private func move(by offset: Int) {
-        guard let index = patterns.patterns.firstIndex(where: { $0.id == pattern.id }) else {
-            return
-        }
-        let target = index + offset
-        guard patterns.patterns.indices.contains(target) else { return }
-        settings.savedPatterns.move(
-            fromOffsets: IndexSet(integer: index), toOffset: offset > 0 ? target + 1 : target)
     }
 }
