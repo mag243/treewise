@@ -48,7 +48,7 @@ public enum MonthNames {
 
     /// The name of a month, 1 to 12, as its language writes it.
     /// Precondition: `month` is between 1 and 12.
-    static func name(of month: Int, short isShort: Bool, in language: Language) -> String {
+    public static func name(of month: Int, short isShort: Bool, in language: Language) -> String {
         precondition((1...12).contains(month), "`month` is between 1 and 12")
         return (isShort ? short : full)[language, default: []][month - 1]
     }
