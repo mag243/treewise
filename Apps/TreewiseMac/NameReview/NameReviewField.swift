@@ -2,7 +2,9 @@ import AppKit
 import SwiftUI
 import TreewiseCore
 
-/// The name of the selected row, as text to edit. Starting on a gap selects the gap.
+/// The name of the selected row, as text to edit. A name wider than the row goes on to a
+/// next line, as the original name above it does, so the whole name is read before it is
+/// approved. Starting on a gap selects the gap.
 /// Until the user types, ↑ and ↓ step to the previous and next option and put the cursor
 /// at the end of its name (ADR 0064); after that, and with one option, they do what they
 /// always do.
@@ -30,9 +32,23 @@ struct NameReviewField: NSViewRepresentable {
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
-        field.lineBreakMode = .byTruncatingMiddle
+        field.usesSingleLineMode = false
+        field.cell?.wraps = true
+        field.cell?.isScrollable = false
+        field.lineBreakMode = .byWordWrapping
+        field.maximumNumberOfLines = 0
         field.delegate = context.coordinator
         return field
+    }
+
+    /// As high as the name needs at the width offered.
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView field: NSTextField, context: Context)
+        -> CGSize?
+    {
+        guard let width = proposal.width, width > 0, width.isFinite, let cell = field.cell
+        else { return nil }
+        let bounds = NSRect(x: 0, y: 0, width: width, height: .greatestFiniteMagnitude)
+        return CGSize(width: width, height: ceil(cell.cellSize(forBounds: bounds).height))
     }
 
     func updateNSView(_ field: NSTextField, context: Context) {

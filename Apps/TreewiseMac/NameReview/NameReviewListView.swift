@@ -111,7 +111,6 @@ struct NameReviewListView: View {
 
 /// One file in the list.
 struct NameReviewRow: View {
-    private static let lineHeight: CGFloat = 18
     private static let iconSize: CGFloat = 28
 
     let entry: NameProposalSession.Entry
@@ -178,7 +177,6 @@ struct NameReviewRow: View {
                         return model.session?.entry(entry.id)?.currentName
                     } : nil
             )
-            .frame(height: Self.lineHeight)
         } else if let name = entry.restsFitting ? entry.originalName : entry.currentName {
             Text(marked(name)).foregroundStyle(
                 model.conflicts[entry.id] == nil ? .primary : Color.red)
