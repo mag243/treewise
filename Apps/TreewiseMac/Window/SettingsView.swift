@@ -10,9 +10,12 @@ import TreewiseUI
 /// saved patterns (ADR 0068) and names with personal data (ADR 0060). Add-ons: which are
 /// offered, on in new folders and in what order (ADR 0070). Changes apply at once.
 struct SettingsView: View {
-    private static let width: CGFloat = 460
+    /// Wide enough for long add-on names and patterns.
+    private static let width: CGFloat = 600
+    /// The least height of every tab, so lists such as the saved patterns have room.
+    private static let minimumHeight: CGFloat = 560
     /// The tallest the window gets; beyond it, its contents scroll.
-    private static let maximumHeight: CGFloat = 640
+    private static let maximumHeight: CGFloat = 760
     /// The Keyboard pane of System Settings, where App Shortcuts live (ADR 0029).
     private static let keyboardSettings = URL(
         string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension")
@@ -115,7 +118,7 @@ struct SettingsView: View {
     }
 
     private var tabHeight: CGFloat? {
-        height.map { min($0, Self.maximumHeight) }
+        height.map { min(max($0, Self.minimumHeight), Self.maximumHeight) }
     }
 
     /// The saved patterns, which may grow past the window and then scroll, and names

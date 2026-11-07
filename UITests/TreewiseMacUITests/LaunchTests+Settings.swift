@@ -62,6 +62,7 @@ extension LaunchTests {
             settings.staticTexts["Show hidden files"].waitForExistence(timeout: Self.launchTimeout),
             "Settings opens at General")
         let size = settings.frame.size
+        XCTAssertGreaterThanOrEqual(size.width, 600, "room for long names")
         for tab in ["Names", "Add-ons", "General"] {
             settings.toolbars.buttons[tab].click()
             XCTAssertEqual(settings.frame.size, size, "\(tab) keeps the window's size")
