@@ -51,16 +51,19 @@
             return Array(valueSets.prefix(Self.maximumValueSets))
         }
 
-        /// Asks a module which template names follow.
-        public func derivedTemplate(
+        /// The most templates taken from one answer.
+        public static let maximumTemplates = 5
+
+        /// Asks a module which templates names might follow, the best first.
+        public func derivedTemplates(
             moduleID: String, names: [String], folderName: String, licence: LicenceContext
-        ) async throws -> String? {
+        ) async throws -> [String] {
             let encoded = try ModuleWire.encode(
                 ModuleWire.NamesOfFolder(names: names, folderName: folderName, licence: licence))
             let data = try await ask { service, reply in
                 service.derivedTemplate(moduleID: moduleID, names: encoded, reply: reply)
             }
-            return try decode([String].self, from: data).first
+            return Array(try decode([String].self, from: data).prefix(Self.maximumTemplates))
         }
 
         /// Asks a module what its licence lets it do.

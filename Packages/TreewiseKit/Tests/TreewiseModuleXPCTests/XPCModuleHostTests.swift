@@ -42,13 +42,14 @@
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
             #expect(
-                try await host.derivedTemplate(
-                    moduleID: "m", names: ["a"], folderName: "", licence: .none) == nil)
+                try await host.derivedTemplates(
+                    moduleID: "m", names: ["a"], folderName: "", licence: .none
+                ).isEmpty)
             #expect(
-                try await host.derivedTemplate(
+                try await host.derivedTemplates(
                     moduleID: "m", names: ["a"], folderName: "",
                     licence: LicenceContext(keys: ["good"], trialStart: nil, lastSeen: nil))
-                    == "{text}")
+                    == ["{text}"])
         }
 
         @Test func aModuleWithoutALicenceGivesNoState() async throws {
@@ -86,25 +87,36 @@
         @Test func carriesADerivedTemplate() async throws {
             let harness = Harness(modules: [StubModule(id: "m", derived: "{text}")])
             defer { withExtendedLifetime(harness) {} }
-            let template = try await harness.host().derivedTemplate(
+            let template = try await harness.host().derivedTemplates(
                 moduleID: "m", names: ["a"], folderName: "", licence: .none)
-            #expect(template == "{text}")
+            #expect(template == ["{text}"])
+        }
+
+        @Test func carriesSeveralTemplatesTheBestFirst() async throws {
+            var stub = StubModule(id: "m", derived: "{text}")
+            stub.alternatives = ["Doc {text}", "Scan {seq}"]
+            let harness = Harness(modules: [stub])
+            defer { withExtendedLifetime(harness) {} }
+            let templates = try await harness.host().derivedTemplates(
+                moduleID: "m", names: ["a"], folderName: "", licence: .none)
+            #expect(templates == ["{text}", "Doc {text}", "Scan {seq}"])
         }
 
         @Test func carriesTheFolderNameToTheModule() async throws {
             let harness = Harness(modules: [StubModule(id: "m", derived: "{text}")])
             defer { withExtendedLifetime(harness) {} }
-            let template = try await harness.host().derivedTemplate(
+            let template = try await harness.host().derivedTemplates(
                 moduleID: "m", names: ["a"], folderName: "Tax", licence: .none)
-            #expect(template == "Tax {text}")
+            #expect(template == ["Tax {text}"])
         }
 
         @Test func aModuleWithoutADerivedTemplateGivesNone() async throws {
             let harness = Harness(modules: [StubModule(id: "m")])
             defer { withExtendedLifetime(harness) {} }
             #expect(
-                try await harness.host().derivedTemplate(
-                    moduleID: "m", names: ["a"], folderName: "", licence: .none) == nil)
+                try await harness.host().derivedTemplates(
+                    moduleID: "m", names: ["a"], folderName: "", licence: .none
+                ).isEmpty)
         }
 
         @Test func anUnknownModuleFails() async {

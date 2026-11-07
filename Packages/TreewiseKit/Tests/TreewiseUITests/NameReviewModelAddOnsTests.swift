@@ -184,3 +184,19 @@ extension NameReviewModelTests {
 final class TrialStarts {
     var count = 0
 }
+
+/// More than one pattern to pick from (ADR 0067).
+extension NameReviewModelTests {
+    @Test func offersTheTemplatesAModuleRecognizedWithHowManyNamesFitEach() async {
+        _ = addFile("Doc One.txt")
+        _ = addFile("Doc Two.txt")
+        _ = addFile("Scan 3.txt")
+        let host = host()
+        host.setDerivedTemplates(["Doc {text}", "Scan {seq}"], for: Self.free)
+        let model = await model(host)
+        let candidates = model.modules.first?.candidates ?? []
+        #expect(candidates.map(\.text) == ["Doc {text}", "Scan {seq}"])
+        #expect(candidates.map(\.fits) == [2, 1])
+        #expect(candidates.first?.of == 3)
+    }
+}

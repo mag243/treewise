@@ -10,8 +10,8 @@
         /// Replies with the encoded sets of values, or nil when the module failed or is not known.
         func fieldValues(
             moduleID: String, request: Data, reply: @escaping @Sendable (Data?) -> Void)
-        /// Replies with an encoded list of at most one template, or nil when the module is
-        /// not known.
+        /// Replies with an encoded list of templates, the best first, or nil when the module
+        /// is not known.
         func derivedTemplate(
             moduleID: String, names: Data, reply: @escaping @Sendable (Data?) -> Void)
         /// Replies with an encoded list of at most one licence state, or nil when the

@@ -90,9 +90,21 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     /// What its licence lets it do, for a paid module; an unlicensed one is off and cannot
     /// be turned on (ADR 0071).
     public internal(set) var licence: ModuleLicenceState?
+    /// The templates it recognized in the folder, the best first, to pick from (ADR 0067).
+    public internal(set) var candidates: [PatternCandidate] = []
 
     /// The module's id.
     public var id: String { description.id }
+}
+
+/// A template a module recognized in a folder, with how many of the folder's names fit it.
+public struct PatternCandidate: Hashable, Sendable {
+    /// The template's text.
+    public let text: String
+    /// How many of the folder's names fit it.
+    public let fits: Int
+    /// How many names the folder has.
+    public let of: Int
 }
 
 /// The state of the review overview: proposals for a folder or a selection, the user's
@@ -290,9 +302,11 @@ public final class NameReviewModel {
     private func makeModule(_ description: NameModuleDescription, names: [String]) async
         -> NameReviewModule
     {
-        let derived = try? await dependencies.host.derivedTemplate(
-            moduleID: description.id, names: names, folderName: folder.name,
-            licence: licence)
+        let templates =
+            (try? await dependencies.host.derivedTemplates(
+                moduleID: description.id, names: names, folderName: folder.name,
+                licence: licence)) ?? []
+        let derived = templates.first
         // The default module imposes no pattern on a folder that shows none.
         let isDefault = description.takesTheDefaultModulesPart
         var module = NameReviewModule(
@@ -300,6 +314,7 @@ public final class NameReviewModel {
             templateText: "", origin: .notRecognized,
             recognized: derived ?? (isDefault ? nil : description.defaultTemplate))
         module.licence = licenceStates[description.id]
+        module.candidates = candidates(templates, for: description, names: names)
         if let own = settings.templates[description.id] {
             module.templateText = own
             module.origin = .user
@@ -307,6 +322,21 @@ public final class NameReviewModel {
         }
         if module.template == nil { applyRecognized(to: &module) }
         return module
+    }
+
+    /// The templates a module recognized, with how many of the folder's names each fits,
+    /// as Treewise's own matcher counts them, not the module.
+    private func candidates(
+        _ templates: [String], for description: NameModuleDescription, names: [String]
+    ) -> [PatternCandidate] {
+        let stems = names.map(ProposedName.stem(of:))
+        return templates.compactMap { text in
+            guard let template = Self.parse(text, for: description) else { return nil }
+            let fits = stems.count {
+                template.matches($0, fixed: [NameTemplate.Field.folder.name: folder.name])
+            }
+            return PatternCandidate(text: text, fits: fits, of: stems.count)
+        }
     }
 
     /// Gives a module what it recognized, its default, or for selected files in a folder

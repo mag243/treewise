@@ -8,7 +8,7 @@ public final class ScriptedModuleHost: NameModuleHosting {
     private let modules: [NameModuleDescription]
     private let answers: [String: Result<[[String: NameTemplate.Value]], NameModuleHostError>]
     private let received = Mutex<[NameRequest]>([])
-    private let templates = Mutex<[String: String]>([:])
+    private let templates = Mutex<[String: [String]]>([:])
     private let licences = Mutex<[String: ModuleLicenceState]>([:])
     private let askedKeys = Mutex<[[String]]>([])
 
@@ -25,18 +25,24 @@ public final class ScriptedModuleHost: NameModuleHosting {
     /// The requests received so far.
     public var requests: [NameRequest] { received.withLock { $0 } }
 
-    /// The templates modules derive, by module id.
-    public var derivedTemplates: [String: String] { templates.withLock { $0 } }
+    /// The templates modules derive, by module id: the first of each module's.
+    public var derivedTemplates: [String: String] {
+        templates.withLock { $0.compactMapValues(\.first) }
+    }
     /// Scripts the template a module derives.
     public func setDerivedTemplate(_ template: String, for moduleID: String) {
-        templates.withLock { $0[moduleID] = template }
+        templates.withLock { $0[moduleID] = [template] }
+    }
+    /// Scripts the templates a module derives, the best first.
+    public func setDerivedTemplates(_ list: [String], for moduleID: String) {
+        templates.withLock { $0[moduleID] = list }
     }
 
-    /// The scripted template, if any.
-    public func derivedTemplate(
+    /// The scripted templates, if any.
+    public func derivedTemplates(
         moduleID: String, names: [String], folderName: String, licence: LicenceContext
-    ) async throws -> String? {
-        templates.withLock { $0[moduleID] }
+    ) async throws -> [String] {
+        templates.withLock { $0[moduleID] ?? [] }
     }
 
     /// The keys each licence question carried, in order.

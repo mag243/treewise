@@ -33,7 +33,10 @@
             reply(try? ModuleWire.encode(modules.map(\.description)))
         }
 
-        /// Replies with the template a module recognizes in names, as a list of at most one.
+        /// The most templates sent back for one folder.
+        static let maximumTemplates = 5
+
+        /// Replies with the templates a module recognizes in names, the best first.
         public func derivedTemplate(
             moduleID: String, names: Data, reply: @escaping @Sendable (Data?) -> Void
         ) {
@@ -43,14 +46,9 @@
                 reply(nil)
                 return
             }
-            reply(
-                try? ModuleWire.encode(
-                    [
-                        module.derivedTemplate(
-                            fromNames: decoded.names, folderName: decoded.folderName,
-                            licence: decoded.licence)
-                    ]
-                    .compactMap(\.self)))
+            let templates = module.derivedTemplates(
+                fromNames: decoded.names, folderName: decoded.folderName, licence: decoded.licence)
+            reply(try? ModuleWire.encode(Array(templates.prefix(Self.maximumTemplates))))
         }
 
         /// Replies with a module's licence state, as a list of at most one.

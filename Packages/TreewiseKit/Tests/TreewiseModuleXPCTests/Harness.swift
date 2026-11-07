@@ -42,6 +42,8 @@
         }
 
         var derived: String?
+        /// Templates it gives after its derived one.
+        var alternatives: [String] = []
         /// Whether it needs a licence, which a key "good" gives.
         var needsLicence = false
 
@@ -54,6 +56,14 @@
             guard needsLicence else { return nil }
             if licence.keys.contains("good") { return .licensed(licensee: "Ada") }
             return licence.trialStart == nil ? .trial(daysLeft: 14) : .unlicensed
+        }
+
+        /// The derived template and the alternatives after it.
+        func derivedTemplates(
+            fromNames names: [String], folderName: String, licence: LicenceContext
+        ) -> [String] {
+            [derivedTemplate(fromNames: names, folderName: folderName, licence: licence)]
+                .compactMap(\.self) + alternatives
         }
 
         /// The scripted template, or none without a licence when it needs one.
