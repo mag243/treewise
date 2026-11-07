@@ -43,6 +43,9 @@ public final class BrowserState {
 
     /// The settings the window follows, such as showing hidden items.
     public let settings: BrowserSettings
+    /// The licences of paid add-ons, which the app sets; without it, reviews ask with none
+    /// (ADR 0071).
+    @ObservationIgnored public var licences: LicenceKeeper?
     @ObservationIgnored private let sharedClipboard: SharedClipboard
     @ObservationIgnored let fileSystem: any FileSystemProviding
     /// The provider's operations, when it can change files.

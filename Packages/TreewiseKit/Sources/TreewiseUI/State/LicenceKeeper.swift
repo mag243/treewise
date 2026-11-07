@@ -14,6 +14,16 @@ public final class MemorySecureStore: SecureValueStoring {
     public func setValue(_ value: String?, for key: String) { values[key] = value }
 }
 
+/// What entering a licence key came to (ADR 0071).
+public enum LicenceKeyOutcome: Hashable, Sendable {
+    /// The text is no licence key at all.
+    case notAKey
+    /// No add-on the app has takes it: it is for another, withdrawn or not genuine.
+    case unlocksNothing
+    /// It unlocks these modules, for this licensee, and is kept.
+    case unlocked(modules: [String], licensee: String)
+}
+
 /// What the app keeps of licences (ADR 0071): the keys the user entered, with the app's
 /// settings, the trial's start in those settings and in the secure store, and the latest
 /// day seen in the secure store. It reads no key: the closed modules check them.
@@ -48,9 +58,35 @@ public final class LicenceKeeper {
     @discardableResult
     public func add(key text: String) -> Bool {
         let key = text.filter { !$0.isWhitespace }
-        guard key.hasPrefix(Self.keyPrefix), key.count > Self.keyPrefix.count else { return false }
+        guard Self.looksLikeKey(key) else { return false }
         if !settings.licenceKeys.contains(key) { settings.licenceKeys.append(key) }
         return true
+    }
+
+    /// Enters a key: each paid module says whether it unlocks it, and it is kept when one
+    /// does. The app reads no key itself.
+    public func enter(key text: String, host: any NameModuleHosting) async -> LicenceKeyOutcome {
+        let key = text.filter { !$0.isWhitespace }
+        guard Self.looksLikeKey(key) else { return .notAKey }
+        // Asked with this key alone and a trial long over, so only a licence counts.
+        let question = LicenceContext(keys: [key], trialStart: .distantPast, lastSeen: nil)
+        var unlocked: [String] = []
+        var licensee = ""
+        for module in (try? await host.availableModules()) ?? [] where !module.isFree {
+            if case .licensed(let name) = try? await host.licenceState(
+                moduleID: module.id, licence: question)
+            {
+                unlocked.append(module.id)
+                licensee = name
+            }
+        }
+        guard !unlocked.isEmpty else { return .unlocksNothing }
+        add(key: key)
+        return .unlocked(modules: unlocked, licensee: licensee)
+    }
+
+    private static func looksLikeKey(_ key: String) -> Bool {
+        key.hasPrefix(keyPrefix) && key.count > keyPrefix.count
     }
 
     /// The keys and the trial's dates, for a question to a module. It moves the latest

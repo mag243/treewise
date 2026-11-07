@@ -1,4 +1,5 @@
 import AppKit
+import TreewiseCore
 import TreewiseFileSystem
 import TreewiseUI
 
@@ -11,12 +12,16 @@ import TreewiseUI
 ///   are mounted (ADR 0046), with home and Applications on the first.
 /// Screenshots (ADR 0041) add `-TreewiseFreshSettings YES`,
 /// `-TreewiseWindowSize <width>x<height>` and `-TreewiseAppearance light|dark`.
+/// A Debug build takes `-TreewiseTrialStart yyyy-MM-dd`, to try a trial's days (ADR 0071).
 enum LaunchOptions {
     private static let rootArgument = "TreewiseRoot"
     private static let sandboxArgument = "TreewiseSandbox"
     private static let freshSettingsArgument = "TreewiseFreshSettings"
     private static let windowSizeArgument = "TreewiseWindowSize"
     private static let appearanceArgument = "TreewiseAppearance"
+    private static let trialStartArgument = "TreewiseTrialStart"
+    /// The keychain service of the sandbox's licence dates, apart from the real ones.
+    private static let sandboxKeychainService = KeychainStore.appService + ".sandbox"
     /// Where the demo tree has its home folder on the first sandbox volume.
     private static let sandboxHome = "Users/Home"
     /// The defaults suite of the sandbox's settings, apart from the real ones.
@@ -108,4 +113,31 @@ enum LaunchOptions {
         }
         return UserDefaults.standard
     }()
+
+    /// Where the licence dates are kept beside the settings (ADR 0071): as the settings
+    /// are, in memory for UI tests and screenshots, apart for the sandbox, else in the
+    /// keychain.
+    @MainActor static let secureStore: any SecureValueStoring = {
+        if root != nil || UserDefaults.standard.bool(forKey: freshSettingsArgument) {
+            return MemorySecureStore()
+        }
+        if !sandboxVolumes.isEmpty { return KeychainStore(service: sandboxKeychainService) }
+        return KeychainStore()
+    }()
+
+    /// The trial's start given at launch, in a Debug build only, to try a trial's days.
+    static var trialStart: Date? {
+        #if DEBUG
+            UserDefaults.standard.string(forKey: trialStartArgument).flatMap {
+                try? Date($0, strategy: .iso8601.year().month().day())
+            }
+        #else
+            nil
+        #endif
+    }
+
+    /// The app's licences, kept as above (ADR 0071).
+    @MainActor static func licenceKeeper(for settings: BrowserSettings) -> LicenceKeeper {
+        LicenceKeeper(settings: settings, secure: secureStore, trialStart: trialStart)
+    }
 }

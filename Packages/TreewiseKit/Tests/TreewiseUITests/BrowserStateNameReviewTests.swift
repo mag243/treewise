@@ -67,3 +67,25 @@ import TreewiseUI
         #expect(try await fileSystem.item(at: item.id).name == "b.txt")
     }
 }
+
+/// A review asks paid modules with the window's licences (ADR 0071).
+@MainActor
+@Suite struct BrowserStateLicenceTests {
+    private let fileSystem = ChangingFileSystem()
+    private static let paid = NameModuleDescription(
+        id: "paid", contentTypes: ["public.item"], neededContent: [], fields: [],
+        defaultTemplate: "{folder}")
+
+    @Test func asksWithTheKeysAndStartsTheTrial() async throws {
+        let host = ScriptedModuleHost(modules: [Self.paid], answers: [:])
+        host.setLicenceState(.trial(daysLeft: 14), for: "paid")
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        let secure = MemorySecureStore()
+        browser.licences = LicenceKeeper(settings: browser.settings, secure: secure)
+        browser.licences?.add(key: "TW1-abc.def")
+        let review = await browser.makeNameReview(host: host, store: MemoryFolderSettings())
+        await review?.start()
+        #expect(host.licenceKeys.last == ["TW1-abc.def"])
+        #expect(secure.value(for: LicenceKeeper.trialStartKey) != nil, "the trial started")
+    }
+}

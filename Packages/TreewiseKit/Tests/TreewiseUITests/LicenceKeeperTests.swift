@@ -2,6 +2,7 @@ import Foundation
 import Testing
 import TreewiseCore
 import TreewiseModuleInterface
+import TreewiseTestSupport
 import TreewiseUI
 
 /// The keys, the trial's start and the latest day seen, as the app keeps them (ADR 0071).
@@ -62,5 +63,41 @@ import TreewiseUI
             settings: BrowserSettings(store: settings), secure: secure, now: { Self.start },
             trialStart: given)
         #expect(keeper.context().trialStart == given)
+    }
+}
+
+/// Entering a key: the modules say what it unlocks (ADR 0071).
+@MainActor
+@Suite struct LicenceKeyEntryTests {
+    private static let paid = NameModuleDescription(
+        id: "paid", contentTypes: ["public.item"], neededContent: [], fields: [],
+        defaultTemplate: "{folder}")
+    private static let free = NameModuleDescription(
+        id: "free", contentTypes: ["public.item"], neededContent: [], fields: [],
+        defaultTemplate: "{folder}", isFree: true)
+    private let settings = BrowserSettings(store: MemorySettingsStore())
+
+    private func keeper() -> LicenceKeeper {
+        LicenceKeeper(settings: settings, secure: MemorySecureStore())
+    }
+
+    @Test func keepsAKeyThatUnlocksAModule() async {
+        let host = ScriptedModuleHost(modules: [Self.free, Self.paid], answers: [:])
+        host.setLicenceState(.licensed(licensee: "Ada Lovelace"), for: "paid")
+        let outcome = await keeper().enter(key: "TW1-abc.def", host: host)
+        #expect(outcome == .unlocked(modules: ["paid"], licensee: "Ada Lovelace"))
+        #expect(settings.licenceKeys == ["TW1-abc.def"])
+    }
+
+    @Test func dropsAKeyThatUnlocksNothing() async {
+        let host = ScriptedModuleHost(modules: [Self.paid], answers: [:])
+        host.setLicenceState(.unlicensed, for: "paid")
+        #expect(await keeper().enter(key: "TW1-abc.def", host: host) == .unlocksNothing)
+        #expect(settings.licenceKeys.isEmpty)
+    }
+
+    @Test func refusesTextThatIsNoKey() async {
+        let host = ScriptedModuleHost(modules: [Self.paid], answers: [:])
+        #expect(await keeper().enter(key: "hello", host: host) == .notAKey)
     }
 }

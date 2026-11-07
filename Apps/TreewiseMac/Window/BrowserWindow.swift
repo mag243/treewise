@@ -38,12 +38,13 @@ struct BrowserWindow: View {
             lookUp($0)?.isContainer == true ? $0 : nil
         }
         self.request = request
-        _browser = State(
-            initialValue: BrowserState(
-                fileSystem: FileOperationRunner(locations: LaunchOptions.locations),
-                watcher: DirectoryWatcher(watchesFileChanges: reader.isInCloudFolder),
-                startFolder: requested ?? settings.startFolder(home: home, lookUp: lookUp),
-                homeFolder: home, settings: settings, clipboard: clipboard))
+        let browser = BrowserState(
+            fileSystem: FileOperationRunner(locations: LaunchOptions.locations),
+            watcher: DirectoryWatcher(watchesFileChanges: reader.isInCloudFolder),
+            startFolder: requested ?? settings.startFolder(home: home, lookUp: lookUp),
+            homeFolder: home, settings: settings, clipboard: clipboard)
+        browser.licences = LaunchOptions.licenceKeeper(for: settings)
+        _browser = State(initialValue: browser)
     }
 
     var body: some View {
