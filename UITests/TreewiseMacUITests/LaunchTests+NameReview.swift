@@ -9,13 +9,13 @@ extension LaunchTests {
         "2026.08.14 Holiday - Beach.heic", "2026.08.15 Holiday - Dunes.heic",
         "2026.08.16 Holiday - Harbour.heic",
     ]
-    private static let oddName = "Lighthouse.heic"
+    static let oddName = "Lighthouse.heic"
     /// The side of the photos, in pixels.
     private static let photoSide = 64
 
     /// A folder `Holiday` in the root with three photos whose names follow a pattern and one
     /// whose name does not. Real HEIC images, as Quick Look previews photos differently.
-    private func makeHolidayFolder() throws -> URL {
+    func makeHolidayFolder() throws -> URL {
         let folder = try XCTUnwrap(root).appendingPathComponent("Holiday", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         for name in Self.patternNames + [Self.oddName] {
@@ -24,7 +24,7 @@ extension LaunchTests {
         return folder
     }
 
-    private func writePhoto(to url: URL) throws {
+    func writePhoto(to url: URL) throws {
         let side = Self.photoSide
         let context = try XCTUnwrap(
             CGContext(
@@ -220,29 +220,6 @@ extension LaunchTests {
     }
 
     @MainActor
-    func testThePatternMenuListsWhatTheAddOnFoundWithHowManyNamesFit() throws {
-        _ = try makeHolidayFolder()
-        let app = try launchApp()
-        let review = try openReview(of: Self.oddName, in: app)
-        let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
-            .firstMatch
-        XCTAssertTrue(header.waitForExistence(timeout: Self.launchTimeout), "the header shows")
-        if header.label.hasPrefix("Add-ons:") { header.click() }
-        let menu = review.buttons.matching(
-            NSPredicate(format: "label IN {'Saved Patterns', 'Choose a Saved Pattern'}")
-        ).firstMatch
-        XCTAssertTrue(menu.waitForExistence(timeout: Self.launchTimeout), "the menu shows")
-        menu.click()
-        XCTAssertTrue(
-            app.menuItems["Found in This Folder"].waitForExistence(timeout: Self.launchTimeout),
-            "the found patterns come first")
-        let found = app.menuItems.matching(NSPredicate(format: "title ENDSWITH ' names'"))
-            .firstMatch
-        XCTAssertTrue(found.exists, "a found pattern says how many names fit it")
-        app.typeKey(.escape, modifierFlags: [])
-    }
-
-    @MainActor
     func testSpaceShowsTheFileOfARowInQuickLook() throws {
         _ = try makeHolidayFolder()
         let app = try launchApp()
@@ -269,7 +246,7 @@ extension LaunchTests {
 
     /// Opens Holiday, and the overview for one of its files.
     @MainActor
-    private func openReview(of file: String, in app: XCUIApplication) throws -> XCUIElement {
+    func openReview(of file: String, in app: XCUIApplication) throws -> XCUIElement {
         let holiday = app.tables.staticTexts["Holiday"]
         XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
         holiday.doubleClick()
