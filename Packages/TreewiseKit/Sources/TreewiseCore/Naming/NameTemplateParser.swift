@@ -62,9 +62,10 @@ struct NameTemplateParser {
             optional = []
             return nil
         }
-        guard let part = optional else { return .unbalancedBrackets }
+        guard optional != nil else { return .unbalancedBrackets }
+        // The text before `]` belongs to the part, so it is added before the part is read.
         flushText()
-        required.append(.optional(part))
+        required.append(.optional(optional ?? []))
         optional = nil
         return nil
     }

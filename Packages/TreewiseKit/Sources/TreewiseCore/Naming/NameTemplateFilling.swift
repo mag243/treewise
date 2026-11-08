@@ -98,7 +98,11 @@ extension NameTemplate {
         return nil
     }
 
-    static func fill(_ parts: [Part], with values: [String: Value], leavingGaps: Bool) -> String? {
+    /// The parts written with these values. An optional part without a field is written only
+    /// when `current`, the item's name, holds its text (ADR 0064).
+    static func fill(
+        _ parts: [Part], with values: [String: Value], current: String, leavingGaps: Bool
+    ) -> String? {
         var result = ""
         for part in parts {
             let filled: String?
@@ -111,12 +115,16 @@ extension NameTemplate {
                 filled = write(values[Field.seq.name], for: Field.seq, format: nil)
             case .choice(let alternatives):
                 filled =
-                    alternatives.lazy.compactMap { fill([$0], with: values, leavingGaps: false) }
+                    alternatives.lazy.compactMap {
+                        fill([$0], with: values, current: current, leavingGaps: false)
+                    }
                     .first
             case .alternatives(let all):
-                filled = all.first.flatMap { fill($0, with: values, leavingGaps: leavingGaps) }
+                filled = all.first.flatMap {
+                    fill($0, with: values, current: current, leavingGaps: leavingGaps)
+                }
             case .optional(let inner):
-                filled = fill(inner, with: values, leavingGaps: false) ?? ""
+                filled = fillOptional(inner, with: values, current: current)
             }
             if let filled {
                 result += filled
@@ -127,6 +135,44 @@ extension NameTemplate {
             }
         }
         return result
+    }
+
+    private static func fillOptional(
+        _ inner: [Part], with values: [String: Value], current: String
+    ) -> String {
+        guard fields(in: inner).isEmpty else {
+            return fill(inner, with: values, current: current, leavingGaps: false) ?? ""
+        }
+        let text = inner.map { part in
+            if case .text(let text) = part { return text }
+            return ""
+        }.joined()
+        return holds(current, text) ? text : ""
+    }
+
+    /// Whether `name` holds `text`, without the spaces and punctuation at its ends, as whole
+    /// words and ignoring case and accents. Text without letters or digits is held by no name.
+    static func holds(_ name: String, _ text: String) -> Bool {
+        let core = text.trimmingCharacters(
+            in: .whitespacesAndNewlines.union(.punctuationCharacters))
+        guard core.unicodeScalars.contains(where: CharacterSet.alphanumerics.contains) else {
+            return false
+        }
+        let options: String.CompareOptions = [.caseInsensitive, .diacriticInsensitive]
+        var searched = name.startIndex..<name.endIndex
+        while let found = name.range(of: core, options: options, range: searched) {
+            let before =
+                found.lowerBound == name.startIndex
+                ? nil : name[name.index(before: found.lowerBound)]
+            let after = found.upperBound == name.endIndex ? nil : name[found.upperBound]
+            if !isWordCharacter(before), !isWordCharacter(after) { return true }
+            searched = name.index(after: found.lowerBound)..<name.endIndex
+        }
+        return false
+    }
+
+    private static func isWordCharacter(_ character: Character?) -> Bool {
+        character.map { $0.isLetter || $0.isNumber } ?? false
     }
 
     static func write(_ value: Value?, for field: Field, format: DateTemplate?) -> String? {

@@ -199,7 +199,8 @@ public struct NameTemplate: Hashable, Sendable {
         var all = values
         if let year = period.year { all[Field.year.name] = .text(String(year)) }
         if let seq = period.seq { all[Field.seq.name] = .text(seq) }
-        let name = Self.fill(parts, with: all, leavingGaps: true) ?? ""
+        let name =
+            Self.fill(parts, with: all, current: context.currentName, leavingGaps: true) ?? ""
         return MadeName(name: Self.singleSpaced(name), usesFileYear: period.usesFileYear)
     }
 
