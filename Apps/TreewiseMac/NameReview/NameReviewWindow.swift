@@ -46,6 +46,8 @@ enum NameReviewWindow {
             rootView: NameReviewView(
                 model: model, browser: browser, undoManager: undoManager,
                 close: { [weak window] in window?.close() }))
+        // A window takes the size of the content it is given, here SwiftUI's smallest.
+        window.setContentSize(defaultSize)
         window.center()
         let closing = NameReviewWindowCloser(model: model) { window in
             open.removeAll { $0.window === window }
