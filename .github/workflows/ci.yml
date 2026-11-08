@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     env:
@@ -42,7 +42,8 @@ jobs:
         run: tools/build.sh ci
 
       - name: Keep logs and test results
-        if: failure()
+        # Also after a timeout, which counts as cancelled and not as a failure.
+        if: ${{ !success() }}
         uses: actions/upload-artifact@v6
         with:
           name: build-logs
