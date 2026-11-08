@@ -4,7 +4,8 @@ import TreewiseCore
 import TreewiseUI
 
 /// The list of files: two lines per row, the original above the new name, in one size and
-/// starting at one place, so differences stand out. The list scrolls by itself.
+/// starting at one place, so differences stand out. A name that already fits shows once, on
+/// a lower row, as it asks nothing of the user. The list scrolls by itself.
 struct NameReviewListView: View {
     let model: NameReviewModel
     @Binding var showsHidden: Bool
@@ -112,6 +113,7 @@ struct NameReviewListView: View {
 /// One file in the list.
 struct NameReviewRow: View {
     private static let iconSize: CGFloat = 28
+    private static let fittingIconSize: CGFloat = 16
 
     let entry: NameProposalSession.Entry
     let model: NameReviewModel
@@ -124,15 +126,27 @@ struct NameReviewRow: View {
         HStack(spacing: 8) {
             approval.frame(width: 18)
             Image(nsImage: NSWorkspace.shared.icon(forFile: entry.id.rawValue))
-                .resizable().frame(width: Self.iconSize, height: Self.iconSize)
+                .resizable().frame(width: iconSide, height: iconSide)
+                // The names of every row start at one place.
+                .frame(width: Self.iconSize)
+            names.frame(maxWidth: .infinity, alignment: .leading)
+            side
+        }
+        .opacity(entry.state == .skipped ? 0.5 : 1)
+    }
+
+    private var iconSide: CGFloat { entry.restsFitting ? Self.fittingIconSize : Self.iconSize }
+
+    @ViewBuilder
+    private var names: some View {
+        if entry.restsFitting {
+            Text(entry.originalName).foregroundStyle(.secondary)
+        } else {
             VStack(alignment: .leading, spacing: 0) {
                 Text(entry.originalName).foregroundStyle(.secondary)
                 newName
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            side
         }
-        .opacity(entry.state == .skipped ? 0.5 : 1)
     }
 
     @ViewBuilder
@@ -159,7 +173,7 @@ struct NameReviewRow: View {
 
     @ViewBuilder
     private var newName: some View {
-        if isSelected, !entry.isOutOfScope, !entry.restsFitting {
+        if isSelected, !entry.isOutOfScope {
             NameReviewField(
                 text: entry.currentName ?? "", placeholder: emptyText,
                 onChange: { model.edit(entry.id, to: $0) },
@@ -177,7 +191,7 @@ struct NameReviewRow: View {
                         return model.session?.entry(entry.id)?.currentName
                     } : nil
             )
-        } else if let name = entry.restsFitting ? entry.originalName : entry.currentName {
+        } else if let name = entry.currentName {
             Text(marked(name)).foregroundStyle(
                 model.conflicts[entry.id] == nil ? .primary : Color.red)
         } else {

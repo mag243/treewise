@@ -21,6 +21,35 @@ extension LaunchTests {
     }
 
     @MainActor
+    func testANameThatAlreadyFitsShowsOnce() throws {
+        _ = try makeHolidayFolder()
+        let app = try launchApp()
+        let holiday = app.tables.staticTexts["Holiday"]
+        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout), "the folder shows")
+        holiday.doubleClick()
+        XCTAssertTrue(
+            app.tables.staticTexts[Self.oddName].waitForExistence(timeout: Self.launchTimeout),
+            "Holiday opens")
+        // Nothing selected, so the whole folder is reviewed.
+        let file = app.menuBarItems["File"]
+        file.click()
+        file.menuItems["Suggest Names…"].click()
+        let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
+            .firstMatch
+        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        let alreadyFit = review.buttons.matching(
+            NSPredicate(format: "label ENDSWITH 'files already fit'")
+        ).firstMatch
+        XCTAssertTrue(alreadyFit.waitForExistence(timeout: Self.launchTimeout), "it shows them")
+        alreadyFit.click()
+        let name = "2026.08.14 Holiday - Beach.heic"
+        let shown = review.outlines.staticTexts.matching(
+            NSPredicate(format: "value == %@ OR label == %@", name, name))
+        XCTAssertTrue(shown.firstMatch.waitForExistence(timeout: Self.launchTimeout), "it lists it")
+        XCTAssertEqual(shown.count, 1, "nothing changes, so the name shows once")
+    }
+
+    @MainActor
     func testALongProposedNameGoesOnToANextLine() throws {
         let folder = try makeHolidayFolder()
         try writePhoto(to: folder.appendingPathComponent(Self.longName))
