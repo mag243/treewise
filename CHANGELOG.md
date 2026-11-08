@@ -8,7 +8,7 @@ All notable changes to Treewise are recorded here. The format follows
 
 ### Added
 - Suggest Names… proposes names for a folder's files from a pattern that Treewise recognizes in the names already there, or that you type; you approve each name before anything is renamed. While renaming one file, ⌥Esc offers its proposals.
-- Patterns with dates in several forms, also with month names in English, Dutch and German, the folder's name, a running number per year, quarter or month, optional parts and choices between parts. A name that nearly fits the pattern is offered written right.
+- Patterns with dates in several forms, also with month names in English, Dutch and German, the folder's name, a running number per year, quarter or month, optional parts and choices between parts. A name that nearly fits the pattern is offered written right. Fixed text in an optional part, as `[ correction]`, goes into a proposal only when the file's name already has it.
 - Saved patterns in Settings > Names, to pick for a folder from the menu beside its pattern. A folder keeps the version it uses, is offered a newer one, and can update the saved pattern.
 - Add-ons give the values for a pattern, and run in a separate service without internet access. Settings > Add-ons turns them on or off and sets their order. The free add-on reads a file's date and its current name, and recognizes the patterns of a folder's names when most of its files fit one.
 - Settings > Names can clear what Treewise keeps for each folder you suggest names in. The settings of a folder not seen for 30 days on an attached disk go by themselves.
