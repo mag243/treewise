@@ -136,8 +136,9 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         case .item(let folder):
             let cell = reusedCell(Self.cellIdentifier, in: outlineView, withIcon: true)
             cell.textField?.stringValue = folder.name
-            let icon = NSWorkspace.shared.icon(forFile: folder.id.rawValue)
-            icon.size = Self.iconSize
+            let icon = FolderIcon.image(for: folder.id)
+            // A symbol keeps its own proportions; a file's icon comes in many sizes.
+            if !FolderIcon.isHome(folder.id) { icon.size = Self.iconSize }
             cell.imageView?.image = icon
             (cell as? SidebarCell)?.eject =
                 folder.isEjectable ? { [weak self] in self?.eject?([folder]) } : nil

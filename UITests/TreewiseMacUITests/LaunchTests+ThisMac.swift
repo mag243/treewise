@@ -3,6 +3,14 @@ import XCTest
 /// This Mac, the location that lists the volumes (ADR 0044).
 extension LaunchTests {
     @MainActor
+    func testTheHomeFolderShowsAHouseInTheSidebar() throws {
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.outlines.images["Home"].waitForExistence(timeout: Self.launchTimeout),
+            "the home folder has the house")
+    }
+
+    @MainActor
     func testThisMacInTheSidebarOpensThisMac() throws {
         let app = try launchApp()
         XCTAssertTrue(

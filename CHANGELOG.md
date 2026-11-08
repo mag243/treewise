@@ -16,6 +16,7 @@ All notable changes to Treewise are recorded here. The format follows
 
 ### Changed
 - Settings has tabs: General, Names and Add-ons.
+- The home folder shows a blue house in the sidebar and the address bar, so it stands out from the folders around it.
 
 ### Fixed
 - Copying a folder, or moving it to another volume, keeps the folder's Finder tags and other extended attributes.
