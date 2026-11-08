@@ -9,7 +9,7 @@ extension LaunchTests {
     func testClickingTheSelectedNameRenamesIt() throws {
         let app = try launchApp()
         let documents = app.tables.staticTexts["Documents"]
-        XCTAssertTrue(documents.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(documents.appeared(timeout: Self.launchTimeout))
         // Selected with the keyboard, so the click on the name is a single click.
         app.tables.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).click()
         app.typeKey(.downArrow, modifierFlags: [])
@@ -19,7 +19,7 @@ extension LaunchTests {
         // Once the double-click interval passes the name is in a text field.
         let field = app.tables.textFields.firstMatch
         XCTAssertTrue(
-            field.waitForExistence(timeout: Self.launchTimeout),
+            field.appeared(timeout: Self.launchTimeout),
             "a click on the selected name starts renaming it")
         app.typeText("Papers\r")
         let root = try XCTUnwrap(root)

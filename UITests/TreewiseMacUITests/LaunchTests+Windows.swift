@@ -10,12 +10,12 @@ extension LaunchTests {
     func testWindowBesidePutsTwoWindowsSideBySide() throws {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         openWindowBeside(in: app)
         let first = app.windows.element(boundBy: 0)
         let second = app.windows.element(boundBy: 1)
         // XCUITest and AppKit share the x axis, so the window's midpoint finds its screen.
-        XCTAssertTrue(first.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(first.appeared(timeout: Self.launchTimeout))
         let screen = try XCTUnwrap(
             NSScreen.screens.first { $0.frame.minX...$0.frame.maxX ~= first.frame.midX }
         ).visibleFrame

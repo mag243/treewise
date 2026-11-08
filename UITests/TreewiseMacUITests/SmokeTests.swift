@@ -47,12 +47,12 @@ final class SmokeTests: XCTestCase {
         ]
         app.launch()
         let notes = app.tables.staticTexts["Notes.md"]
-        XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(notes.appeared(timeout: Self.timeout))
 
         app.tables.staticTexts["Documents"].doubleClick()
-        XCTAssertTrue(notes.waitForNonExistence(timeout: Self.timeout), "open: Documents is empty")
+        XCTAssertTrue(notes.disappeared(timeout: Self.timeout), "open: Documents is empty")
         app.typeKey("[", modifierFlags: .command)
-        XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout), "back in the folder")
+        XCTAssertTrue(notes.appeared(timeout: Self.timeout), "back in the folder")
 
         app.typeKey("t", modifierFlags: .command)
         XCTAssertTrue(app.waitForSecondTab(), "tab")
@@ -65,7 +65,7 @@ final class SmokeTests: XCTestCase {
         let windows = app.windows.allElementsBoundByIndex.sorted { $0.frame.minX < $1.frame.minX }
         let left = try XCTUnwrap(windows.first)
         let right = try XCTUnwrap(windows.last)
-        XCTAssertTrue(right.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(right.tables.staticTexts["Notes.md"].appeared(timeout: Self.timeout))
 
         // `click(forDuration:thenDragTo:)` is the mouse drag; `press` is for touch.
         let centre = CGVector(dx: 0.5, dy: 0.5)

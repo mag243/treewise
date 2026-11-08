@@ -16,7 +16,7 @@ extension LaunchTests {
         let app = try launchWithRefusal()
         app.typeKey("n", modifierFlags: .command)
         XCTAssertTrue(
-            app.windows.element(boundBy: 1).waitForExistence(timeout: Self.launchTimeout),
+            app.windows.element(boundBy: 1).appeared(timeout: Self.launchTimeout),
             "a new window opens, as on every Mac")
         XCTAssertTrue(app.sheets.firstMatch.exists, "and the sheet still waits for an answer")
     }
@@ -34,14 +34,14 @@ extension LaunchTests {
     private func launchWithRefusal() throws -> XCUIApplication {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         app.typeKey("l", modifierFlags: .command)
-        XCTAssertTrue(app.textFields["Address"].waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(app.textFields["Address"].appeared(timeout: Self.launchTimeout))
         app.typeKey("a", modifierFlags: .command)
         for key in "nowhere/" { app.typeKey(String(key), modifierFlags: []) }
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(
-            app.sheets.firstMatch.waitForExistence(timeout: Self.launchTimeout),
+            app.sheets.firstMatch.appeared(timeout: Self.launchTimeout),
             "a path that names no folder is refused in a sheet")
         return app
     }
@@ -49,7 +49,7 @@ extension LaunchTests {
     @MainActor
     private func expectRunningWithTheSheet(_ app: XCUIApplication) throws {
         XCTAssertTrue(
-            app.sheets.firstMatch.waitForExistence(timeout: Self.launchTimeout),
+            app.sheets.firstMatch.appeared(timeout: Self.launchTimeout),
             "the sheet still waits for an answer")
         XCTAssertEqual(app.state, .runningForeground, "and Treewise keeps running")
         XCTAssertEqual(app.windows.count, 1, "without a new tab or window")

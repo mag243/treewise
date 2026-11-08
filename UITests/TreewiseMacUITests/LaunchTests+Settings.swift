@@ -8,11 +8,11 @@ extension LaunchTests {
     func testSettingsFitsItsContentsWithoutAScrollBar() throws {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         XCTAssertTrue(
-            settings.staticTexts["Show hidden files"].waitForExistence(timeout: Self.launchTimeout))
+            settings.staticTexts["Show hidden files"].appeared(timeout: Self.launchTimeout))
         XCTAssertFalse(settings.scrollBars.firstMatch.exists)
     }
 
@@ -20,15 +20,15 @@ extension LaunchTests {
     func testSettingsKeepsTheNamePatternsInATabOfTheirOwn() throws {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         let names = settings.toolbars.buttons["Names"]
         XCTAssertTrue(
-            names.waitForExistence(timeout: Self.launchTimeout), "Settings has a Names tab")
+            names.appeared(timeout: Self.launchTimeout), "Settings has a Names tab")
         names.click()
         XCTAssertTrue(
-            settings.staticTexts["Name Patterns"].waitForExistence(timeout: Self.launchTimeout),
+            settings.staticTexts["Name Patterns"].appeared(timeout: Self.launchTimeout),
             "the saved patterns are there (ADR 0068)")
     }
 
@@ -36,16 +36,16 @@ extension LaunchTests {
     func testSettingsListsTheAddOnsWithWhatTheyRead() throws {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         let tab = settings.toolbars.buttons["Add-ons"]
         XCTAssertTrue(
-            tab.waitForExistence(timeout: Self.launchTimeout), "Settings has an Add-ons tab")
+            tab.appeared(timeout: Self.launchTimeout), "Settings has an Add-ons tab")
         tab.click()
         let free = settings.checkBoxes["Folder Pattern"]
         XCTAssertTrue(
-            free.waitForExistence(timeout: Self.launchTimeout), "the free add-on is listed")
+            free.appeared(timeout: Self.launchTimeout), "the free add-on is listed")
         XCTAssertFalse(free.isEnabled, "the last add-on that is on stays on (ADR 0070)")
         XCTAssertTrue(settings.staticTexts["Reads names only"].exists, "it says what it reads")
         XCTAssertFalse(settings.scrollBars.firstMatch.exists, "the add-ons fit")
@@ -55,11 +55,11 @@ extension LaunchTests {
     func testSettingsKeepsItsSizeFromTabToTab() throws {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         XCTAssertTrue(
-            settings.staticTexts["Show hidden files"].waitForExistence(timeout: Self.launchTimeout),
+            settings.staticTexts["Show hidden files"].appeared(timeout: Self.launchTimeout),
             "Settings opens at General")
         let size = settings.frame.size
         XCTAssertGreaterThanOrEqual(size.width, 600, "room for long names")
@@ -73,15 +73,15 @@ extension LaunchTests {
     func testANamePatternIsChosenInTheListAndEditedBelow() throws {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         let names = settings.toolbars.buttons["Names"]
-        XCTAssertTrue(names.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(names.appeared(timeout: Self.launchTimeout))
         names.click()
         let example = settings.staticTexts["Folder and Number"]
         XCTAssertTrue(
-            example.waitForExistence(timeout: Self.launchTimeout), "the list shows its names")
+            example.appeared(timeout: Self.launchTimeout), "the list shows its names")
         example.click()
         let name = settings.textFields["Name"]
         XCTAssertTrue(

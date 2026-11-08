@@ -12,20 +12,20 @@ extension LaunchTests {
         let review = try openReview(of: Self.oddName, in: app)
         usePattern(Self.typedPattern, in: review)
         XCTAssertTrue(
-            proposal(beginningWith: "Trip ", in: review).waitForExistence(
+            proposal(beginningWith: "Trip ", in: review).appeared(
                 timeout: Self.launchTimeout), "the typed pattern proposes the name")
         review.buttons["Cancel"].firstMatch.click()
 
         clearFolderSettings(in: app)
 
         let row = app.tables.staticTexts[Self.oddName]
-        XCTAssertTrue(row.waitForExistence(timeout: Self.launchTimeout), "the folder shows")
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout), "the folder shows")
         row.rightClick()
         app.tables.menus.menuItems["Suggest Names…"].click()
         let again = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
         XCTAssertTrue(
-            proposal(containing: "Holiday - Lighthouse", in: again).waitForExistence(
+            proposal(containing: "Holiday - Lighthouse", in: again).appeared(
                 timeout: Self.launchTimeout), "the folder's own pattern is recognized again")
         XCTAssertFalse(proposal(beginningWith: "Trip ", in: again).exists, "the typed one is gone")
     }
@@ -36,20 +36,20 @@ extension LaunchTests {
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         let names = settings.toolbars.buttons["Names"]
-        XCTAssertTrue(names.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(names.appeared(timeout: Self.launchTimeout))
         names.click()
         let clear = settings.buttons["Clear Folder Settings…"]
-        XCTAssertTrue(clear.waitForExistence(timeout: Self.launchTimeout), "the button shows")
+        XCTAssertTrue(clear.appeared(timeout: Self.launchTimeout), "the button shows")
         clear.click()
         let confirm = app.buttons["Clear Folder Settings"]
-        XCTAssertTrue(confirm.waitForExistence(timeout: Self.launchTimeout), "it asks first")
+        XCTAssertTrue(confirm.appeared(timeout: Self.launchTimeout), "it asks first")
         app.buttons["Cancel"].click()
         XCTAssertTrue(
-            confirm.waitForNonExistence(timeout: Self.launchTimeout), "Cancel closes the question")
+            confirm.disappeared(timeout: Self.launchTimeout), "Cancel closes the question")
         clear.click()
-        XCTAssertTrue(confirm.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(confirm.appeared(timeout: Self.launchTimeout))
         confirm.click()
-        XCTAssertTrue(confirm.waitForNonExistence(timeout: Self.launchTimeout), "it is cleared")
+        XCTAssertTrue(confirm.disappeared(timeout: Self.launchTimeout), "it is cleared")
         settings.typeKey("w", modifierFlags: .command)
     }
 

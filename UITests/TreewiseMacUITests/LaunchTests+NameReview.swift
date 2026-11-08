@@ -46,10 +46,10 @@ extension LaunchTests {
         let folder = try makeHolidayFolder()
         let app = try launchApp()
         let holiday = app.tables.staticTexts["Holiday"]
-        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(holiday.appeared(timeout: Self.launchTimeout))
         holiday.doubleClick()
         let odd = app.tables.staticTexts[Self.oddName]
-        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        XCTAssertTrue(odd.appeared(timeout: Self.launchTimeout), "Holiday opens")
         odd.click()
         showDetails(in: app)
 
@@ -67,12 +67,12 @@ extension LaunchTests {
         let renamed = app.tables.staticTexts.matching(
             NSPredicate(format: "value ENDSWITH 'Lighthouse.heic' AND value != 'Lighthouse.heic'")
         ).firstMatch
-        XCTAssertTrue(renamed.waitForExistence(timeout: Self.launchTimeout), "the list shows it")
+        XCTAssertTrue(renamed.appeared(timeout: Self.launchTimeout), "the list shows it")
         renamed.click()
         app.tables.staticTexts[Self.patternNames[0]].click()
         renamed.click()
         XCTAssertTrue(
-            app.tables.firstMatch.waitForExistence(timeout: Self.launchTimeout),
+            app.tables.firstMatch.appeared(timeout: Self.launchTimeout),
             "the browser window is still there")
         XCTAssertEqual(app.state, .runningForeground, "and Treewise keeps running")
     }
@@ -82,20 +82,20 @@ extension LaunchTests {
         _ = try makeHolidayFolder()
         let app = try launchApp()
         let holiday = app.tables.staticTexts["Holiday"]
-        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(holiday.appeared(timeout: Self.launchTimeout))
         holiday.doubleClick()
         let odd = app.tables.staticTexts[Self.oddName]
-        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        XCTAssertTrue(odd.appeared(timeout: Self.launchTimeout), "Holiday opens")
         odd.rightClick()
         app.tables.menus.menuItems["Suggest Names…"].click()
         let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
-        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        XCTAssertTrue(review.appeared(timeout: Self.launchTimeout), "the overview opens")
         usePattern("Trip - <Sea|Land>", in: review)
 
         let name = review.textFields.matching(NSPredicate(format: "value BEGINSWITH 'Trip - '"))
             .firstMatch
-        XCTAssertTrue(name.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
+        XCTAssertTrue(name.appeared(timeout: Self.launchTimeout), "a name is proposed")
         // A double click on the row edits its name.
         review.outlines.staticTexts[Self.oddName].doubleClick()
         XCTAssertTrue(
@@ -121,10 +121,10 @@ extension LaunchTests {
         let folder = try makeHolidayFolder()
         let app = try launchApp()
         let holiday = app.tables.staticTexts["Holiday"]
-        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(holiday.appeared(timeout: Self.launchTimeout))
         holiday.doubleClick()
         let odd = app.tables.staticTexts[Self.oddName]
-        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        XCTAssertTrue(odd.appeared(timeout: Self.launchTimeout), "Holiday opens")
         odd.rightClick()
         app.tables.menus.menuItems["Rename with Suggestions"].click()
 
@@ -132,7 +132,7 @@ extension LaunchTests {
         let option = app.buttons.matching(
             NSPredicate(format: "label ENDSWITH 'Lighthouse.heic' AND label != 'Lighthouse.heic'")
         ).firstMatch
-        XCTAssertTrue(option.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
+        XCTAssertTrue(option.appeared(timeout: Self.launchTimeout), "a name is proposed")
         let proposed = option.label
         XCTAssertTrue(app.buttons["Suggest Names…"].exists, "the overview is a click away")
         option.click()
@@ -155,10 +155,10 @@ extension LaunchTests {
         let folder = try makeHolidayFolder()
         let app = try launchApp()
         let holiday = app.tables.staticTexts["Holiday"]
-        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(holiday.appeared(timeout: Self.launchTimeout))
         holiday.doubleClick()
         let odd = app.tables.staticTexts[Self.oddName]
-        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        XCTAssertTrue(odd.appeared(timeout: Self.launchTimeout), "Holiday opens")
         odd.click()
         app.menuBarItems["File"].menuItems["Rename"].click()
         let field = app.tables.textFields.firstMatch
@@ -170,7 +170,7 @@ extension LaunchTests {
         let option = app.buttons.matching(
             NSPredicate(format: "label ENDSWITH 'Lighthouse.heic' AND label != 'Lighthouse.heic'")
         ).firstMatch
-        XCTAssertTrue(option.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
+        XCTAssertTrue(option.appeared(timeout: Self.launchTimeout), "a name is proposed")
         let proposed = option.label
         app.typeKey(.downArrow, modifierFlags: [])
         app.typeKey(.return, modifierFlags: [])
@@ -187,36 +187,36 @@ extension LaunchTests {
         _ = try makeHolidayFolder()
         let app = try launchApp()
         let holiday = app.tables.staticTexts["Holiday"]
-        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(holiday.appeared(timeout: Self.launchTimeout))
         holiday.doubleClick()
         let odd = app.tables.staticTexts[Self.oddName]
-        XCTAssertTrue(odd.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        XCTAssertTrue(odd.appeared(timeout: Self.launchTimeout), "Holiday opens")
         odd.rightClick()
         app.tables.menus.menuItems["Suggest Names…"].click()
         let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
-        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        XCTAssertTrue(review.appeared(timeout: Self.launchTimeout), "the overview opens")
         let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
             .firstMatch
-        XCTAssertTrue(header.waitForExistence(timeout: Self.launchTimeout), "the header shows")
+        XCTAssertTrue(header.appeared(timeout: Self.launchTimeout), "the header shows")
         if header.label.hasPrefix("Add-ons:") { header.click() }
 
         let menu = review.buttons.matching(
             NSPredicate(format: "label IN {'Saved Patterns', 'Choose a Saved Pattern'}")
         ).firstMatch
-        XCTAssertTrue(menu.waitForExistence(timeout: Self.launchTimeout), "the menu shows")
+        XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout), "the menu shows")
         menu.click()
         let example = app.menuItems.matching(
             NSPredicate(format: "title BEGINSWITH 'Folder and Number'")
         ).firstMatch
         XCTAssertTrue(
-            example.waitForExistence(timeout: Self.launchTimeout), "it lists the examples")
+            example.appeared(timeout: Self.launchTimeout), "it lists the examples")
         example.click()
         let name = review.descendants(matching: .any).matching(
             NSPredicate(format: "value == 'Holiday 1.heic' OR label == 'Holiday 1.heic'")
         ).firstMatch
         XCTAssertTrue(
-            name.waitForExistence(timeout: Self.launchTimeout), "the folder takes the pattern")
+            name.appeared(timeout: Self.launchTimeout), "the folder takes the pattern")
     }
 
     @MainActor
@@ -248,17 +248,17 @@ extension LaunchTests {
     @MainActor
     func openReview(of file: String, in app: XCUIApplication) throws -> XCUIElement {
         let holiday = app.tables.staticTexts["Holiday"]
-        XCTAssertTrue(holiday.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(holiday.appeared(timeout: Self.launchTimeout))
         holiday.doubleClick()
         let row = app.tables.staticTexts[file]
-        XCTAssertTrue(row.waitForExistence(timeout: Self.launchTimeout), "Holiday opens")
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout), "Holiday opens")
         row.rightClick()
         app.tables.menus.menuItems["Suggest Names…"].click()
         let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
-        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        XCTAssertTrue(review.appeared(timeout: Self.launchTimeout), "the overview opens")
         let shown = review.outlines.staticTexts[file]
-        XCTAssertTrue(shown.waitForExistence(timeout: Self.launchTimeout), "it lists the file")
+        XCTAssertTrue(shown.appeared(timeout: Self.launchTimeout), "it lists the file")
         return review
     }
 
@@ -268,13 +268,13 @@ extension LaunchTests {
         // The header closes to one line, `Add-ons: …`, once the folder has its add-ons.
         let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
             .firstMatch
-        XCTAssertTrue(header.waitForExistence(timeout: Self.launchTimeout), "the header shows")
+        XCTAssertTrue(header.appeared(timeout: Self.launchTimeout), "the header shows")
         if header.label.hasPrefix("Add-ons:") { header.click() }
         let change = review.links["Change"].firstMatch
-        XCTAssertTrue(change.waitForExistence(timeout: Self.launchTimeout), "the pattern shows")
+        XCTAssertTrue(change.appeared(timeout: Self.launchTimeout), "the pattern shows")
         change.click()
         let field = review.textFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: Self.launchTimeout), "it can be changed")
+        XCTAssertTrue(field.appeared(timeout: Self.launchTimeout), "it can be changed")
         field.click()
         field.typeKey("a", modifierFlags: .command)
         field.typeText(pattern)
@@ -286,17 +286,17 @@ extension LaunchTests {
     private func renameInOverview(in app: XCUIApplication) {
         let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
-        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        XCTAssertTrue(review.appeared(timeout: Self.launchTimeout), "the overview opens")
         // The odd photo has only the date of the file, which Approve All takes too (ADR 0058).
         let approve = review.buttons["Approve All"]
-        XCTAssertTrue(approve.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
+        XCTAssertTrue(approve.appeared(timeout: Self.launchTimeout), "a name is proposed")
         approve.click()
         let rename = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Rename 1'"))
             .firstMatch
         XCTAssertTrue(app.eventually { rename.exists && rename.isEnabled }, "the name is approved")
         rename.click()
         let done = review.buttons["Done"]
-        XCTAssertTrue(done.waitForExistence(timeout: Self.launchTimeout), "the files are renamed")
+        XCTAssertTrue(done.appeared(timeout: Self.launchTimeout), "the files are renamed")
         done.click()
     }
 
@@ -306,7 +306,7 @@ extension LaunchTests {
         let view = app.menuBarItems["View"]
         view.click()
         let show = view.menuItems["Show Details"]
-        if show.waitForExistence(timeout: Self.launchTimeout) {
+        if show.appeared(timeout: Self.launchTimeout) {
             show.click()
         } else {
             app.typeKey(.escape, modifierFlags: [])

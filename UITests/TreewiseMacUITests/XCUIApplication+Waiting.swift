@@ -11,13 +11,7 @@ extension XCUIApplication {
     /// Checks `condition` until it holds, up to `waitTimeout`.
     @MainActor
     func eventually(_ condition: () -> Bool) -> Bool {
-        let deadline = Date().addingTimeInterval(Self.waitTimeout)
-        while !condition() {
-            guard Date() < deadline else { return false }
-            let pause = XCTestExpectation(description: "pause")
-            _ = XCTWaiter.wait(for: [pause], timeout: Self.pollInterval)
-        }
-        return true
+        polled(timeout: Self.waitTimeout, interval: Self.pollInterval, condition)
     }
 
     /// Waits until the window in front has two tabs in its tab bar.
@@ -35,7 +29,7 @@ extension XCUIApplication {
         let newTab = menu.menuItems["New Tab"]
         return eventually {
             menu.click()
-            let enabled = newTab.waitForExistence(timeout: Self.waitTimeout) && newTab.isEnabled
+            let enabled = newTab.appeared(timeout: Self.waitTimeout) && newTab.isEnabled
             typeKey(.escape, modifierFlags: [])
             return enabled
         }
@@ -46,4 +40,37 @@ extension XCUIApplication {
     func windows(titled title: String) -> XCUIElementQuery {
         windows.matching(NSPredicate(format: "title == %@", title))
     }
+}
+
+/// Waiting for an element. `waitForExistence` first looks after a full second, even for an
+/// element that is already there, which adds up over a test run.
+extension XCUIElement {
+    /// How long these waits pause between two looks.
+    private static let lookInterval: TimeInterval = 0.1
+
+    /// Whether the element exists within `timeout`, looking at once and then often.
+    @MainActor
+    func appeared(timeout: TimeInterval) -> Bool {
+        polled(timeout: timeout, interval: Self.lookInterval) { exists }
+    }
+
+    /// Whether the element is gone within `timeout`, looking at once and then often.
+    @MainActor
+    func disappeared(timeout: TimeInterval) -> Bool {
+        polled(timeout: timeout, interval: Self.lookInterval) { !exists }
+    }
+}
+
+/// Checks `condition` at once and then every `interval`, until it holds or `timeout` passed.
+@MainActor
+private func polled(
+    timeout: TimeInterval, interval: TimeInterval, _ condition: () -> Bool
+) -> Bool {
+    let deadline = Date().addingTimeInterval(timeout)
+    while !condition() {
+        guard Date() < deadline else { return false }
+        let pause = XCTestExpectation(description: "pause")
+        _ = XCTWaiter.wait(for: [pause], timeout: interval)
+    }
+    return true
 }

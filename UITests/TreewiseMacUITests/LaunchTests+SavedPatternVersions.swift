@@ -15,12 +15,12 @@ extension LaunchTests {
         usePattern(Self.changedPattern, in: review)
         openPatternMenu(in: review)
         let update = app.menuItems["Update “\(Self.savedName)”"]
-        XCTAssertTrue(update.waitForExistence(timeout: Self.launchTimeout), "Update is offered")
+        XCTAssertTrue(update.appeared(timeout: Self.launchTimeout), "Update is offered")
         XCTAssertTrue(app.menuItems["Save as New Pattern…"].exists, "and saving it as new")
         update.click()
         openPatternMenu(in: review)
         XCTAssertTrue(
-            app.menuItems["Save Pattern…"].waitForExistence(timeout: Self.launchTimeout),
+            app.menuItems["Save Pattern…"].appeared(timeout: Self.launchTimeout),
             "an updated pattern is the saved one again")
         XCTAssertFalse(update.exists, "so Update is offered no more")
         app.typeKey(.escape, modifierFlags: [])
@@ -37,7 +37,7 @@ extension LaunchTests {
 
         let again = try reopenReview(of: Self.oddName, in: app)
         let notice = again.staticTexts["“\(Self.savedName)” has a newer version:"]
-        XCTAssertTrue(notice.waitForExistence(timeout: Self.launchTimeout), "the newer is offered")
+        XCTAssertTrue(notice.appeared(timeout: Self.launchTimeout), "the newer is offered")
         let useIt = again.descendants(matching: .any).matching(
             NSPredicate(format: "label == 'Use It'")
         ).firstMatch
@@ -51,12 +51,12 @@ extension LaunchTests {
     private func openPatternMenu(in review: XCUIElement) {
         let header = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons'"))
             .firstMatch
-        XCTAssertTrue(header.waitForExistence(timeout: Self.launchTimeout), "the header shows")
+        XCTAssertTrue(header.appeared(timeout: Self.launchTimeout), "the header shows")
         if header.label.hasPrefix("Add-ons:") { header.click() }
         let menu = review.buttons.matching(
             NSPredicate(format: "label IN {'Saved Patterns', 'Choose a Saved Pattern'}")
         ).firstMatch
-        XCTAssertTrue(menu.waitForExistence(timeout: Self.launchTimeout), "the menu shows")
+        XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout), "the menu shows")
         menu.click()
     }
 
@@ -66,7 +66,7 @@ extension LaunchTests {
         let saved = app.menuItems.matching(
             NSPredicate(format: "title BEGINSWITH %@", Self.savedName)
         ).firstMatch
-        XCTAssertTrue(saved.waitForExistence(timeout: Self.launchTimeout), "it lists the pattern")
+        XCTAssertTrue(saved.appeared(timeout: Self.launchTimeout), "it lists the pattern")
         saved.click()
     }
 
@@ -76,13 +76,13 @@ extension LaunchTests {
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         let names = settings.toolbars.buttons["Names"]
-        XCTAssertTrue(names.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(names.appeared(timeout: Self.launchTimeout))
         names.click()
         let saved = settings.staticTexts[Self.savedName]
-        XCTAssertTrue(saved.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(saved.appeared(timeout: Self.launchTimeout))
         saved.click()
         let field = settings.textFields["Pattern"]
-        XCTAssertTrue(field.waitForExistence(timeout: Self.launchTimeout), "its pattern shows")
+        XCTAssertTrue(field.appeared(timeout: Self.launchTimeout), "its pattern shows")
         field.click()
         field.typeKey("a", modifierFlags: .command)
         field.typeText(Self.changedPattern + "\r")
@@ -94,12 +94,12 @@ extension LaunchTests {
     @MainActor
     private func reopenReview(of file: String, in app: XCUIApplication) throws -> XCUIElement {
         let row = app.tables.staticTexts[file]
-        XCTAssertTrue(row.waitForExistence(timeout: Self.launchTimeout), "the folder shows")
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout), "the folder shows")
         row.rightClick()
         app.tables.menus.menuItems["Suggest Names…"].click()
         let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
-        XCTAssertTrue(review.waitForExistence(timeout: Self.launchTimeout), "the overview opens")
+        XCTAssertTrue(review.appeared(timeout: Self.launchTimeout), "the overview opens")
         return review
     }
 }

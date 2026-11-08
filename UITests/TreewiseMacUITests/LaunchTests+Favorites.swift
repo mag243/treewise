@@ -6,14 +6,14 @@ extension LaunchTests {
     func testTheContextMenuAddsAFolderToFavorites() throws {
         let app = try launchApp()
         let projects = app.tables.staticTexts["Projects"]
-        XCTAssertTrue(projects.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(projects.appeared(timeout: Self.launchTimeout))
         XCTAssertFalse(app.outlines.staticTexts["Projects"].exists, "not a favorite yet")
 
         projects.rightClick()
         app.menuItems["Add to Favorites"].click()
 
         XCTAssertTrue(
-            app.outlines.staticTexts["Projects"].waitForExistence(timeout: Self.launchTimeout),
+            app.outlines.staticTexts["Projects"].appeared(timeout: Self.launchTimeout),
             "the sidebar gets a row")
     }
 
@@ -21,7 +21,7 @@ extension LaunchTests {
     func testTheSidebarRemovesAFavoriteWithoutTouchingTheFolder() throws {
         let app = try launchApp()
         let favorite = app.outlines.staticTexts["Documents"]
-        XCTAssertTrue(favorite.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(favorite.appeared(timeout: Self.launchTimeout))
 
         favorite.rightClick()
         app.menuItems["Remove from Favorites"].click()
@@ -37,7 +37,7 @@ extension LaunchTests {
     func testRestoreBringsBackARemovedFavorite() throws {
         let app = try launchApp()
         let favorite = app.outlines.staticTexts["Documents"]
-        XCTAssertTrue(favorite.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(favorite.appeared(timeout: Self.launchTimeout))
         favorite.rightClick()
         app.menuItems["Remove from Favorites"].click()
         XCTAssertTrue(app.eventually { !favorite.exists })
@@ -45,6 +45,6 @@ extension LaunchTests {
         app.outlines.staticTexts["Favorites"].rightClick()
         app.menuItems["Restore Default Favorites"].click()
 
-        XCTAssertTrue(favorite.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(favorite.appeared(timeout: Self.launchTimeout))
     }
 }

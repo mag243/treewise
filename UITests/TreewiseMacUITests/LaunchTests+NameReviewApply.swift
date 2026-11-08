@@ -12,13 +12,13 @@ extension LaunchTests {
         let proposal = review.textFields.matching(
             NSPredicate(format: "value BEGINSWITH 'Trip '")
         ).firstMatch
-        XCTAssertTrue(proposal.waitForExistence(timeout: Self.launchTimeout), "a name is proposed")
+        XCTAssertTrue(proposal.appeared(timeout: Self.launchTimeout), "a name is proposed")
         let proposed = try XCTUnwrap(proposal.value as? String)
 
         review.buttons["Approve All"].click()
         let rename = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Rename 1'"))
             .firstMatch
-        XCTAssertTrue(rename.waitForExistence(timeout: Self.launchTimeout), "one is approved")
+        XCTAssertTrue(rename.appeared(timeout: Self.launchTimeout), "one is approved")
         rename.click()
         let old = folder.appendingPathComponent(Self.oddName).path
         let new = folder.appendingPathComponent(proposed).path
@@ -27,7 +27,7 @@ extension LaunchTests {
         XCTAssertFalse(FileManager.default.fileExists(atPath: old))
 
         let undo = app.buttons["Undo Rename"]
-        XCTAssertTrue(undo.waitForExistence(timeout: Self.launchTimeout), "the result shows")
+        XCTAssertTrue(undo.appeared(timeout: Self.launchTimeout), "the result shows")
         undo.click()
         XCTAssertTrue(
             app.eventually { FileManager.default.fileExists(atPath: old) }, "its name is back")

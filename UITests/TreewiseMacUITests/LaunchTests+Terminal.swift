@@ -7,7 +7,7 @@ extension LaunchTests {
     func testFileMenuOffersNoTerminalWhileConfined() throws {
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Notes.md"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
         XCTAssertFalse(app.menuBarItems["File"].menuItems["Open in Terminal"].isEnabled)
     }
 
@@ -15,7 +15,7 @@ extension LaunchTests {
     func testCommandBarOffersNoTerminalWhileConfined() throws {
         let app = try launchApp()
         let button = app.windows.firstMatch.buttons["Open in Terminal"].firstMatch
-        XCTAssertTrue(button.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(button.appeared(timeout: Self.launchTimeout))
         XCTAssertFalse(button.isEnabled)
     }
 
@@ -23,10 +23,10 @@ extension LaunchTests {
     func testContextMenuOffersNoTerminalWhileConfined() throws {
         let app = try launchApp()
         let notes = app.tables.staticTexts["Notes.md"]
-        XCTAssertTrue(notes.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(notes.appeared(timeout: Self.launchTimeout))
         notes.rightClick()
         let menu = app.tables.menus.firstMatch
-        XCTAssertTrue(menu.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout))
         XCTAssertFalse(menu.menuItems["Open in Terminal"].isEnabled)
         app.typeKey(.escape, modifierFlags: [])
     }

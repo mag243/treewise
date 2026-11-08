@@ -18,7 +18,7 @@ extension LaunchTests {
             withIntermediateDirectories: true)
         let app = try launchApp()
         XCTAssertTrue(
-            app.tables.staticTexts["Nextcloud"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Nextcloud"].appeared(timeout: Self.launchTimeout))
         return app
     }
 
@@ -59,7 +59,7 @@ extension LaunchTests {
         let app = try launchWithCloudFolder()
         app.tables.staticTexts["Nextcloud"].rightClick()
         let menu = app.tables.menus.firstMatch
-        XCTAssertTrue(menu.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout))
         XCTAssertFalse(menu.menuItems["Rename"].isEnabled)
         XCTAssertFalse(menu.menuItems["Move to Trash"].isEnabled)
         XCTAssertFalse(menu.menuItems["Cut"].isEnabled)
@@ -78,7 +78,7 @@ extension LaunchTests {
         let name = app.tables.staticTexts["Nextcloud"]
         name.coordinate(withNormalizedOffset: Self.onTheName).click()
         XCTAssertFalse(
-            app.tables.textFields.firstMatch.waitForExistence(timeout: Self.renameWait),
+            app.tables.textFields.firstMatch.appeared(timeout: Self.renameWait),
             "a click on the selected name of a cloud folder starts no rename")
     }
 }

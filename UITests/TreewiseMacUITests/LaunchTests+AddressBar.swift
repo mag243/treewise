@@ -8,13 +8,13 @@ extension LaunchTests {
         let app = try launchApp()
         let rootName = try rootName
         XCTAssertTrue(
-            app.tables.staticTexts["Projects"].waitForExistence(timeout: Self.launchTimeout))
+            app.tables.staticTexts["Projects"].appeared(timeout: Self.launchTimeout))
         app.tables.staticTexts["Projects"].doubleClick()
         XCTAssertTrue(
-            app.windows(titled: "Projects").firstMatch.waitForExistence(
+            app.windows(titled: "Projects").firstMatch.appeared(
                 timeout: Self.launchTimeout))
         let separator = app.buttons["Folders in \(rootName)"]
-        XCTAssertTrue(separator.waitForExistence(timeout: Self.launchTimeout))
+        XCTAssertTrue(separator.appeared(timeout: Self.launchTimeout))
         separator.click()
         // The menu bar has a Documents item too; the separator's menu is the
         // one on screen.
@@ -27,7 +27,7 @@ extension LaunchTests {
             }, "the menu lists the folders beside Projects")
         try XCTUnwrap(documents).click()
         XCTAssertTrue(
-            app.windows(titled: "Documents").firstMatch.waitForExistence(
+            app.windows(titled: "Documents").firstMatch.appeared(
                 timeout: Self.launchTimeout),
             "choosing one goes there")
     }
@@ -52,21 +52,21 @@ extension LaunchTests {
         app.launch()
         for name in ["Projects"] + deep {
             let row = app.tables.staticTexts[name]
-            XCTAssertTrue(row.waitForExistence(timeout: Self.launchTimeout), "\(name) shows")
+            XCTAssertTrue(row.appeared(timeout: Self.launchTimeout), "\(name) shows")
             row.doubleClick()
             XCTAssertTrue(
-                app.windows(titled: name).firstMatch.waitForExistence(timeout: Self.launchTimeout))
+                app.windows(titled: name).firstMatch.appeared(timeout: Self.launchTimeout))
         }
 
         let above = app.menuButtons["Folders Above"]
-        XCTAssertTrue(above.waitForExistence(timeout: Self.launchTimeout), "« shows")
+        XCTAssertTrue(above.appeared(timeout: Self.launchTimeout), "« shows")
         XCTAssertTrue(app.buttons["Deepest"].isHittable, "the folder shown keeps its place")
         above.click()
         let rootItem = app.menuItems[root.lastPathComponent]
-        XCTAssertTrue(rootItem.waitForExistence(timeout: Self.launchTimeout), "« lists the start")
+        XCTAssertTrue(rootItem.appeared(timeout: Self.launchTimeout), "« lists the start")
         rootItem.click()
         XCTAssertTrue(
-            app.windows(titled: root.lastPathComponent).firstMatch.waitForExistence(
+            app.windows(titled: root.lastPathComponent).firstMatch.appeared(
                 timeout: Self.launchTimeout),
             "choosing a folder there goes to it")
     }
