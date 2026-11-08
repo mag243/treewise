@@ -13,6 +13,9 @@ struct TreewiseMacApp: App {
     @State private var undo = SharedUndo()
 
     init() {
+        #if TREEWISE_PROBE
+            SandboxProbeRun.runIfAsked()
+        #endif
         // Tabs are macOS's window tabs, one folder per window (ADR 0037).
         NSWindow.allowsAutomaticWindowTabbing = true
     }

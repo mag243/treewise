@@ -65,8 +65,9 @@ report "TreewiseFolderPatternModule may import only Foundation, TreewiseCore and
   "$(imports_besides "$SOURCES/TreewiseFolderPatternModule" 'Foundation|TreewiseCore|TreewiseModuleInterface')"
 report "The module catalog may import only TreewiseModuleInterface and TreewiseFolderPatternModule" \
   "$(imports_besides "$ROOT_DIR/Packages/TreewiseModuleCatalog/Sources" 'TreewiseModuleInterface|TreewiseFolderPatternModule')"
-report "The modules' service may import only Foundation, the catalog and TreewiseModuleXPC" \
-  "$(imports_besides "$ROOT_DIR/Apps/TreewiseModuleHost" 'Foundation|TreewiseModuleCatalog|TreewiseModuleXPC')"
+# TreewiseCore and TreewiseModuleInterface are for the probe build's module (tools/build.sh probe).
+report "The modules' service may import only Foundation, TreewiseCore, the interface, the catalog and TreewiseModuleXPC" \
+  "$(imports_besides "$ROOT_DIR/Apps/TreewiseModuleHost" 'Foundation|TreewiseCore|TreewiseModuleInterface|TreewiseModuleCatalog|TreewiseModuleXPC')"
 
 service_entitlements="$ROOT_DIR/Apps/TreewiseModuleHost.entitlements"
 if [[ "$(grep -c '<key>' "$service_entitlements" || true)" != "1" ]] \

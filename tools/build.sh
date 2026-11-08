@@ -54,6 +54,10 @@
 #               the last proposal. Sets no limit; the times go to build/reports/benchmarks.
 #               Takes the screen, as ci does; `benchmark package` leaves out the app and
 #               the screen.
+#   probe       A Release build with the sandbox probe (ADR 0057): checks that the modules'
+#               service holds only the App Sandbox entitlement and is denied reading a file
+#               and a folder outside its container and opening a connection. Starts the app
+#               without a window, so it leaves the screen alone; the build is removed after.
 #   fixture     Fill build/fixtures/large with 10,000 files and a few folders, for
 #               the list's performance: tools/build.sh run -TreewiseRoot "$PWD/build/fixtures/large"
 #   sandbox     Attach the two sandbox volumes, Treewise Sandbox HD and T7: disk
@@ -87,6 +91,8 @@ SWIFT_DIRS=(Packages Apps UITests)
 # -suppress-warnings to package dependencies, which clashes with -warnings-as-errors.
 SWIFT_TEST_FLAGS=(-Xswiftc -warnings-as-errors)
 DERIVED_DATA="$BUILD_DIR/DerivedData"
+# The id of the module only the probe build has (Apps/TreewiseModuleHost/SandboxProbeModule.swift).
+PROBE_MODULE_ID="me.m-domain.treewise.sandbox-probe"
 # The private modules and the workspace of an official build (ADR 0057).
 MODULES_DIR="${TREEWISE_MODULES_DIR:-$ROOT_DIR/../treewise-modules}"
 OFFICIAL_WORKSPACE="$MODULES_DIR/Treewise.xcworkspace"
@@ -95,7 +101,7 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark coverage build apptest iostest run package export fixture sandbox icon publish screenshots official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest run package export fixture sandbox icon publish screenshots official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
@@ -274,6 +280,40 @@ cmd_crossvolume() {
 # How long the add-ons take for a folder of 100 files (M7, speed targets). The package
 # benchmarks run only with TREEWISE_BENCHMARK=1 and leave their times as attachments; the
 # app's are XCTest metrics in the result bundle. It reports times and sets no limit.
+# Builds Release with the sandbox probe (ADR 0057): the modules' service must carry only
+# the App Sandbox entitlement, and a module in it must be denied reading a file and a
+# folder outside its container and opening a connection, near and far. The probe module
+# exists only in this build, which has its own DerivedData and is removed after.
+# Starts the app without a window, so it leaves the screen alone.
+cmd_probe() {
+  step "Probe of the modules' service"
+  require_project
+  require_signing
+  local derived="$BUILD_DIR/probe" rc=0
+  rm -rf "$derived"
+  # shellcheck disable=SC2016 # $(inherited) is for xcodebuild to expand.
+  xcodebuild_logged probe -project "$XCODE_PROJECT" -derivedDataPath "$derived" \
+    -scheme "$MAC_SCHEME" -configuration Release -destination "generic/platform=macOS" \
+    CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) TREEWISE_PROBE' build
+  local app="$derived/Build/Products/Release/$APP_NAME.app"
+  [[ -d "$app" ]] || fail "No $APP_NAME.app in ${derived#"$ROOT_DIR"/}"
+  "$ROOT_DIR/tools/check_module_service.sh" "$app"
+  # The check of a release looks for this id; it must be findable where the probe is.
+  grep -q "$PROBE_MODULE_ID" "$app/Contents/XPCServices/TreewiseModuleHost.xpc/Contents/MacOS/TreewiseModuleHost" \
+    || fail "The probe build's service does not name $PROBE_MODULE_ID"
+  local secret; secret="$(mktemp "${TMPDIR:-/tmp}/treewise-probe.XXXXXX")"
+  echo "The modules' service must not read this." >"$secret"
+  "$app/Contents/MacOS/$APP_NAME" -TreewiseProbe "$secret" >"$LOG_DIR/probe-run.log" 2>&1 || rc=$?
+  rm -f "$secret"
+  rm -rf "$derived"
+  local line
+  while IFS= read -r line; do [[ "$line" == denied* || "$line" == FAILED* ]] && info "$line"; done \
+    <"$LOG_DIR/probe-run.log"
+  ((rc == 0)) || fail "The modules' service was not denied everything; log: build/logs/probe-run.log"
+  ok "The modules' service is denied the file, the folder and the network"
+}
+
 cmd_benchmark() {
   local only="${1:-}"
   step "Benchmarks${only:+ ($only)}"
@@ -541,6 +581,9 @@ verify_release() {
     || fail "Gatekeeper rejects the app; log: build/logs/spctl.log"
   ok "Gatekeeper accepts $APP_NAME.app"
   "$ROOT_DIR/tools/check_module_service.sh" "$app"
+  ! grep -q "$PROBE_MODULE_ID" "$app/Contents/XPCServices/TreewiseModuleHost.xpc/Contents/MacOS/TreewiseModuleHost" \
+    || fail "The modules' service holds the sandbox probe; only tools/build.sh probe builds it"
+  ok "The modules' service holds no sandbox probe"
 }
 
 # Fails unless Gatekeeper lets the disk image open.
@@ -809,6 +852,7 @@ run_command() {
     test) timed test cmd_test "${2:-}" ;;
     crossvolume) timed crossvolume cmd_crossvolume ;;
     benchmark) timed benchmark cmd_benchmark "${2:-}" ;;
+    probe) timed probe cmd_probe ;;
     coverage) timed coverage cmd_coverage ;;
     build) timed build cmd_build ;;
     apptest) timed apptest cmd_apptest "${2:-}" ;;
