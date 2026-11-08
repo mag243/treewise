@@ -382,6 +382,13 @@ cmd_apptest() {
   xcode apptest -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" -resultBundlePath "$bundle" \
     -skip-testing:"$SCREENSHOT_TESTS" -skip-testing:"$BENCHMARK_TESTS" "${only[@]}" test
   ok "$MAC_SCHEME tests passed. Results: ${bundle#"$ROOT_DIR"/}"
+  slowest_tests "$bundle"
+}
+
+# Prints the slowest tests in result bundle [1]; a report that cannot be read fails nothing.
+slowest_tests() {
+  xcrun xcresulttool get test-results tests --path "$1" 2>/dev/null \
+    | python3 "$ROOT_DIR/tools/slowest-tests.py" || true
 }
 
 # The volume names the screenshots show instead of the sandbox's own (ADR 0041).
