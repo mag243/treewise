@@ -51,8 +51,9 @@
 #   benchmark   How long the add-ons take for a folder of 100 files (M7): the free
 #               module in the package, Advanced Folder Pattern in treewise-modules when
 #               it is beside this folder, and Suggest Names… in the app from the menu to
-#               the last proposal. Fails when a median is over its target (ADR 0073); the
-#               times go to build/reports/benchmarks.
+#               the last proposal. The package's medians fail over their targets (ADR 0073);
+#               the app's, which includes the UI test's own driving, is shown without a
+#               limit. The times go to build/reports/benchmarks.
 #               Takes the screen, as ci does; `benchmark package` leaves out the app and
 #               the screen.
 #   probe       A Release build with the sandbox probe (ADR 0057): checks that the modules'
@@ -344,21 +345,19 @@ cmd_benchmark() {
   xcode benchmark -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" \
     -resultBundlePath "$bundle" -only-testing:"$BENCHMARK_TESTS" test
   xcrun xcresulttool get test-results metrics --path "$bundle" >"$out/app-metrics.json"
-  # Suggest Names… for 100 files, from the menu to the last proposal: within 1 s (ADR 0073).
-  python3 - "$out/app-metrics.json" 1.0 <<'PY' || fail "Suggest Names… is over its target of 1 s"
+  # Suggest Names… for 100 files, from the menu to the last proposal. The time includes
+  # the UI test's own driving, so it sets no limit (ADR 0073).
+  python3 - "$out/app-metrics.json" <<'PY'
 import json, statistics, sys
-target, over = float(sys.argv[2]), False
 for test in json.load(open(sys.argv[1])):
     for run in test.get("testRuns", []):
         for metric in run.get("metrics", []):
             values = metric.get("measurements", [])
             if values:
                 median = statistics.median(values)
-                over = over or median > target
                 print(f"    {test['testIdentifier']}: {metric['displayName']} "
                       f"median {median:.3f} {metric.get('unitOfMeasurement', '')} "
                       f"of {len(values)}")
-sys.exit(1 if over else 0)
 PY
   ok "Times in ${out#"$ROOT_DIR"/}"
 }
