@@ -69,6 +69,33 @@ import TreewiseCore
                 == "Letter - Tax final")
     }
 
+    // MARK: Inside a choice of parts
+
+    private static let tax = "Tax - <Sales {year}.Q{seq:4}|Payroll {year}.{seq:12}[ correction]>"
+
+    @Test func makesAPartOfAChoiceWithAndWithoutTheText() throws {
+        let siblings = ["Tax - Payroll 2026.01", "Tax - Payroll 2026.01 correction"]
+        #expect(try name(Self.tax, current: "scan", siblings: siblings) == "Tax - Payroll 2026.02")
+        #expect(
+            try name(Self.tax, current: "payroll correction", siblings: siblings)
+                == "Tax - Payroll 2026.02 correction")
+    }
+
+    @Test(arguments: ["Tax - Payroll 2026.01", "Tax - Payroll 2026.01 correction"])
+    func recognizesAPartOfAChoiceWithAndWithoutTheText(_ name: String) throws {
+        #expect(try NameTemplate.parse(Self.tax, fields: Self.fields).get().matches(name))
+    }
+
+    @Test(arguments: [
+        "Tax <Sales[ {text}]|Payroll>", "Tax <Sales[ final|Payroll]>", "Tax <Sales[ final>]",
+    ])
+    func refusesOtherOptionalPartsInsideAChoice(_ text: String) {
+        guard case .failure = NameTemplate.parse(text, fields: Self.fields) else {
+            Issue.record("\(text) is accepted")
+            return
+        }
+    }
+
     @Test func recognizesANameWithAndWithoutThePart() throws {
         let template = try NameTemplate.parse(Self.payroll, fields: Self.fields).get()
         #expect(template.matches("Payroll 2026.02"))

@@ -115,18 +115,18 @@
         }
       }
     },
-    "A choice between < and > cannot hold [ ] or another choice" : {
+    "A choice between < and > cannot hold another choice, or [ ] with a field" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eine Auswahl zwischen < und > kann keine [ ] und keine andere Auswahl enthalten"
+            "value" : "Eine Auswahl zwischen < und > kann keine andere Auswahl und keine [ ] mit einem Feld enthalten"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Een keuze tussen < en > kan geen [ ] of andere keuze bevatten"
+            "value" : "Een keuze tussen < en > kan geen andere keuze bevatten, en geen [ ] met een veld"
           }
         }
       }

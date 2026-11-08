@@ -46,7 +46,7 @@ struct NameTemplateParser {
         case "<", ">":
             return readChoice(opening: character == "<")
         case "|" where alternatives != nil:
-            return endAlternative()
+            return optional == nil ? endAlternative() : .nestedChoiceOfParts
         default:
             if Self.pathSeparators.contains(character) { return .containsPathSeparator }
             pendingText.append(character)
@@ -56,7 +56,6 @@ struct NameTemplateParser {
 
     private mutating func readOptional(opening: Bool) -> NameTemplate.Problem? {
         if opening {
-            if alternatives != nil { return .nestedChoiceOfParts }
             guard optional == nil else { return .nestedOptionalParts }
             flushText()
             optional = []
@@ -65,8 +64,15 @@ struct NameTemplateParser {
         guard optional != nil else { return .unbalancedBrackets }
         // The text before `]` belongs to the part, so it is added before the part is read.
         flushText()
-        required.append(.optional(optional ?? []))
+        let part = optional ?? []
         optional = nil
+        guard alternatives != nil else {
+            required.append(.optional(part))
+            return nil
+        }
+        // Inside a choice of parts an optional part holds fixed text only (ADR 0064).
+        guard NameTemplate.fields(in: part).isEmpty else { return .nestedChoiceOfParts }
+        alternative.append(.optional(part))
         return nil
     }
 
@@ -79,6 +85,7 @@ struct NameTemplateParser {
             return nil
         }
         guard alternatives != nil else { return .unbalancedAngleBrackets }
+        if optional != nil { return .unbalancedBrackets }
         if let problem = endAlternative() { return problem }
         required.append(.alternatives(alternatives ?? []))
         alternatives = nil

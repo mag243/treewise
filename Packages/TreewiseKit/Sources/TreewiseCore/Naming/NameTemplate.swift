@@ -75,7 +75,8 @@ public struct NameTemplate: Hashable, Sendable {
         case unbalancedAngleBrackets
         /// A choice of parts has an empty part.
         case emptyAlternative
-        /// A choice of parts holds an optional part or another choice, or is inside one.
+        /// A choice of parts holds an optional part with a field, or another choice, or is inside
+        /// one. An optional part of fixed text only may stand in a part of a choice.
         case nestedChoiceOfParts
         /// The field is not one the module knows.
         case unknownField(String)

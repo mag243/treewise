@@ -56,7 +56,9 @@ enum NameReviewText {
         case .unbalancedAngleBrackets: String(localized: "Every < needs its >")
         case .emptyAlternative: String(localized: "A choice between < and > has an empty part")
         case .nestedChoiceOfParts:
-            String(localized: "A choice between < and > cannot hold [ ] or another choice")
+            String(
+                localized:
+                    "A choice between < and > cannot hold another choice, or [ ] with a field")
         case .unknownField(let field): String(localized: "This add-on has no field {\(field)}")
         case .containsPathSeparator: String(localized: "A pattern cannot hold :")
         case .invalidFormat:
