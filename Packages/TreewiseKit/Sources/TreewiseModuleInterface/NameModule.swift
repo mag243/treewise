@@ -4,7 +4,8 @@ import TreewiseCore
 /// A module that finds what a file's name should say (ADR 0057). It receives data
 /// and returns the values of its fields; Treewise makes the names from them with the
 /// user's template. It gets no way to reach a file, and on the Mac it runs in a service
-/// without access to the network or the user's files.
+/// without access to the network or the user's files. Treewise asks it about several files
+/// at the same time (ADR 0073), so it keeps no state between requests.
 ///
 /// This interface is internal to Treewise: it has no stability promise, and the
 /// official app loads no third-party modules (ADR 0055).

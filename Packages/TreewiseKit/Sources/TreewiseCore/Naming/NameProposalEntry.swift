@@ -65,6 +65,9 @@ extension NameProposalSession {
         /// Whether no module that is on handles this item, which then stays as it is.
         public internal(set) var isOutOfScope = false
         var selection = Selection.none
+        /// Whether the user stepped to the current option. Until then a row that waits
+        /// shows the best option, whichever module answered first (ADR 0073).
+        var isSteppedTo = false
 
         /// Creates an entry without proposals.
         public init(id: FileItem.ID, folder: FileItem.ID, originalName: String, kind: ItemKind) {
@@ -133,6 +136,7 @@ extension NameProposalSession {
             selection =
                 next < proposals.count ? .proposal(key: Self.key(proposals[next].name)) : .edit
             state = .pending
+            isSteppedTo = true
         }
 
         /// The form two names share when the file system treats them as the same.

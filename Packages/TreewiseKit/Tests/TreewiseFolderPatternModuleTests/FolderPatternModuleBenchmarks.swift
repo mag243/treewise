@@ -5,7 +5,7 @@ import TreewiseFolderPatternModule
 import TreewiseModuleInterface
 
 extension Tag {
-    /// Measurements of how long a module takes, which set no limit yet.
+    /// Measurements of how long a module takes, against its targets (ADR 0073).
     @Tag static var benchmark: Tag
 }
 
@@ -24,6 +24,10 @@ struct FolderPatternModuleBenchmarks {
     private static let fittingCount = 60
     /// How often each measurement runs; the median counts.
     private static let runs = 11
+    /// The targets of ADR 0073 for 100 files: a pattern within 100 ms, and every file's
+    /// values within 1 s, which leaves room for the service.
+    private static let recognizingTarget = Duration.milliseconds(100)
+    private static let valuesTarget = Duration.seconds(1)
     private static let folder = "Holiday"
 
     private let module = FolderPatternModule()
@@ -41,7 +45,9 @@ struct FolderPatternModuleBenchmarks {
             _ = module.derivedTemplates(
                 fromNames: Self.names, folderName: Self.folder, licence: .none)
         }
-        Self.record("Free module: recognizing a pattern in \(Self.fileCount) names", median)
+        Self.record(
+            "Free module: recognizing a pattern in \(Self.fileCount) names", median,
+            target: Self.recognizingTarget)
     }
 
     @Test func valuesForEveryFile() async throws {
@@ -59,7 +65,8 @@ struct FolderPatternModuleBenchmarks {
             durations.append(ContinuousClock.now - start)
         }
         Self.record(
-            "Free module: values for \(Self.fileCount) files", durations.sorted()[Self.runs / 2])
+            "Free module: values for \(Self.fileCount) files", durations.sorted()[Self.runs / 2],
+            target: Self.valuesTarget)
     }
 
     private static func median(_ body: () -> Void) -> Duration {
@@ -67,7 +74,9 @@ struct FolderPatternModuleBenchmarks {
         return durations.sorted()[runs / 2]
     }
 
-    private static func record(_ what: String, _ duration: Duration) {
+    /// Records a measurement, and fails when it is over its target.
+    private static func record(_ what: String, _ duration: Duration, target: Duration) {
+        #expect(duration <= target, "\(what) takes longer than \(target)")
         let milliseconds = duration.formatted(
             .units(allowed: [.milliseconds], fractionalPart: .show(length: 2)))
         Attachment.record("\(what): \(milliseconds) (median of \(runs))", named: "\(what).txt")

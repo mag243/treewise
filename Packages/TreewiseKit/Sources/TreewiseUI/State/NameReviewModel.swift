@@ -108,7 +108,7 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
 @MainActor
 @Observable
 public final class NameReviewModel {
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "NameReview")
+    static let logger = Logger(subsystem: "me.m-domain.treewise", category: "NameReview")
 
     /// The folder under review.
     public let folder: FileItem
@@ -361,38 +361,5 @@ public final class NameReviewModel {
         try? NameTemplate.parse(
             text, fields: description.fields + NameTemplate.Field.suppliedByTreewise
         ).get()
-    }
-
-    /// Runs while a module's answer arrives; one that fails leaves the rest.
-    func ask(_ pending: [(item: FileItem, module: NameReviewModule)]) {
-        guard !pending.isEmpty else { return }
-        let previous = reading
-        readingCount += pending.count
-        reading = Task {
-            await previous?.value
-            for (item, module) in pending where !Task.isCancelled {
-                await read(item, module)
-                readingCount -= 1
-            }
-        }
-    }
-
-    private func read(_ item: FileItem, _ module: NameReviewModule) async {
-        let visible = folderItems.filter { !$0.isHidden }
-        var request = await dependencies.makeRequest(
-            item, visible, module.description.neededContent)
-        request.folderName = folder.name
-        request.pattern = module.template?.text
-        request.licence = licence
-        do {
-            let values = try await dependencies.host.fieldValues(
-                moduleID: module.id, request: request)
-            answers[item.id, default: [:]][module.id] = values
-            refreshProposals(of: item, from: module.id)
-            refreshConflicts()
-        } catch {
-            Self.logger.error("A module gave no answer: \(String(describing: error))")
-            moduleFailed = true
-        }
     }
 }

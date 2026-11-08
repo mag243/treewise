@@ -1,7 +1,10 @@
 extension NameProposalSession.Entry {
     /// Adds proposals without changing what is chosen, except that the first valid
-    /// proposal becomes the choice while there is none.
+    /// proposal becomes the choice while there is none. A row that waits and that the user
+    /// did not step through shows the best proposal once new ones arrive, so the order in
+    /// which the modules answer does not matter (ADR 0073).
     mutating func add(_ newProposals: [NameProposal], moduleOrder: [String]) {
+        if !newProposals.isEmpty { letBestFollow() }
         for proposal in newProposals { add(proposal, moduleOrder: moduleOrder) }
         let rank = { (option: Option) in
             moduleOrder.firstIndex { option.moduleIDs.first == $0 } ?? moduleOrder.count
@@ -20,6 +23,7 @@ extension NameProposalSession.Entry {
     mutating func chooseFirstProposal(moduleOrder: [String]) {
         guard case .proposal = selection else { return }
         selection = .none
+        isSteppedTo = false
         add([], moduleOrder: moduleOrder)
     }
 
@@ -32,12 +36,14 @@ extension NameProposalSession.Entry {
             proposals[index].moduleIDs.removeAll { $0 == moduleID }
         }
         proposals.removeAll { $0.moduleIDs.isEmpty }
+        if !newProposals.isEmpty { letBestFollow() }
         for proposal in newProposals { add(proposal, moduleOrder: moduleOrder) }
         // A chosen proposal that went makes way for the best one now, which needs a look
         // of its own: an approval is for the name the user saw.
         if case .proposal = selection, currentName == nil {
             selection = .none
             state = .pending
+            isSteppedTo = false
         }
         add([], moduleOrder: moduleOrder)
     }
@@ -57,6 +63,7 @@ extension NameProposalSession.Entry {
         edit = nil
         selection = .none
         state = .pending
+        isSteppedTo = false
         selectBestIfNone()
     }
 
@@ -86,8 +93,17 @@ extension NameProposalSession.Entry {
     /// in case stays the user's, because that is usually deliberate.
     private mutating func mergeEdit() {
         guard let text = edit, proposals.contains(where: { $0.name == text }) else { return }
-        if selection == .edit { selection = .proposal(key: Self.key(text)) }
+        // A typed name equal to a proposal is the user's choice of it.
+        if selection == .edit {
+            selection = .proposal(key: Self.key(text))
+            isSteppedTo = true
+        }
         edit = nil
+    }
+
+    /// Lets a row that waits, and whose proposal the user did not choose, take the best.
+    private mutating func letBestFollow() {
+        if state == .pending, !isSteppedTo, case .proposal = selection { selection = .none }
     }
 
     private mutating func selectBestIfNone() {
