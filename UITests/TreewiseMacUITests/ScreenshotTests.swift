@@ -13,6 +13,10 @@ final class ScreenshotTests: XCTestCase {
     /// details pane's preview load in the background and offer nothing to
     /// wait for. A screenshot tests no behaviour, so a fixed pause is fine.
     private static let settle: TimeInterval = 2
+    /// How much the overview of names grows, so its files that already fit show too.
+    private static let reviewGrowth = CGVector(dx: 260, dy: 200)
+    /// How long the corner of a window is held before it is dragged.
+    private static let dragHold: TimeInterval = 0.1
 
     // Each scene in light and in dark, to choose from for the page.
 
@@ -74,7 +78,7 @@ final class ScreenshotTests: XCTestCase {
     }
 
     /// The overview of a folder's names, with the pattern the free add-on recognized in its
-    /// header, a name with a typo offered written right and one offered its pattern.
+    /// header, the files to rename and, opened below them, the files that already fit.
     @MainActor
     private func nameSuggestions(dark: Bool) throws {
         let app = try launch(dark: dark)
@@ -97,6 +101,13 @@ final class ScreenshotTests: XCTestCase {
         // The list gets the whole width, so the proposed names show in full.
         let hidePreview = review.buttons["Hide Preview"]
         if hidePreview.exists { hidePreview.click() }
+        let corner = review.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 1))
+        corner.press(forDuration: Self.dragHold, thenDragTo: corner.withOffset(Self.reviewGrowth))
+        let alreadyFit = review.buttons.matching(
+            NSPredicate(format: "label ENDSWITH 'files already fit'")
+        ).firstMatch
+        XCTAssertTrue(alreadyFit.waitForExistence(timeout: Self.timeout), "the files that fit")
+        alreadyFit.click()
         settleScene()
         keep(review.screenshot(), as: name("05-names", dark: dark))
     }
