@@ -99,6 +99,7 @@
       }
     },
     "An archive can’t be changed. Extract it first." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -110,6 +111,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Een archief kan niet worden gewijzigd. Pak het eerst uit."
+          }
+        }
+      }
+    },
+    "An archive of this kind can’t be changed. Extract it first." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Archiv dieser Art kann nicht geändert werden. Entpacke es zuerst."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een archief van dit type kan niet worden gewijzigd. Pak het eerst uit."
           }
         }
       }
@@ -712,6 +729,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "‘%@’ kan niet naar de prullenmand, omdat het volume geen prullenmand heeft."
+          }
+        }
+      }
+    },
+    "“%@” changed since, so this can’t be undone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde inzwischen geändert, daher kann dies nicht widerrufen werden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is sindsdien gewijzigd, dus dit kan niet ongedaan worden gemaakt."
           }
         }
       }

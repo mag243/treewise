@@ -222,6 +222,34 @@ extension LaunchTests {
         XCTAssertLessThan(Date().timeIntervalSince(start), Self.launchTimeout, "without delay")
     }
 
+    /// A file pasted into a zip lands in it, and undo takes it out again.
+    @MainActor
+    func testAFilePastedIntoAZipLandsAndUndoTakesItOut() throws {
+        let root = try XCTUnwrap(self.root)
+        try XCTUnwrap(Data(base64Encoded: Self.archive))
+            .write(to: root.appendingPathComponent("Photos.zip"))
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let notes = window.tables.staticTexts["Notes.md"]
+        XCTAssertTrue(notes.appeared(timeout: Self.launchTimeout))
+        notes.click()
+        app.typeKey("c", modifierFlags: .command)
+        window.tables.staticTexts["Photos.zip"].doubleClick()
+        XCTAssertTrue(
+            window.tables.staticTexts["inside.txt"].appeared(timeout: Self.launchTimeout))
+
+        app.typeKey("v", modifierFlags: .command)
+
+        XCTAssertTrue(
+            window.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout),
+            "the file is in the zip")
+        app.typeKey("z", modifierFlags: .command)
+        XCTAssertTrue(
+            window.tables.staticTexts["Notes.md"].disappeared(timeout: Self.launchTimeout),
+            "undo takes it out")
+        XCTAssertTrue(window.tables.staticTexts["inside.txt"].exists, "the rest stays")
+    }
+
     /// Drags a file out of a zip to Finder: a folder outside the boundary
     /// refuses it and leaves dragging working, a folder inside gets the file.
     @MainActor

@@ -51,7 +51,7 @@ public enum ConflictResolver {
     }
 
     /// The form two names share when the file system treats them as the same.
-    static func comparisonKey(_ name: String) -> String {
+    public static func comparisonKey(_ name: String) -> String {
         name.precomposedStringWithCanonicalMapping.folding(options: .caseInsensitive, locale: nil)
     }
 }

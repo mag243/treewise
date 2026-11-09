@@ -24,6 +24,7 @@ extension ChangingFileSystem: ArchiveOperating {
         onProgress: @escaping ArchiveProgressHandler, control: TransferControl
     ) async throws -> UndoRecord {
         try await prepare(onProgress: onProgress, control: control)
+        recordEdit(edit)
         return .none
     }
 

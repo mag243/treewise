@@ -164,6 +164,34 @@
         }
 
         @Test(arguments: changeable.map(\.name))
+        func relocatesSeveralInOneChange(_ name: String) async throws {
+            let directory = try TempDirectory()
+            try makeArchive(directory, name, options: try options(name))
+
+            try await apply(
+                .relocations([
+                    ArchiveRelocation(from: "Photos/a.txt", to: "x.txt"),
+                    ArchiveRelocation(from: "Photos/run.sh", to: "y.sh"),
+                ]), to: name, in: directory)
+
+            let paths = try listed(directory, name)
+            #expect(paths.isSuperset(of: ["x.txt", "y.sh"]))
+            #expect(!paths.contains("Photos/a.txt"))
+        }
+
+        @Test(arguments: changeable.map(\.name))
+        func aRelocationReplacesWhatHasTheNewPath(_ name: String) async throws {
+            let directory = try TempDirectory()
+            try makeArchive(directory, name, options: try options(name))
+
+            try await apply(
+                .relocate(from: "Photos/a.txt", to: "Photos/run.sh"), to: name, in: directory)
+
+            #expect(!(try listed(directory, name).contains("Photos/a.txt")))
+            #expect(try contents(directory, name, "Photos/run.sh") == "hello")
+        }
+
+        @Test(arguments: changeable.map(\.name))
         func makesANewFolder(_ name: String) async throws {
             let directory = try TempDirectory()
             try makeArchive(directory, name, options: try options(name))

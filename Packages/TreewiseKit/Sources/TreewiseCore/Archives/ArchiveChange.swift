@@ -4,8 +4,14 @@ public enum ArchiveChange: Hashable, Sendable {
     case add([String])
     /// These paths go, with everything below them.
     case remove([String])
-    /// A file or folder goes to another path, with everything below it.
-    case relocate(from: String, to: String)
+    /// Files and folders go to other paths, with everything below them. What
+    /// already has such a path goes.
+    case relocations([ArchiveRelocation])
+
+    /// One file or folder goes to another path.
+    public static func relocate(from source: String, to target: String) -> ArchiveChange {
+        .relocations([ArchiveRelocation(from: source, to: target)])
+    }
 }
 
 extension ArchiveTree {
@@ -18,11 +24,14 @@ extension ArchiveTree {
             for path in added { result.formUnion(Self.withFolders(path)) }
         case .remove(let removed):
             for path in removed { result = result.filter { !Self.isAtOrBelow($0, path) } }
-        case .relocate(let source, let target):
-            let moved = result.filter { Self.isAtOrBelow($0, source) }
-            result.subtract(moved)
-            for path in moved {
-                result.formUnion(Self.withFolders(target + path.dropFirst(source.count)))
+        case .relocations(let moves):
+            for move in moves {
+                let moved = result.filter { Self.isAtOrBelow($0, move.from) }
+                result = result.filter { !Self.isAtOrBelow($0, move.to) }
+                result.subtract(moved)
+                for path in moved {
+                    result.formUnion(Self.withFolders(move.to + path.dropFirst(move.from.count)))
+                }
             }
         }
         return withoutEmptiedImplicitFolders(result)

@@ -54,8 +54,9 @@ extension BrowserState {
         guard let clipboard, canAddItems else { return }
         let folder = layout.focusedPane.activeTab.folder
         let done = await transfer(
-            clipboard.items, to: folder, mode: clipboard.transferMode, resolver: resolver,
-            undoManager: undoManager)
+            clipboard.items, to: folder,
+            mode: await pasteMode(of: clipboard.items, into: folder, cut: clipboard.mode == .cut),
+            resolver: resolver, undoManager: undoManager)
         if done && clipboard.mode == .cut { self.clipboard = nil }
     }
 
@@ -91,8 +92,21 @@ extension BrowserState {
         guard let clipboard else { return }
         let folder = layout.focusedPane.activeTab.folder
         let done = await transfer(
-            clipboard.items, to: folder, mode: .move, resolver: resolver, undoManager: undoManager)
+            clipboard.items, to: folder,
+            mode: await pasteMode(of: clipboard.items, into: folder, cut: true),
+            resolver: resolver, undoManager: undoManager)
         if done { self.clipboard = nil }
+    }
+
+    /// How items land in a folder: cut items move, unless that would cross
+    /// the edge of an archive (ADR 0078).
+    private func pasteMode(of items: [FileItem], into folder: FileItem.ID, cut: Bool) async
+        -> TransferMode
+    {
+        guard let target = try? await fileSystem.item(at: folder) else {
+            return cut ? .move : .copy
+        }
+        return TransferPlanner.pasteMode(of: items, onto: target, cut: cut)
     }
 
     /// Copies or moves the selection into `folder`, such as the folder of the
@@ -147,6 +161,9 @@ extension BrowserState {
     public func newFolder(undoManager: UndoManager?, locale: Locale = .current) async -> FileItem? {
         guard canAddItems else { return nil }
         let folder = layout.focusedPane.activeTab.folder
+        if let place = ArchivePath(folder) {
+            return await newFolderInArchive(at: place, undoManager: undoManager, locale: locale)
+        }
         let result = await perform(name: Self.actionName("New Folder"), undoManager: undoManager) {
             try await $0.createUntitledFolder(in: folder, locale: locale)
         }
@@ -158,6 +175,10 @@ extension BrowserState {
     /// Renames an item, unless it is one that keeps its name (ADR 0049).
     public func rename(_ item: FileItem, to name: String, undoManager: UndoManager?) async {
         guard name != item.name, item.canBeRenamedOrTrashed else { return }
+        if let place = ArchivePath(item.id) {
+            await renameInArchive(item, at: place, to: name, undoManager: undoManager)
+            return
+        }
         let result = await perform(name: Self.actionName("Rename"), undoManager: undoManager) {
             try await $0.rename(item, to: name)
         }
@@ -173,6 +194,13 @@ extension BrowserState {
         guard canTrashSelection else { return }
         let items = selectedItems
         let ids = items.map(\.id)
+        let places = items.compactMap { ArchivePath($0.id) }
+        if !places.isEmpty {
+            if await removeFromArchive(places, undoManager: undoManager) {
+                clipboard = clipboard?.removing(Set(ids))
+            }
+            return
+        }
         let trashed = await perform(
             name: Self.actionName("Move to Trash"), undoManager: undoManager
         ) {
@@ -204,6 +232,10 @@ extension BrowserState {
         resolver: any ConflictResolving,
         undoManager: UndoManager?
     ) async -> Bool {
+        if folder.isInsideArchive {
+            return await transferIntoArchive(
+                items, to: folder, mode: mode, resolver: resolver, undoManager: undoManager)
+        }
         // A paste has no drop rules before it; items may come from outside Treewise.
         guard items.allSatisfy({ mode == .move ? $0.isMovable : $0.isCopyable }) else {
             return false

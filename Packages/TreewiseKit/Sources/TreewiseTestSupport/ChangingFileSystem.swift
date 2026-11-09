@@ -14,6 +14,7 @@ public final class ChangingFileSystem: FileOperating {
         var failure: (any Error)?
         var isHeld = false
         var released: [FileItem.ID] = []
+        var edits: [ArchiveEdit] = []
 
         mutating func newID(_ prefix: String) -> FileItem.ID {
             defer { nextNumber += 1 }
@@ -35,6 +36,15 @@ public final class ChangingFileSystem: FileOperating {
 
     func throwFailureIfSet() throws {
         if let failure = state.withLock({ $0.failure }) { throw failure }
+    }
+
+    /// The changes made to archives, in order.
+    public var appliedEdits: [ArchiveEdit] {
+        state.withLock { $0.edits }
+    }
+
+    func recordEdit(_ edit: ArchiveEdit) {
+        state.withLock { $0.edits.append(edit) }
     }
 
     func recordRelease(of archive: FileItem.ID) {

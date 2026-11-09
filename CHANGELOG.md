@@ -10,7 +10,7 @@ All notable changes to Treewise are recorded here. The format follows
 - Extract All… unpacks zip, tar, `.tar.gz`, `.tar.bz2`, `.tar.xz`, 7z, rar, iso, cpio and xar archives to a new folder, from the command bar, the context menu and the File menu. Nothing lands in the destination unless the whole archive extracted.
 - Compress to ZIP puts an archive next to the selection and starts renaming it; Compress to also makes 7z and `.tar.gz` files. A zip or 7z leaves out `__MACOSX`, `._` files, `.DS_Store` and extended attributes.
 - Suggest Names for Whole Folder… in the context menu and the File menu, for a folder so full that a right click always lands on a file.
-- A double click opens an archive as a folder, and the sidebar's tree unfolds it. Inside it you can browse, sort, search, preview with Quick Look and copy or drag files out; Extract All extracts that archive. An archive is read-only for now.
+- A double click opens an archive as a folder, and the sidebar's tree unfolds it. Inside it you can browse, sort, search, preview with Quick Look and copy or drag files out; Extract All extracts that archive. Zip, tar and 7z archives can be changed like a folder: add, replace, rename, move, copy, make folders and delete, with undo. A failed change leaves the archive as it was, and the first change puts a copy of the original in the Trash. Rar, iso, cpio and xar stay read-only.
 - The sidebar's tree opens down to the folder or archive a tab shows; Settings can turn this off.
 
 ### Fixed

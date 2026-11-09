@@ -5,7 +5,7 @@ import TreewiseModuleInterface
 
 extension BrowserState {
     /// Whether names can be suggested for what the focused pane shows.
-    public var canSuggestNames: Bool { operations != nil && canAddItems }
+    public var canSuggestNames: Bool { operations != nil && canAddItems && shownArchive == nil }
 
     /// A review of the selection, or of the focused folder's files when nothing is selected.
     public func makeNameReview(

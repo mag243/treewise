@@ -77,6 +77,15 @@ public struct ArchivePath: Hashable, Sendable {
         VolumeID("archive:" + archive.rawValue)
     }
 
+    /// The place with another name in the same folder.
+    ///
+    /// Precondition: this is not the top level.
+    public func sibling(named name: String) -> ArchivePath {
+        precondition(!isTopLevel, "the top level has no siblings")
+        let folder = Self.withoutLastPart(of: entry)
+        return ArchivePath(archive: archive, entry: folder.isEmpty ? name : folder + "/" + name)
+    }
+
     /// The place of an item directly inside this one.
     public func child(_ name: String) -> ArchivePath {
         ArchivePath(archive: archive, entry: isTopLevel ? name : entry + String(Self.slash) + name)

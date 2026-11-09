@@ -46,11 +46,21 @@ enum LaunchOptions {
     }
 
     /// Where the sidebar's folders and volumes come from, and the boundary.
+    /// Where a run with `-TreewiseRoot` puts what would go to the Trash, so a
+    /// UI test leaves the real Trash alone.
+    private static func trashBeside(_ root: URL, _ file: URL) throws {
+        let trash = root.appendingPathExtension("trash")
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        try FileManager.default.moveItem(
+            at: file, to: trash.appendingPathComponent(UUID().uuidString + file.lastPathComponent))
+    }
+
     static var locations: LocalFileSystem.Locations {
         if let root {
             return LocalFileSystem.Locations(
                 home: root, applications: root.appendingPathComponent("Applications"),
-                mountedVolumes: { [] }, boundary: [root])
+                mountedVolumes: { [] }, boundary: [root],
+                moveToTrash: { file in try trashBeside(root, file) })
         }
         let volumes = sandboxVolumes
         guard let first = volumes.first else { return .system }

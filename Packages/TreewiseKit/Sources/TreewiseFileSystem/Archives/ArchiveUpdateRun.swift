@@ -58,7 +58,7 @@
         /// a zip, for names it can read from a list of lines.
         var usesZip: Bool {
             guard job.url.pathExtension.lowercased() == Self.zipExtension else { return false }
-            if case .relocate = job.edit { return false }
+            if case .relocations = job.edit { return false }
             return !stagedNames.contains { $0.contains("\n") }
                 && !namesToDrop.contains { $0.contains("\n") }
         }
@@ -110,10 +110,12 @@
                     namesToDrop.map { "^" + Self.literalPattern($0) }, named: "exclude")
                 arguments += ["-X", list.path]
             }
-            if case .relocate(let source, let target) = job.edit,
-                let rule = relocationRule(from: source, to: target)
-            {
-                arguments += ["-s", rule]
+            if case .relocations(let moves) = job.edit {
+                for move in moves {
+                    if let rule = relocationRule(from: move.from, to: move.to) {
+                        arguments += ["-s", rule]
+                    }
+                }
             }
             if !stagedNames.isEmpty {
                 let names = workspace.url.appendingPathComponent("names")
@@ -138,7 +140,7 @@
             switch edit {
             case .add, .newFolder: .add(added)
             case .remove(let paths): .remove(paths)
-            case .relocate(let source, let target): .relocate(from: source, to: target)
+            case .relocations(let moves): .relocations(moves)
             }
         }
 
@@ -151,7 +153,11 @@
                 return stagedNames.filter { !$0.hasSuffix("/") }
                     .compactMap { job.tree.node(at: $0)?.entry?.storedName }
                     .map(Self.withoutSlash)
-            case .relocate, .newFolder:
+            case .relocations(let moves):
+                let sources = moves.flatMap { job.tree.storedNames(atOrBelow: $0.from) }
+                return moves.flatMap { job.tree.storedNames(atOrBelow: $0.to) }
+                    .filter { !sources.contains($0) }.map(Self.withoutSlash)
+            case .newFolder:
                 return []
             }
         }
@@ -197,7 +203,7 @@
             case .newFolder(let path):
                 try FileManager.default.createDirectory(
                     at: staging.appendingPathComponent(path), withIntermediateDirectories: true)
-            case .remove, .relocate:
+            case .remove, .relocations:
                 return []
             }
             return stagedPaths(in: staging)

@@ -18,14 +18,16 @@ extension BrowserState {
         return selectedItems.first
     }
 
-    private var shownArchive: FileItem.ID? {
+    /// The archive the focused pane shows inside of, if it does.
+    var shownArchive: FileItem.ID? {
         ArchivePath(layout.focusedPane.activeTab.folder)?.archive
     }
 
     /// Whether the selection can go into a new archive beside it (ADR 0074).
     public var canCompressSelection: Bool {
         let items = selectedItems
-        return archives != nil && canAddItems && !items.isEmpty && items.allSatisfy(\.isMovable)
+        return archives != nil && canAddItems && shownArchive == nil && !items.isEmpty
+            && items.allSatisfy(\.isMovable)
             && Set(items.map(\.parentID)).count == 1
     }
 
@@ -68,8 +70,7 @@ extension BrowserState {
         renameRequest = created.id
     }
 
-    /// Runs an archive operation as the window's transfer, with the progress
-    /// panel, pause and stop. A stop is no failure: nothing new exists then.
+    /// Runs an archive operation that makes one item as the window's transfer.
     ///
     /// - Returns: what the operation made, or `nil` when it failed or stopped.
     private func runArchiveOperation(
@@ -81,6 +82,27 @@ extension BrowserState {
             async throws -> FileItem
     ) async -> FileItem? {
         guard let archives else { return nil }
+        @Sendable func makeOne(
+            reporter: @escaping ArchiveProgressHandler, control: TransferControl
+        ) async throws -> OperationResult {
+            let created = try await work(archives, reporter, control)
+            return OperationResult(items: [created], undo: .trash([created.id]))
+        }
+        let result = await runArchiveWork(
+            name: name, kind: kind, undoManager: undoManager, makeOne)
+        return result?.items.first
+    }
+
+    /// Runs archive work as the window's transfer, with the progress panel,
+    /// pause and stop. A stop is no failure: nothing has changed then.
+    ///
+    /// - Returns: what the work came to, or `nil` when it failed.
+    func runArchiveWork(
+        name: String, kind: OperationProgress.Kind = .compressing, undoManager: UndoManager?,
+        _ work:
+            @escaping @Sendable (@escaping ArchiveProgressHandler, TransferControl) async throws
+            -> OperationResult
+    ) async -> OperationResult? {
         // A window runs one transfer at a time; a second one waits for the first.
         if let running = runningTransfer { _ = await running.value }
         let control = TransferControl()
@@ -88,8 +110,7 @@ extension BrowserState {
         let task = Task {
             await perform(name: name, undoManager: undoManager) { _ in
                 do {
-                    let created = try await work(archives, reporter, control)
-                    return OperationResult(items: [created], undo: .trash([created.id]))
+                    return try await work(reporter, control)
                 } catch FileSystemError.cancelled {
                     return OperationResult(items: [], undo: .none, stopped: true)
                 }
@@ -103,7 +124,7 @@ extension BrowserState {
         runningControl = nil
         progress = nil
         isPaused = false
-        return result?.items.first
+        return result
     }
 
     /// Passes an archive operation's progress on while it runs; what arrives
