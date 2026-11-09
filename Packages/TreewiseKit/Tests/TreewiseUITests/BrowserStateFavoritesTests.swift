@@ -140,7 +140,7 @@ import TreewiseUI
 
         undoManager.undo()
 
-        #expect(await eventually { browser.favorites.map(\.name).contains("Work") })
+        #expect(await eventuallyOnDisk { browser.favorites.map(\.name).contains("Work") })
     }
 
     @Test func aFavoriteFollowsAMoveByPaste() async throws {

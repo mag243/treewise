@@ -28,6 +28,25 @@ extension BrowserState {
     }
 }
 
+/// The longest a test waits for a change on the real disk.
+private let diskDeadline = Duration.seconds(30)
+/// How long to wait before looking again at a change on the real disk.
+private let diskPollInterval = Duration.milliseconds(10)
+
+/// Waits until `condition` holds, for a test whose change really goes to the
+/// disk: it passes through the serial queue of file operations, behind whatever
+/// else is on it, so a number of turns says nothing about how far it got.
+/// Returns as soon as it holds; the deadline only ends a test that fails.
+@MainActor
+func eventuallyOnDisk(_ condition: @MainActor () -> Bool) async -> Bool {
+    let clock = ContinuousClock()
+    let deadline = clock.now.advanced(by: diskDeadline)
+    while !condition() && clock.now < deadline {
+        try? await Task.sleep(for: diskPollInterval)
+    }
+    return condition()
+}
+
 /// Lets other tasks run until `condition` holds, without waiting on the clock.
 /// Returns whether it held before the tasks had a thousand turns.
 @MainActor
