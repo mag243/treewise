@@ -288,9 +288,12 @@ extension LaunchTests {
             .firstMatch
         XCTAssertTrue(review.appeared(timeout: Self.launchTimeout), "the overview opens")
         // The odd photo has only the date of the file, which Approve All takes too (ADR 0058).
-        let approve = review.buttons["Approve All"]
-        XCTAssertTrue(approve.appeared(timeout: Self.launchTimeout), "a name is proposed")
-        approve.click()
+        // The button shows before the proposals do, and approves only what is proposed.
+        let proposal = review.outlines.descendants(matching: .any).matching(
+            NSPredicate(format: "value ENDSWITH 'Lighthouse.heic' AND value != 'Lighthouse.heic'")
+        ).firstMatch
+        XCTAssertTrue(proposal.appeared(timeout: Self.launchTimeout), "a name is proposed")
+        review.buttons["Approve All"].click()
         let rename = review.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Rename 1'"))
             .firstMatch
         XCTAssertTrue(app.eventually { rename.exists && rename.isEnabled }, "the name is approved")
