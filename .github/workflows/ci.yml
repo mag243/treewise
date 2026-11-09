@@ -1,7 +1,7 @@
-# Builds and tests Treewise when started by hand (Actions > CI > Run workflow).
-# Not on every push: macOS runner minutes are limited on the free plan
-# (ADR 0010). Day-to-day gating is local: tools/build.sh ci and the git hooks.
-# A release tag runs release.yml, which tests too (ADR 0014).
+# Builds and tests Treewise when started by hand after a push
+# (Actions > CI > Run workflow; ADR 0010, 0075). Before a push the gate is local:
+# tools/build.sh verify and the git hooks. A release needs tools/build.sh ci
+# on the owner's Mac.
 name: CI
 
 on:
