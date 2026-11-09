@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// Dragging from and onto the icon view (ADR 0003, ADR 0025), as in the list:
 /// tiles go on the drag pasteboard as file URLs; a drop on a folder's tile
@@ -9,7 +10,7 @@ extension FileGridCoordinator {
         _ collectionView: NSCollectionView, pasteboardWriterForItemAt indexPath: IndexPath
     ) -> (any NSPasteboardWriting)? {
         guard items.indices.contains(indexPath.item) else { return nil }
-        return URL(fileURLWithPath: items[indexPath.item].id.rawValue) as NSURL
+        return items[indexPath.item].id.diskURL as NSURL?
     }
 
     func collectionView(

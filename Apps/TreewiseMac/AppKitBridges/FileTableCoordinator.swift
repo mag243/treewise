@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// Feeds the list's table view and turns its events into `FileTableActions`.
 @MainActor
@@ -137,7 +138,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         cell.textField?.stringValue = text(of: item, in: column)
         cell.alphaValue = cutItems.contains(item.id) ? Self.cutAlpha : 1
         if column == .name {
-            let icon = NSWorkspace.shared.icon(forFile: item.id.rawValue)
+            let icon = ItemIcon.image(for: item)
             icon.size = Self.iconSize
             cell.imageView?.image = icon
             (cell as? FileNameCell)?.showCloudStatus(
@@ -157,7 +158,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
 
     private func selectedURLs() -> [URL] {
         (table?.selectedRowIndexes ?? []).compactMap {
-            items.indices.contains($0) ? URL(fileURLWithPath: items[$0].id.rawValue) : nil
+            items.indices.contains($0) ? items[$0].id.diskURL : nil
         }
     }
 

@@ -151,7 +151,7 @@ struct SettingsView: View {
 
     private var startFolderName: String {
         guard let folder = settings.startFolder else { return String(localized: "Home") }
-        return URL(fileURLWithPath: folder.rawValue).lastPathComponent
+        return folder.urlShownInFinder.lastPathComponent
     }
 
     private var isRefusing: Binding<Bool> {

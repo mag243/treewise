@@ -20,7 +20,7 @@ struct ArchiveCommands {
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
-        panel.directoryURL = URL(fileURLWithPath: parent.rawValue)
+        panel.directoryURL = parent.diskURL
         panel.prompt = String(localized: "Extract")
         panel.message = String(localized: "Choose where to extract “\(archive.name)”.")
         let finish: (NSApplication.ModalResponse) -> Void = { [browser, undoManager] response in

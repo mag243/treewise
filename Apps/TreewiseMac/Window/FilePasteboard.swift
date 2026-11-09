@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// The general pasteboard as Treewise uses it for files (PLAN.md §4.3): cut and
 /// copy put the items' file URLs on it, so pasting in Finder works; files put
@@ -13,7 +14,7 @@ enum FilePasteboard {
     static func write(_ items: [FileItem]) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.writeObjects(items.map { URL(fileURLWithPath: $0.id.rawValue) as NSURL })
+        pasteboard.writeObjects(items.compactMap { $0.id.diskURL as NSURL? })
         ownChangeCount = pasteboard.changeCount
     }
 

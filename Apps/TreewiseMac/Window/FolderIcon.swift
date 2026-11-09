@@ -23,7 +23,7 @@ struct FolderIcon: View {
                 ?? NSImage()
         }
         if isHome(id) { return house }
-        return NSWorkspace.shared.icon(forFile: id.rawValue)
+        return ItemIcon.image(for: id)
     }
 
     /// Whether the item is the home folder, which shows a house.

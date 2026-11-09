@@ -1,6 +1,7 @@
 import AppKit
 import TreewiseCore
 import TreewiseFileSystem
+import TreewiseUI
 import UniformTypeIdentifiers
 import os
 
@@ -42,7 +43,8 @@ enum PromisedDrop {
         else { return false }
         let inbox: URL
         do {
-            inbox = try PromiseInbox.make(in: URL(fileURLWithPath: target.id.rawValue))
+            guard let folder = target.id.diskURL else { return false }
+            inbox = try PromiseInbox.make(in: folder)
         } catch {
             logger.error("No inbox in \(target.id.rawValue, privacy: .public): \(error)")
             return false

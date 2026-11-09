@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// Dragging from and onto the list (ADR 0003). Rows go on the drag pasteboard
 /// as file URLs, so Finder and other apps take them too. A drop on a folder row
@@ -10,7 +11,7 @@ extension FileTableCoordinator {
         any NSPasteboardWriting
     )? {
         guard items.indices.contains(row) else { return nil }
-        return URL(fileURLWithPath: items[row].id.rawValue) as NSURL
+        return items[row].id.diskURL as NSURL?
     }
 
     func tableView(

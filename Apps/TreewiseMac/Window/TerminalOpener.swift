@@ -41,14 +41,14 @@ enum TerminalOpener {
 
     /// Opens `folder` in the chosen terminal; a failure shows an alert.
     static func open(_ folder: FileItem.ID?, settings: BrowserSettings) {
-        guard isAvailable, let folder,
+        guard isAvailable, let folder = folder?.diskURL,
             let app = NSWorkspace.shared.urlForApplication(
                 withBundleIdentifier: chosenApp(in: settings))
         else { return }
         Task {
             do {
                 _ = try await NSWorkspace.shared.open(
-                    [URL(fileURLWithPath: folder.rawValue)], withApplicationAt: app,
+                    [folder], withApplicationAt: app,
                     configuration: NSWorkspace.OpenConfiguration())
             } catch {
                 let alert = NSAlert(error: error)

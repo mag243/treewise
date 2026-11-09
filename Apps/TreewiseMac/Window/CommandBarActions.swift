@@ -33,7 +33,7 @@ struct CommandBarActions: View {
                     ArchiveCommands(browser: browser, undoManager: undoManager).extract()
                 }
             }
-            ShareLink(items: selection.map { URL(fileURLWithPath: $0.id.rawValue) }) {
+            ShareLink(items: selection.compactMap(\.id.diskURL)) {
                 Label("Share", systemImage: "square.and.arrow.up")
             }
             .disabled(selection.isEmpty)

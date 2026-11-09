@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// The icon view's layout: rows of tiles. It shows no gap between tiles
 /// while dragging, because a drop between tiles lands in the folder, not at
@@ -162,7 +163,7 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
     /// The cached thumbnail, or the workspace icon while a thumbnail is made.
     /// A file kept only online gets no thumbnail, which could download it (ADR 0051).
     private func icon(of item: FileItem, for tile: FileGridItem) -> NSImage {
-        let icon = NSWorkspace.shared.icon(forFile: item.id.rawValue)
+        let icon = ItemIcon.image(for: item)
         icon.size = FileGridItem.iconSize
         guard !item.isOnlyOnline else { return icon }
         if let thumbnail = ThumbnailCache.shared.cached(item) { return thumbnail }
@@ -184,7 +185,7 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
 
     private func selectedURLs() -> [URL] {
         (grid?.selectionIndexPaths ?? []).sorted().compactMap {
-            items.indices.contains($0.item) ? URL(fileURLWithPath: items[$0.item].id.rawValue) : nil
+            items.indices.contains($0.item) ? items[$0.item].id.diskURL : nil
         }
     }
 

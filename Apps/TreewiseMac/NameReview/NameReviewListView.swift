@@ -43,7 +43,7 @@ struct NameReviewListView: View {
                 if let id {
                     proxy.scrollTo(id)
                     // A Quick Look panel that is shown follows the selection, as in the list.
-                    QuickLookSource.shared.follow([URL(fileURLWithPath: id.rawValue)])
+                    QuickLookSource.shared.follow([id.diskURL].compactMap { $0 })
                 }
             }
             .onKeyPress(action: handle)
@@ -84,7 +84,7 @@ struct NameReviewListView: View {
                 return .handled
             }
             if press.key == .space {
-                QuickLookSource.shared.toggle([URL(fileURLWithPath: id.rawValue)])
+                QuickLookSource.shared.toggle([id.diskURL].compactMap { $0 })
                 return .handled
             }
         }
@@ -125,7 +125,7 @@ struct NameReviewRow: View {
     var body: some View {
         HStack(spacing: 8) {
             approval.frame(width: 18)
-            Image(nsImage: NSWorkspace.shared.icon(forFile: entry.id.rawValue))
+            Image(nsImage: ItemIcon.image(for: entry.id))
                 .resizable().frame(width: iconSide, height: iconSide)
                 // The names of every row start at one place.
                 .frame(width: Self.iconSize)

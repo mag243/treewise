@@ -1,12 +1,13 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// Opens files the browser hands back, in their default application.
 @MainActor
 enum FileOpener {
     /// The folder a symlink points to, when it points to a folder.
     static func linkedFolder(of item: FileItem) -> FileItem.ID? {
-        let url = URL(fileURLWithPath: item.id.rawValue)
+        guard let url = item.id.diskURL else { return nil }
         let target = url.resolvingSymlinksInPath()
         guard target != url,
             (try? target.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
@@ -16,6 +17,7 @@ enum FileOpener {
 
     /// Opens a file in its default application.
     static func open(_ item: FileItem) {
-        NSWorkspace.shared.open(URL(fileURLWithPath: item.id.rawValue))
+        guard let url = item.id.diskURL else { return }
+        NSWorkspace.shared.open(url)
     }
 }

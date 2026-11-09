@@ -1,6 +1,7 @@
 import AppKit
 import QuickLookThumbnailing
 import TreewiseCore
+import TreewiseUI
 
 /// Thumbnails for the icon view, made in the background by Quick Look and
 /// kept by path and modification date, so a changed file gets a new one
@@ -28,10 +29,10 @@ final class ThumbnailCache {
         _ item: FileItem, size: NSSize, scale: CGFloat,
         done: @escaping @MainActor (NSImage) -> Void
     ) {
-        guard item.kind == .file else { return }
+        guard item.kind == .file, let file = item.id.diskURL else { return }
         let key = key(of: item)
         let request = QLThumbnailGenerator.Request(
-            fileAt: URL(fileURLWithPath: item.id.rawValue), size: size, scale: scale,
+            fileAt: file, size: size, scale: scale,
             representationTypes: .thumbnail)
         QLThumbnailGenerator.shared.generateBestRepresentation(for: request) { thumbnail, _ in
             guard let image = thumbnail?.cgImage else { return }

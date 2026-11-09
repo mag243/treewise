@@ -1,6 +1,7 @@
 import Quartz
 import SwiftUI
 import TreewiseCore
+import TreewiseUI
 
 /// A Quick Look preview of one file, as the details pane and the overview of proposed
 /// names show it (M5b, ADR 0057).
@@ -26,8 +27,7 @@ struct QuickLookPreview: NSViewRepresentable {
     }
 
     func updateNSView(_ view: QLPreviewView, context: Context) {
-        guard !context.coordinator.isClosed else { return }
-        let url = URL(fileURLWithPath: item.rawValue) as NSURL
+        guard !context.coordinator.isClosed, let url = item.diskURL as NSURL? else { return }
         if (view.previewItem as? NSURL) != url { view.previewItem = url }
     }
 

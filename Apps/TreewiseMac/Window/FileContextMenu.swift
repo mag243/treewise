@@ -79,8 +79,7 @@ struct FileContextMenu {
         menu.addItem(
             ClosureMenuItem(String(localized: "Show in Finder"), symbol: "folder") {
                 let ids = items.isEmpty ? shown.map { [$0] } ?? [] : items.map(\.id)
-                NSWorkspace.shared.activateFileViewerSelecting(
-                    ids.map { URL(fileURLWithPath: $0.rawValue) })
+                NSWorkspace.shared.activateFileViewerSelecting(ids.map(\.urlShownInFinder))
             })
         return menu
     }

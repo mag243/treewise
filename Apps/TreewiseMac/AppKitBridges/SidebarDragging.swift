@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// Dragging from and onto the sidebar (ADR 0003). Every folder row takes a
 /// drop; a drop between rows lands in the folder holding them. Folders of the
@@ -16,7 +17,7 @@ extension SidebarCoordinator {
             favorite.setString(folder.id.rawValue, forType: Self.favoriteDragType)
             return favorite
         }
-        return URL(fileURLWithPath: folder.id.rawValue) as NSURL
+        return folder.id.diskURL as NSURL?
     }
 
     func outlineView(

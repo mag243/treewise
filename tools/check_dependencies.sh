@@ -6,6 +6,7 @@
 #     no way to reach a file, so a module receives data only (ADR 0057).
 #   - TreewiseModuleXPC, the module catalog and the modules' service reach no file
 #     system or UI code, and the service's entitlements are the App Sandbox alone.
+#   - the macOS app reaches a file on disk through diskURL or diskPath (ADR 0076);
 #   - removeItem( appears only in TreewiseFileSystem's FileOperationRunner, the
 #     one place that removes a user's file without the Trash (ADR 0004, 0018),
 #     and for folders Treewise made itself (ADR 0020, 0074).
@@ -84,5 +85,10 @@ removals="$(grep -rn --include='*.swift' 'removeItem(' "$SOURCES" "$ROOT_DIR/App
   grep -v "$SOURCES/TreewiseTestSupport/" | sed "s|^$ROOT_DIR/||" || true)"
 report "Only FileOperationRunner, its FileCopier, PromiseInbox and ArchiveWorkspace may call removeItem (ADR 0004, 0020, 0074); use TrashService" \
   "$removals"
+
+raw_paths="$(grep -rnE --include='*.swift' 'URL\(fileURLWithPath:.*rawValue|forFile:.*rawValue' "$ROOT_DIR/Apps/TreewiseMac" 2>/dev/null |
+  sed "s|^$ROOT_DIR/||" || true)"
+report "An item's file on disk comes from diskURL or diskPath, which are nil inside an archive (ADR 0076)" \
+  "$raw_paths"
 
 ((found == 0)) || exit 1
