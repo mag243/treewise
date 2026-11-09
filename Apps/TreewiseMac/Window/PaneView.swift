@@ -151,7 +151,13 @@ struct PaneView: View {
                     for: item, in: field, browser: browser, undoManager: undoManager)
             },
             contextMenu: { contextMenu.menu(for: $0) },
-            drop: DropRouting.action(for: browser, undoManager: undoManager))
+            drop: DropRouting.action(for: browser, undoManager: undoManager),
+            previewURLs: { await browser.previewURLs(for: $0) },
+            archiveDrag: { [browser] entry in
+                ArchiveEntryDrag(entry: entry) { url in
+                    try await browser.copyOut(entry, toFileAt: url)
+                }
+            })
     }
 
     private var contextMenu: FileContextMenu {

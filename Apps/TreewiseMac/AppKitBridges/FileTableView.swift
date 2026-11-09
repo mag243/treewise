@@ -25,6 +25,10 @@ struct FileTableActions {
     /// The context menu for the given items, or for the folder when empty.
     var contextMenu: ([FileItem]) -> NSMenu
     var drop: DropAction
+    /// The files to preview for items, also copies of entries of an archive.
+    var previewURLs: ([FileItem]) async -> [URL]
+    /// What goes on a drag for an entry of an archive (ADR 0076).
+    var archiveDrag: (FileItem) -> any NSPasteboardWriting
 }
 
 /// A pane's list of items: an `NSTableView` with Name, Date Modified, Size and

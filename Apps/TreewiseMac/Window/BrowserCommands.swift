@@ -34,6 +34,9 @@ struct BrowserActions {
         hasSelection && WindowTabs.shared.otherWindow(than: NSApp.keyWindow) != nil
     }
 
+    /// Whether the selection can also leave where it is: out of an archive it can only copy.
+    var canMoveToOtherWindow: Bool { canSendToOtherWindow && browser.canCutSelection }
+
     func newFolder() { Task { await browser.newFolder(undoManager: undoManager) } }
     /// Whether names can be suggested for the selection or the folder (ADR 0057).
     var canSuggestNames: Bool { browser.canSuggestNames }
@@ -179,7 +182,7 @@ struct BrowserCommands: Commands {
             Button("Copy to Other Window") { actions?.sendToOtherWindow(.copy) }
                 .disabled(!(actions?.canSendToOtherWindow ?? false))
             Button("Move to Other Window") { actions?.sendToOtherWindow(.move) }
-                .disabled(!(actions?.canSendToOtherWindow ?? false))
+                .disabled(!(actions?.canMoveToOtherWindow ?? false))
             Divider()
             Button("Find") { actions?.focusSearch() }
                 .keyboardShortcut("f", modifiers: .command)

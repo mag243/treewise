@@ -1,5 +1,6 @@
 import AppKit
 import OSLog
+import TreewiseFileSystem
 
 /// Runs the offer to move to Applications once launching is done, before
 /// anyone starts working in a window, saves the windows when Treewise quits
@@ -10,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let appearance = LaunchOptions.appearance { NSApp.appearance = appearance }
             ApplicationsMover.offerIfNeeded()
             FolderSettingsCleaner.start(with: NameReviewWindow.store)
+            FileOperationRunner.removeLeftoverArchiveCopies(in: LaunchOptions.locations)
         }
     }
 

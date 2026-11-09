@@ -80,7 +80,9 @@ final class PaneCollectionView: NSCollectionView, NSMenuItemValidation {
         {
             commands?.rename(index)
         } else if event.keyCode == Self.quickLookKeyCode, modifiers.isEmpty {
-            QuickLookSource.shared.toggle(commands?.selectedURLs() ?? [])
+            QuickLookSource.shared.toggle { [weak self] in
+                await self?.commands?.selectedURLs() ?? []
+            }
         } else {
             super.keyDown(with: event)
         }

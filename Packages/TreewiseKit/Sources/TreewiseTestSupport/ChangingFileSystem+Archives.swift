@@ -14,7 +14,8 @@ extension ChangingFileSystem: ArchiveOperating {
     }
 
     public func cachedCopy(of item: FileItem) async throws -> URL {
-        URL(fileURLWithPath: "/cache/" + item.name)
+        try throwFailureIfSet()
+        return URL(fileURLWithPath: "/cache/" + item.name)
     }
 
     public func releaseCache(of archive: FileItem.ID) async {

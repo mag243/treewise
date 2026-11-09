@@ -43,10 +43,17 @@ public struct DragSession: Sendable {
             .map { Badge(mode: $0, targetName: target.name) }
     }
 
+    /// Why the items cannot drop on a target, when there is a reason to tell
+    /// (ADR 0076), in the language of `locale`.
+    public func refusalText(over target: FileItem, locale: Locale) -> String? {
+        TransferPlanner.refusal(target: target).map { FailureMessage.text(for: $0, locale: locale) }
+    }
+
     /// The badge over a target for files another app promises to write
     /// (ADR 0020): they are always copied into a folder, whatever the
-    /// modifiers; `nil` over anything that is not a folder.
+    /// modifiers; `nil` over anything that is not a folder, or inside an archive.
     public static func promisedBadge(over target: FileItem) -> Badge? {
-        target.isContainer ? Badge(mode: .copy, targetName: target.name) : nil
+        target.isContainer && !target.id.isInsideArchive
+            ? Badge(mode: .copy, targetName: target.name) : nil
     }
 }

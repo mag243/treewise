@@ -33,6 +33,10 @@ public final class ChangingFileSystem: FileOperating {
         state.withLock { $0.released }
     }
 
+    func throwFailureIfSet() throws {
+        if let failure = state.withLock({ $0.failure }) { throw failure }
+    }
+
     func recordRelease(of archive: FileItem.ID) {
         state.withLock { $0.released.append(archive) }
     }

@@ -15,9 +15,10 @@ typealias DropAction = (_ items: [FileItem], _ target: FileItem, _ modifiers: Dr
 /// Files other apps promise to write go to `PromisedDrop` (ADR 0020).
 @MainActor
 enum DropRouting {
-    /// What the list and the sidebar take: file URLs and file promises.
+    /// What the list and the sidebar take: file URLs, entries of archives and file promises.
     static let pasteboardTypes =
-        [NSPasteboard.PasteboardType.fileURL] + PromisedDrop.pasteboardTypes
+        [NSPasteboard.PasteboardType.fileURL, ArchiveEntryDrag.entryType]
+        + PromisedDrop.pasteboardTypes
     /// What the address bar takes, as SwiftUI knows the types.
     static let contentTypes = [UTType.fileURL] + PromisedDrop.contentTypes
 
@@ -41,10 +42,15 @@ enum DropRouting {
     /// drops whole or not at all, as the drag rules say for invalid items.
     static func session(of pasteboard: NSPasteboard) -> TreewiseUI.DragSession? {
         if let cached, cached.changeCount == pasteboard.changeCount { return cached.session }
-        let urls = FilePasteboard.fileURLs(on: pasteboard)
-        let items = urls.compactMap { item(at: FileItem.ID($0.standardizedFileURL.path)) }
+        let entries = ArchiveEntryDrag.identifiers(on: pasteboard)
+        let ids =
+            entries.isEmpty
+            ? FilePasteboard.fileURLs(on: pasteboard).map {
+                FileItem.ID($0.standardizedFileURL.path)
+            } : entries
+        let items = ids.compactMap(item(at:))
         let session =
-            items.isEmpty || items.count != urls.count
+            items.isEmpty || items.count != ids.count
             ? nil : TreewiseUI.DragSession(items: items, ancestry: { LocalFileSystem.ancestry($0) })
         cached = (pasteboard.changeCount, session)
         return session
@@ -60,6 +66,12 @@ enum DropRouting {
     static func mode(of pasteboard: NSPasteboard, over target: FileItem?) -> TransferMode? {
         guard let target, let badge = badge(of: pasteboard, over: target) else {
             finish()
+            if let target,
+                let reason = session(of: pasteboard)?.refusalText(
+                    over: target, locale: .autoupdatingCurrent)
+            {
+                DragBadgePanel.shared.show(refusal: reason, at: NSEvent.mouseLocation)
+            }
             return nil
         }
         DragBadgePanel.shared.show(badge, at: NSEvent.mouseLocation)

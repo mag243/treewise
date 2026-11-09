@@ -12,7 +12,7 @@ struct TableCommands {
     /// The context menu for a clicked row, or for empty space when `nil`.
     var menu: (_ row: Int?) -> NSMenu?
     /// The files of the selected rows, for Quick Look.
-    var selectedURLs: () -> [URL]
+    var selectedURLs: () async -> [URL]
 }
 
 /// The list's table view. It tells its pane when it takes the keyboard focus,
@@ -93,7 +93,9 @@ final class PaneTableView: NSTableView, NSMenuItemValidation {
         {
             commands?.rename(selectedRow)
         } else if event.keyCode == Self.quickLookKeyCode, modifiers.isEmpty {
-            QuickLookSource.shared.toggle(commands?.selectedURLs() ?? [])
+            QuickLookSource.shared.toggle { [weak self] in
+                await self?.commands?.selectedURLs() ?? []
+            }
         } else {
             super.keyDown(with: event)
         }

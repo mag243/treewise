@@ -75,7 +75,7 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
             rename: { [weak self] index in self?.beginRename(index: index) },
             canPaste: { [weak self] in self?.actions?.canPaste() ?? false },
             menu: { [weak self] index in self?.contextMenu(index: index) },
-            selectedURLs: { [weak self] in self?.selectedURLs() ?? [] })
+            selectedURLs: { [weak self] in await self?.selectedURLs() ?? [] })
     }
 
     func update(with view: FileGridView) {
@@ -180,13 +180,14 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
             items.indices.contains($0.item) ? items[$0.item].id : nil
         }
         actions?.select(Set(ids))
-        QuickLookSource.shared.follow(selectedURLs())
+        QuickLookSource.shared.follow { [weak self] in await self?.selectedURLs() ?? [] }
     }
 
-    private func selectedURLs() -> [URL] {
-        (grid?.selectionIndexPaths ?? []).sorted().compactMap {
-            items.indices.contains($0.item) ? items[$0.item].id.diskURL : nil
+    private func selectedURLs() async -> [URL] {
+        let chosen = (grid?.selectionIndexPaths ?? []).sorted().compactMap {
+            items.indices.contains($0.item) ? items[$0.item] : nil
         }
+        return await actions?.previewURLs(chosen) ?? []
     }
 
     private func open(_ index: Int) {

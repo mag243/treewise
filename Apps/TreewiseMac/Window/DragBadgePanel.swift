@@ -31,6 +31,18 @@ final class DragBadgePanel {
     /// Shows the badge for a target near a point on screen.
     func show(_ badge: TreewiseUI.DragSession.Badge, at point: NSPoint) {
         if host.rootView.badge != badge { host.rootView = DragBadgeView(badge: badge) }
+        place(at: point)
+    }
+
+    /// Shows why the drag cannot drop here, near a point on screen.
+    func show(refusal: String, at point: NSPoint) {
+        if host.rootView.refusal != refusal {
+            host.rootView = DragBadgeView(badge: nil, refusal: refusal)
+        }
+        place(at: point)
+    }
+
+    private func place(at point: NSPoint) {
         let size = host.fittingSize
         panel.setFrame(
             NSRect(
@@ -53,16 +65,32 @@ struct DragBadgeView: View {
     private static let margin: CGFloat = 12
 
     let badge: TreewiseUI.DragSession.Badge?
+    /// Why the drag cannot drop here, shown instead of a badge.
+    var refusal: String?
+
+    private var symbol: String {
+        guard let badge else { return "nosign" }
+        return badge.mode == .move ? "arrow.right" : "plus"
+    }
+
+    private var color: Color {
+        guard let badge else { return .red }
+        return badge.mode == .move ? .accentColor : .green
+    }
+
+    private var text: String? {
+        badge?.text(locale: .autoupdatingCurrent) ?? refusal
+    }
 
     var body: some View {
-        if let badge {
+        if let text {
             HStack(spacing: 6) {
-                Image(systemName: badge.mode == .move ? "arrow.right" : "plus")
+                Image(systemName: symbol)
                     .font(.system(size: 9, weight: .heavy))
                     .foregroundStyle(.white)
                     .frame(width: Self.dotSize, height: Self.dotSize)
-                    .background(badge.mode == .move ? Color.accentColor : Color.green, in: Circle())
-                Text(badge.text(locale: .autoupdatingCurrent))
+                    .background(color, in: Circle())
+                Text(text)
                     .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
                     .fixedSize()

@@ -41,7 +41,7 @@ struct AddressField: View {
             }
             .task(id: text) { await readNamesAfterPause() }
             .onAppear {
-                text = folder.rawValue
+                text = folder.shownPath
                 isFocused = true
             }
             .alert(refusalText, isPresented: isRefusing) {
@@ -55,8 +55,12 @@ struct AddressField: View {
     private var home: String { LaunchOptions.homeFolder.path }
 
     private func go() {
+        guard text != folder.shownPath else {
+            done()
+            return
+        }
         let reader = LocalFileSystem(locations: LaunchOptions.locations)
-        guard let path = TypedPath.resolve(text, home: home, current: folder.rawValue),
+        guard let path = TypedPath.resolve(text, home: home, current: folder.shownPath),
             (try? reader.currentItem(at: FileItem.ID(path)))?.isContainer == true
         else {
             refused = text
@@ -67,7 +71,7 @@ struct AddressField: View {
     }
 
     private var completionFolder: String? {
-        TypedPath.completionFolder(for: text, home: home, current: folder.rawValue)
+        TypedPath.completionFolder(for: text, home: home, current: folder.shownPath)
     }
 
     /// Reads the names to suggest for the folder being completed, once
@@ -85,7 +89,7 @@ struct AddressField: View {
     /// The suggestions for the text as it is now.
     private var suggestions: [String] {
         guard let parent = completionFolder, let names, names.folder == parent else { return [] }
-        return TypedPath.completions(for: text, home: home, current: folder.rawValue) {
+        return TypedPath.completions(for: text, home: home, current: folder.shownPath) {
             $0 == parent ? names.names : []
         }
     }

@@ -45,7 +45,13 @@ struct DetailsPane: View {
     @ViewBuilder
     private func preview(_ item: FileItem.ID?) -> some View {
         // A file kept only online shows its icon: a preview could download it (ADR 0051).
-        if let item, let selected = browser.selectedItems.first, !selected.isContainer,
+        if let selected = browser.selectedItems.first, selected.id.isInsideArchive {
+            // Selecting an entry extracts nothing: its preview waits for Quick Look.
+            Image(nsImage: ItemIcon.image(for: selected))
+                .resizable()
+                .scaledToFit()
+                .frame(width: Self.iconSize, height: Self.iconSize)
+        } else if let item, let selected = browser.selectedItems.first, !selected.isContainer,
             !selected.isOnlyOnline
         {
             QuickLookPreview(item: item)

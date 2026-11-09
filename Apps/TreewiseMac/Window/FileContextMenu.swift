@@ -85,7 +85,7 @@ struct FileContextMenu {
     }
 
     private func addOpenItems(for items: [FileItem], to menu: NSMenu) {
-        let folder = items.count == 1 && items[0].isContainer
+        let folder = items.count == 1 && browser.placeToOpen(for: items[0]) != nil
         menu.addItem(open("Open", symbol: "arrow.up.forward.square", items, in: .samePane))
         menu.addItem(
             open(
@@ -111,7 +111,7 @@ struct FileContextMenu {
         menu.addItem(
             ClosureMenuItem(
                 String(localized: "Move to Other Window"), symbol: "arrow.right.square",
-                enabled: hasOther
+                enabled: hasOther && browser.canCutSelection
             ) {
                 send(.move, from: window)
             })
@@ -192,7 +192,9 @@ struct FileContextMenu {
 
     /// Add to or Remove from Favorites, for one folder (ADR 0050).
     private func addFavoriteItem(for items: [FileItem], to menu: NSMenu) {
-        guard let folder = items.first, items.count == 1, folder.isContainer else { return }
+        guard let folder = items.first, items.count == 1, folder.isContainer,
+            !folder.id.isInsideArchive
+        else { return }
         menu.addItem(
             browser.isFavorite(folder.id)
                 ? item("Remove from Favorites", symbol: "star.slash") {

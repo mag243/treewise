@@ -58,7 +58,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             rename: { [weak self] row in self?.beginRename(row: row) },
             canPaste: { [weak self] in self?.actions?.canPaste() ?? false },
             menu: { [weak self] row in self?.contextMenu(row: row) },
-            selectedURLs: { [weak self] in self?.selectedURLs() ?? [] })
+            selectedURLs: { [weak self] in await self?.selectedURLs() ?? [] })
     }
 
     func update(with view: FileTableView) {
@@ -153,13 +153,14 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             items.indices.contains($0) ? items[$0].id : nil
         }
         actions?.select(Set(ids))
-        QuickLookSource.shared.follow(selectedURLs())
+        QuickLookSource.shared.follow { [weak self] in await self?.selectedURLs() ?? [] }
     }
 
-    private func selectedURLs() -> [URL] {
-        (table?.selectedRowIndexes ?? []).compactMap {
-            items.indices.contains($0) ? items[$0].id.diskURL : nil
+    private func selectedURLs() async -> [URL] {
+        let chosen = (table?.selectedRowIndexes ?? []).compactMap {
+            items.indices.contains($0) ? items[$0] : nil
         }
+        return await actions?.previewURLs(chosen) ?? []
     }
 
     func tableView(

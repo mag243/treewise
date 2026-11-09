@@ -11,6 +11,7 @@ extension FileTableCoordinator {
         any NSPasteboardWriting
     )? {
         guard items.indices.contains(row) else { return nil }
+        if items[row].id.isInsideArchive { return actions?.archiveDrag(items[row]) }
         return items[row].id.diskURL as NSURL?
     }
 

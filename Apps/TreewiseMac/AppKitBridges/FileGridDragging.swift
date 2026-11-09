@@ -10,7 +10,9 @@ extension FileGridCoordinator {
         _ collectionView: NSCollectionView, pasteboardWriterForItemAt indexPath: IndexPath
     ) -> (any NSPasteboardWriting)? {
         guard items.indices.contains(indexPath.item) else { return nil }
-        return items[indexPath.item].id.diskURL as NSURL?
+        let item = items[indexPath.item]
+        if item.id.isInsideArchive { return actions?.archiveDrag(item) }
+        return item.id.diskURL as NSURL?
     }
 
     func collectionView(
