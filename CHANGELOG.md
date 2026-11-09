@@ -6,6 +6,8 @@ All notable changes to Treewise are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-09
+
 ### Added
 - Suggest Names… proposes names for a folder's files from a pattern that Treewise recognizes in the names already there, or that you type; you approve each name before anything is renamed. While renaming one file, ⌥Esc offers its proposals.
 - Patterns with dates in several forms, also with month names in English, Dutch and German, the folder's name, a running number per year, quarter or month, optional parts and choices between parts. A name that nearly fits the pattern is offered written right. Fixed text in an optional part, as `[ correction]`, goes into a proposal only when the file's name already has it.
