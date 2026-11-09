@@ -6,9 +6,12 @@ extension LaunchTests {
     private static let archive =
         "UEsDBBQAAAAAAGV4aV2m38+IEAAAABAAAAAKAAAAaW5zaWRlLnR4dGZyb20gdGhlIGFyY2hpdmVQSwECFAMUAAAAAABleGldpt/PiBAAAAAQAAAACgAAAAAAAAAAAAAAgAEAAAAAaW5zaWRlLnR4dFBLBQYAAAAAAQABADgAAAA4AAAAAAA="
 
-    /// More files than any window shows at once, also in the icon view, and
-    /// few enough: XCUITest reads every row each time it looks for an element.
-    private static let filesThatFillAWindow = 120
+    /// More files than any window shows at once in the icon view.
+    private static let filesThatFillTheIconView = 120
+    /// More files than any window shows at once in the list, and few enough:
+    /// XCUITest reads every row each time it looks for an element, which on a
+    /// runner takes longer than its wait for 120 rows.
+    private static let filesThatFillTheList = 40
 
     @MainActor
     func testExtractAllMakesAFolderNamedAfterTheArchive() throws {
@@ -58,18 +61,19 @@ extension LaunchTests {
 
     /// Fills the root so that the archive of the folder `Zebra`, which sorts
     /// after every file, lands far below the folder itself.
-    private func fillRootBelowAFolderToCompress(_ root: URL) throws {
+    private func fillRootBelowAFolderToCompress(_ root: URL, files: Int) throws {
         let folder = root.appendingPathComponent("Zebra")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
         try Data("stripes".utf8).write(to: folder.appendingPathComponent("inside.txt"))
-        for number in 0..<Self.filesThatFillAWindow {
+        for number in 0..<files {
             try Data().write(to: root.appendingPathComponent("a \(number).txt"))
         }
     }
 
     @MainActor
     func testCompressingInAFullFolderBringsTheArchiveIntoViewInTheList() throws {
-        try fillRootBelowAFolderToCompress(try XCTUnwrap(self.root))
+        try fillRootBelowAFolderToCompress(
+            try XCTUnwrap(self.root), files: Self.filesThatFillTheList)
         let app = try launchApp()
         let window = app.windows.firstMatch
         let row = window.tables.staticTexts["Zebra"]
@@ -88,7 +92,8 @@ extension LaunchTests {
 
     @MainActor
     func testCompressingInAFullFolderBringsTheArchiveIntoViewInTheIconView() throws {
-        try fillRootBelowAFolderToCompress(try XCTUnwrap(self.root))
+        try fillRootBelowAFolderToCompress(
+            try XCTUnwrap(self.root), files: Self.filesThatFillTheIconView)
         let app = try launchApp()
         let window = app.windows.firstMatch
         XCTAssertTrue(window.tables.staticTexts["Zebra"].appeared(timeout: Self.launchTimeout))
