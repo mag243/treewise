@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 
 /// Coordinates each access to a file with the processes that present it
 /// (ADR 0047): iCloud Drive and File Provider apps download a file before it
@@ -18,6 +19,27 @@ enum FileCoordination {
             error: &error
         ) { source, target in result = Result { try body(source, target) } }
         return try outcome(result, error)
+    }
+
+    /// Reads `sources` and writes `target` in one coordinated access, for an
+    /// operation that takes many items and gives one.
+    static func read<Value: Sendable>(
+        _ sources: [URL], andWrite target: URL, _ body: @escaping @Sendable () throws -> Value
+    ) throws -> Value {
+        let intents =
+            sources.map { NSFileAccessIntent.readingIntent(with: $0) }
+            + [NSFileAccessIntent.writingIntent(with: target, options: .forReplacing)]
+        let outcome = Mutex<Result<Value, any Error>?>(nil)
+        let finished = DispatchSemaphore(value: 0)
+        let coordinator = NSFileCoordinator(filePresenter: nil)
+        coordinator.coordinate(with: intents, queue: OperationQueue()) { error in
+            let result = error.map { .failure($0) } ?? Result { try body() }
+            outcome.withLock { $0 = result }
+            finished.signal()
+        }
+        finished.wait()
+        guard let result = outcome.withLock({ $0 }) else { throw CocoaError(.fileReadUnknown) }
+        return try result.get()
     }
 
     /// Moves `source` to `target` in one coordinated access: `body` moves the

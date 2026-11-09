@@ -18,5 +18,25 @@
             }
             return try await reader.item(at: FileItem.ID(target.path))
         }
+
+        public func compress(
+            _ items: [FileItem], to archive: NewArchive,
+            onProgress: @escaping ArchiveProgressHandler, control: TransferControl
+        ) async throws -> FileItem {
+            precondition(!items.isEmpty, "items is not empty")
+            for item in items { try reader.checkBoundary(item.id) }
+            try reader.checkBoundary(archive.folder)
+            let sources = items.map { url($0.id) }
+            let target = url(archive.folder).appendingPathComponent(archive.name)
+            let format = archive.format
+            try await FileCopier.run(control: control) {
+                try FileCoordination.read(sources, andWrite: target) {
+                    try ArchiveCompressor.compress(
+                        sources, to: target, format: format, onProgress: onProgress,
+                        control: control)
+                }
+            }
+            return try await reader.item(at: FileItem.ID(target.path))
+        }
     }
 #endif

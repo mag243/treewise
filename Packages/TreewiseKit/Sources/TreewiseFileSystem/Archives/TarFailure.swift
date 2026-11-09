@@ -28,6 +28,14 @@
             return .archiveDamaged(archive)
         }
 
+        /// The error for a failed compression.
+        static func compressionError(_ failures: [String], folder: FileItem.ID) -> FileSystemError {
+            if failures.contains(where: { reason($0).contains("no space left") }) {
+                return .notEnoughSpace(folder)
+            }
+            return .unexpected(failures.first ?? "tar")
+        }
+
         private static func reason(_ failure: String) -> String {
             guard let separator = failure.range(of: ": ") else { return failure.lowercased() }
             return failure[separator.upperBound...].lowercased()

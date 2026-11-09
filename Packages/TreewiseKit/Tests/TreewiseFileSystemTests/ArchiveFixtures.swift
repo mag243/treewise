@@ -38,6 +38,23 @@
             guard process.terminationStatus == 0 else { throw CocoaError(.fileWriteUnknown) }
         }
 
+        /// The entries of an archive, as tar lists them.
+        static func list(_ archive: URL) throws -> [String] {
+            let process = Process()
+            let output = Pipe()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/tar")
+            process.arguments = ["-tf", archive.path]
+            process.standardOutput = output
+            process.standardError = FileHandle.nullDevice
+            process.standardInput = FileHandle.nullDevice
+            try process.run()
+            let data = output.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else { throw CocoaError(.fileReadUnknown) }
+            return (String(bytes: data, encoding: .utf8) ?? "").split(separator: "\n").map(
+                String.init)
+        }
+
         /// Makes the standard tree in `src`: a folder with a text file, a name
         /// with an accent, an executable, a link and an empty folder.
         static func makeTree(in directory: TempDirectory) throws {

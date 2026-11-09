@@ -69,6 +69,12 @@
             line.hasPrefix("x ") || line.hasPrefix("a ")
         }
 
+        /// The path in an entry line (`x Photos/empty/`), without its slash.
+        static func entryName(_ line: String) -> String {
+            let path = line.dropFirst(2)
+            return String(path.hasSuffix("/") ? path.dropLast() : path)
+        }
+
         /// Applies pause and stop to the running tar. A stop also continues a
         /// paused tar, which could not act on the terminate signal otherwise.
         private static func follow(

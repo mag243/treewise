@@ -38,7 +38,7 @@
                 onProgress(
                     ArchiveProgress(
                         completedEntries: completed, totalEntries: total,
-                        currentName: entryName(line)))
+                        currentName: TarProcess.entryName(line)))
             }
             guard outcome.succeeded else { throw error(outcome, archive: archive, folder: folder) }
             if archive.pathExtension.lowercased() == isoExtension {
@@ -83,12 +83,6 @@
             TarFailure.extractionError(
                 outcome.failures, archive: FileItem.ID(archive.path),
                 folder: FileItem.ID(folder.path))
-        }
-
-        /// The path in an entry line (`x Photos/empty/`), without its slash.
-        private static func entryName(_ line: String) -> String {
-            let path = line.dropFirst(2)
-            return String(path.hasSuffix("/") ? path.dropLast() : path)
         }
     }
 #endif
