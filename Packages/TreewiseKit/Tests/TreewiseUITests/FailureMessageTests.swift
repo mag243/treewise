@@ -49,6 +49,6 @@ import TreewiseUI
     @Test func explainsThatAnArchiveCannotBeChanged() {
         #expect(
             FailureMessage.text(for: .archiveReadOnly, locale: Locale(identifier: "en"))
-                == "An archive can’t be changed. Extract it first.")
+                == "An archive of this kind can’t be changed. Extract it first.")
     }
 }

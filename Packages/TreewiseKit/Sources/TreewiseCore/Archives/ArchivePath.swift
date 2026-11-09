@@ -48,6 +48,11 @@ public struct ArchivePath: Hashable, Sendable {
         FileItem.ID(archive.rawValue + Self.separator + entry)
     }
 
+    /// Whether the archive's format can be changed (ADR 0078).
+    public var isChangeable: Bool {
+        ArchiveNaming.canChange(name: Self.lastPart(of: archive.rawValue))
+    }
+
     /// Whether this is the archive's top level.
     public var isTopLevel: Bool { entry.isEmpty }
 

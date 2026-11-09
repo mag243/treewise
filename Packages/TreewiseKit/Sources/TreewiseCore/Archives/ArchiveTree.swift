@@ -32,6 +32,11 @@ public struct ArchiveTree: Sendable {
         }
     }
 
+    /// Every path the archive holds, folders included.
+    public var paths: Set<String> {
+        Set(nodes.keys)
+    }
+
     /// The node at a path inside the archive, or `nil` when there is none.
     public func node(at path: String) -> Node? {
         nodes[path]

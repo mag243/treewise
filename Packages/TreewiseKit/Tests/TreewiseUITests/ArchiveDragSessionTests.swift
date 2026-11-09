@@ -6,12 +6,12 @@ import TreewiseUI
 /// What a drag says over an archive (ADR 0076).
 @Suite struct ArchiveDragSessionTests {
     private static let english = Locale(identifier: "en")
-    private static let top = ArchivePath(archive: "/d/a.zip")
+    private static let top = ArchivePath(archive: "/d/a.rar")
     private let disk = VolumeID("disk")
 
     private var target: FileItem {
         FileItem(
-            id: Self.top.id, name: "a.zip", kind: .folder, parentID: "/d",
+            id: Self.top.id, name: "a.rar", kind: .folder, parentID: "/d",
             volume: Self.top.volume)
     }
 
@@ -25,7 +25,7 @@ import TreewiseUI
         #expect(session.badge(over: target, modifiers: []) == nil)
         #expect(
             session.refusalText(over: target, locale: Self.english)
-                == "An archive can’t be changed. Extract it first.")
+                == "An archive of this kind can’t be changed. Extract it first.")
     }
 
     @Test func aDragOverAFolderHasNoReason() {

@@ -7,6 +7,17 @@ public enum ArchiveNaming {
         "zip", "tar", "tar.gz", "tgz", "tar.bz2", "tar.xz", "7z", "rar", "iso", "cpio", "xar",
     ]
 
+    /// The formats Treewise can write a new version of (ADR 0078), in lowercase.
+    private static let changeableExtensions: Set<String> = [
+        "zip", "tar", "tar.gz", "tgz", "tar.bz2", "tar.xz", "7z",
+    ]
+
+    /// Whether an archive with this name can be changed (ADR 0078).
+    public static func canChange(name: String) -> Bool {
+        let (_, pathExtension) = ConflictResolver.split(name, kind: .file)
+        return changeableExtensions.contains(pathExtension.dropFirst().lowercased())
+    }
+
     /// Whether an item is an archive Treewise can extract: a file whose
     /// extension, in any case, is one of the supported formats. A folder or a
     /// package with such a name is not an archive.

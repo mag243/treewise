@@ -56,7 +56,7 @@
             #expect(item.name == "a.txt")
             #expect(item.parentID == place(directory, "Photos.zip", "Photos"))
             #expect(item.modified != nil)
-            #expect(!item.isMovable && item.isCopyable)
+            #expect(item.isCopyable)
         }
 
         @Test func theTopLevelIsNamedAfterTheArchive() async throws {

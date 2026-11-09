@@ -53,7 +53,7 @@ public struct DragSession: Sendable {
     /// (ADR 0020): they are always copied into a folder, whatever the
     /// modifiers; `nil` over anything that is not a folder, or inside an archive.
     public static func promisedBadge(over target: FileItem) -> Badge? {
-        target.isContainer && !target.id.isInsideArchive
+        target.isContainer && (ArchivePath(target.id)?.isChangeable ?? true)
             ? Badge(mode: .copy, targetName: target.name) : nil
     }
 }

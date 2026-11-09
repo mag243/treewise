@@ -77,15 +77,26 @@ public struct FileItem: Identifiable, Hashable, Sendable {
     public var isContainer: Bool { kind.isContainer }
 
     /// Whether items can be dropped, pasted or made in this item. An archive
-    /// takes nothing (ADR 0076).
-    public var acceptsItems: Bool { kind.acceptsItems && !id.isInsideArchive }
+    /// that cannot change takes nothing (ADR 0076, ADR 0078).
+    public var acceptsItems: Bool {
+        kind.acceptsItems && (ArchivePath(id)?.isChangeable ?? true)
+    }
 
     /// Whether this item can be copied, also out of an archive.
     public var isCopyable: Bool { kind.isMovable }
 
-    /// Whether this item can be moved or cut, which would change an archive it is in.
-    public var isMovable: Bool { kind.isMovable && !id.isInsideArchive }
+    /// Whether this item can be moved or cut, which changes an archive it is
+    /// in. The top level of an archive stands for the archive.
+    public var isMovable: Bool { kind.isMovable && isChangeableInItsArchive }
 
     /// Whether this item can be renamed or moved to the Trash.
-    public var canBeRenamedOrTrashed: Bool { kind.canBeRenamedOrTrashed && !id.isInsideArchive }
+    public var canBeRenamedOrTrashed: Bool {
+        kind.canBeRenamedOrTrashed && isChangeableInItsArchive
+    }
+
+    /// Whether the item is on disk, or an entry of an archive that can change.
+    private var isChangeableInItsArchive: Bool {
+        guard let place = ArchivePath(id) else { return true }
+        return place.isChangeable && !place.isTopLevel
+    }
 }

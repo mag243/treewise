@@ -14,7 +14,8 @@ public enum FailureMessage {
             return String(localized: "The operation was stopped.", bundle: bundle, locale: locale)
         case .archiveReadOnly:
             return String(
-                localized: "An archive can’t be changed. Extract it first.", bundle: bundle,
+                localized: "An archive of this kind can’t be changed. Extract it first.",
+                bundle: bundle,
                 locale: locale)
         case .unexpected(let description):
             return String(

@@ -5,7 +5,7 @@ import Testing
 /// What can be done with an item inside an archive (ADR 0076).
 @Suite struct ArchiveReadOnlyRulesTests {
     private static let disk = VolumeID("disk")
-    private static let archive = ArchivePath(archive: "/d/a.zip")
+    private static let archive = ArchivePath(archive: "/d/a.rar")
 
     private static func entry(_ path: String, kind: ItemKind = .file) -> FileItem {
         let place = ArchivePath(archive: archive.archive, entry: path)

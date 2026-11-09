@@ -7,7 +7,7 @@ import TreewiseUI
 /// Going into an archive from the window, and what can be done there (ADR 0076).
 @MainActor
 @Suite struct BrowserStateArchiveBrowsingTests {
-    private static let archive: FileItem.ID = "/docs/Photos.zip"
+    private static let archive: FileItem.ID = "/docs/Photos.rar"
     private static let top = ArchivePath(archive: archive)
     private static let inner = top.child("2024")
     private static let photo = inner.child("beach.jpg")
@@ -26,7 +26,7 @@ import TreewiseUI
         // The fake's tree needs a parent that exists, so the top level hangs below the zip.
         fileSystem.add(
             FileItem(
-                id: Self.top.id, name: "Photos.zip", kind: .folder, parentID: Self.archive,
+                id: Self.top.id, name: "Photos.rar", kind: .folder, parentID: Self.archive,
                 volume: Self.top.volume))
         fileSystem.add(
             FileItem(
@@ -92,7 +92,7 @@ import TreewiseUI
         let rows = await browser.subfolders(of: "/docs")
 
         #expect(Set(rows.map(\.id)) == ["/docs/Sub", Self.top.id])
-        #expect(rows.first { $0.id == Self.top.id }?.name == "Photos.zip")
+        #expect(rows.first { $0.id == Self.top.id }?.name == "Photos.rar")
     }
 
     @Test func theTreeHidesAHiddenArchive() async throws {
