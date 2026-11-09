@@ -170,8 +170,9 @@ final class LaunchTests: XCTestCase {
             app.windows(titled: "Projects").firstMatch.appeared(
                 timeout: Self.launchTimeout),
             "one window shows the empty Projects folder")
+        // At the table's left: on a narrow screen the other window covers its right part.
         app.windows(titled: try rootName).firstMatch.tables.firstMatch
-            .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).click()
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.9)).click()
         app.typeKey("n", modifierFlags: [.command, .shift])
         // The new folder starts being renamed, so its name is in a text field: look on disk.
         let root = try XCTUnwrap(root)

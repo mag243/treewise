@@ -41,9 +41,11 @@ extension LaunchTests {
         let clear = settings.buttons["Clear Folder Settings…"]
         XCTAssertTrue(clear.appeared(timeout: Self.launchTimeout), "the button shows")
         clear.click()
-        let confirm = app.buttons["Clear Folder Settings"]
+        // In the sheet: on a Mac with a Touch Bar, that repeats the buttons of the question.
+        let question = settings.sheets.firstMatch
+        let confirm = question.buttons["Clear Folder Settings"]
         XCTAssertTrue(confirm.appeared(timeout: Self.launchTimeout), "it asks first")
-        app.buttons["Cancel"].click()
+        question.buttons["Cancel"].click()
         XCTAssertTrue(
             confirm.disappeared(timeout: Self.launchTimeout), "Cancel closes the question")
         clear.click()
