@@ -13,7 +13,6 @@ extension BrowserState {
         resolver: any ConflictResolving, undoManager: UndoManager?
     ) async -> Bool {
         guard let place = ArchivePath(folder), let operations, let archives else { return false }
-        let fileSystem = fileSystem
         let result = await runArchiveWork(
             name: Self.actionName(mode == .move ? "Move" : "Copy"), undoManager: undoManager
         ) { reporter, control in
@@ -26,12 +25,7 @@ extension BrowserState {
             let edit = try await Self.edit(landing, in: place, mode: mode, archives: archives)
             let undo = try await archives.apply(
                 edit, to: place.archive, onProgress: reporter, control: control)
-            var produced: [FileItem] = []
-            for (_, name) in landing {
-                if let item = try? await fileSystem.item(at: place.child(name).id) {
-                    produced.append(item)
-                }
-            }
+            let produced = landing.map { Self.entry(at: place.child($1), kind: $0.kind) }
             return OperationResult(items: produced, undo: undo)
         }
         guard let result, !result.stopped else { return false }
@@ -52,7 +46,8 @@ extension BrowserState {
         let target = place.sibling(named: name)
         let result = await changeArchive(
             place.archive, name: Self.actionName("Rename"), undoManager: undoManager,
-            edit: .relocate(from: place.entry, to: target.entry), produces: target.id)
+            edit: .relocate(from: place.entry, to: target.entry),
+            produces: Self.entry(at: target, kind: item.kind))
         selectInFocusedTab(result?.items ?? [])
     }
 
@@ -65,7 +60,7 @@ extension BrowserState {
         let target = place.child(FolderNaming.newFolderName(among: names, locale: locale))
         let result = await changeArchive(
             place.archive, name: Self.actionName("New Folder"), undoManager: undoManager,
-            edit: .newFolder(target.entry), produces: target.id)
+            edit: .newFolder(target.entry), produces: Self.entry(at: target, kind: .folder))
         selectInFocusedTab(result?.items ?? [])
         renameRequest = result?.items.first?.id
         return result?.items.first
@@ -80,19 +75,24 @@ extension BrowserState {
         return result != nil
     }
 
+    /// Changes an archive. What it produces is described from what is known,
+    /// not read back: undo must be ready as soon as the new archive is in place.
     private func changeArchive(
         _ archive: FileItem.ID, name: String, undoManager: UndoManager?, edit: ArchiveEdit,
-        produces id: FileItem.ID?
+        produces item: FileItem?
     ) async -> OperationResult? {
         guard let archives else { return nil }
-        let fileSystem = fileSystem
         return await runArchiveWork(name: name, undoManager: undoManager) { reporter, control in
             let undo = try await archives.apply(
                 edit, to: archive, onProgress: reporter, control: control)
-            var items: [FileItem] = []
-            if let id, let item = try? await fileSystem.item(at: id) { items = [item] }
-            return OperationResult(items: items, undo: undo)
+            return OperationResult(items: item.map { [$0] } ?? [], undo: undo)
         }
+    }
+
+    private nonisolated static func entry(at place: ArchivePath, kind: ItemKind) -> FileItem {
+        FileItem(
+            id: place.id, name: place.name, kind: kind, parentID: place.parent,
+            volume: place.volume)
     }
 
     /// Where each item lands: its own name, or what the answer about a name
