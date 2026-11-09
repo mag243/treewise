@@ -9,6 +9,8 @@ final class ArchiveEntryDrag: NSFilePromiseProvider, NSFilePromiseProviderDelega
     /// The private type that holds an entry's identifier.
     static let entryType = NSPasteboard.PasteboardType("me.m-domain.treewise.archive-entry")
 
+    private static let writing = OperationQueue()
+
     private let entry: FileItem
     private let write: @Sendable (URL) async throws -> Void
 
@@ -41,6 +43,11 @@ final class ArchiveEntryDrag: NSFilePromiseProvider, NSFilePromiseProviderDelega
         _ filePromiseProvider: NSFilePromiseProvider, fileNameForType fileType: String
     ) -> String {
         entry.name
+    }
+
+    /// Off the main queue, which the drag keeps busy until the file is there.
+    func operationQueue(for filePromiseProvider: NSFilePromiseProvider) -> OperationQueue {
+        Self.writing
     }
 
     func filePromiseProvider(

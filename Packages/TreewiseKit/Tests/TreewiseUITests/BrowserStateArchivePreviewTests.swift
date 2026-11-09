@@ -65,10 +65,31 @@ import TreewiseUI
     @Test func aPromisedDropCopiesTheEntryToTheFileAsked() async throws {
         let setup = try await setUp()
 
-        try await setup.browser.copyOut(
-            setup.entry, toFileAt: URL(fileURLWithPath: "/docs/Sub/renamed.jpg"))
+        let copy = setup.browser.entryCopier(for: setup.entry)
+        try await copy(URL(fileURLWithPath: "/docs/Sub/renamed.jpg"))
 
         let names = try await fileSystem.contents(of: "/docs/Sub").map(\.name)
         #expect(names == ["renamed.jpg"])
+    }
+
+    /// While a drag runs, the main thread is busy with it, and the app that was
+    /// dropped on waits for the file.
+    @Test func aPromisedDropDoesNotNeedTheMainThread() async throws {
+        let setup = try await setUp()
+        let copy = setup.browser.entryCopier(for: setup.entry)
+        let done = DispatchSemaphore(value: 0)
+
+        Task.detached {
+            try? await copy(URL(fileURLWithPath: "/docs/Sub/held.jpg"))
+            done.signal()
+        }
+
+        #expect(holdingTheMainThread(until: done) == .success)
+    }
+
+    private static let dropLimit = DispatchTimeInterval.seconds(5)
+
+    private func holdingTheMainThread(until done: DispatchSemaphore) -> DispatchTimeoutResult {
+        done.wait(timeout: .now() + Self.dropLimit)
     }
 }
