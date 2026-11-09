@@ -6,6 +6,16 @@
     /// with arguments as an array and without a shell. `-P` is never passed, so
     /// tar refuses `..` in a path and writing through a symbolic link.
     enum TarProcess {
+        /// Which program runs, for the callers that need `zip` instead of `tar`.
+        struct Tool {
+            /// The program, at a fixed path.
+            var executable = TarProcess.executable
+            /// Where it runs, by default where the app runs.
+            var workingDirectory: URL?
+            /// A file it reads as its input, by default none.
+            var input: URL?
+        }
+
         /// What a finished run came to.
         struct Outcome {
             /// Whether tar exited without an error.
@@ -17,7 +27,7 @@
         /// Without an explicit UTF-8 locale tar mangles the names of entries:
         /// an app started from the Dock has no `LANG`.
         private static let locale = "en_US.UTF-8"
-        private static let executable = "/usr/bin/tar"
+        static let executable = "/usr/bin/tar"
         private static let pollInterval = DispatchTimeInterval.milliseconds(20)
         private static let readSize = 16_384
         private static let maximumFailures = 50
@@ -29,15 +39,17 @@
         /// - Throws: `FileSystemError.cancelled` when `control` stopped the run.
         static func run(
             _ arguments: [String], temporaryFolder: URL, control: TransferControl,
-            onLine: (String) -> Void
+            tool: Tool = Tool(), onLine: (String) -> Void
         ) throws -> Outcome {
             guard !control.isStopped else { throw FileSystemError.cancelled }
             let output = Pipe()
             let process = Process()
-            process.executableURL = URL(fileURLWithPath: executable)
+            process.executableURL = URL(fileURLWithPath: tool.executable)
+            process.currentDirectoryURL = tool.workingDirectory
             process.arguments = arguments
             process.environment = ["LC_ALL": locale, "TMPDIR": temporaryFolder.path]
-            process.standardInput = FileHandle.nullDevice
+            process.standardInput =
+                try tool.input.map { try FileHandle(forReadingFrom: $0) } ?? FileHandle.nullDevice
             process.standardOutput = output
             process.standardError = output
             do {

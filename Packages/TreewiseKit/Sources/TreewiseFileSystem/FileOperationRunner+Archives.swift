@@ -54,6 +54,20 @@
             return try await archiveCache.copy(of: place, in: tree)
         }
 
+        public func apply(
+            _ edit: ArchiveEdit, to archive: FileItem.ID,
+            onProgress: @escaping ArchiveProgressHandler, control: TransferControl
+        ) async throws {
+            try reader.checkBoundary(archive)
+            let place = ArchivePath(archive: archive)
+            guard place.isChangeable else { throw FileSystemError.archiveReadOnly }
+            let job = ArchiveUpdater.Job(
+                archive: archive, edit: edit, tree: try await reader.archiveTree(for: place))
+            try await FileCopier.run(control: control) {
+                try ArchiveUpdater.apply(job, onProgress: onProgress, control: control)
+            }
+        }
+
         public func releaseCache(of archive: FileItem.ID) async {
             reader.archiveCatalog.stopReading(of: archive)
             archiveCache.release(archive)

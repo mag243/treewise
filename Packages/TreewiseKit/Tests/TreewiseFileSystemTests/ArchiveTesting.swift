@@ -37,6 +37,14 @@
                 as: "Out", onProgress: onProgress, control: control)
         }
 
+        func apply(
+            _ edit: ArchiveEdit, to name: String, in directory: TempDirectory,
+            control: TransferControl = TransferControl()
+        ) async throws {
+            try await runner(directory).apply(
+                edit, to: id(directory, name), onProgress: { _ in }, control: control)
+        }
+
         func names(_ directory: TempDirectory, in folder: String) throws -> [String] {
             try manager.contentsOfDirectory(atPath: directory.url(folder).path).sorted()
         }

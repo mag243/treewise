@@ -33,6 +33,19 @@ public protocol ArchiveOperating: Sendable {
     ///   copying out of the archive throws.
     func writeEntry(_ entry: FileItem, toPromisedFile file: URL) async throws
 
+    /// Changes what an archive holds: a new archive is made next to it and
+    /// checked, and only then takes its place (ADR 0078).
+    ///
+    /// Postcondition: the archive is changed as asked, or exactly as it was.
+    ///
+    /// - Throws: `archiveReadOnly` for a format that cannot change,
+    ///   `archivePasswordProtected`, `archiveDamaged`, `notEnoughSpace`, or
+    ///   `cancelled` when `control` stopped it.
+    func apply(
+        _ edit: ArchiveEdit, to archive: FileItem.ID,
+        onProgress: @escaping ArchiveProgressHandler, control: TransferControl
+    ) async throws
+
     /// Removes the copies made from an archive.
     func releaseCache(of archive: FileItem.ID) async
 

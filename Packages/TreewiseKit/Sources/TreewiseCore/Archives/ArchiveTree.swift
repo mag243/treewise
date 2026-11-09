@@ -47,6 +47,19 @@ public struct ArchiveTree: Sendable {
         Self.parts(of: storedName).flatMap { nodes[$0.joined(separator: "/")] }
     }
 
+    /// The names, as the archive stores them, of the entries at or below a
+    /// path. A folder only its contents name has none of its own.
+    public func storedNames(atOrBelow path: String) -> [String] {
+        nodes.values.filter { $0.path == path || $0.path.hasPrefix(path + "/") }
+            .compactMap { $0.entry?.storedName }
+    }
+
+    /// The path of the smallest file, or `nil` in an archive without files.
+    public var smallestFile: String? {
+        nodes.values.filter { !$0.isFolder && $0.entry != nil }
+            .min { ($0.entry?.size ?? 0, $0.path) < ($1.entry?.size ?? 0, $1.path) }?.path
+    }
+
     /// What a folder holds, or `nil` when `path` is not a folder. The empty
     /// path is the top level.
     public func contents(of path: String) -> [Node]? {
