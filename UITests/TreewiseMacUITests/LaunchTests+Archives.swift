@@ -6,8 +6,9 @@ extension LaunchTests {
     private static let archive =
         "UEsDBBQAAAAAAGV4aV2m38+IEAAAABAAAAAKAAAAaW5zaWRlLnR4dGZyb20gdGhlIGFyY2hpdmVQSwECFAMUAAAAAABleGldpt/PiBAAAAAQAAAACgAAAAAAAAAAAAAAgAEAAAAAaW5zaWRlLnR4dFBLBQYAAAAAAQABADgAAAA4AAAAAAA="
 
-    /// More files than any window shows at once, also in the icon view.
-    private static let filesThatFillAWindow = 400
+    /// More files than any window shows at once, also in the icon view, and
+    /// few enough: XCUITest reads every row each time it looks for an element.
+    private static let filesThatFillAWindow = 120
 
     @MainActor
     func testExtractAllMakesAFolderNamedAfterTheArchive() throws {
