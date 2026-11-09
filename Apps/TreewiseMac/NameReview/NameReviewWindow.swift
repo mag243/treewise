@@ -31,6 +31,17 @@ enum NameReviewWindow {
         }
     }
 
+    /// Opens a review of the files of the browser's folder, whatever is selected.
+    static func showWholeFolder(of browser: BrowserState, undoManager: UndoManager?) {
+        Task {
+            guard let model = await browser.makeFolderNameReview(host: host, store: store) else {
+                return
+            }
+            present(model, browser: browser, undoManager: undoManager)
+            await model.start()
+        }
+    }
+
     private static func present(
         _ model: NameReviewModel, browser: BrowserState, undoManager: UndoManager?
     ) {

@@ -74,6 +74,7 @@ struct FileContextMenu {
         menu.addItem(.separator())
         menu.addItem(terminalItem(for: items))
         menu.addItem(suggestNamesItem())
+        if !items.isEmpty { menu.addItem(suggestNamesForFolderItem()) }
         let shown = items.isEmpty ? browser.layout.focusedPane.activeTab.folder : nil
         menu.addItem(
             ClosureMenuItem(String(localized: "Show in Finder"), symbol: "folder") {
@@ -165,6 +166,16 @@ struct FileContextMenu {
             enabled: browser.canSuggestNames
         ) { [browser, undoManager] in
             NameReviewWindow.show(for: browser, undoManager: undoManager)
+        }
+    }
+
+    /// Suggest Names for the whole folder, for a click on an item, which selects it.
+    private func suggestNamesForFolderItem() -> NSMenuItem {
+        ClosureMenuItem(
+            String(localized: "Suggest Names for Whole Folder…"), symbol: "text.badge.star",
+            enabled: browser.canSuggestNames
+        ) { [browser, undoManager] in
+            NameReviewWindow.showWholeFolder(of: browser, undoManager: undoManager)
         }
     }
 

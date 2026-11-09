@@ -14,6 +14,14 @@ extension BrowserState {
         await makeNameReview(of: selectedItems, host: host, store: store)
     }
 
+    /// A review of the focused folder's files, whatever is selected: in a full folder a
+    /// right click nearly always lands on a file and selects it.
+    public func makeFolderNameReview(
+        host: any NameModuleHosting, store: any FolderSettingsStoring
+    ) async -> NameReviewModel? {
+        await makeNameReview(of: [], host: host, store: store)
+    }
+
     /// Whether proposals can be asked for while renaming this item: one file in a folder
     /// whose items can change (ADR 0066).
     public func canSuggestName(for item: FileItem) -> Bool {

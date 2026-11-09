@@ -38,6 +38,9 @@ struct BrowserActions {
     /// Whether names can be suggested for the selection or the folder (ADR 0057).
     var canSuggestNames: Bool { browser.canSuggestNames }
     func suggestNames() { NameReviewWindow.show(for: browser, undoManager: undoManager) }
+    func suggestNamesForFolder() {
+        NameReviewWindow.showWholeFolder(of: browser, undoManager: undoManager)
+    }
     var canExtract: Bool { browser.canExtractSelection }
     var canCompress: Bool { browser.canCompressSelection }
     /// Extracting and compressing the selection (ADR 0074).
@@ -138,6 +141,8 @@ struct BrowserCommands: Commands {
                 .keyboardShortcut(.downArrow, modifiers: [.command, .option])
                 .disabled(!(actions?.hasSelection ?? false))
             Button("Suggest Names…") { actions?.suggestNames() }
+                .disabled(!(actions?.canSuggestNames ?? false))
+            Button("Suggest Names for Whole Folder…") { actions?.suggestNamesForFolder() }
                 .disabled(!(actions?.canSuggestNames ?? false))
             Button("Extract All…") { actions?.archives.extract() }
                 .disabled(!(actions?.canExtract ?? false))

@@ -18,6 +18,21 @@ import TreewiseUI
         #expect(review?.folder.id == "documents")
     }
 
+    @Test func aSelectionReviewsOnlyTheSelection() async throws {
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        browser.setSelection(["doc2"], in: browser.layout.focusedPane.activeTabID)
+        let review = await browser.makeNameReview(host: host, store: MemoryFolderSettings())
+        #expect(review?.scope == .selection)
+    }
+
+    @Test func theWholeFolderIsReviewedDespiteASelection() async throws {
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        browser.setSelection(["doc2"], in: browser.layout.focusedPane.activeTabID)
+        let review = await browser.makeFolderNameReview(host: host, store: MemoryFolderSettings())
+        #expect(review?.scope == .wholeFolder)
+        #expect(review?.folder.id == "documents")
+    }
+
     @Test func proposesForOneFileBeingRenamed() async throws {
         let browser = await makeBrowser(fileSystem: fileSystem)
         let parent = try await fileSystem.item(at: "documents")
