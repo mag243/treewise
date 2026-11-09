@@ -12,10 +12,10 @@ final class ArchiveEntryDrag: NSFilePromiseProvider, NSFilePromiseProviderDelega
     private static let writing = OperationQueue()
 
     private let entry: FileItem
-    private let write: @Sendable (URL) async throws -> Void
+    private let write: @Sendable (URL) async -> Void
 
     /// Creates a drag of `entry`; `write` copies it to the file asked for.
-    init(entry: FileItem, write: @escaping @Sendable (URL) async throws -> Void) {
+    init(entry: FileItem, write: @escaping @Sendable (URL) async -> Void) {
         self.entry = entry
         self.write = write
         super.init()
@@ -32,7 +32,8 @@ final class ArchiveEntryDrag: NSFilePromiseProvider, NSFilePromiseProviderDelega
     }
 
     override func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        [Self.entryType] + super.writableTypes(for: pasteboard)
+        // The promise's own types come first: they are what another app reads.
+        super.writableTypes(for: pasteboard) + [Self.entryType]
     }
 
     override func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
@@ -58,12 +59,8 @@ final class ArchiveEntryDrag: NSFilePromiseProvider, NSFilePromiseProviderDelega
         // AppKit calls it once, on any thread, so it may cross to the task.
         nonisolated(unsafe) let done = completionHandler
         Task {
-            do {
-                try await write(url)
-                done(nil)
-            } catch {
-                done(error)
-            }
+            await write(url)
+            done(nil)
         }
     }
 }

@@ -66,10 +66,22 @@ import TreewiseUI
         let setup = try await setUp()
 
         let copy = setup.browser.entryCopier(for: setup.entry)
-        try await copy(URL(fileURLWithPath: "/docs/Sub/renamed.jpg"))
+        await copy(URL(fileURLWithPath: "/docs/Sub/renamed.jpg"))
 
         let names = try await fileSystem.contents(of: "/docs/Sub").map(\.name)
         #expect(names == ["renamed.jpg"])
+    }
+
+    /// A promise that fails with an error leaves the drag open for good, so
+    /// the failure goes to the window and the promise ends normally.
+    @Test func aPromisedDropThatFailsIsShownInTheWindow() async throws {
+        let setup = try await setUp()
+        fileSystem.failChanges(with: FileSystemError.outsideBoundary("/Downloads"))
+        let copy = setup.browser.entryCopier(for: setup.entry)
+
+        await copy(URL(fileURLWithPath: "/Downloads/out.jpg"))
+
+        #expect(await eventually { setup.browser.failure == .outsideBoundary("/Downloads") })
     }
 
     /// While a drag runs, the main thread is busy with it, and the app that was
@@ -80,7 +92,7 @@ import TreewiseUI
         let done = DispatchSemaphore(value: 0)
 
         Task.detached {
-            try? await copy(URL(fileURLWithPath: "/docs/Sub/held.jpg"))
+            await copy(URL(fileURLWithPath: "/docs/Sub/held.jpg"))
             done.signal()
         }
 

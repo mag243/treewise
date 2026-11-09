@@ -25,12 +25,21 @@ extension BrowserState {
     /// What copies an entry of an archive to a file, for a drop in another
     /// app. It stays off the main actor: during a drag the main thread is busy
     /// with the drag, and the drag ends only when the other app has the file.
-    public func entryCopier(for entry: FileItem) -> @Sendable (URL) async throws -> Void {
+    ///
+    /// It does not throw: AppKit never ends a drag whose promise failed with an
+    /// error, which leaves dragging in the whole app stuck. A failure is shown
+    /// in the window instead.
+    public func entryCopier(for entry: FileItem) -> @Sendable (URL) async -> Void {
         let operations = operations
-        return { url in
-            guard let operations else { throw FileSystemError.notReadable(entry.id) }
-            let folder = FileItem.ID(url.deletingLastPathComponent().standardizedFileURL.path)
-            _ = try await operations.copy(entry, into: folder, as: url.lastPathComponent)
+        return { [weak self] url in
+            do {
+                guard let operations else { throw FileSystemError.notReadable(entry.id) }
+                let folder = FileItem.ID(url.deletingLastPathComponent().standardizedFileURL.path)
+                _ = try await operations.copy(entry, into: folder, as: url.lastPathComponent)
+            } catch {
+                let failure = error as? FileSystemError ?? .unexpected(error.localizedDescription)
+                Task { @MainActor in self?.failure = failure }
+            }
         }
     }
 }
