@@ -12,6 +12,10 @@ public enum FailureMessage {
                 localized: "The name “\(name)” can’t be used.", bundle: bundle, locale: locale)
         case .cancelled:
             return String(localized: "The operation was stopped.", bundle: bundle, locale: locale)
+        case .archiveReadOnly:
+            return String(
+                localized: "An archive can’t be changed. Extract it first.", bundle: bundle,
+                locale: locale)
         case .unexpected(let description):
             return String(
                 localized: "The operation failed: \(description)", bundle: bundle, locale: locale)
@@ -64,7 +68,7 @@ public enum FailureMessage {
                 locale: locale)
         case .archiveDamaged, .archivePasswordProtected, .archiveFormatUnknown:
             return archiveText(for: failure, name: name, bundle: bundle, locale: locale)
-        case .invalidName, .cancelled, .unexpected, .notEjected:
+        case .invalidName, .cancelled, .unexpected, .notEjected, .archiveReadOnly:
             preconditionFailure("failure is about one item; text(for:) explains the others")
         }
     }

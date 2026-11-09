@@ -29,6 +29,8 @@ public enum FileSystemError: Error, Hashable, Sendable {
     case archivePasswordProtected(FileItem.ID)
     /// The file is not in a format the archive engine can read.
     case archiveFormatUnknown(FileItem.ID)
+    /// Something would change an archive, which is read-only (ADR 0076).
+    case archiveReadOnly
     /// A failure without a case of its own, with the system's description of it.
     case unexpected(String)
 }

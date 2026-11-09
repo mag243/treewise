@@ -5,10 +5,11 @@ public enum TransferPlanner {
     /// is not allowed.
     ///
     /// The drop is not allowed when there are no items, when the target is not a
-    /// container, when any item cannot be moved, when any item is the target or
-    /// one of its containers, or when a move would leave every item where it is.
-    /// Otherwise ⌥ copies, ⌘ moves, and without either the items move when they
-    /// are all on the target's volume and copy when they are not.
+    /// container that takes items, when any item cannot be copied, when any item
+    /// is the target or one of its containers, or when a move would leave every
+    /// item where it is. Otherwise items of which one cannot be moved copy, as out
+    /// of an archive (ADR 0076), ⌥ copies, ⌘ moves, and without either the items
+    /// move when they are all on the target's volume and copy when they are not.
     ///
     /// - Parameter ancestry: returns the containers of an item, nearest first.
     public static func plan(
@@ -19,7 +20,7 @@ public enum TransferPlanner {
     ) -> TransferMode? {
         guard !items.isEmpty, target.acceptsItems else { return nil }
         let targetAndAncestors = Set([target.id] + ancestry(target.id))
-        guard items.allSatisfy({ $0.isMovable && !targetAndAncestors.contains($0.id) }) else {
+        guard items.allSatisfy({ $0.isCopyable && !targetAndAncestors.contains($0.id) }) else {
             return nil
         }
         let mode = mode(of: items, onto: target, modifiers: modifiers)
@@ -29,10 +30,16 @@ public enum TransferPlanner {
         return mode
     }
 
+    /// Returns why nothing can land on `target`, when there is a reason to
+    /// tell: it is inside an archive (ADR 0076).
+    public static func refusal(target: FileItem) -> FileSystemError? {
+        target.id.isInsideArchive ? .archiveReadOnly : nil
+    }
+
     private static func mode(
         of items: [FileItem], onto target: FileItem, modifiers: DropModifiers
     ) -> TransferMode {
-        if modifiers.contains(.option) { return .copy }
+        if modifiers.contains(.option) || !items.allSatisfy(\.isMovable) { return .copy }
         if modifiers.contains(.command) { return .move }
         return items.allSatisfy { $0.volume == target.volume } ? .move : .copy
     }

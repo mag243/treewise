@@ -73,12 +73,16 @@ public struct FileItem: Identifiable, Hashable, Sendable {
     /// Whether the item opens like a folder.
     public var isContainer: Bool { kind.isContainer }
 
-    /// Whether items can be dropped, pasted or made in this item.
-    public var acceptsItems: Bool { kind.acceptsItems }
+    /// Whether items can be dropped, pasted or made in this item. An archive
+    /// takes nothing (ADR 0076).
+    public var acceptsItems: Bool { kind.acceptsItems && !id.isInsideArchive }
 
-    /// Whether this item can be moved, copied, or cut.
-    public var isMovable: Bool { kind.isMovable }
+    /// Whether this item can be copied, also out of an archive.
+    public var isCopyable: Bool { kind.isMovable }
+
+    /// Whether this item can be moved or cut, which would change an archive it is in.
+    public var isMovable: Bool { kind.isMovable && !id.isInsideArchive }
 
     /// Whether this item can be renamed or moved to the Trash.
-    public var canBeRenamedOrTrashed: Bool { kind.canBeRenamedOrTrashed }
+    public var canBeRenamedOrTrashed: Bool { kind.canBeRenamedOrTrashed && !id.isInsideArchive }
 }

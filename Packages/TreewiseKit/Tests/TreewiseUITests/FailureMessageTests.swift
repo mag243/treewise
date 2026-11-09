@@ -45,4 +45,10 @@ import TreewiseUI
     func explainsWhatWentWrong(_ failure: FileSystemError, _ expected: String) {
         #expect(FailureMessage.text(for: failure, locale: english) == expected)
     }
+
+    @Test func explainsThatAnArchiveCannotBeChanged() {
+        #expect(
+            FailureMessage.text(for: .archiveReadOnly, locale: Locale(identifier: "en"))
+                == "An archive can’t be changed. Extract it first.")
+    }
 }

@@ -198,7 +198,9 @@ extension BrowserState {
         undoManager: UndoManager?
     ) async -> Bool {
         // A paste has no drop rules before it; items may come from outside Treewise.
-        guard items.allSatisfy(\.isMovable) else { return false }
+        guard items.allSatisfy({ mode == .move ? $0.isMovable : $0.isCopyable }) else {
+            return false
+        }
         let name = Self.actionName(mode == .move ? "Move" : "Copy")
         // A window runs one transfer at a time; a second one waits for the first.
         if let running = runningTransfer { _ = await running.value }
