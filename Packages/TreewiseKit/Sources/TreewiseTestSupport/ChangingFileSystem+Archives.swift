@@ -18,6 +18,11 @@ extension ChangingFileSystem: ArchiveOperating {
         return URL(fileURLWithPath: "/cache/" + item.name)
     }
 
+    public func writeEntry(_ entry: FileItem, toPromisedFile file: URL) async throws {
+        let folder = FileItem.ID(file.deletingLastPathComponent().standardizedFileURL.path)
+        _ = try await copy(entry, into: folder, as: file.lastPathComponent)
+    }
+
     public func releaseCache(of archive: FileItem.ID) async {
         recordRelease(of: archive)
     }

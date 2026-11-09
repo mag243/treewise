@@ -3,27 +3,48 @@
     import TreewiseCore
 
     extension FileOperationRunner: ArchiveOperating {
-        /// Copies an entry out of an archive, through a hidden folder next to `target`.
+        /// Copies an entry out of an archive, through a hidden folder next to
+        /// `target`. A file promised to another app does not coordinate
+        /// `target`: that app holds it until the file is written.
         func copyOut(
             _ place: ArchivePath, to target: URL, onFile: @escaping FileCopyProgress,
-            control: TransferControl
+            control: TransferControl, coordinatesTarget: Bool = true
         ) async throws -> FileItem {
             let tree = try await reader.archiveTree(for: place)
             guard let selection = ArchiveSelection(place, in: tree) else {
                 throw FileSystemError.notFound(place.id)
             }
             try await FileCopier.run(control: control) {
-                try FileCoordination.read(selection.archiveURL, andWrite: target) { _, target in
-                    var copied: Int64 = 0
-                    let onEntry: (String) -> Void = { name in
-                        copied += tree.node(forStoredName: name)?.entry?.size ?? 0
-                        onFile((name as NSString).lastPathComponent, copied)
-                    }
+                var copied: Int64 = 0
+                let onEntry: (String) -> Void = { name in
+                    copied += tree.node(forStoredName: name)?.entry?.size ?? 0
+                    onFile((name as NSString).lastPathComponent, copied)
+                }
+                let copy: (URL) throws -> Void = { target in
                     try ArchiveEntryExtractor.copy(
                         selection, to: target, control: control, onEntry: onEntry)
                 }
+                if coordinatesTarget {
+                    try FileCoordination.read(selection.archiveURL, andWrite: target) { _, target in
+                        try copy(target)
+                    }
+                } else {
+                    try FileCoordination.read(selection.archiveURL) { _ in try copy(target) }
+                }
             }
             return try await reader.item(at: FileItem.ID(target.path))
+        }
+
+        public func writeEntry(_ entry: FileItem, toPromisedFile file: URL) async throws {
+            guard let place = ArchivePath(entry.id) else {
+                throw FileSystemError.notFound(entry.id)
+            }
+            try reader.checkBoundary(entry.id)
+            try reader.checkBoundary(
+                FileItem.ID(file.deletingLastPathComponent().standardizedFileURL.path))
+            _ = try await copyOut(
+                place, to: file, onFile: { _, _ in }, control: TransferControl(),
+                coordinatesTarget: false)
         }
 
         public func cachedCopy(of item: FileItem) async throws -> URL {

@@ -1,3 +1,4 @@
+import AppKit
 import XCTest
 
 /// Extracting and compressing on a fixture (ADR 0074).
@@ -220,6 +221,102 @@ extension LaunchTests {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.launchTimeout), "Treewise quits")
         XCTAssertLessThan(Date().timeIntervalSince(start), Self.launchTimeout, "without delay")
     }
+
+    /// Drags a file out of a zip to Finder: a folder outside the boundary
+    /// refuses it and leaves dragging working, a folder inside gets the file.
+    @MainActor
+    func testDraggingOutOfAZipToFinder() throws {
+        let root = try XCTUnwrap(self.root)
+        try XCTUnwrap(Data(base64Encoded: Self.archive))
+            .write(to: root.appendingPathComponent("Photos.zip"))
+        closeFinderWindowsOfThisTest()
+        let allowed = root.appendingPathComponent("DropHere")
+        try FileManager.default.createDirectory(at: allowed, withIntermediateDirectories: false)
+        let outside = FileManager.default.temporaryDirectory
+            .appendingPathComponent("OutsideTreewise-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: false)
+        defer { try? FileManager.default.removeItem(at: outside) }
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let zip = window.tables.staticTexts["Photos.zip"]
+        XCTAssertTrue(zip.appeared(timeout: Self.launchTimeout))
+        zip.doubleClick()
+        let inside = window.tables.staticTexts["inside.txt"]
+        XCTAssertTrue(inside.appeared(timeout: Self.launchTimeout))
+        let refused = outside.appendingPathComponent("inside.txt").path
+        try drag(inside, in: app, to: outside)
+        Thread.sleep(forTimeInterval: Self.settle)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: refused), "outside: nothing lands")
+        let alert = window.sheets.firstMatch
+        XCTAssertTrue(alert.appeared(timeout: Self.launchTimeout), "the window tells why")
+        alert.buttons["OK"].click()
+
+        try drag(inside, in: app, to: allowed)
+
+        let landed = allowed.appendingPathComponent("inside.txt").path
+        let deadline = Date().addingTimeInterval(Self.launchTimeout)
+        while !FileManager.default.fileExists(atPath: landed), Date() < deadline {
+            Thread.sleep(forTimeInterval: Self.landingPoll)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: landed), "inside: the file lands")
+        XCTAssertEqual(try String(contentsOfFile: landed, encoding: .utf8), "from the archive")
+    }
+
+    /// Opens `folder` in Finder, drags `element` to a part of that window that
+    /// Treewise leaves free, and closes the window.
+    @MainActor
+    private func drag(_ element: XCUIElement, in app: XCUIApplication, to folder: URL) throws {
+        let finder = XCUIApplication(bundleIdentifier: "com.apple.finder")
+        NSWorkspace.shared.open(folder)
+        let finderWindow = finder.windows[folder.lastPathComponent]
+        XCTAssertTrue(finderWindow.appeared(timeout: Self.launchTimeout), "Finder shows the folder")
+        defer { closeFinderWindowsOfThisTest() }
+        // Finder places each new window further down, under Treewise's.
+        finder.activate()
+        let grab = finderWindow.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0))
+            .withOffset(CGVector(dx: 0, dy: Self.finderGrabHeight))
+        grab.click(
+            forDuration: Self.dragHold,
+            thenDragTo: grab.withOffset(
+                CGVector(dx: 0, dy: Self.finderTopMargin - finderWindow.frame.minY)))
+        app.activate()
+        let treewise = app.windows.firstMatch.frame
+        let frame = finderWindow.frame
+        let free = Self.finderDropPoints.first { point in
+            !treewise.contains(
+                CGPoint(
+                    x: frame.minX + frame.width * point.dx,
+                    y: frame.minY + frame.height * point.dy))
+        }
+        guard let point = free else { throw XCTSkip("Treewise covers Finder's whole list") }
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(
+            forDuration: Self.dragHold,
+            thenDragTo: finderWindow.coordinate(withNormalizedOffset: point),
+            withVelocity: .slow, thenHoldForDuration: Self.dragHold)
+    }
+
+    /// Closes what this test opened in Finder, also after an earlier run:
+    /// each window left open makes Finder place the next one further down.
+    @MainActor
+    private func closeFinderWindowsOfThisTest() {
+        let finder = XCUIApplication(bundleIdentifier: "com.apple.finder")
+        let ours = finder.windows.matching(
+            NSPredicate(format: "title BEGINSWITH 'OutsideTreewise-' OR title == 'DropHere'"))
+        while ours.firstMatch.exists {
+            finder.activate()
+            ours.firstMatch.buttons[XCUIIdentifierCloseWindow].click()
+        }
+    }
+
+    /// Places in Finder's list of files, right of its sidebar and below its toolbar.
+    private static var finderDropPoints: [CGVector] {
+        stride(from: 0.3, through: 0.9, by: 0.05).flatMap { dy in
+            stride(from: 0.35, through: 0.95, by: 0.1).map { dx in CGVector(dx: dx, dy: dy) }
+        }
+    }
+    private static let settle: TimeInterval = 2
+    private static let finderGrabHeight: CGFloat = 8
+    private static let finderTopMargin: CGFloat = 40
 
     private static let landingPoll: TimeInterval = 0.2
     private static let dragHold: TimeInterval = 0.6

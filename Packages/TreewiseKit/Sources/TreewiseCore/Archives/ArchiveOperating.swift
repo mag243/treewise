@@ -25,6 +25,14 @@ public protocol ArchiveOperating: Sendable {
     /// - Throws: `archivePasswordProtected` or `archiveDamaged` for the archive.
     func cachedCopy(of item: FileItem) async throws -> URL
 
+    /// Writes an entry to a file another app asked for with a file promise.
+    /// That app holds the file's place until it is written, so the place is
+    /// not coordinated, as waiting for it would never end (ADR 0076).
+    ///
+    /// - Throws: `outsideBoundary` for a place Treewise may not use, or what
+    ///   copying out of the archive throws.
+    func writeEntry(_ entry: FileItem, toPromisedFile file: URL) async throws
+
     /// Removes the copies made from an archive.
     func releaseCache(of archive: FileItem.ID) async
 

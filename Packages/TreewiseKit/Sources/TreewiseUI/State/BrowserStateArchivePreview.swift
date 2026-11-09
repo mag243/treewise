@@ -30,12 +30,11 @@ extension BrowserState {
     /// error, which leaves dragging in the whole app stuck. A failure is shown
     /// in the window instead.
     public func entryCopier(for entry: FileItem) -> @Sendable (URL) async -> Void {
-        let operations = operations
+        let archives = archives
         return { [weak self] url in
             do {
-                guard let operations else { throw FileSystemError.notReadable(entry.id) }
-                let folder = FileItem.ID(url.deletingLastPathComponent().standardizedFileURL.path)
-                _ = try await operations.copy(entry, into: folder, as: url.lastPathComponent)
+                guard let archives else { throw FileSystemError.notReadable(entry.id) }
+                try await archives.writeEntry(entry, toPromisedFile: url)
             } catch {
                 let failure = error as? FileSystemError ?? .unexpected(error.localizedDescription)
                 Task { @MainActor in self?.failure = failure }

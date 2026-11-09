@@ -204,5 +204,68 @@
             }
             #expect(ids == [id(directory, "to/a copy.txt")])
         }
+
+        @Test func aPromisedFileIsWrittenWhileTheOtherAppHoldsItsPlace() async throws {
+            let directory = try TempDirectory()
+            try makeArchive(directory)
+            try directory.makeFolder("to")
+            let runner = runner(directory)
+            let item = try await entry(runner, directory, "Photos.zip", "Photos/a.txt")
+            let target = directory.url("to/promised.txt")
+            let held = DispatchSemaphore(value: 0)
+            let release = DispatchSemaphore(value: 0)
+            DispatchQueue.global().async {
+                var error: NSError?
+                NSFileCoordinator(filePresenter: nil).coordinate(
+                    readingItemAt: target, options: [], error: &error
+                ) { _ in
+                    held.signal()
+                    release.wait()
+                }
+            }
+            waitUntilHeld(held)
+
+            let finished = await withTaskGroup(of: Bool.self) { group in
+                group.addTask {
+                    try? await runner.writeEntry(item, toPromisedFile: target)
+                    return true
+                }
+                group.addTask {
+                    try? await Task.sleep(for: Self.promiseLimit)
+                    return false
+                }
+                let first = await group.next() ?? false
+                release.signal()
+                group.cancelAll()
+                return first
+            }
+
+            #expect(finished)
+            #expect(try text(directory, "to/promised.txt") == "hello")
+        }
+
+        private static let promiseLimit = Duration.seconds(5)
+
+        private func waitUntilHeld(_ held: DispatchSemaphore) {
+            held.wait()
+        }
+
+        @Test func aPromisedFileOutsideTheBoundaryIsRefused() async throws {
+            let directory = try TempDirectory()
+            try makeArchive(directory)
+            let inner = try directory.makeFolder("inner")
+            let outside = try directory.makeFolder("outside")
+            try manager.moveItem(
+                at: directory.url("Photos.zip"), to: inner.appendingPathComponent("Photos.zip"))
+            let runner = runner(directory, boundary: [inner])
+            let item = try await runner.item(
+                at: ArchivePath(archive: id(directory, "inner/Photos.zip"), entry: "Photos/a.txt")
+                    .id)
+
+            await #expect(throws: FileSystemError.outsideBoundary(FileItem.ID(outside.path))) {
+                try await runner.writeEntry(
+                    item, toPromisedFile: outside.appendingPathComponent("a.txt"))
+            }
+        }
     }
 #endif
