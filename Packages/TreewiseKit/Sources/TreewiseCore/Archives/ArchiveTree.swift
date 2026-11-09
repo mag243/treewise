@@ -37,6 +37,11 @@ public struct ArchiveTree: Sendable {
         nodes[path]
     }
 
+    /// The node of a name as the archive stores it, or `nil` when it is not shown.
+    public func node(forStoredName storedName: String) -> Node? {
+        Self.parts(of: storedName).flatMap { nodes[$0.joined(separator: "/")] }
+    }
+
     /// What a folder holds, or `nil` when `path` is not a folder. The empty
     /// path is the top level.
     public func contents(of path: String) -> [Node]? {

@@ -1,3 +1,4 @@
+import Foundation
 import TreewiseCore
 
 /// An archive engine without archives: an extraction makes an empty folder, a
@@ -11,6 +12,12 @@ extension ChangingFileSystem: ArchiveOperating {
         try await prepare(onProgress: onProgress, control: control)
         return try await createFolder(in: folder, named: name)
     }
+
+    public func cachedCopy(of item: FileItem) async throws -> URL {
+        URL(fileURLWithPath: "/cache/" + item.name)
+    }
+
+    public func releaseCache(of archive: FileItem.ID) async {}
 
     public func compress(
         _ items: [FileItem], to archive: NewArchive,

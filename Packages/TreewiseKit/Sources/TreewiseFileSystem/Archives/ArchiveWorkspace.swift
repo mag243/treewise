@@ -24,8 +24,14 @@
         /// Removes the workspace and what is left in it, also folders an
         /// archive extracted without write permission.
         func discard() {
-            Self.grantWrite(under: url, toFiles: false)
-            try? FileManager.default.removeItem(at: url)
+            Self.remove(url)
+        }
+
+        /// Removes a folder Treewise made itself, also one holding folders an
+        /// archive extracted without write permission.
+        static func remove(_ folder: URL) {
+            grantWrite(under: folder, toFiles: false)
+            try? FileManager.default.removeItem(at: folder)
         }
 
         /// Gives the user write permission on a folder and the folders below

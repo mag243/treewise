@@ -1,3 +1,5 @@
+import Foundation
+
 /// Called after each entry an archive operation handles.
 public typealias ArchiveProgressHandler = @Sendable (ArchiveProgress) -> Void
 
@@ -16,6 +18,15 @@ public protocol ArchiveOperating: Sendable {
         _ archive: FileItem, into folder: FileItem.ID, as name: String,
         onProgress: @escaping ArchiveProgressHandler, control: TransferControl
     ) async throws -> FileItem
+
+    /// A copy of an entry on disk, for Quick Look and opening a file, in a
+    /// folder of Treewise's that `releaseCache` removes (ADR 0076).
+    ///
+    /// - Throws: `archivePasswordProtected` or `archiveDamaged` for the archive.
+    func cachedCopy(of item: FileItem) async throws -> URL
+
+    /// Removes the copies made from an archive.
+    func releaseCache(of archive: FileItem.ID) async
 
     /// Compresses items of one folder to a new archive.
     ///

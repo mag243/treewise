@@ -81,6 +81,12 @@ import Testing
         #expect(tree.node(at: "missing") == nil)
     }
 
+    @Test(arguments: ["./d/a.txt", "/d/a.txt", "d/a.txt"])
+    func findsANodeByItsStoredName(stored: String) throws {
+        let tree = ArchiveTree(entries: [file("./d/a.txt", size: 4)])
+        #expect(try #require(tree.node(forStoredName: stored)).entry?.size == 4)
+    }
+
     @Test func aFileAndAFolderCountTheirBytes() {
         let tree = ArchiveTree(entries: [
             file("a.txt", size: 5), file("d/b", size: 2), file("d/e/c", size: 3),

@@ -11,10 +11,17 @@ import TreewiseCore
 public actor FileOperationRunner: FileOperating {
     let reader: LocalFileSystem
     private let trashService = TrashService()
+    #if os(macOS)
+        /// The copies of entries of archives this window shows (ADR 0076).
+        let archiveCache: ArchiveCache
+    #endif
 
     /// Creates a runner that reads and writes the local disk.
     public init(locations: LocalFileSystem.Locations = .system) {
         reader = LocalFileSystem(locations: locations)
+        #if os(macOS)
+            archiveCache = ArchiveCache(in: locations.archiveCacheFolder)
+        #endif
     }
 
     public func contents(of folder: FileItem.ID) async throws -> [FileItem] {
@@ -53,6 +60,11 @@ public actor FileOperationRunner: FileOperating {
 
     public func byteCount(of item: FileItem) async throws -> Int64 {
         try reader.checkBoundary(item.id)
+        #if os(macOS)
+            if let place = ArchivePath(item.id) {
+                return try await reader.archiveTree(for: place).byteCount(at: place.entry)
+            }
+        #endif
         return Int64(FileCopier.footprint(of: url(item.id)).size)
     }
 
@@ -63,6 +75,13 @@ public actor FileOperationRunner: FileOperating {
         try reader.checkBoundary(item.id)
         try reader.checkBoundary(folder)
         try refuseInsideArchive(folder)
+        #if os(macOS)
+            if let place = ArchivePath(item.id) {
+                return try await copyOut(
+                    place, to: url(folder).appendingPathComponent(name), onFile: onFile,
+                    control: control)
+            }
+        #endif
         let (source, target) = (url(item.id), url(folder).appendingPathComponent(name))
         let copy = try await FileCopier.run(control: control) {
             try FileCoordination.read(source, andWrite: target) { source, target in

@@ -3,6 +3,46 @@
     import TreewiseCore
 
     extension FileOperationRunner: ArchiveOperating {
+        /// Copies an entry out of an archive, through a hidden folder next to `target`.
+        func copyOut(
+            _ place: ArchivePath, to target: URL, onFile: @escaping FileCopyProgress,
+            control: TransferControl
+        ) async throws -> FileItem {
+            let tree = try await reader.archiveTree(for: place)
+            guard let selection = ArchiveSelection(place, in: tree) else {
+                throw FileSystemError.notFound(place.id)
+            }
+            try await FileCopier.run(control: control) {
+                try FileCoordination.read(selection.archiveURL, andWrite: target) { _, target in
+                    var copied: Int64 = 0
+                    let onEntry: (String) -> Void = { name in
+                        copied += tree.node(forStoredName: name)?.entry?.size ?? 0
+                        onFile((name as NSString).lastPathComponent, copied)
+                    }
+                    try ArchiveEntryExtractor.copy(
+                        selection, to: target, control: control, onEntry: onEntry)
+                }
+            }
+            return try await reader.item(at: FileItem.ID(target.path))
+        }
+
+        public func cachedCopy(of item: FileItem) async throws -> URL {
+            guard let place = ArchivePath(item.id) else { return url(item.id) }
+            try reader.checkBoundary(item.id)
+            let tree = try await reader.archiveTree(for: place)
+            return try await archiveCache.copy(of: place, in: tree)
+        }
+
+        public func releaseCache(of archive: FileItem.ID) async {
+            archiveCache.release(archive)
+        }
+
+        /// Removes the copies an earlier run left behind. Call once, at launch,
+        /// before any window has made copies.
+        public static func removeLeftoverArchiveCopies(in locations: LocalFileSystem.Locations) {
+            ArchiveCache.removeLeftovers(in: locations.archiveCacheFolder)
+        }
+
         public func extract(
             _ archive: FileItem, into folder: FileItem.ID, as name: String,
             onProgress: @escaping ArchiveProgressHandler, control: TransferControl
