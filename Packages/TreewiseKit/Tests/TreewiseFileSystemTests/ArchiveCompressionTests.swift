@@ -116,6 +116,23 @@
             #expect(progress.contains { $0.currentName == "Photos/a.txt" })
         }
 
+        @Test(arguments: [ArchiveFormat.zip, .sevenZip])
+        func theTotalLeavesOutWhatACleanArchiveSkips(_ format: ArchiveFormat) async throws {
+            let directory = try TempDirectory()
+            try ArchiveFixtures.makeTree(in: directory)
+            try directory.makeFolder("src/Photos/__MACOSX/inside")
+            try directory.makeFile("src/Photos/.DS_Store")
+            try directory.makeFile("src/Photos/._a.txt")
+            let seen = Mutex<[ArchiveProgress]>([])
+
+            try await compress(directory, as: "New", format: format) { progress in
+                seen.withLock { $0.append(progress) }
+            }
+
+            let last = try #require(seen.withLock { $0 }.last)
+            #expect(last.completedEntries == last.totalEntries)
+        }
+
         @Test func aTakenNameIsNotOverwritten() async throws {
             let directory = try TempDirectory()
             try ArchiveFixtures.makeTree(in: directory)

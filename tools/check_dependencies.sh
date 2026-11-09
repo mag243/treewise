@@ -7,7 +7,8 @@
 #   - TreewiseModuleXPC, the module catalog and the modules' service reach no file
 #     system or UI code, and the service's entitlements are the App Sandbox alone.
 #   - removeItem( appears only in TreewiseFileSystem's FileOperationRunner, the
-#     one place that removes a user's file without the Trash (ADR 0004, 0018).
+#     one place that removes a user's file without the Trash (ADR 0004, 0018),
+#     and for folders Treewise made itself (ADR 0020, 0074).
 # Package.swift already enforces the dependency direction between the modules.
 set -euo pipefail
 # shellcheck source=tools/lib.sh

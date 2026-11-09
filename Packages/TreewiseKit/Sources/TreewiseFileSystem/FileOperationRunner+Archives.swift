@@ -24,6 +24,7 @@
             onProgress: @escaping ArchiveProgressHandler, control: TransferControl
         ) async throws -> FileItem {
             precondition(!items.isEmpty, "items is not empty")
+            precondition(Set(items.map(\.parentID)).count == 1, "items share a parent folder")
             for item in items { try reader.checkBoundary(item.id) }
             try reader.checkBoundary(archive.folder)
             let sources = items.map { url($0.id) }
