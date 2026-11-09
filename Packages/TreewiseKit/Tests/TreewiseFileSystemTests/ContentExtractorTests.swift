@@ -137,13 +137,15 @@ import TreewiseTestSupport
 
     // Text recognition needs Vision's models, which the iOS Simulator may lack.
     #if os(macOS)
-        @Test func recognizesTheTextOfAScan() throws {
+        @Test(.enabled(if: TextRecognitionAvailability.answers, TextRecognitionAvailability.reason))
+        func recognizesTheTextOfAScan() throws {
             let url = folder.url("scan.pdf")
             try ContentFixtures.writeScannedPDF(lines: ["Invoice 4711"], to: url)
             #expect(extractor.content(of: url, kinds: [.text]).text?.contains("4711") == true)
         }
 
-        @Test func positionsTheRecognizedTextOfAScanFromTheTop() throws {
+        @Test(.enabled(if: TextRecognitionAvailability.answers, TextRecognitionAvailability.reason))
+        func positionsTheRecognizedTextOfAScanFromTheTop() throws {
             let url = folder.url("scan.pdf")
             try ContentFixtures.writeScannedPDF(
                 lines: ["Invoice 4711", "", "", "Total 99"], to: url)
@@ -154,7 +156,8 @@ import TreewiseTestSupport
             #expect(top.y < below.y)
         }
 
-        @Test func recognizesTheTextOfAnImage() throws {
+        @Test(.enabled(if: TextRecognitionAvailability.answers, TextRecognitionAvailability.reason))
+        func recognizesTheTextOfAnImage() throws {
             let url = folder.url("photo.png")
             try ContentFixtures.writePNG(lines: ["Invoice 4711"], to: url)
             #expect(extractor.content(of: url, kinds: [.text]).text?.contains("4711") == true)
