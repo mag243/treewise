@@ -6,6 +6,11 @@ All notable changes to Treewise are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Extract All… unpacks zip, tar, `.tar.gz`, `.tar.bz2`, `.tar.xz`, 7z, rar, iso, cpio and xar archives to a new folder, from the command bar, the context menu and the File menu. Nothing lands in the destination unless the whole archive extracted.
+- Compress to ZIP puts an archive next to the selection and starts renaming it; Compress to also makes 7z and `.tar.gz` files. A zip or 7z leaves out `__MACOSX`, `._` files, `.DS_Store` and extended attributes.
+- Suggest Names for Whole Folder… in the context menu and the File menu, for a folder so full that a right click always lands on a file.
+
 ## [0.6.0] - 2026-11-09
 
 ### Added
