@@ -20,8 +20,9 @@ final class SidebarOutline: NSOutlineView {
         dragEnded?()
     }
 
+    // No `super`: NSOutlineView does not implement this optional method, and
+    // calling it ends the app.
     override func draggingEnded(_ sender: any NSDraggingInfo) {
-        super.draggingEnded(sender)
         dragEnded?()
     }
 }
