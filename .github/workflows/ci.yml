@@ -1,10 +1,18 @@
-# Builds and tests Treewise when started by hand after a push
-# (Actions > CI > Run workflow; ADR 0010, 0075). Before a push the gate is local:
-# tools/build.sh verify and the git hooks. A release needs tools/build.sh ci
-# on the owner's Mac.
+# Builds and tests Treewise after each push to main, once a week and when started
+# by hand (ADR 0075). The weekly run finds what changes without a commit, such as
+# the runner's image. Before a push the gate is local: tools/build.sh verify and
+# the git hooks. A release needs tools/build.sh ci on the owner's Mac.
 name: CI
 
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - README.md
+      - CHANGELOG.md
+  schedule:
+    # Sunday evening; GitHub's schedule is in UTC and may start late.
+    - cron: "0 20 * * 0"
   workflow_dispatch:
 
 concurrency:
