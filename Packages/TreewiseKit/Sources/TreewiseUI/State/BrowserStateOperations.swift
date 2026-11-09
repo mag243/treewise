@@ -250,7 +250,7 @@ extension BrowserState {
         }
     }
 
-    private func selectInFocusedTab(_ items: [FileItem]) {
+    func selectInFocusedTab(_ items: [FileItem]) {
         guard !items.isEmpty else { return }
         setSelection(Set(items.map(\.id)), in: layout.focusedPane.activeTabID)
     }

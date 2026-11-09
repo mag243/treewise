@@ -28,6 +28,11 @@ struct CommandBarActions: View {
             action("Rename", "pencil", disabled: !browser.canRenameSelection) {
                 browser.renameRequest = selection.first?.id
             }
+            if browser.canExtractSelection {
+                action("Extract All…", "arrow.up.bin") {
+                    ArchiveCommands(browser: browser, undoManager: undoManager).extract()
+                }
+            }
             ShareLink(items: selection.map { URL(fileURLWithPath: $0.id.rawValue) }) {
                 Label("Share", systemImage: "square.and.arrow.up")
             }

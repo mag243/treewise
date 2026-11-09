@@ -71,7 +71,7 @@ public final class ChangingFileSystem: FileOperating {
         }
     }
 
-    private func waitWhileHeld() async throws {
+    func waitWhileHeld() async throws {
         while state.withLock({ $0.isHeld }) { await Task.yield() }
         if Task.isCancelled { throw FileSystemError.cancelled }
     }

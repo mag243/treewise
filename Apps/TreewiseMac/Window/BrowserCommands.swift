@@ -38,6 +38,10 @@ struct BrowserActions {
     /// Whether names can be suggested for the selection or the folder (ADR 0057).
     var canSuggestNames: Bool { browser.canSuggestNames }
     func suggestNames() { NameReviewWindow.show(for: browser, undoManager: undoManager) }
+    var canExtract: Bool { browser.canExtractSelection }
+    var canCompress: Bool { browser.canCompressSelection }
+    /// Extracting and compressing the selection (ADR 0074).
+    var archives: ArchiveCommands { ArchiveCommands(browser: browser, undoManager: undoManager) }
     func moveToTrash() {
         Task { await browser.moveSelectionToTrash(undoManager: undoManager) }
     }
@@ -135,6 +139,15 @@ struct BrowserCommands: Commands {
                 .disabled(!(actions?.hasSelection ?? false))
             Button("Suggest Names…") { actions?.suggestNames() }
                 .disabled(!(actions?.canSuggestNames ?? false))
+            Button("Extract All…") { actions?.archives.extract() }
+                .disabled(!(actions?.canExtract ?? false))
+            Button("Compress to ZIP") { actions?.archives.compress(to: .zip) }
+                .disabled(!(actions?.canCompress ?? false))
+            Menu("Compress to") {
+                Button("7z File") { actions?.archives.compress(to: .sevenZip) }
+                Button("TAR.GZ File") { actions?.archives.compress(to: .tarGzip) }
+            }
+            .disabled(!(actions?.canCompress ?? false))
             Button("Rename") { actions?.rename() }
                 .disabled(!(actions?.canRename ?? false))
             Button("Rename with Suggestions") { actions?.renameWithSuggestions() }

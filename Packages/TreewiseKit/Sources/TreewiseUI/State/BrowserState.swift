@@ -50,6 +50,8 @@ public final class BrowserState {
     @ObservationIgnored let fileSystem: any FileSystemProviding
     /// The provider's operations, when it can change files.
     @ObservationIgnored let operations: (any FileOperating)?
+    /// The provider's archive engine, when it has one (ADR 0074).
+    @ObservationIgnored let archives: (any ArchiveOperating)?
     @ObservationIgnored let watcher: any FolderWatching
     @ObservationIgnored private let kinds: KindFormatter
     @ObservationIgnored var watches: [TabModel.ID: Watch] = [:]
@@ -74,6 +76,7 @@ public final class BrowserState {
         self.settings = settings
         self.fileSystem = fileSystem
         operations = fileSystem as? any FileOperating
+        archives = fileSystem as? any ArchiveOperating
         self.watcher = watcher
         kinds = KindFormatter(locale: locale)
         layout = PaneLayout(at: startFolder)

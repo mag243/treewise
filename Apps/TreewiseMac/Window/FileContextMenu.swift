@@ -70,6 +70,7 @@ struct FileContextMenu {
         menu.addItem(.separator())
         addClipboardItems(for: items, to: menu)
         if !items.isEmpty { addOtherWindowItems(to: menu) }
+        if !items.isEmpty { addArchiveItems(to: menu) }
         menu.addItem(.separator())
         menu.addItem(terminalItem(for: items))
         menu.addItem(suggestNamesItem())
@@ -121,6 +122,40 @@ struct FileContextMenu {
             await WindowTabs.shared.send(
                 selectionOf: browser, mode: mode, from: window, undoManager: undoManager)
         }
+    }
+
+    /// Extract All, for an archive, and the ways to compress the selection (ADR 0074).
+    private func addArchiveItems(to menu: NSMenu) {
+        let commands = ArchiveCommands(browser: browser, undoManager: undoManager)
+        let canCompress = browser.canCompressSelection
+        menu.addItem(.separator())
+        if browser.canExtractSelection {
+            menu.addItem(
+                ClosureMenuItem(String(localized: "Extract All…"), symbol: "arrow.up.bin") {
+                    commands.extract()
+                })
+        }
+        menu.addItem(
+            ClosureMenuItem(
+                String(localized: "Compress to ZIP"), symbol: "archivebox", enabled: canCompress
+            ) {
+                commands.compress(to: .zip)
+            })
+        let others = NSMenu()
+        others.addItem(
+            ClosureMenuItem(String(localized: "7z File"), symbol: "archivebox") {
+                commands.compress(to: .sevenZip)
+            })
+        others.addItem(
+            ClosureMenuItem(String(localized: "TAR.GZ File"), symbol: "archivebox") {
+                commands.compress(to: .tarGzip)
+            })
+        let compressTo = NSMenuItem(
+            title: String(localized: "Compress to"), action: nil, keyEquivalent: "")
+        compressTo.image = NSImage(systemSymbolName: "archivebox", accessibilityDescription: nil)
+        compressTo.isEnabled = canCompress
+        compressTo.submenu = others
+        menu.addItem(compressTo)
     }
 
     /// Suggest Names, for the selection or the folder (ADR 0057).

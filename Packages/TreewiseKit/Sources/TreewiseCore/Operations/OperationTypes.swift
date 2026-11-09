@@ -15,25 +15,44 @@ public protocol ConflictResolving: Sendable {
     func decide(existing: FileItem, incoming: FileItem) async -> ConflictDecision
 }
 
-/// How far a transfer is, in the bytes it copies (ADR 0021).
+/// How far an operation is (ADR 0021): a transfer in the bytes it copies, an
+/// archive operation in its entries, as `tar` reports no bytes (ADR 0074).
 public struct OperationProgress: Sendable, Hashable {
-    /// The bytes copied so far.
+    /// What an operation with progress does, which says what it counts.
+    public enum Kind: Sendable, Hashable {
+        /// Copying or moving: counts bytes.
+        case copying
+        /// Extracting an archive: counts entries.
+        case extracting
+        /// Compressing to an archive: counts entries.
+        case compressing
+    }
+
+    /// The bytes copied or entries handled so far.
     public var completedBytes: Int64
-    /// All bytes the transfer copies; a move within a volume copies none.
+    /// All bytes the transfer copies, a move within a volume none, or all
+    /// entries of an archive; 0 while they are not yet counted.
     public var totalBytes: Int64
-    /// The file being copied now, or `nil` between items.
+    /// The file being handled now, or `nil` between items.
     public var currentName: String?
+    /// What the operation does.
+    public var kind: Kind
 
     /// Creates a progress value.
-    public init(completedBytes: Int64, totalBytes: Int64, currentName: String? = nil) {
+    public init(
+        completedBytes: Int64, totalBytes: Int64, currentName: String? = nil, kind: Kind = .copying
+    ) {
         self.completedBytes = completedBytes
         self.totalBytes = totalBytes
         self.currentName = currentName
+        self.kind = kind
     }
 
-    /// The part done, from 0 to 1; 1 for a transfer that copies nothing.
+    /// The part done, from 0 to 1. A transfer that copies nothing is done; an
+    /// archive operation without a total has not started counting.
     public var fraction: Double {
-        totalBytes == 0 ? 1 : Double(completedBytes) / Double(totalBytes)
+        guard totalBytes != 0 else { return kind == .copying ? 1 : 0 }
+        return min(1, Double(completedBytes) / Double(totalBytes))
     }
 }
 
