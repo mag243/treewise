@@ -79,8 +79,9 @@ removals="$(grep -rn --include='*.swift' 'removeItem(' "$SOURCES" "$ROOT_DIR/App
   grep -v "$SOURCES/TreewiseFileSystem/FileOperationRunner.swift:" |
   grep -v "$SOURCES/TreewiseFileSystem/FileCopier.swift:" |
   grep -v "$SOURCES/TreewiseFileSystem/PromiseInbox.swift:" |
+  grep -v "$SOURCES/TreewiseFileSystem/Archives/ArchiveWorkspace.swift:" |
   grep -v "$SOURCES/TreewiseTestSupport/" | sed "s|^$ROOT_DIR/||" || true)"
-report "Only FileOperationRunner, its FileCopier and PromiseInbox may call removeItem (ADR 0004, 0020); use TrashService" \
+report "Only FileOperationRunner, its FileCopier, PromiseInbox and ArchiveWorkspace may call removeItem (ADR 0004, 0020, 0074); use TrashService" \
   "$removals"
 
 ((found == 0)) || exit 1

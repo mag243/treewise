@@ -23,6 +23,12 @@ public enum FileSystemError: Error, Hashable, Sendable {
     case notEnoughSpace(FileItem.ID)
     /// The volume could not be ejected, with the system's reason (ADR 0044).
     case notEjected(FileItem.ID, String)
+    /// The archive is damaged, or holds an entry that may not be extracted.
+    case archiveDamaged(FileItem.ID)
+    /// The archive is protected with a password (ADR 0074).
+    case archivePasswordProtected(FileItem.ID)
+    /// The file is not in a format the archive engine can read.
+    case archiveFormatUnknown(FileItem.ID)
     /// A failure without a case of its own, with the system's description of it.
     case unexpected(String)
 }

@@ -9,7 +9,7 @@ import TreewiseCore
 /// size and number of items, and only then the removal of the source: the one
 /// place where Treewise removes a user's file without the Trash (ADR 0004).
 public actor FileOperationRunner: FileOperating {
-    private let reader: LocalFileSystem
+    let reader: LocalFileSystem
     private let trashService = TrashService()
 
     /// Creates a runner that reads and writes the local disk.
@@ -138,7 +138,7 @@ public actor FileOperationRunner: FileOperating {
         return try await reader.item(at: FileItem.ID(created.path))
     }
 
-    private func url(_ id: FileItem.ID) -> URL {
+    func url(_ id: FileItem.ID) -> URL {
         URL(fileURLWithPath: id.rawValue)
     }
 

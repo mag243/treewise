@@ -27,6 +27,15 @@ import TreewiseUI
             .notEnoughSpace("/Users/x/Raw footage"),
             "There isn’t enough space to copy “Raw footage”."
         ),
+        (.archiveDamaged("/Users/x/Photos.zip"), "“Photos.zip” is damaged and can’t be extracted."),
+        (
+            .archivePasswordProtected("/Users/x/Photos.zip"),
+            "“Photos.zip” is protected with a password."
+        ),
+        (
+            .archiveFormatUnknown("/Users/x/Photos.zip"),
+            "“Photos.zip” isn’t in a format Treewise can extract."
+        ),
         (.unexpected("The disk was ejected."), "The operation failed: The disk was ejected."),
         (
             .notEjected("/Volumes/T7", "It is in use by another app."),

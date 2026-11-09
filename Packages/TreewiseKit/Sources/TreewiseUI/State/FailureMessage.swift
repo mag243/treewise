@@ -21,7 +21,8 @@ public enum FailureMessage {
                 locale: locale)
         case .notFound(let id), .notReadable(let id), .notWritable(let id),
             .alreadyExists(let id), .verificationFailed(let id), .outsideBoundary(let id),
-            .trashUnavailable(let id), .notEnoughSpace(let id):
+            .trashUnavailable(let id), .notEnoughSpace(let id), .archiveDamaged(let id),
+            .archivePasswordProtected(let id), .archiveFormatUnknown(let id):
             return itemText(for: failure, name: name(id), bundle: bundle, locale: locale)
         }
     }
@@ -61,8 +62,30 @@ public enum FailureMessage {
             return String(
                 localized: "There isn’t enough space to copy “\(name)”.", bundle: bundle,
                 locale: locale)
+        case .archiveDamaged, .archivePasswordProtected, .archiveFormatUnknown:
+            return archiveText(for: failure, name: name, bundle: bundle, locale: locale)
         case .invalidName, .cancelled, .unexpected, .notEjected:
             preconditionFailure("failure is about one item; text(for:) explains the others")
+        }
+    }
+
+    /// The explanation of a failure about an archive, naming it.
+    private static func archiveText(
+        for failure: FileSystemError, name: String, bundle: Bundle, locale: Locale
+    ) -> String {
+        switch failure {
+        case .archivePasswordProtected:
+            return String(
+                localized: "“\(name)” is protected with a password.", bundle: bundle,
+                locale: locale)
+        case .archiveFormatUnknown:
+            return String(
+                localized: "“\(name)” isn’t in a format Treewise can extract.", bundle: bundle,
+                locale: locale)
+        default:
+            return String(
+                localized: "“\(name)” is damaged and can’t be extracted.", bundle: bundle,
+                locale: locale)
         }
     }
 
