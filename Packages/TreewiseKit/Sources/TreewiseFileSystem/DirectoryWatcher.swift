@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import TreewiseCore
 
 /// Watches a folder's entries with a `DispatchSource` on its file descriptor
@@ -23,6 +24,9 @@ public struct DirectoryWatcher: FolderWatching {
 
     public func changes(of folder: FileItem.ID) -> AsyncStream<Void> {
         if folder == .computer { return mountTableChanges() }
+        #if os(macOS)
+            if let place = ArchivePath(folder) { return changes(ofArchive: place.archive) }
+        #endif
         let path = folder.rawValue
         return AsyncStream { continuation in
             let descriptor = open(path, O_EVTONLY)
@@ -50,6 +54,34 @@ public struct DirectoryWatcher: FolderWatching {
             source.resume()
         }
     }
+
+    #if os(macOS)
+        /// Reports an archive changing or going away, heard through the folder
+        /// that holds it: something else in that folder changing is no change
+        /// to the archive, so its size and date decide (ADR 0076).
+        private func changes(ofArchive archive: FileItem.ID) -> AsyncStream<Void> {
+            let path = archive.rawValue
+            let folder = (path as NSString).deletingLastPathComponent
+            return AsyncStream { continuation in
+                let last = Mutex(ArchiveSignature(path: path))
+                let stop = FileEvents.watch(folder: folder) {
+                    let current = ArchiveSignature(path: path)
+                    let changed = last.withLock { signature -> Bool in
+                        defer { signature = current }
+                        return signature != current
+                    }
+                    guard changed else { return }
+                    continuation.yield()
+                    if current == nil { continuation.finish() }
+                }
+                guard let stop else {
+                    continuation.finish()
+                    return
+                }
+                continuation.onTermination = { _ in stop() }
+            }
+        }
+    #endif
 
     private func fileEvents(
         of folder: FileItem.ID, onChange: @escaping @Sendable () -> Void
