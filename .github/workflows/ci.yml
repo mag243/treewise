@@ -38,8 +38,29 @@ jobs:
       - name: Set up the environment
         run: tools/setup.sh --no-simulator
 
-      - name: Check, test, build
-        run: tools/build.sh ci
+      # The same as tools/build.sh ci, in separate steps: each shows its own time.
+      - name: Sample package tests that hang
+        # Healthy package tests take seconds, so any still running after six minutes
+        # hang. The samples show where each thread waits; the patterns are bracketed
+        # so that they do not match this shell's own command line.
+        run: |
+          nohup bash -c '
+            sleep 360
+            mkdir -p build/logs
+            for pid in $(pgrep -f "[s]wiftpm-testing-helper|[T]reewiseKitPackageTests"); do
+              sample "$pid" 5 -file "build/logs/hang-$pid.txt"
+            done
+          ' >/dev/null 2>&1 &
+
+      - name: Check and package tests
+        timeout-minutes: 10
+        run: tools/build.sh quick
+
+      - name: Build both apps
+        run: tools/build.sh build
+
+      - name: UI tests
+        run: tools/build.sh apptest
 
       - name: Keep logs and test results
         # Also after a timeout, which counts as cancelled and not as a failure.
