@@ -4,11 +4,11 @@
 # GitHub Release with the zip and the disk image, commits the appcast and the
 # download link to the site branch (ADR 0056), and writes the Homebrew cask (ADR 0033).
 #
-# Usage: tools/publish.sh      (tools/build.sh publish, or the release workflow)
+# Usage: tools/publish.sh      (through tools/build.sh publish)
 #
 # Signs with the Sparkle key in the keychain, or with SPARKLE_PRIVATE_KEY when it
 # is set; pushes with the git and gh login it runs under. It pushes to public
-# repositories, so only the owner or the release workflow runs it.
+# repositories, so only the owner runs it.
 set -euo pipefail
 # shellcheck source=tools/lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -26,14 +26,9 @@ release_file() {
   printf '%s\n' "${files[0]}"
 }
 
-# Commits all changes of a clone and pushes them; the release workflow commits
-# as its bot, the owner as themselves.
+# Commits all changes of a clone and pushes them.
 commit_and_push() {
   local clone="$1" message="$2"
-  if [[ "${CI:-}" == true ]]; then
-    git -C "$clone" config user.name "github-actions[bot]"
-    git -C "$clone" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-  fi
   git -C "$clone" add -A
   git -C "$clone" commit --quiet -m "$message"
   git -C "$clone" push --quiet
