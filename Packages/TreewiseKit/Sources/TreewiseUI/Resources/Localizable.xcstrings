@@ -98,6 +98,22 @@
         }
       }
     },
+    "An archive can’t be changed. Extract it first." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Archiv kann nicht geändert werden. Entpacke es zuerst."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een archief kan niet worden gewijzigd. Pak het eerst uit."
+          }
+        }
+      }
+    },
     "An item named “%@” already exists in this location." : {
       "comment" : "Message when an operation fails; %@ is the item's name",
       "localizations" : {

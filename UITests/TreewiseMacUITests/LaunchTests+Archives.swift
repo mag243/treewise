@@ -105,4 +105,34 @@ extension LaunchTests {
         XCTAssertEqual(name.value as? String, "Zebra.zip")
         XCTAssertTrue(name.isHittable, "the archive is in view")
     }
+
+    @MainActor
+    func testAZipOpensAsAFolderAndAFileCopiesOutOfIt() throws {
+        let root = try XCTUnwrap(self.root)
+        try XCTUnwrap(Data(base64Encoded: Self.archive))
+            .write(to: root.appendingPathComponent("Photos.zip"))
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let row = window.tables.staticTexts["Photos.zip"]
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout))
+
+        row.doubleClick()
+
+        let inside = window.tables.staticTexts["inside.txt"]
+        XCTAssertTrue(inside.appeared(timeout: Self.launchTimeout), "the zip opens as a folder")
+        inside.click()
+        app.typeKey("c", modifierFlags: .command)
+        app.typeKey("[", modifierFlags: .command)
+        XCTAssertTrue(
+            window.tables.staticTexts["Photos.zip"].appeared(timeout: Self.launchTimeout),
+            "going back leaves the zip")
+        app.typeKey("v", modifierFlags: .command)
+
+        XCTAssertTrue(
+            window.tables.staticTexts["inside.txt"].appeared(timeout: Self.launchTimeout),
+            "the file lands beside the zip")
+        XCTAssertEqual(
+            try String(contentsOf: root.appendingPathComponent("inside.txt"), encoding: .utf8),
+            "from the archive")
+    }
 }
