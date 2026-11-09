@@ -21,8 +21,9 @@
         ///
         /// Postcondition: the archive is changed as asked, or exactly as it was.
         static func apply(
-            _ job: Job, onProgress: ArchiveProgressHandler, control: TransferControl
-        ) throws {
+            _ job: Job, versions: ArchiveVersions, onProgress: ArchiveProgressHandler,
+            control: TransferControl
+        ) throws -> UndoRecord {
             let workspace = try ArchiveWorkspace(in: job.url.deletingLastPathComponent())
             defer { workspace.discard() }
             try checkSpace(for: job)
@@ -33,8 +34,7 @@
             if run.usesZip, (try? run.updateWithZip(candidate)) == true,
                 try isExpected(candidate, run, control)
             {
-                try replace(job, with: candidate)
-                return
+                return try finish(job, candidate, workspace, versions)
             }
             guard !control.isStopped else { throw FileSystemError.cancelled }
             ArchiveWorkspace.remove(candidate)
@@ -42,7 +42,41 @@
             guard try isExpected(candidate, run, control) else {
                 throw FileSystemError.archiveDamaged(job.archive)
             }
-            try replace(job, with: candidate)
+            return try finish(job, candidate, workspace, versions)
+        }
+
+        /// Puts a kept version of an archive back.
+        ///
+        /// - Returns: the version that redoes the change.
+        static func restore(_ version: ArchiveVersion, versions: ArchiveVersions) throws
+            -> ArchiveVersion
+        {
+            let archive = URL(fileURLWithPath: version.archive.rawValue)
+            guard ArchiveSignature(path: archive.path)?.text == version.signature else {
+                throw FileSystemError.archiveChangedSince(version.archive)
+            }
+            let workspace = try ArchiveWorkspace(in: archive.deletingLastPathComponent())
+            defer { workspace.discard() }
+            let redo = try versions.keep(archive, of: version.archive)
+            let copy = workspace.url.appendingPathComponent(archive.lastPathComponent)
+            try FileManager.default.copyItem(
+                at: URL(fileURLWithPath: version.file.rawValue), to: copy)
+            try replace(archive, id: version.archive, with: copy)
+            return ArchiveVersion(
+                archive: version.archive, file: FileItem.ID(redo.path),
+                signature: ArchiveSignature(path: archive.path)?.text ?? "")
+        }
+
+        /// Keeps the old version and puts the new archive in its place.
+        private static func finish(
+            _ job: Job, _ candidate: URL, _ workspace: ArchiveWorkspace, _ versions: ArchiveVersions
+        ) throws -> UndoRecord {
+            let kept = try versions.keepCurrent(of: job.archive, in: workspace)
+            try replace(job.url, id: job.archive, with: candidate)
+            return .archiveVersion(
+                ArchiveVersion(
+                    archive: job.archive, file: FileItem.ID(kept.path),
+                    signature: ArchiveSignature(path: job.url.path)?.text ?? ""))
         }
 
         private static func isExpected(
@@ -69,13 +103,13 @@
             }
         }
 
-        private static func replace(_ job: Job, with candidate: URL) throws {
+        private static func replace(_ archive: URL, id: FileItem.ID, with candidate: URL) throws {
             do {
-                try FileCoordination.write(job.url) {
+                try FileCoordination.write(archive) {
                     _ = try FileManager.default.replaceItemAt($0, withItemAt: candidate)
                 }
             } catch {
-                throw TrashService.error(error, for: job.archive)
+                throw TrashService.error(error, for: id)
             }
         }
     }

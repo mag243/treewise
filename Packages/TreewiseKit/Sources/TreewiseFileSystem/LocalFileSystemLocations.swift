@@ -23,13 +23,16 @@ extension LocalFileSystem {
         public var addedFolders: [URL]
         /// Whether a file is kept only online; asked only inside a cloud folder.
         public var isOnlyOnline: @Sendable (URL) -> Bool
+        /// What moves the original of a changed archive to the Trash (ADR 0078).
+        public var moveToTrash: @Sendable (URL) throws -> Void
 
         /// Creates the set of folders, the source of mounted volumes and the boundary.
         public init(
             home: URL, applications: URL,
             mountedVolumes: @escaping @Sendable () -> [URL] = Locations.systemVolumes,
             boundary: [URL]? = nil, addedFolders: [URL] = [],
-            isOnlyOnline: @escaping @Sendable (URL) -> Bool = Locations.systemIsOnlyOnline
+            isOnlyOnline: @escaping @Sendable (URL) -> Bool = Locations.systemIsOnlyOnline,
+            moveToTrash: @escaping @Sendable (URL) throws -> Void = Locations.systemMoveToTrash
         ) {
             self.home = home
             self.applications = applications
@@ -37,6 +40,12 @@ extension LocalFileSystem {
             self.boundary = boundary
             self.addedFolders = addedFolders
             self.isOnlyOnline = isOnlyOnline
+            self.moveToTrash = moveToTrash
+        }
+
+        /// Moves a file to the Trash of its volume.
+        public static func systemMoveToTrash(_ file: URL) throws {
+            _ = try TrashService().trash(FileItem.ID(file.path))
         }
 
         /// What macOS reports: a file not downloaded is only online (ADR 0051).

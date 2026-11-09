@@ -97,6 +97,8 @@ public indirect enum UndoRecord: Sendable, Hashable {
     case trash([FileItem.ID])
     /// Put items back from the Trash.
     case restore([TrashedItem])
+    /// Put an archive back as it was (ADR 0078).
+    case archiveVersion(ArchiveVersion)
     /// Undo several steps, in this order.
     case sequence([UndoRecord])
 }

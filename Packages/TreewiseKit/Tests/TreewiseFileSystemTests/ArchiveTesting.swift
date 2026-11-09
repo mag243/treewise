@@ -13,10 +13,26 @@
         func runner(_ directory: TempDirectory, boundary: [URL]? = nil)
             -> FileOperationRunner
         {
-            FileOperationRunner(
-                locations: .init(
-                    home: directory.url("home"), applications: directory.url("Applications"),
-                    boundary: boundary))
+            FileOperationRunner(locations: locations(directory, boundary: boundary))
+        }
+
+        /// Locations whose Trash is a folder of `directory`: a test never touches
+        /// the real one.
+        func locations(_ directory: TempDirectory, boundary: [URL]? = nil)
+            -> LocalFileSystem.Locations
+        {
+            let trash = directory.url("trash")
+            return .init(
+                home: directory.url("home"), applications: directory.url("Applications"),
+                boundary: boundary,
+                moveToTrash: { file in
+                    try FileManager.default.createDirectory(
+                        at: trash, withIntermediateDirectories: true)
+                    try FileManager.default.moveItem(
+                        at: file,
+                        to: trash.appendingPathComponent(UUID().uuidString + file.lastPathComponent)
+                    )
+                })
         }
 
         func id(_ directory: TempDirectory, _ path: String) -> FileItem.ID {
@@ -37,10 +53,11 @@
                 as: "Out", onProgress: onProgress, control: control)
         }
 
+        @discardableResult
         func apply(
             _ edit: ArchiveEdit, to name: String, in directory: TempDirectory,
             control: TransferControl = TransferControl()
-        ) async throws {
+        ) async throws -> UndoRecord {
             try await runner(directory).apply(
                 edit, to: id(directory, name), onProgress: { _ in }, control: control)
         }

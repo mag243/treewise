@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         MainActor.assumeIsolated {
             WindowSession.saveForQuitting()
             ArchiveEntryDrag.releasePromises()
+            FileOperationRunner.removeLeftoverArchiveCopies(in: LaunchOptions.locations)
         }
         return .terminateNow
     }

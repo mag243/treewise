@@ -38,13 +38,22 @@ public protocol ArchiveOperating: Sendable {
     ///
     /// Postcondition: the archive is changed as asked, or exactly as it was.
     ///
+    /// - Returns: what undoes the change.
     /// - Throws: `archiveReadOnly` for a format that cannot change,
     ///   `archivePasswordProtected`, `archiveDamaged`, `notEnoughSpace`, or
     ///   `cancelled` when `control` stopped it.
+    @discardableResult
     func apply(
         _ edit: ArchiveEdit, to archive: FileItem.ID,
         onProgress: @escaping ArchiveProgressHandler, control: TransferControl
-    ) async throws
+    ) async throws -> UndoRecord
+
+    /// Puts an archive back as a kept version has it.
+    ///
+    /// - Returns: what redoes the change.
+    /// - Throws: `archiveChangedSince` when the archive differs from how the
+    ///   change left it.
+    func restore(_ version: ArchiveVersion) async throws -> ArchiveVersion
 
     /// Removes the copies made from an archive.
     func releaseCache(of archive: FileItem.ID) async

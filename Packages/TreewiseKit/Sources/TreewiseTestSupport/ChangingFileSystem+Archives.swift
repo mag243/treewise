@@ -18,11 +18,17 @@ extension ChangingFileSystem: ArchiveOperating {
         return URL(fileURLWithPath: "/cache/" + item.name)
     }
 
+    @discardableResult
     public func apply(
         _ edit: ArchiveEdit, to archive: FileItem.ID,
         onProgress: @escaping ArchiveProgressHandler, control: TransferControl
-    ) async throws {
+    ) async throws -> UndoRecord {
         try await prepare(onProgress: onProgress, control: control)
+        return .none
+    }
+
+    public func restore(_ version: ArchiveVersion) async throws -> ArchiveVersion {
+        version
     }
 
     public func writeEntry(_ entry: FileItem, toPromisedFile file: URL) async throws {

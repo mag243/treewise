@@ -14,6 +14,8 @@ public actor FileOperationRunner: FileOperating {
     #if os(macOS)
         /// The copies of entries of archives this window shows (ADR 0076).
         let archiveCache: ArchiveCache
+        /// The kept versions of the archives this window changed (ADR 0078).
+        let archiveVersions: ArchiveVersions
     #endif
 
     /// Creates a runner that reads and writes the local disk.
@@ -21,6 +23,7 @@ public actor FileOperationRunner: FileOperating {
         reader = LocalFileSystem(locations: locations)
         #if os(macOS)
             archiveCache = ArchiveCache(in: locations.archiveCacheFolder)
+            archiveVersions = ArchiveVersions(locations: locations)
         #endif
     }
 

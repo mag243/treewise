@@ -118,6 +118,12 @@ extension FileOperating {
             var restored: [FileItem] = []
             for item in trashed { restored.append(try await restore(item)) }
             return OperationResult(items: restored, undo: .trash(restored.map(\.id)))
+        case .archiveVersion(let version):
+            guard let archives = self as? any ArchiveOperating else {
+                throw FileSystemError.notWritable(version.archive)
+            }
+            return OperationResult(
+                items: [], undo: .archiveVersion(try await archives.restore(version)))
         case .sequence(let records):
             var items: [FileItem] = []
             var redo: [UndoRecord] = []

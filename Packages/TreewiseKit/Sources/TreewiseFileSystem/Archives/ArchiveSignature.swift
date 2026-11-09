@@ -7,6 +7,9 @@
         private let seconds: Int
         private let nanoseconds: Int
 
+        /// The signature as text, to keep with a version of the archive.
+        var text: String { "\(size)-\(seconds)-\(nanoseconds)" }
+
         /// Reads the signature of the file at `path`, following a link, or
         /// returns `nil` when no regular file is there.
         init?(path: String) {

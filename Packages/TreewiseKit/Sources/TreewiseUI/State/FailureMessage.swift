@@ -27,7 +27,8 @@ public enum FailureMessage {
         case .notFound(let id), .notReadable(let id), .notWritable(let id),
             .alreadyExists(let id), .verificationFailed(let id), .outsideBoundary(let id),
             .trashUnavailable(let id), .notEnoughSpace(let id), .archiveDamaged(let id),
-            .archivePasswordProtected(let id), .archiveFormatUnknown(let id):
+            .archivePasswordProtected(let id), .archiveFormatUnknown(let id),
+            .archiveChangedSince(let id):
             return itemText(for: failure, name: name(id), bundle: bundle, locale: locale)
         }
     }
@@ -67,7 +68,8 @@ public enum FailureMessage {
             return String(
                 localized: "There isn’t enough space to copy “\(name)”.", bundle: bundle,
                 locale: locale)
-        case .archiveDamaged, .archivePasswordProtected, .archiveFormatUnknown:
+        case .archiveDamaged, .archivePasswordProtected, .archiveFormatUnknown,
+            .archiveChangedSince:
             return archiveText(for: failure, name: name, bundle: bundle, locale: locale)
         case .invalidName, .cancelled, .unexpected, .notEjected, .archiveReadOnly:
             preconditionFailure("failure is about one item; text(for:) explains the others")
@@ -82,6 +84,10 @@ public enum FailureMessage {
         case .archivePasswordProtected:
             return String(
                 localized: "“\(name)” is protected with a password.", bundle: bundle,
+                locale: locale)
+        case .archiveChangedSince:
+            return String(
+                localized: "“\(name)” changed since, so this can’t be undone.", bundle: bundle,
                 locale: locale)
         case .archiveFormatUnknown:
             return String(

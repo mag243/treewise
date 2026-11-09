@@ -54,17 +54,28 @@
             return try await archiveCache.copy(of: place, in: tree)
         }
 
+        public func restore(_ version: ArchiveVersion) async throws -> ArchiveVersion {
+            try reader.checkBoundary(version.archive)
+            let versions = archiveVersions
+            return try await FileCopier.run {
+                try ArchiveUpdater.restore(version, versions: versions)
+            }
+        }
+
+        @discardableResult
         public func apply(
             _ edit: ArchiveEdit, to archive: FileItem.ID,
             onProgress: @escaping ArchiveProgressHandler, control: TransferControl
-        ) async throws {
+        ) async throws -> UndoRecord {
             try reader.checkBoundary(archive)
             let place = ArchivePath(archive: archive)
             guard place.isChangeable else { throw FileSystemError.archiveReadOnly }
             let job = ArchiveUpdater.Job(
                 archive: archive, edit: edit, tree: try await reader.archiveTree(for: place))
-            try await FileCopier.run(control: control) {
-                try ArchiveUpdater.apply(job, onProgress: onProgress, control: control)
+            let versions = archiveVersions
+            return try await FileCopier.run(control: control) {
+                try ArchiveUpdater.apply(
+                    job, versions: versions, onProgress: onProgress, control: control)
             }
         }
 
@@ -76,6 +87,7 @@
         /// Removes the copies an earlier run left behind. Call once, at launch,
         /// before any window has made copies.
         public static func removeLeftoverArchiveCopies(in locations: LocalFileSystem.Locations) {
+            ArchiveVersions.removeAll(in: locations)
             ArchiveCache.removeLeftovers(in: locations.archiveCacheFolder)
         }
 
