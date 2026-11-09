@@ -157,4 +157,70 @@ extension LaunchTests {
             window.outlines.staticTexts["Photos.zip"].appeared(timeout: Self.launchTimeout),
             "the sidebar shows the zip")
     }
+
+    /// A drag out of a zip carries a promise that a drop within Treewise does
+    /// not use; left open, it holds up quitting.
+    @MainActor
+    func testQuittingAfterDraggingOutOfAZipWithinTreewise() throws {
+        let root = try XCTUnwrap(self.root)
+        try XCTUnwrap(Data(base64Encoded: Self.archive))
+            .write(to: root.appendingPathComponent("Photos.zip"))
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let zip = window.tables.staticTexts["Photos.zip"]
+        XCTAssertTrue(zip.appeared(timeout: Self.launchTimeout))
+        zip.doubleClick()
+        let inside = window.tables.staticTexts["inside.txt"]
+        XCTAssertTrue(inside.appeared(timeout: Self.launchTimeout))
+        let target = window.outlines.staticTexts["Projects"].firstMatch
+        XCTAssertTrue(target.appeared(timeout: Self.launchTimeout))
+
+        let centre = CGVector(dx: 0.5, dy: 0.5)
+        inside.coordinate(withNormalizedOffset: centre).click(
+            forDuration: Self.dragHold,
+            thenDragTo: target.coordinate(withNormalizedOffset: centre),
+            withVelocity: .slow, thenHoldForDuration: Self.dragHold)
+
+        let landed = root.appendingPathComponent("Projects/inside.txt").path
+        let deadline = Date().addingTimeInterval(Self.launchTimeout)
+        while !FileManager.default.fileExists(atPath: landed), Date() < deadline {
+            Thread.sleep(forTimeInterval: Self.landingPoll)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: landed), "the file lands")
+        assertQuitsPromptly(app)
+    }
+
+    @MainActor
+    func testQuittingAfterADragOutOfAZipThatLandsNowhere() throws {
+        let root = try XCTUnwrap(self.root)
+        try XCTUnwrap(Data(base64Encoded: Self.archive))
+            .write(to: root.appendingPathComponent("Photos.zip"))
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let zip = window.tables.staticTexts["Photos.zip"]
+        XCTAssertTrue(zip.appeared(timeout: Self.launchTimeout))
+        zip.doubleClick()
+        let inside = window.tables.staticTexts["inside.txt"]
+        XCTAssertTrue(inside.appeared(timeout: Self.launchTimeout))
+
+        inside.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(
+            forDuration: Self.dragHold,
+            thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.02)),
+            withVelocity: .slow, thenHoldForDuration: Self.dragHold)
+
+        assertQuitsPromptly(app)
+    }
+
+    /// A held-up quit shows in the time, as XCUITest waits for it while it
+    /// sends the key and the app is gone by the time it looks.
+    @MainActor
+    private func assertQuitsPromptly(_ app: XCUIApplication) {
+        let start = Date()
+        app.typeKey("q", modifierFlags: .command)
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.launchTimeout), "Treewise quits")
+        XCTAssertLessThan(Date().timeIntervalSince(start), Self.launchTimeout, "without delay")
+    }
+
+    private static let landingPoll: TimeInterval = 0.2
+    private static let dragHold: TimeInterval = 0.6
 }

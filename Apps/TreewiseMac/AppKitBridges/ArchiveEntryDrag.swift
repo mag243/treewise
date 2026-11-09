@@ -31,6 +31,14 @@ final class ArchiveEntryDrag: NSFilePromiseProvider, NSFilePromiseProviderDelega
             .map { FileItem.ID($0) }
     }
 
+    /// Takes the promises of entries off the drag pasteboard. Call when
+    /// quitting: a promise nobody kept, after a drop within Treewise or a drag
+    /// that landed nowhere, holds up quitting for a minute.
+    static func releasePromises() {
+        let pasteboard = NSPasteboard(name: .drag)
+        if !identifiers(on: pasteboard).isEmpty { pasteboard.clearContents() }
+    }
+
     override func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
         // The promise's own types come first: they are what another app reads.
         super.writableTypes(for: pasteboard) + [Self.entryType]

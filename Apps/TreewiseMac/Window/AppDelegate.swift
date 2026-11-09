@@ -16,7 +16,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        MainActor.assumeIsolated { WindowSession.saveForQuitting() }
+        MainActor.assumeIsolated {
+            WindowSession.saveForQuitting()
+            ArchiveEntryDrag.releasePromises()
+        }
         return .terminateNow
     }
 
