@@ -25,6 +25,10 @@ public struct LocalFileSystem: FileSystemProviding {
 
     /// Where the sidebar's folders and volumes are.
     public let locations: Locations
+    #if os(macOS)
+        /// The listings of the archives shown (ADR 0076).
+        let archiveCatalog = ArchiveCatalog()
+    #endif
     /// The cloud folders at a fixed place, read once: listing a folder asks for
     /// each of its subfolders whether it is one.
     private let fixedCloudFolders: Set<FileItem.ID>
@@ -49,6 +53,7 @@ public struct LocalFileSystem: FileSystemProviding {
     /// The identities of the folders containing a path, nearest first, derived
     /// from the path alone without reading the disk.
     public static func ancestry(_ id: FileItem.ID) -> [FileItem.ID] {
+        if let place = ArchivePath(id) { return [place.parent] + ancestry(place.parent) }
         var components = id.rawValue.split(separator: "/").map(String.init)
         var ancestors: [FileItem.ID] = []
         while !components.isEmpty {
@@ -75,6 +80,7 @@ public struct LocalFileSystem: FileSystemProviding {
     public func contents(of folder: FileItem.ID) async throws -> [FileItem] {
         if folder == .computer { return try await locations() }
         try checkBoundary(folder)
+        if let place = ArchivePath(folder) { return try await archiveContents(of: place) }
         let urls: [URL]
         do {
             urls = try FileManager.default.contentsOfDirectory(
@@ -110,7 +116,11 @@ public struct LocalFileSystem: FileSystemProviding {
     }
 
     public func item(at id: FileItem.ID) async throws -> FileItem {
-        try currentItem(at: id)
+        if let place = ArchivePath(id) {
+            try checkBoundary(id)
+            return try await archiveItem(at: place)
+        }
+        return try currentItem(at: id)
     }
 
     /// Reads an item without suspending, for callers that must answer at once,
@@ -118,6 +128,7 @@ public struct LocalFileSystem: FileSystemProviding {
     public func currentItem(at id: FileItem.ID) throws -> FileItem {
         if id == .computer { return .computer() }
         try checkBoundary(id)
+        if let place = ArchivePath(id) { return try currentArchiveItem(at: place) }
         do {
             return try makeItem(id: id)
         } catch {
@@ -126,7 +137,7 @@ public struct LocalFileSystem: FileSystemProviding {
     }
 
     public func availableCapacity(of folder: FileItem.ID) async throws -> Int64? {
-        if folder == .computer { return nil }
+        if folder == .computer || folder.isInsideArchive { return nil }
         try checkBoundary(folder)
         let values: URLResourceValues
         do {

@@ -62,6 +62,7 @@ public actor FileOperationRunner: FileOperating {
     ) async throws -> FileItem {
         try reader.checkBoundary(item.id)
         try reader.checkBoundary(folder)
+        try refuseInsideArchive(folder)
         let (source, target) = (url(item.id), url(folder).appendingPathComponent(name))
         let copy = try await FileCopier.run(control: control) {
             try FileCoordination.read(source, andWrite: target) { source, target in
@@ -78,6 +79,8 @@ public actor FileOperationRunner: FileOperating {
         onFile: @escaping FileCopyProgress, control: TransferControl
     ) async throws -> FileItem {
         try reader.checkBoundary(item.id)
+        try refuseInsideArchive(item.id)
+        try refuseInsideArchive(folder)
         let target = try await reader.item(at: folder)
         let destination = url(folder).appendingPathComponent(name)
         if target.volume == item.volume {
@@ -98,6 +101,7 @@ public actor FileOperationRunner: FileOperating {
 
     public func trash(_ id: FileItem.ID) async throws -> TrashedItem {
         try reader.checkBoundary(id)
+        try refuseInsideArchive(id)
         let trashService = trashService
         return try await FileCopier.run {
             try Self.mapping(id) {
@@ -126,6 +130,7 @@ public actor FileOperationRunner: FileOperating {
 
     public func createFolder(in folder: FileItem.ID, named name: String) async throws -> FileItem {
         try reader.checkBoundary(folder)
+        try refuseInsideArchive(folder)
         let created = url(folder).appendingPathComponent(name)
         try await FileCopier.run {
             try Self.mapping(folder) {
@@ -140,6 +145,11 @@ public actor FileOperationRunner: FileOperating {
 
     func url(_ id: FileItem.ID) -> URL {
         URL(fileURLWithPath: id.rawValue)
+    }
+
+    /// A second lock behind the rules: an archive cannot be changed (ADR 0076).
+    private func refuseInsideArchive(_ id: FileItem.ID) throws {
+        if id.isInsideArchive { throw FileSystemError.notWritable(id) }
     }
 
     /// Copy, verify, then remove the source, on the copy queue (ADR 0026). On

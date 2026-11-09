@@ -7,6 +7,16 @@ import Synchronization
 /// call blocks until the presenters let go, so callers run it off Swift's
 /// cooperative pool, on the copy queue (ADR 0026).
 enum FileCoordination {
+    /// Reads `source` in a coordinated access; `body` gets the URL to use.
+    static func read<Value>(_ source: URL, _ body: (URL) throws -> Value) throws -> Value {
+        var result: Result<Value, any Error>?
+        var error: NSError?
+        NSFileCoordinator(filePresenter: nil).coordinate(
+            readingItemAt: source, options: [], error: &error
+        ) { source in result = Result { try body(source) } }
+        return try outcome(result, error)
+    }
+
     /// Reads `source` and writes `target` in one coordinated access; `body`
     /// gets the URLs to use, which may differ from the ones given.
     static func read<Value>(

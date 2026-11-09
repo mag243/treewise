@@ -8,7 +8,7 @@
     enum ArchiveExtractor {
         /// Without a passphrase tar asks for one on the terminal, again and
         /// again. With this one, an archive that needs a password just fails.
-        private static let placeholderPassphrase = "treewise-no-passphrase"
+        static let placeholderPassphrase = "treewise-no-passphrase"
         private static let isoExtension = "iso"
         private static let outputName = "output"
 
