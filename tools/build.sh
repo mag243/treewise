@@ -39,7 +39,7 @@
 #   verify      check + test + build: the gate for a change to an app. Leaves the
 #               screen alone (ADR 0028).
 #   ci          check + test + build + apptest: when the owner says the UI tests may
-#               take the screen, before a push and at the end of a plan. The default.
+#               take the screen, and before a release. The default.
 #   all         ci + export.
 #   official    The official build (ADR 0057): the macOS app from the workspace in the
 #               private treewise-modules folder beside this one (TREEWISE_MODULES_DIR),
@@ -48,6 +48,8 @@
 #   screenshots The download page's screenshots (ADR 0041): makes the sandbox volumes
 #               afresh, runs ScreenshotTests on them and saves the images as
 #               build/screenshots/<name>.png. Takes the screen, as ci does.
+#   sandboxtest The overview of proposed names from start to end on sandbox volumes made
+#               afresh (PLAN.md M7). Takes the screen, as ci does.
 #   benchmark   How long the add-ons take for a folder of 100 files (M7): the free
 #               module in the package, Advanced Folder Pattern in treewise-modules when
 #               it is beside this folder, and Suggest Names… in the app from the menu to
@@ -103,10 +105,11 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest run package export fixture sandbox icon publish screenshots official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest run package export fixture sandbox icon publish screenshots sandboxtest official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
+SANDBOX_TESTS="TreewiseMacUITests/SandboxVolumeTests"
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
 declare -a SUMMARY=()
 
@@ -380,7 +383,8 @@ cmd_apptest() {
   IFS=, read -ra tests <<<"$filter"
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseMacUITests/$test"); done
   xcode apptest -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" -resultBundlePath "$bundle" \
-    -skip-testing:"$SCREENSHOT_TESTS" -skip-testing:"$BENCHMARK_TESTS" "${only[@]}" test
+    -skip-testing:"$SCREENSHOT_TESTS" -skip-testing:"$BENCHMARK_TESTS" \
+    -skip-testing:"$SANDBOX_TESTS" "${only[@]}" test
   ok "$MAC_SCHEME tests passed. Results: ${bundle#"$ROOT_DIR"/}"
   slowest_tests "$bundle"
 }
@@ -436,6 +440,22 @@ cmd_screenshots() {
   python3 -I "$TOOLS_DIR/screenshots/name_attachments.py" "$exported" "$SCREENSHOT_DIR"
   rm -rf "$exported"
   ok "Screenshots in ${SCREENSHOT_DIR#"$ROOT_DIR"/}"
+}
+
+# Runs the overview's test from start to end on sandbox volumes made afresh.
+cmd_sandboxtest() {
+  cmd_sandbox reset
+  step "Sandbox UI test"
+  require_project
+  local bundle="$REPORT_DIR/SandboxTests.xcresult"
+  rm -rf "$bundle"
+  mkdir -p "$REPORT_DIR"
+  # xcodebuild hands TEST_RUNNER_ variables to the tests without the prefix.
+  local -x TEST_RUNNER_TREEWISE_SANDBOX
+  TEST_RUNNER_TREEWISE_SANDBOX="$(sandbox_mount HD):$(sandbox_mount T7)"
+  xcode sandboxtest -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" \
+    -resultBundlePath "$bundle" -only-testing:"$SANDBOX_TESTS" test
+  ok "The overview works on the sandbox volumes. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
 cmd_iostest() {
@@ -873,6 +893,7 @@ run_command() {
     export) timed export cmd_export ;;
     publish) timed publish cmd_publish ;;
     screenshots) timed screenshots cmd_screenshots ;;
+    sandboxtest) timed sandboxtest cmd_sandboxtest ;;
     fixture) timed fixture cmd_fixture ;;
     sandbox) timed sandbox cmd_sandbox "${2:-}" ;;
     icon) timed icon cmd_icon ;;

@@ -145,24 +145,9 @@ final class ScreenshotTests: XCTestCase {
         return app
     }
 
-    /// Goes to `path`, relative to the window's folder, by typing it in the
-    /// address bar one key at a time; a tilde would be a dead key on some
-    /// keyboard layouts.
     @MainActor
     private func go(to path: String, in app: XCUIApplication) {
-        let folder = String(path.split(separator: "/").last ?? "")
-        app.typeKey("l", modifierFlags: .command)
-        XCTAssertTrue(app.textFields["Address"].waitForExistence(timeout: Self.timeout))
-        app.typeKey("a", modifierFlags: .command)
-        for character in path + "/" {
-            let key = String(character)
-            let isUpper = key != key.lowercased()
-            app.typeKey(key.lowercased(), modifierFlags: isUpper ? .shift : [])
-        }
-        app.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(
-            app.windows(titled: folder).firstMatch.waitForExistence(timeout: Self.timeout),
-            "the window shows \(folder)")
+        app.go(to: path, timeout: Self.timeout)
     }
 
     /// Lets the scene settle, so thumbnails and previews are in it.
