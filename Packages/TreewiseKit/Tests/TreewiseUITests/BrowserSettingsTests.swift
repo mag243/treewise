@@ -11,6 +11,7 @@ import TreewiseUI
         let settings = BrowserSettings(store: MemorySettingsStore())
         #expect(!settings.showsHiddenFiles)
         #expect(settings.showsExtensions)
+        #expect(settings.expandsSidebarToOpenFolder)
         #expect(settings.rowDensity == .medium)
         #expect(settings.startFolder == nil)
         #expect(settings.doubleClickOpensIn == .samePane)
@@ -29,6 +30,7 @@ import TreewiseUI
         let settings = BrowserSettings(store: store)
         settings.showsHiddenFiles = true
         settings.showsExtensions = false
+        settings.expandsSidebarToOpenFolder = false
         settings.rowDensity = .large
         settings.startFolder = "projects"
         settings.doubleClickOpensIn = .otherPane
@@ -37,6 +39,7 @@ import TreewiseUI
         let again = BrowserSettings(store: store)
         #expect(again.showsHiddenFiles)
         #expect(!again.showsExtensions)
+        #expect(!again.expandsSidebarToOpenFolder)
         #expect(again.rowDensity == .large)
         #expect(again.startFolder == "projects")
         #expect(again.doubleClickOpensIn == .otherPane)

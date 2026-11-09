@@ -30,6 +30,15 @@ extension BrowserState {
         await load(layout.focusedPane.activeTabID)
     }
 
+    /// The way through the sidebar's tree to the folder the focused pane
+    /// shows, farthest out first; `nil` until that folder is read.
+    public var treePath: [FileItem.ID]? {
+        let tab = layout.focusedPane.activeTab
+        let shown = content(of: tab.id)
+        guard shown.folder?.id == tab.folder else { return nil }
+        return shown.ancestry.reversed().filter { $0 != .computer } + [tab.folder]
+    }
+
     /// The place the browser shows for an item: a container, or the top level
     /// of an archive on disk (ADR 0076); `nil` for what an app opens.
     public func placeToOpen(for item: FileItem) -> FileItem.ID? {

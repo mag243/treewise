@@ -51,6 +51,7 @@ public final class BrowserSettings {
     private enum Key {
         static let showsHiddenFiles = "showsHiddenFiles"
         static let showsExtensions = "showsExtensions"
+        static let expandsSidebarToOpenFolder = "expandsSidebarToOpenFolder"
         static let rowDensity = "rowDensity"
         static let startFolder = "startFolder"
         static let doubleClickOpensIn = "doubleClickOpensIn"
@@ -79,6 +80,13 @@ public final class BrowserSettings {
     /// Whether names show their extension (`DisplayName`).
     public var showsExtensions: Bool {
         didSet { store.setSetting(String(showsExtensions), for: Key.showsExtensions) }
+    }
+    /// Whether the sidebar's tree opens down to the folder a tab shows.
+    public var expandsSidebarToOpenFolder: Bool {
+        didSet {
+            store.setSetting(
+                String(expandsSidebarToOpenFolder), for: Key.expandsSidebarToOpenFolder)
+        }
     }
     /// How tall the list's rows are.
     public var rowDensity: RowDensity {
@@ -186,6 +194,7 @@ public final class BrowserSettings {
         self.store = store
         showsHiddenFiles = store.setting(Key.showsHiddenFiles) == "true"
         showsExtensions = store.setting(Key.showsExtensions) != "false"
+        expandsSidebarToOpenFolder = store.setting(Key.expandsSidebarToOpenFolder) != "false"
         rowDensity = store.setting(Key.rowDensity).flatMap(RowDensity.init) ?? .medium
         startFolder = store.setting(Key.startFolder).map { FileItem.ID($0) }
         doubleClickOpensIn =

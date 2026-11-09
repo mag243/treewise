@@ -1280,6 +1280,22 @@
         }
       }
     },
+    "Expand sidebar to open folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seitenleiste bis zum geöffneten Ordner erweitern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klap navigatiekolom uit naar geopende map"
+          }
+        }
+      }
+    },
     "Extract" : {
       "localizations" : {
         "de" : {

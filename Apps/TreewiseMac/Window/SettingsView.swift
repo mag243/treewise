@@ -74,6 +74,8 @@ struct SettingsView: View {
             Section {
                 Toggle("Show hidden files", isOn: $settings.showsHiddenFiles)
                 Toggle("Show file extensions", isOn: $settings.showsExtensions)
+                Toggle(
+                    "Expand sidebar to open folder", isOn: $settings.expandsSidebarToOpenFolder)
                 Picker("Row size", selection: $settings.rowDensity) {
                     Text("Small").tag(RowDensity.small)
                     Text("Medium").tag(RowDensity.medium)

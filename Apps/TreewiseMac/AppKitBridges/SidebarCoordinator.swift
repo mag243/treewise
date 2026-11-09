@@ -9,7 +9,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("SidebarCell")
     private static let headerIdentifier = NSUserInterfaceItemIdentifier("SidebarHeader")
 
-    private weak var outline: NSOutlineView?
+    private(set) weak var outline: NSOutlineView?
     private(set) var roots: [SidebarNode] = []
     private var shown: (favorites: [FileItem], locations: [FileItem]) = ([], [])
     /// The hidden-files setting the loaded folders follow.
@@ -25,6 +25,10 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     /// Set while the selection follows the active pane, so it is not sent back
     /// as a choice of the user.
     private var isApplyingState = false
+    /// The last way through the tree that was opened, so a rerender does not
+    /// open again what the user closed since.
+    var revealedPath: [FileItem.ID]?
+    var revealTask: Task<Void, Never>?
 
     func attach(to outline: NSOutlineView) {
         self.outline = outline
@@ -52,7 +56,10 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         eject = view.eject
         drop = view.drop
         favoriteActions = view.favoriteActions
-        defer { selectRow(of: view.currentFolder) }
+        defer {
+            selectRow(of: view.currentFolder)
+            follow(view.pathToReveal)
+        }
         if showsHiddenFiles != view.showsHiddenFiles {
             showsHiddenFiles = view.showsHiddenFiles
             reloadFolders()
@@ -155,7 +162,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     }
 
     /// Selects the visible row that `SidebarSelection` chooses for `folder`, or none.
-    private func selectRow(of folder: FileItem.ID) {
+    func selectRow(of folder: FileItem.ID) {
         guard let outline else { return }
         let candidates = (0..<outline.numberOfRows).compactMap {
             candidate(atRow: $0, of: outline, for: folder)
@@ -195,7 +202,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         }
     }
 
-    private func load(_ node: SidebarNode, folder: FileItem.ID) async {
+    func load(_ node: SidebarNode, folder: FileItem.ID) async {
         guard let loadSubfolders else { return }
         let subfolders = await loadSubfolders(folder)
         node.children = subfolders.map { SidebarNode(item: $0, expandable: true) }

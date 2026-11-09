@@ -140,4 +140,21 @@ extension LaunchTests {
             try String(contentsOf: root.appendingPathComponent("inside.txt"), encoding: .utf8),
             "from the archive")
     }
+
+    @MainActor
+    func testOpeningAZipOpensTheSidebarDownToIt() throws {
+        let root = try XCTUnwrap(self.root)
+        try XCTUnwrap(Data(base64Encoded: Self.archive))
+            .write(to: root.appendingPathComponent("Photos.zip"))
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let row = window.tables.staticTexts["Photos.zip"]
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout))
+
+        row.doubleClick()
+
+        XCTAssertTrue(
+            window.outlines.staticTexts["Photos.zip"].appeared(timeout: Self.launchTimeout),
+            "the sidebar shows the zip")
+    }
 }

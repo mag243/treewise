@@ -14,6 +14,7 @@ struct SidebarView: View {
             favorites: browser.favorites,
             locations: browser.locations,
             currentFolder: browser.layout.focusedPane.activeTab.folder,
+            pathToReveal: browser.settings.expandsSidebarToOpenFolder ? browser.treePath : nil,
             showsHiddenFiles: browser.settings.showsHiddenFiles,
             loadSubfolders: { await browser.subfolders(of: $0) },
             select: { folder in

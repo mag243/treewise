@@ -9,6 +9,8 @@ struct SidebarOutlineView: NSViewRepresentable {
     var locations: [FileItem]
     /// The folder the active pane shows; its row is selected when visible.
     var currentFolder: FileItem.ID
+    /// The way through the tree to open down to, farthest out first.
+    var pathToReveal: [FileItem.ID]?
     /// Whether folders list their hidden subfolders (ADR 0023).
     var showsHiddenFiles: Bool
     var loadSubfolders: (FileItem.ID) async -> [FileItem]

@@ -11,6 +11,7 @@ All notable changes to Treewise are recorded here. The format follows
 - Compress to ZIP puts an archive next to the selection and starts renaming it; Compress to also makes 7z and `.tar.gz` files. A zip or 7z leaves out `__MACOSX`, `._` files, `.DS_Store` and extended attributes.
 - Suggest Names for Whole Folder… in the context menu and the File menu, for a folder so full that a right click always lands on a file.
 - A double click opens an archive as a folder, and the sidebar's tree unfolds it. Inside it you can browse, sort, search, preview with Quick Look and copy or drag files out; Extract All extracts that archive. An archive is read-only for now.
+- The sidebar's tree opens down to the folder or archive a tab shows; Settings can turn this off.
 
 ### Fixed
 - A new archive, an extracted folder, a new folder and a renamed item are scrolled into view, also when sorting puts them far from where you were working.
