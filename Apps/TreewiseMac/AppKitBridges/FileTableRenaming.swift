@@ -7,7 +7,9 @@ import TreewiseCore
 /// asks the add-ons for proposals (ADR 0066).
 extension FileTableCoordinator: NSTextFieldDelegate {
     func beginRename(row: Int, suggests: Bool = false) {
-        guard let table, items.indices.contains(row), items[row].canBeRenamedOrTrashed,
+        guard let table, items.indices.contains(row) else { return }
+        table.scrollRowToVisible(row)
+        guard items[row].canBeRenamedOrTrashed,
             let cell = table.view(atColumn: 0, row: row, makeIfNecessary: true) as? NSTableCellView,
             let field = cell.textField
         else { return }

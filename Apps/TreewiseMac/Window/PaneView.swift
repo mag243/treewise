@@ -90,19 +90,21 @@ struct PaneView: View {
         content: TreewiseUI.TabContent, items: [FileItem], isActive: Bool, tab: TabModel.ID
     ) -> some View {
         let renameRequest = isActive ? browser.renameRequest : nil
+        let revealRequest = isActive ? browser.revealRequest : nil
         switch browser.viewMode {
         case .list:
             FileTableView(
                 folder: content.folder, items: items, selection: content.selection,
                 sort: browser.sort, isActive: isActive, cutItems: cutItems,
-                renameRequest: renameRequest, downloads: downloads,
+                renameRequest: renameRequest, revealRequest: revealRequest, downloads: downloads,
                 showsExtensions: browser.settings.showsExtensions,
                 rowHeight: browser.settings.rowDensity.rowHeight, actions: actions(for: tab))
         case .icons:
             FileGridView(
                 folder: content.folder, items: items, selection: content.selection,
                 isActive: isActive, cutItems: cutItems, renameRequest: renameRequest,
-                downloads: downloads, showsExtensions: browser.settings.showsExtensions,
+                revealRequest: revealRequest, downloads: downloads,
+                showsExtensions: browser.settings.showsExtensions,
                 actions: actions(for: tab))
         }
     }
@@ -143,6 +145,7 @@ struct PaneView: View {
                 defer { browser.renameSuggests = false }
                 return browser.renameSuggests
             },
+            revealed: { browser.revealRequest = nil },
             suggestName: { item, field in
                 NameSuggestionList.show(
                     for: item, in: field, browser: browser, undoManager: undoManager)

@@ -34,6 +34,9 @@ public final class BrowserState {
     public internal(set) var isPaused = false
     /// Whether the window shows folders as a list or as icons (ADR 0025).
     public var viewMode = ViewMode.list
+    /// An item Treewise just made or renamed, which the list should bring into
+    /// view; the list sets it back to `nil` when it does.
+    public var revealRequest: FileItem.ID?
     /// An item the list should start renaming, such as a new folder; the
     /// list sets it back to `nil` when it starts.
     public var renameRequest: FileItem.ID?

@@ -253,6 +253,7 @@ extension BrowserState {
     func selectInFocusedTab(_ items: [FileItem]) {
         guard !items.isEmpty else { return }
         setSelection(Set(items.map(\.id)), in: layout.focusedPane.activeTabID)
+        revealRequest = items[0].id
     }
 
     func reloadShownFolders() async {

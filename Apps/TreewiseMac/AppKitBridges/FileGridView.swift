@@ -14,6 +14,8 @@ struct FileGridView: NSViewRepresentable {
     var cutItems: Set<FileItem.ID>
     /// An item to start renaming, such as a new folder.
     var renameRequest: FileItem.ID?
+    /// An item to bring into view, such as a new archive.
+    var revealRequest: FileItem.ID?
     /// The downloads running, with their fractions done (ADR 0051).
     var downloads: [FileItem.ID: Double] = [:]
     /// Whether names show their extension (ADR 0023).

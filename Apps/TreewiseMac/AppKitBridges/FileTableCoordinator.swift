@@ -89,6 +89,11 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         }
         table.isActivePane = view.isActive
         if view.isActive { PaneFocus.follow(table) }
+        if let request = view.revealRequest, let row = items.firstIndex(where: { $0.id == request })
+        {
+            view.actions.revealed()
+            DispatchQueue.main.async { [weak table] in table?.scrollRowToVisible(row) }
+        }
         if let request = view.renameRequest, let row = items.firstIndex(where: { $0.id == request })
         {
             let suggests = view.actions.renameStarted()

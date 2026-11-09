@@ -11,6 +11,9 @@ All notable changes to Treewise are recorded here. The format follows
 - Compress to ZIP puts an archive next to the selection and starts renaming it; Compress to also makes 7z and `.tar.gz` files. A zip or 7z leaves out `__MACOSX`, `._` files, `.DS_Store` and extended attributes.
 - Suggest Names for Whole Folder… in the context menu and the File menu, for a folder so full that a right click always lands on a file.
 
+### Fixed
+- A new archive, an extracted folder, a new folder and a renamed item are scrolled into view, also when sorting puts them far from where you were working.
+
 ## [0.6.0] - 2026-11-09
 
 ### Added

@@ -6,6 +6,9 @@ extension LaunchTests {
     private static let archive =
         "UEsDBBQAAAAAAGV4aV2m38+IEAAAABAAAAAKAAAAaW5zaWRlLnR4dGZyb20gdGhlIGFyY2hpdmVQSwECFAMUAAAAAABleGldpt/PiBAAAAAQAAAACgAAAAAAAAAAAAAAgAEAAAAAaW5zaWRlLnR4dFBLBQYAAAAAAQABADgAAAA4AAAAAAA="
 
+    /// More files than any window shows at once, also in the icon view.
+    private static let filesThatFillAWindow = 400
+
     @MainActor
     func testExtractAllMakesAFolderNamedAfterTheArchive() throws {
         let root = try XCTUnwrap(self.root)
@@ -50,5 +53,55 @@ extension LaunchTests {
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(
             FileManager.default.fileExists(atPath: root.appendingPathComponent("Notes.zip").path))
+    }
+
+    /// Fills the root so that the archive of the folder `Zebra`, which sorts
+    /// after every file, lands far below the folder itself.
+    private func fillRootBelowAFolderToCompress(_ root: URL) throws {
+        let folder = root.appendingPathComponent("Zebra")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
+        try Data("stripes".utf8).write(to: folder.appendingPathComponent("inside.txt"))
+        for number in 0..<Self.filesThatFillAWindow {
+            try Data().write(to: root.appendingPathComponent("a \(number).txt"))
+        }
+    }
+
+    @MainActor
+    func testCompressingInAFullFolderBringsTheArchiveIntoViewInTheList() throws {
+        try fillRootBelowAFolderToCompress(try XCTUnwrap(self.root))
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let row = window.tables.staticTexts["Zebra"]
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout))
+        row.click()
+
+        app.menuBars.menuBarItems["File"].click()
+        app.menuBars.menuItems["Compress to ZIP"].click()
+
+        let name = window.tables.textFields.firstMatch
+        XCTAssertTrue(name.appeared(timeout: Self.launchTimeout), "renaming starts on the archive")
+        XCTAssertEqual(name.value as? String, "Zebra.zip")
+        // `isHittable` is false for a list's rename field, also for one in view.
+        XCTAssertTrue(window.frame.contains(name.frame), "the archive is in view")
+    }
+
+    @MainActor
+    func testCompressingInAFullFolderBringsTheArchiveIntoViewInTheIconView() throws {
+        try fillRootBelowAFolderToCompress(try XCTUnwrap(self.root))
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.tables.staticTexts["Zebra"].appeared(timeout: Self.launchTimeout))
+        window.descendants(matching: .any)["as Icons"].firstMatch.click()
+        let tile = window.collectionViews.staticTexts["Zebra"]
+        XCTAssertTrue(tile.appeared(timeout: Self.launchTimeout))
+        tile.click()
+
+        app.menuBars.menuBarItems["File"].click()
+        app.menuBars.menuItems["Compress to ZIP"].click()
+
+        let name = window.collectionViews.textFields.firstMatch
+        XCTAssertTrue(name.appeared(timeout: Self.launchTimeout), "renaming starts on the archive")
+        XCTAssertEqual(name.value as? String, "Zebra.zip")
+        XCTAssertTrue(name.isHittable, "the archive is in view")
     }
 }

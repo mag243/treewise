@@ -104,6 +104,12 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
                 .map { IndexPath(item: $0, section: 0) })
         if grid.selectionIndexPaths != selected { grid.selectionIndexPaths = selected }
         if view.isActive { DispatchQueue.main.async { PaneFocus.follow(grid) } }
+        if let request = view.revealRequest,
+            let index = items.firstIndex(where: { $0.id == request })
+        {
+            view.actions.revealed()
+            DispatchQueue.main.async { [weak self] in self?.reveal(index: index) }
+        }
         if let request = view.renameRequest,
             let index = items.firstIndex(where: { $0.id == request })
         {
