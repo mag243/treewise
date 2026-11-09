@@ -39,7 +39,7 @@ final class PaneCollectionView: NSCollectionView, NSMenuItemValidation {
         let index = tile(at: event)
         let path = index.map { IndexPath(item: $0, section: 0) }
         let wasOnlySelection = path.map { selectionIndexPaths == [$0] } ?? false
-        let isOnName = index.map { isOnName(event, tile: $0) } ?? false
+        let isOnName = index.map { self.isOnName(event, tile: $0) } ?? false
         if window?.firstResponder !== self { window?.makeFirstResponder(self) }
         onFocus?()
         super.mouseDown(with: event)

@@ -54,7 +54,7 @@ final class PaneTableView: NSTableView, NSMenuItemValidation {
         let point = convert(event.locationInWindow, from: nil)
         let row = self.row(at: point)
         let wasOnlySelection = row >= 0 && selectedRowIndexes == IndexSet(integer: row)
-        let isOnName = row >= 0 && isOnName(point, row: row)
+        let isOnName = row >= 0 && self.isOnName(point, row: row)
         if window?.firstResponder !== self { window?.makeFirstResponder(self) }
         onFocus?()
         // AppKit tracks the mouse until it goes up or a drag ends.
