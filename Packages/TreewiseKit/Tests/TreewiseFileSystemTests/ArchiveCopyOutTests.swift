@@ -244,7 +244,9 @@
             #expect(try text(directory, "to/promised.txt") == "hello")
         }
 
-        private static let promiseLimit = Duration.seconds(5)
+        /// Long enough for the serial queue of file operations on a busy runner;
+        /// a write that waits for the held place never ends at all.
+        private static let promiseLimit = Duration.seconds(30)
 
         private func waitUntilHeld(_ held: DispatchSemaphore) {
             held.wait()
