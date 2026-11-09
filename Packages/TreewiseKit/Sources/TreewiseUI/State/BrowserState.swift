@@ -58,6 +58,8 @@ public final class BrowserState {
     @ObservationIgnored let watcher: any FolderWatching
     @ObservationIgnored private let kinds: KindFormatter
     @ObservationIgnored var watches: [TabModel.ID: Watch] = [:]
+    /// The archives a tab shows, whose listing and copies are kept (ADR 0076).
+    @ObservationIgnored var shownArchives: Set<FileItem.ID> = []
     /// The watch on This Mac, which keeps the Locations current (ADR 0044).
     @ObservationIgnored var locationsWatch: Task<Void, Never>?
     /// The transfer that runs, which `cancelOperation()` stops.
@@ -125,11 +127,17 @@ public final class BrowserState {
         return sort.sorted(matching, kinds: kinds)
     }
 
-    /// The containers inside a folder, by name, for the sidebar tree; empty
-    /// when the folder cannot be read.
+    /// The containers inside a folder, by name, for the sidebar tree, with
+    /// each archive as the item of its top level (ADR 0076); empty when the
+    /// folder cannot be read.
     public func subfolders(of folder: FileItem.ID) async -> [FileItem] {
         let items = (try? await fileSystem.contents(of: folder)) ?? []
-        let folders = items.filter { $0.isContainer && (settings.showsHiddenFiles || !$0.isHidden) }
+        let folders = items.filter { settings.showsHiddenFiles || !$0.isHidden }
+            .compactMap { item -> FileItem? in
+                if item.isContainer { return item }
+                return placeToOpen(for: item).flatMap(ArchivePath.init)
+                    .map(ArchiveTree.topLevelItem)
+            }
         return ItemSort().sorted(folders, kinds: kinds)
     }
 

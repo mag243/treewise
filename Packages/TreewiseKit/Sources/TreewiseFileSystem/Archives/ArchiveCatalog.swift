@@ -49,6 +49,12 @@
             return state.withLock { remembered(of: archive, signature, in: &$0) }
         }
 
+        /// Stops a listing nobody waits for any more; a caller still waiting
+        /// gets `FileSystemError.cancelled`.
+        func stopReading(of archive: FileItem.ID) {
+            state.withLock { $0.readings.removeValue(forKey: archive)?.task.cancel() }
+        }
+
         private func remembered(
             of archive: FileItem.ID, _ signature: ArchiveSignature, in state: inout State
         ) -> ArchiveTree? {

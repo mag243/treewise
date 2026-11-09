@@ -17,7 +17,20 @@ extension ChangingFileSystem: ArchiveOperating {
         URL(fileURLWithPath: "/cache/" + item.name)
     }
 
-    public func releaseCache(of archive: FileItem.ID) async {}
+    public func releaseCache(of archive: FileItem.ID) async {
+        recordRelease(of: archive)
+    }
+
+    /// Whether `archive` is released soon, as a window does that in a task of its own.
+    public func eventuallyReleased(_ archive: FileItem.ID) async -> Bool {
+        for _ in 0..<Self.releaseChecks {
+            if releasedArchives.contains(archive) { return true }
+            await Task.yield()
+        }
+        return releasedArchives.contains(archive)
+    }
+
+    private static var releaseChecks: Int { 10_000 }
 
     public func compress(
         _ items: [FileItem], to archive: NewArchive,

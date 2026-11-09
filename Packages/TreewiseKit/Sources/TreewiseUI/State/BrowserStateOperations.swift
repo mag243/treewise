@@ -21,23 +21,30 @@ extension BrowserState {
         return !items.isEmpty && items.allSatisfy(\.canBeRenamedOrTrashed)
     }
 
-    /// Whether the selection has items and all of them can be cut or copied.
-    public var canCutOrCopySelection: Bool {
+    /// Whether the selection has items and all of them can be cut.
+    public var canCutSelection: Bool {
         let items = selectedItems
         return !items.isEmpty && items.allSatisfy(\.isMovable)
+    }
+
+    /// Whether the selection has items and all of them can be copied, also
+    /// out of an archive (ADR 0076).
+    public var canCopySelection: Bool {
+        let items = selectedItems
+        return !items.isEmpty && items.allSatisfy(\.isCopyable)
     }
 
     /// Puts the selection on the clipboard to be moved (⌘X), unless an item
     /// of it cannot be moved.
     public func cutSelection() {
-        guard canCutOrCopySelection else { return }
+        guard canCutSelection else { return }
         clipboard = ClipboardModel(items: selectedItems, mode: .cut)
     }
 
     /// Puts the selection on the clipboard to be copied (⌘C), unless an item
     /// of it cannot be copied.
     public func copySelection() {
-        guard canCutOrCopySelection else { return }
+        guard canCopySelection else { return }
         clipboard = ClipboardModel(items: selectedItems, mode: .copy)
     }
 

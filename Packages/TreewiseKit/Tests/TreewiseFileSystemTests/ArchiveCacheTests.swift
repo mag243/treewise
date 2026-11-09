@@ -120,6 +120,19 @@
             #expect(!manager.fileExists(atPath: copy.path))
         }
 
+        @Test func releasingWhileAListingIsReadLeavesTheArchiveReadable() async throws {
+            let directory = try TempDirectory()
+            try makeArchive(directory, "Photos.tgz", options: ["-z"])
+            let runner = runner(directory)
+            let top = ArchivePath(archive: id(directory, "Photos.tgz")).id
+
+            let listing = Task { try await runner.contents(of: top) }
+            await runner.releaseCache(of: id(directory, "Photos.tgz"))
+            _ = await listing.result
+
+            #expect(try await runner.contents(of: top).map(\.name) == ["Photos"])
+        }
+
         @Test func aProtectedEntryIsNamedAsSuch() async throws {
             let directory = try TempDirectory()
             try directory.makeFolder("src")

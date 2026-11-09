@@ -19,12 +19,13 @@ struct CommandBarActions: View {
         let selection = browser.selectedItems
         let clipboard = ClipboardCommands(browser: browser, undoManager: undoManager)
         HStack(spacing: 0) {
-            action("Cut", "scissors", disabled: !browser.canCutOrCopySelection, run: clipboard.cut)
+            action("Cut", "scissors", disabled: !browser.canCutSelection, run: clipboard.cut)
             action(
-                "Copy", "doc.on.doc", disabled: !browser.canCutOrCopySelection, run: clipboard.copy)
+                "Copy", "doc.on.doc", disabled: !browser.canCopySelection, run: clipboard.copy)
             action(
                 "Paste", "doc.on.clipboard",
-                disabled: browser.clipboard == nil && !pasteboardHasFiles, run: clipboard.paste)
+                disabled: !browser.canAddItems || (browser.clipboard == nil && !pasteboardHasFiles),
+                run: clipboard.paste)
             action("Rename", "pencil", disabled: !browser.canRenameSelection) {
                 browser.renameRequest = selection.first?.id
             }

@@ -12,6 +12,7 @@ extension BrowserState {
     /// in the meantime are dropped.
     func load(_ tab: TabModel.ID) async {
         guard let folder = layout.tab(tab)?.folder else { return }
+        releaseArchivesNoLongerShown()
         do {
             let items = try await fileSystem.contents(of: folder)
             let folderItem = try? await fileSystem.item(at: folder)
@@ -34,8 +35,20 @@ extension BrowserState {
         updateWatches()
     }
 
+    /// Lets go of what is kept of archives no tab shows any more, also of a
+    /// listing that is still being read (ADR 0076).
+    private func releaseArchivesNoLongerShown() {
+        let shown = Set(layout.panes.flatMap(\.tabs).compactMap { ArchivePath($0.folder)?.archive })
+        let archives = archives
+        for archive in shownArchives.subtracting(shown) {
+            Task { await archives?.releaseCache(of: archive) }
+        }
+        shownArchives = shown
+    }
+
     /// Watches exactly the folders the panes' active tabs show.
     func updateWatches() {
+        releaseArchivesNoLongerShown()
         let shown = Dictionary(
             layout.panes.map { ($0.activeTabID, $0.activeTab.folder) }
         ) { first, _ in first }

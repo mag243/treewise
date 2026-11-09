@@ -11,7 +11,8 @@ extension BrowserState {
     /// Adds a folder before `next`, or at the end. Only what opens like a
     /// folder can be a favorite, and This Mac cannot.
     public func addFavorite(_ folder: FileItem.ID, before next: FileItem.ID? = nil) async {
-        guard folder != .computer, let item = try? await fileSystem.item(at: folder),
+        guard folder != .computer, !folder.isInsideArchive,
+            let item = try? await fileSystem.item(at: folder),
             item.isContainer
         else { return }
         await changeFavorites { $0.add(folder, before: next) }

@@ -56,7 +56,8 @@ import TreewiseUI
 
         #expect(!browser.canRenameSelection)
         #expect(!browser.canTrashSelection)
-        #expect(!browser.canCutOrCopySelection)
+        #expect(!browser.canCutSelection)
+        #expect(!browser.canCopySelection)
     }
 
     @Test func offersRenameTrashCutAndCopyForAPlainFolder() async {
@@ -65,7 +66,8 @@ import TreewiseUI
 
         #expect(browser.canRenameSelection)
         #expect(browser.canTrashSelection)
-        #expect(browser.canCutOrCopySelection)
+        #expect(browser.canCutSelection)
+        #expect(browser.canCopySelection)
     }
 
     @Test func doesNotCutOrCopyACloudFolder() async {

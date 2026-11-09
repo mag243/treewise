@@ -14,12 +14,12 @@ enum ItemOpening {
     ) async {
         let placement = items.count == 1 ? placement : .newTab
         for item in items {
-            if placement == .newTab && item.isContainer {
-                WindowTabs.shared.openTab(at: item.id, beside: NSApp.keyWindow)
+            if placement == .newTab, let place = browser.placeToOpen(for: item) {
+                WindowTabs.shared.openTab(at: place, beside: NSApp.keyWindow)
                 continue
             }
-            if placement == .otherPane && item.isContainer {
-                await WindowTabs.shared.openInOtherWindow(item.id, from: NSApp.keyWindow)
+            if placement == .otherPane, let place = browser.placeToOpen(for: item) {
+                await WindowTabs.shared.openInOtherWindow(place, from: NSApp.keyWindow)
                 continue
             }
             guard case .openFile(let file) = await browser.open(item, pane: pane, in: placement)

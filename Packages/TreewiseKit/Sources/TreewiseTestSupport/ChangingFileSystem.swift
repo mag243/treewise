@@ -13,6 +13,7 @@ public final class ChangingFileSystem: FileOperating {
         var nextNumber = 1
         var failure: (any Error)?
         var isHeld = false
+        var released: [FileItem.ID] = []
 
         mutating func newID(_ prefix: String) -> FileItem.ID {
             defer { nextNumber += 1 }
@@ -25,6 +26,15 @@ public final class ChangingFileSystem: FileOperating {
     /// Creates a file system that starts as `tree`.
     public init(_ tree: InMemoryFileSystem = Fixture.standard) {
         state = Mutex(State(tree: tree))
+    }
+
+    /// The archives a window released, in order.
+    public var releasedArchives: [FileItem.ID] {
+        state.withLock { $0.released }
+    }
+
+    func recordRelease(of archive: FileItem.ID) {
+        state.withLock { $0.released.append(archive) }
     }
 
     /// Removes an item and everything inside it, as another app would.

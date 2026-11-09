@@ -9,8 +9,10 @@ extension BrowserState {
     }
 
     /// The folder for `items`: one folder itself, one file's enclosing folder,
-    /// otherwise the folder shown; `nil` when that is This Mac.
+    /// otherwise the folder shown; `nil` when that is This Mac or a place
+    /// inside an archive, which is no folder on disk.
     public func terminalFolder(for items: [FileItem]) -> FileItem.ID? {
+        guard !layout.focusedPane.activeTab.folder.isInsideArchive else { return nil }
         if let item = items.first, items.count == 1 {
             if item.isContainer { return item.id }
             if let folder = item.parentID { return folder }

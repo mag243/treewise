@@ -229,14 +229,14 @@ struct FileContextMenu {
 
     private func addClipboardItems(for items: [FileItem], to menu: NSMenu) {
         if !items.isEmpty {
-            let movable = items.allSatisfy(\.isMovable)
             menu.addItem(
                 ClosureMenuItem(
-                    String(localized: "Cut"), symbol: "scissors", enabled: movable, handler: cut))
+                    String(localized: "Cut"), symbol: "scissors",
+                    enabled: items.allSatisfy(\.isMovable), handler: cut))
             menu.addItem(
                 ClosureMenuItem(
-                    String(localized: "Copy"), symbol: "doc.on.doc", enabled: movable, handler: copy
-                ))
+                    String(localized: "Copy"), symbol: "doc.on.doc",
+                    enabled: items.allSatisfy(\.isCopyable), handler: copy))
         }
         menu.addItem(
             ClosureMenuItem(

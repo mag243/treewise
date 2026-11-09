@@ -30,19 +30,29 @@ extension BrowserState {
         await load(layout.focusedPane.activeTabID)
     }
 
-    /// Opens an item: a container in the browser, where `placement` says;
-    /// anything else is handed back for the app to open.
+    /// The place the browser shows for an item: a container, or the top level
+    /// of an archive on disk (ADR 0076); `nil` for what an app opens.
+    public func placeToOpen(for item: FileItem) -> FileItem.ID? {
+        if item.isContainer { return item.id }
+        guard archives != nil, !item.id.isInsideArchive,
+            ArchiveNaming.isArchive(name: item.name, kind: item.kind)
+        else { return nil }
+        return ArchivePath(archive: item.id).id
+    }
+
+    /// Opens an item: a container or archive in the browser, where `placement`
+    /// says; anything else is handed back for the app to open.
     @discardableResult
     public func open(_ item: FileItem, pane: Int, in placement: OpenPlacement) async -> OpenResult {
-        guard item.isContainer else { return .openFile(item) }
+        guard let place = placeToOpen(for: item) else { return .openFile(item) }
         switch placement {
         case .samePane:
-            await navigate(pane: pane, to: item.id)
+            await navigate(pane: pane, to: place)
         case .newTab:
-            await openTab(pane: pane, at: item.id)
+            await openTab(pane: pane, at: place)
         case .otherPane:
             let other = layout.panes.indices.first { $0 != pane } ?? pane
-            await navigate(pane: other, to: item.id)
+            await navigate(pane: other, to: place)
         }
         return .navigated
     }

@@ -2,11 +2,24 @@ import Foundation
 import TreewiseCore
 
 extension BrowserState {
-    /// Whether the selection is one archive that can be extracted (ADR 0074).
+    /// Whether Extract All has an archive: the selected one, or inside an
+    /// archive that archive (ADR 0074, ADR 0076).
     public var canExtractSelection: Bool {
+        guard archives != nil else { return false }
+        if shownArchive != nil { return true }
         let items = selectedItems
-        return archives != nil && items.count == 1
-            && ArchiveNaming.isArchive(name: items[0].name, kind: items[0].kind)
+        return items.count == 1 && ArchiveNaming.isArchive(name: items[0].name, kind: items[0].kind)
+    }
+
+    /// The archive Extract All extracts.
+    public func archiveToExtract() async -> FileItem? {
+        guard canExtractSelection else { return nil }
+        if let shownArchive { return try? await fileSystem.item(at: shownArchive) }
+        return selectedItems.first
+    }
+
+    private var shownArchive: FileItem.ID? {
+        ArchivePath(layout.focusedPane.activeTab.folder)?.archive
     }
 
     /// Whether the selection can go into a new archive beside it (ADR 0074).
@@ -16,12 +29,10 @@ extension BrowserState {
             && Set(items.map(\.parentID)).count == 1
     }
 
-    /// Extracts the selected archive to a new folder in `folder`, named after
+    /// Extracts the archive Extract All has to a new folder in `folder`, named after
     /// the archive, and selects it when the pane shows `folder`.
     public func extractSelection(to folder: FileItem.ID, undoManager: UndoManager?) async {
-        guard canExtractSelection, let operations, let archive = selectedItems.first else {
-            return
-        }
+        guard let operations, let archive = await archiveToExtract() else { return }
         let created = await runArchiveOperation(
             name: Self.actionName("Extract"), kind: .extracting, undoManager: undoManager
         ) { archives, onProgress, control in

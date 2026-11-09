@@ -34,6 +34,7 @@
         }
 
         public func releaseCache(of archive: FileItem.ID) async {
+            reader.archiveCatalog.stopReading(of: archive)
             archiveCache.release(archive)
         }
 

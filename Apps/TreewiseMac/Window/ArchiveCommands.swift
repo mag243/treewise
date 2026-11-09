@@ -9,12 +9,17 @@ struct ArchiveCommands {
     let browser: BrowserState
     let undoManager: UndoManager?
 
-    /// Asks where to extract the selected archive, starting at the folder it
-    /// is in, and extracts it to a new folder there.
+    /// Asks where to extract the archive, starting at the folder it is in,
+    /// and extracts it to a new folder there.
     func extract() {
-        guard let archive = browser.selectedItems.first, let parent = archive.parentID else {
-            return
+        Task {
+            guard let archive = await browser.archiveToExtract(), let parent = archive.parentID
+            else { return }
+            askWhereToExtract(archive, startingAt: parent)
         }
+    }
+
+    private func askWhereToExtract(_ archive: FileItem, startingAt parent: FileItem.ID) {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
