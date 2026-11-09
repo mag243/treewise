@@ -16,6 +16,7 @@ public final class ItemDateFormatter {
     private let locale: Locale
     private let timeFormatter: DateFormatter
     private let dateTimeFormatter: DateFormatter
+    private let dayFormatter: DateFormatter
 
     /// Creates a formatter for a calendar, locale and time zone.
     public init(calendar: Calendar, locale: Locale, timeZone: TimeZone) {
@@ -25,6 +26,8 @@ public final class ItemDateFormatter {
         self.locale = locale
         timeFormatter = Self.formatter(dateStyle: .none, calendar: calendar, locale: locale)
         dateTimeFormatter = Self.formatter(dateStyle: .medium, calendar: calendar, locale: locale)
+        dayFormatter = Self.formatter(
+            dateStyle: .medium, timeStyle: .none, calendar: calendar, locale: locale)
     }
 
     /// Returns the text for `date`, with today and yesterday measured from `now`.
@@ -46,15 +49,25 @@ public final class ItemDateFormatter {
         return dateTimeFormatter.string(from: date)
     }
 
+    /// Returns the text for when an item last changed; an item known by its
+    /// day alone shows no time.
+    public func string(forModifiedOf item: FileItem, relativeTo now: Date) -> String {
+        guard !item.modifiedHasTime, let date = item.modified else {
+            return string(for: item.modified, relativeTo: now)
+        }
+        return dayFormatter.string(from: date)
+    }
+
     private static func formatter(
-        dateStyle: DateFormatter.Style, calendar: Calendar, locale: Locale
+        dateStyle: DateFormatter.Style, timeStyle: DateFormatter.Style = .short,
+        calendar: Calendar, locale: Locale
     ) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = locale
         formatter.timeZone = calendar.timeZone
         formatter.dateStyle = dateStyle
-        formatter.timeStyle = .short
+        formatter.timeStyle = timeStyle
         return formatter
     }
 }

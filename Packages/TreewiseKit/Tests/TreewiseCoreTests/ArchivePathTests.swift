@@ -15,7 +15,10 @@ import Testing
         #expect(path.entry == entry)
     }
 
-    @Test(arguments: ["/Downloads/Photos.zip", "/Downloads", "/", "doc2", "computer:"])
+    @Test(arguments: [
+        "/Downloads/Photos.zip", "/Downloads", "/", "doc2", "computer:", "//Users//x/",
+        "/Users//x", "/Users/x//", "/d/a.zip//b/", "/d/a.zip//b//c",
+    ])
     func readsNothingFromAnIdentifierOutsideAnArchive(raw: String) {
         #expect(ArchivePath(FileItem.ID(raw)) == nil)
         #expect(!FileItem.ID(raw).isInsideArchive)
@@ -70,5 +73,14 @@ import Testing
         let top = ArchivePath(archive: "/d/a.zip")
         #expect(top.child("x") == ArchivePath(archive: "/d/a.zip", entry: "x"))
         #expect(top.child("x").child("y") == ArchivePath(archive: "/d/a.zip", entry: "x/y"))
+    }
+
+    @Test(arguments: [
+        ("/d/a.zip//", "/d/a.zip"),
+        ("/d/a.zip//x/y.txt", "/d/a.zip/x/y.txt"),
+        ("/d/note.txt", "/d/note.txt"),
+    ])
+    func aPathIsShownWithASingleSlash(raw: String, shown: String) {
+        #expect(FileItem.ID(raw).shownPath == shown)
     }
 }

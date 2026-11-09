@@ -193,7 +193,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
     private func text(of item: FileItem, in column: FileTableColumn) -> String {
         switch column {
         case .name: shownName(of: item)
-        case .dateModified: dates.string(for: item.modified, relativeTo: Date())
+        case .dateModified: dates.string(forModifiedOf: item, relativeTo: Date())
         case .size: sizes.string(for: item)
         case .kind: kinds.string(for: item)
         }

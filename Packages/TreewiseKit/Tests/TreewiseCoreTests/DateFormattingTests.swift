@@ -55,4 +55,26 @@ import TreewiseTestSupport
             formatter.string(for: Fixture.date("2026-10-25 18:31"), relativeTo: Fixture.now)
                 == expected)
     }
+
+    private func item(modified: Date?, hasTime: Bool) -> FileItem {
+        var item = FileItem(
+            id: "a", name: "a", kind: .file, volume: VolumeID("v"), modified: modified)
+        item.modifiedHasTime = hasTime
+        return item
+    }
+
+    @Test func anItemKnownByItsDayShowsNoTime() {
+        let item = item(modified: Fixture.date("2020-01-02 00:00"), hasTime: false)
+        #expect(formatter.string(forModifiedOf: item, relativeTo: Fixture.now) == "2 Jan 2020")
+    }
+
+    @Test func anItemWithATimeReadsAsAnyDate() {
+        let item = item(modified: Fixture.date("2026-10-25 18:31"), hasTime: true)
+        #expect(formatter.string(forModifiedOf: item, relativeTo: Fixture.now) == "Today at 18:31")
+    }
+
+    @Test func anItemWithoutADateIsUnknown() {
+        let item = item(modified: nil, hasTime: false)
+        #expect(formatter.string(forModifiedOf: item, relativeTo: Fixture.now) == "--")
+    }
 }

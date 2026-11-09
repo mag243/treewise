@@ -31,11 +31,15 @@ public struct PathComponent: Sendable, Hashable {
 public enum PathComponents {
     /// Returns the segments for an absolute path. The first segment is the
     /// volume whose mount point is the longest whole-component prefix of the
-    /// path; without one, the root named `/`.
+    /// path; without one, the root named `/`. An archive is one segment, and
+    /// the segments after it are places inside it (ADR 0076).
     ///
     /// Precondition: `path` starts with `/`.
     public static func breadcrumbs(for path: String, mountPoints: [MountPoint]) -> [PathComponent] {
         precondition(path.hasPrefix("/"), "path starts with /")
+        if let place = ArchivePath(FileItem.ID(path)) {
+            return breadcrumbs(inside: place, mountPoints: mountPoints)
+        }
         let parts = components(of: path)
         let mount =
             mountPoints
@@ -48,6 +52,19 @@ public enum PathComponents {
         ]
         for index in volumeParts.count..<parts.count {
             crumbs.append(PathComponent(name: parts[index], path: joined(parts[...index])))
+        }
+        return crumbs
+    }
+
+    private static func breadcrumbs(
+        inside place: ArchivePath, mountPoints: [MountPoint]
+    ) -> [PathComponent] {
+        var crumbs = breadcrumbs(for: place.archive.rawValue, mountPoints: mountPoints)
+        var current = ArchivePath(archive: place.archive)
+        crumbs[crumbs.count - 1].path = current.id.rawValue
+        for part in components(of: place.entry) {
+            current = current.child(part)
+            crumbs.append(PathComponent(name: part, path: current.id.rawValue))
         }
         return crumbs
     }

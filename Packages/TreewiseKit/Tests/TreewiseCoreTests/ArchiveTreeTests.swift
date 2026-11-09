@@ -127,4 +127,14 @@ import Testing
         #expect(item.parentID == "/x")
         #expect(item.volume == top.volume)
     }
+
+    @Test func anItemKeepsThatItsDateHasNoTime() throws {
+        var entry = file("a.txt", modified: Date(timeIntervalSince1970: 1_000))
+        entry.modifiedHasTime = false
+        let tree = ArchiveTree(entries: [entry])
+
+        let item = try #require(tree.item(at: ArchivePath(archive: "/x/a.zip", entry: "a.txt")))
+
+        #expect(!item.modifiedHasTime)
+    }
 }

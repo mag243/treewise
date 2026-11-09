@@ -34,6 +34,9 @@ public struct FileItem: Identifiable, Hashable, Sendable {
     public var volume: VolumeID
     /// When the item's contents last changed, if known.
     public var modified: Date?
+    /// Whether `modified` holds a time; an old entry of an archive is known
+    /// by its day alone (ADR 0076).
+    public var modifiedHasTime = true
     /// The size in bytes; `nil` for containers and when unknown.
     public var size: Int64?
     /// The human-readable kind from the provider (`PDF document`), if it has one.

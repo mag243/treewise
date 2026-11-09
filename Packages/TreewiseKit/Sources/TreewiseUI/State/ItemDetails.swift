@@ -49,9 +49,9 @@ public struct ItemDetails: Equatable {
             rows.append(
                 Row(
                     label: text("Date Modified"),
-                    value: dates.string(for: item.modified, relativeTo: now)))
+                    value: dates.string(forModifiedOf: item, relativeTo: now)))
             if let parent = item.parentID {
-                rows.append(Row(label: text("Where"), value: parent.rawValue))
+                rows.append(Row(label: text("Where"), value: parent.shownPath))
             }
             self.rows = rows
         default:

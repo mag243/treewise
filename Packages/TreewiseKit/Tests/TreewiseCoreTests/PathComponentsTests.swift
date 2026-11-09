@@ -47,4 +47,26 @@ import TreewiseCore
         let crumbs = PathComponents.breadcrumbs(for: "/tmp", mountPoints: [])
         #expect(crumbs.map(\.name) == ["/", "tmp"])
     }
+
+    @Test func theArchiveIsOnePartOfThePathAndThePartsAfterItStayInside() {
+        let crumbs = PathComponents.breadcrumbs(
+            for: "/Volumes/T7/Photos.zip//2024/beach",
+            mountPoints: [
+                MountPoint(path: "/Volumes/T7", name: "T7")
+            ])
+
+        #expect(crumbs.map(\.name) == ["T7", "Photos.zip", "2024", "beach"])
+        #expect(
+            crumbs.map(\.path) == [
+                "/Volumes/T7", "/Volumes/T7/Photos.zip//", "/Volumes/T7/Photos.zip//2024",
+                "/Volumes/T7/Photos.zip//2024/beach",
+            ])
+    }
+
+    @Test func theTopLevelOfAnArchiveEndsThePath() {
+        let crumbs = PathComponents.breadcrumbs(for: "/d/a.zip//", mountPoints: [])
+
+        #expect(crumbs.map(\.name) == ["/", "d", "a.zip"])
+        #expect(crumbs.last?.path == "/d/a.zip//")
+    }
 }

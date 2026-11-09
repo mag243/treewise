@@ -76,10 +76,12 @@ public struct ArchiveTree: Sendable {
     }
 
     private static func item(of node: Node, at place: ArchivePath) -> FileItem {
-        FileItem(
+        var item = FileItem(
             id: place.id, name: node.name, kind: node.isFolder ? .folder : .file,
             parentID: place.parent, volume: place.volume, modified: node.entry?.modified,
             size: node.isFolder ? nil : node.entry?.size, isHidden: node.name.hasPrefix("."))
+        item.modifiedHasTime = node.entry?.modifiedHasTime ?? true
+        return item
     }
 
     /// The parts of a stored name, or `nil` for one that is no entry to show.
