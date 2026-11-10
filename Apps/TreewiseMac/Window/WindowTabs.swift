@@ -32,19 +32,31 @@ final class WindowTabs {
 
     /// The open browser windows, kept until they close.
     private var controllers: [BrowserWindowController] = []
+    /// Where the next new window's top left corner goes, as AppKit cascades
+    /// windows; zero until the first window is placed.
+    private var cascadePoint = NSPoint.zero
 
     /// Opens the first window of a launch, which restores the session before
     /// it (ADR 0038).
     func openFirstWindow() {
         let controller = make(nil)
+        place(controller.window)
         controller.open(restoringSession: true)
     }
 
     /// Opens a window at the start folder: File > New Window (⌘N).
     func openWindow() {
         let controller = make(nil)
-        controller.window?.center()
+        place(controller.window)
         controller.open(restoringSession: false)
+    }
+
+    /// Puts the first window in the middle of the screen, and each later one
+    /// a step down and to the right of the one before.
+    private func place(_ window: NSWindow?) {
+        guard let window else { return }
+        if cascadePoint == .zero { window.center() }
+        cascadePoint = window.cascadeTopLeft(from: cascadePoint)
     }
 
     /// Opens a tab on `folder` beside `window`, or as a window when there is

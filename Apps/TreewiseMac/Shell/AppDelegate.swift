@@ -3,8 +3,8 @@ import OSLog
 import TreewiseFileSystem
 
 /// Builds the menu bar and opens the first window (ADR 0081), runs the offer
-/// to move to Applications once launching is done, before anyone starts
-/// working in a window, and saves the windows when Treewise quits (ADR 0038).
+/// to move to Applications right after that window opens, before anyone
+/// starts working in it, and saves the windows when Treewise quits (ADR 0038).
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
         MainActor.assumeIsolated { MainMenu.install() }
