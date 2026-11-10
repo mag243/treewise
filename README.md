@@ -17,8 +17,8 @@ The specification of the app's keys (ADR 0022).
 | ⌥⌘N | Window beside: a second window on the current folder, the two on the halves of the screen |
 | ⌘1 / ⌘2 | Icons / list |
 | ⇧⌘P | Show or hide the details pane: a preview and the selection's kind, size, date and folder |
-| ⌘[ / ⌘] | Back / forward |
-| ⌘↑ | Enclosing folder; above a volume is This Mac, which lists the volumes |
+| ⌘[ / ⌘] | Back / forward, in the Go menu |
+| ⌘↑ | Enclosing folder, in the Go menu; above a volume is This Mac, which lists the volumes |
 | ⌘R | Refresh: read the folder again |
 | ⌘↓ | Open the selection; ⌥⌘↓ opens a folder in the other window |
 | Double-click | Open, in the window the setting chooses; ⌥ the other window, ⌘ a new tab |

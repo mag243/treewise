@@ -65,7 +65,7 @@ enum WindowSession {
     /// Opens every restored tab but the first, which `window` shows: the first
     /// group's other tabs beside it, every other group as a window with its
     /// tabs. Then each group shows its selected tab, and the first group is in front.
-    static func restore(_ groups: [RestoredGroup], after window: NSWindow) async {
+    static func restore(_ groups: [RestoredGroup], after window: NSWindow) {
         defer {
             isRestoring = false
             logger.info("Restored the session")
@@ -75,11 +75,7 @@ enum WindowSession {
             var tabs = index == 0 ? [window] : []
             for tab in group.tabs.dropFirst(tabs.count) {
                 logger.info("Group \(index): opening tab \(tabs.count)")
-                guard let opened = await WindowTabs.shared.open(TabRequest(restoring: tab))
-                else {
-                    logger.error("Group \(index): tab \(tabs.count) did not open")
-                    continue
-                }
+                let opened = WindowTabs.shared.open(TabRequest(restoring: tab))
                 tabs.last?.addTabbedWindow(opened, ordered: .above)
                 tabs.append(opened)
                 logger.info(

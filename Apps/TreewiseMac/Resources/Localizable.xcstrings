@@ -259,6 +259,22 @@
         }
       }
     },
+    "About Treewise" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über Treewise"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over Treewise"
+          }
+        }
+      }
+    },
     "Actions" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -632,6 +648,22 @@
         }
       }
     },
+    "Bring All to Front" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle nach vorne bringen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles op voorgrond"
+          }
+        }
+      }
+    },
     "Buy…" : {
       "localizations" : {
         "de" : {
@@ -804,6 +836,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De instellingen van alle mappen wissen?"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sluit"
           }
         }
       }
@@ -1004,6 +1052,22 @@
         }
       }
     },
+    "Delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder"
+          }
+        }
+      }
+    },
     "Descending" : {
       "localizations" : {
         "de" : {
@@ -1146,6 +1210,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elke map begint opnieuw met de add-ons die aan staan in nieuwe mappen, en het patroon wordt opnieuw herkend. Bewaarde patronen blijven."
+          }
+        }
+      }
+    },
+    "Edit" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig"
           }
         }
       }
@@ -1361,6 +1441,22 @@
         }
       }
     },
+    "File" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ablage"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archief"
+          }
+        }
+      }
+    },
     "Fill in the gap to approve" : {
       "localizations" : {
         "de" : {
@@ -1571,6 +1667,22 @@
         }
       }
     },
+    "Go" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gehe zu"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ga"
+          }
+        }
+      }
+    },
     "Go to Address" : {
       "localizations" : {
         "de" : {
@@ -1583,6 +1695,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ga naar adres"
+          }
+        }
+      }
+    },
+    "Help" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hilfe"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help"
           }
         }
       }
@@ -1603,6 +1731,22 @@
         }
       }
     },
+    "Hide Others" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Andere ausblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verberg andere"
+          }
+        }
+      }
+    },
     "Hide Preview" : {
       "localizations" : {
         "de" : {
@@ -1615,6 +1759,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verberg voorvertoning"
+          }
+        }
+      }
+    },
+    "Hide Toolbar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symbolleiste ausblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verberg knoppenbalk"
+          }
+        }
+      }
+    },
+    "Hide Treewise" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise ausblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verberg Treewise"
           }
         }
       }
@@ -1879,6 +2055,22 @@
         }
       }
     },
+    "Minimize" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Dock ablegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimaliseer"
+          }
+        }
+      }
+    },
     "Move Down" : {
       "localizations" : {
         "de" : {
@@ -2138,6 +2330,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nieuw tabblad"
+          }
+        }
+      }
+    },
+    "New Window" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Fenster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuw venster"
           }
         }
       }
@@ -2528,6 +2736,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pauzeer"
+          }
+        }
+      }
+    },
+    "Quit Treewise" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise beenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop Treewise"
           }
         }
       }
@@ -3002,6 +3226,54 @@
         }
       }
     },
+    "Select All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles auswählen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecteer alles"
+          }
+        }
+      }
+    },
+    "Services" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dienste"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorzieningen"
+          }
+        }
+      }
+    },
+    "Settings…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instellingen…"
+          }
+        }
+      }
+    },
     "Share" : {
       "localizations" : {
         "de" : {
@@ -3014,6 +3286,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deel"
+          }
+        }
+      }
+    },
+    "Show All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle einblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon alles"
           }
         }
       }
@@ -3112,6 +3400,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toon vorig tabblad"
+          }
+        }
+      }
+    },
+    "Show Sidebar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seitenleiste einblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon navigatiekolom"
           }
         }
       }
@@ -4047,6 +4351,22 @@
         }
       }
     },
+    "Window" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fenster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Venster"
+          }
+        }
+      }
+    },
     "Window Beside" : {
       "localizations" : {
         "de" : {
@@ -4075,6 +4395,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jij"
+          }
+        }
+      }
+    },
+    "Zoom" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoomen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
           }
         }
       }

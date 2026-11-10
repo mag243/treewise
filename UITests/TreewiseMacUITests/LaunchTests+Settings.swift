@@ -2,7 +2,7 @@ import XCTest
 
 /// The Settings window fits its contents, in two tabs.
 extension LaunchTests {
-    static let settingsWindow = "com_apple_SwiftUI_Settings_window"
+    static let settingsWindow = "TreewiseSettings"
 
     @MainActor
     func testSettingsFitsItsContentsWithoutAScrollBar() throws {

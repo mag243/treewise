@@ -36,7 +36,7 @@ extension WindowTabs {
     /// window beside it when there is no other window.
     func openInOtherWindow(_ folder: FileItem.ID, from window: NSWindow?) async {
         guard let other = otherWindow(than: window), let browser = browser(of: other) else {
-            await openBeside(folder, from: window)
+            openBeside(folder, from: window)
             return
         }
         if let window { other.order(.below, relativeTo: window.windowNumber) }
@@ -45,10 +45,10 @@ extension WindowTabs {
 
     /// Opens a window on `folder` and puts `window` and the new one on the left
     /// and right halves of the screen: Window Beside (⌥⌘N).
-    func openBeside(_ folder: FileItem.ID, from window: NSWindow?) async {
+    func openBeside(_ folder: FileItem.ID, from window: NSWindow?) {
         // A window with a sheet is not moved until the sheet is answered.
         guard window?.attachedSheet == nil else { return }
-        guard let opened = await open(TabRequest(folder: folder)) else { return }
+        let opened = open(TabRequest(folder: folder))
         // With "Prefer tabs: Always" in System Settings the window opens as a tab.
         if (opened.tabbedWindows?.count ?? 1) > 1 { opened.moveTabToNewWindow(nil) }
         tile(window, beside: opened)

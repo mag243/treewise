@@ -19,7 +19,6 @@ struct NameReviewAddOnsView: View {
     /// The add-on whose pattern is being saved, while its name is asked (ADR 0068).
     @State private var savingFor: String?
     @State private var savedName = ""
-    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -103,7 +102,7 @@ struct NameReviewAddOnsView: View {
                 savedName = ""
                 savingFor = module.id
             },
-            edit: { openSettings() }
+            edit: { SettingsWindow.show() }
         )
         .fixedSize()
     }

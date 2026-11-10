@@ -5,6 +5,10 @@
 # Apple keeps the English term in Dutch and German macOS.
 Split View
 
+# Apple's Dutch menu bar keeps the English word.
+Help
+Zoom
+
 # The word is the same in the language.
 Computer
 Details

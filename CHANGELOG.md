@@ -12,6 +12,10 @@ All notable changes to Treewise are recorded here. The format follows
 - Suggest Names for Whole Folder… in the context menu and the File menu, for a folder so full that a right click always lands on a file.
 - A double click opens an archive as a folder, and the sidebar's tree unfolds it. Inside it you can browse, sort, search, preview with Quick Look and copy or drag files out; Extract All extracts that archive. Zip, tar and 7z archives can be changed like a folder: add, replace, rename, move, copy, make folders and delete, with undo. A failed change leaves the archive as it was, and the first change puts a copy of the original in the Trash. Rar, iso, cpio and xar stay read-only.
 - The sidebar's tree opens down to the folder or archive a tab shows; Settings can turn this off.
+- A Go menu with Back, Forward and Enclosing Folder, as in Finder.
+
+### Changed
+- Treewise's windows, menus, toolbar and Settings are built the way Mac apps build them, which keeps a menu held open while a change ends from closing Treewise on macOS 26.
 
 ### Fixed
 - A new archive, an extracted folder, a new folder and a renamed item are scrolled into view, also when sorting puts them far from where you were working.
