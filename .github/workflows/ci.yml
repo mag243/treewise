@@ -70,6 +70,38 @@ jobs:
       - name: UI tests
         run: tools/build.sh apptest
 
+      - name: Show crashes and exceptions
+        # A UI test that loses its connection to the app may mean the app crashed;
+        # an exception AppKit catches can also leave the app in a broken state. Both
+        # are shown here, as only the log can be read without downloading: macOS's
+        # crash reports, and the exceptions in what Treewise wrote while tested. The
+        # step fails when it finds any, so that it is among the failed steps' logs.
+        if: ${{ !success() }}
+        run: |
+          mkdir -p build/logs/diagnostics
+          shopt -s nullglob
+          found=0
+          for report in ~/Library/Logs/DiagnosticReports/Treewise*; do
+            cp "$report" build/logs/diagnostics/
+            echo "===== $(basename "$report")"
+            cat "$report"
+            found=1
+          done
+          if [[ -d build/reports/TreewiseMac.xcresult ]]; then
+            xcrun xcresulttool export diagnostics --path build/reports/TreewiseMac.xcresult \
+              --output-path build/logs/diagnostics/xcresult >/dev/null || true
+            while IFS= read -r -d '' output; do
+              if grep -q -E "Exception|FAULT" "$output"; then
+                echo "===== exceptions in $(basename "$output")"
+                grep -E -A 30 "Exception|FAULT" "$output" | head -n 400 || true
+                found=1
+              fi
+            done < <(find build/logs/diagnostics/xcresult \
+              -name "StandardOutputAndStandardError-me.m-domain.treewise.txt" -print0)
+          fi
+          if (( found == 0 )); then echo "No crashes or exceptions of Treewise."; fi
+          exit "$found"
+
       - name: Keep logs and test results
         # Also after a timeout, which counts as cancelled and not as a failure.
         if: ${{ !success() }}
