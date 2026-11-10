@@ -34,7 +34,7 @@ extension LaunchTests {
     /// Waits for the Edit menu to offer an undo. A name typed into its field
     /// shows before the archive has changed; this shows that it has.
     @MainActor
-    private func waitUntilUndoable(_ title: String, in app: XCUIApplication) {
+    func waitUntilUndoable(_ title: String, in app: XCUIApplication) {
         let edit = app.menuBars.menuBarItems["Edit"]
         let deadline = Date().addingTimeInterval(Self.launchTimeout)
         var shown = ""

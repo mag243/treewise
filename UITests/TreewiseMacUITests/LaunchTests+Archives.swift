@@ -243,6 +243,7 @@ extension LaunchTests {
         XCTAssertTrue(
             window.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout),
             "the file is in the zip")
+        waitUntilUndoable("Undo Copy", in: app)
         app.typeKey("z", modifierFlags: .command)
         XCTAssertTrue(
             window.tables.staticTexts["Notes.md"].disappeared(timeout: Self.launchTimeout),
