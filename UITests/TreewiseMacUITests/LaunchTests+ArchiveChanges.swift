@@ -6,6 +6,7 @@ extension LaunchTests {
     private static let zip =
         "UEsDBBQAAAAAAGV4aV2m38+IEAAAABAAAAAKAAAAaW5zaWRlLnR4dGZyb20gdGhlIGFyY2hpdmVQSwECFAMUAAAAAABleGldpt/PiBAAAAAQAAAACgAAAAAAAAAAAAAAgAEAAAAAaW5zaWRlLnR4dFBLBQYAAAAAAQABADgAAAA4AAAAAAA="
     private static let hold: TimeInterval = 0.6
+    private static let changePoll: TimeInterval = 0.2
 
     /// Opens the fixture's zip; returns the app, its window and the zip's file.
     @MainActor
@@ -144,8 +145,17 @@ extension LaunchTests {
         let row = window.outlines.staticTexts["Photos.zip"]
         XCTAssertTrue(row.appeared(timeout: Self.launchTimeout), "the sidebar shows the zip")
 
+        let archive = try XCTUnwrap(self.root).appendingPathComponent("Photos.zip")
+        let before = try Data(contentsOf: archive)
+
         drag(notes, onto: row)
 
+        // The list is opened only once the change is done, as it runs in the background.
+        let deadline = Date().addingTimeInterval(Self.launchTimeout)
+        while (try? Data(contentsOf: archive)) == before, Date() < deadline {
+            Thread.sleep(forTimeInterval: Self.changePoll)
+        }
+        XCTAssertNotEqual(try Data(contentsOf: archive), before, "the zip changed")
         XCTAssertTrue(notes.exists, "the file stays where it was")
         window.tables.staticTexts["Photos.zip"].doubleClick()
         assertShows("Notes.md", in: window, "a copy is in the zip")

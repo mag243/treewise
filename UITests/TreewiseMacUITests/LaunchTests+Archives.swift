@@ -303,10 +303,14 @@ extension LaunchTests {
         finder.activate()
         let grab = finderWindow.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0))
             .withOffset(CGVector(dx: 0, dy: Self.finderGrabHeight))
-        grab.click(
-            forDuration: Self.dragHold,
-            thenDragTo: grab.withOffset(
-                CGVector(dx: 0, dy: Self.finderTopMargin - finderWindow.frame.minY)))
+        // Only as far up as it takes, so that it stays on its own display.
+        let finderTarget = finderWindow.frame
+        let wanted = app.windows.firstMatch.frame.minY - finderTarget.height * 0.3 - Self.finderGap
+        if finderTarget.minY > wanted {
+            grab.click(
+                forDuration: Self.dragHold,
+                thenDragTo: grab.withOffset(CGVector(dx: 0, dy: wanted - finderTarget.minY)))
+        }
         app.activate()
         let treewise = app.windows.firstMatch.frame
         let frame = finderWindow.frame
@@ -332,7 +336,15 @@ extension LaunchTests {
             NSPredicate(format: "title BEGINSWITH 'OutsideTreewise-' OR title == 'DropHere'"))
         while ours.firstMatch.exists {
             finder.activate()
-            ours.firstMatch.buttons[XCUIIdentifierCloseWindow].click()
+            // Activating raises Finder's last window, which need not be ours;
+            // the Window menu raises the one with this title. It is found by
+            // place, just before Help, as its title follows the Mac's language.
+            let window = ours.firstMatch
+            let items = finder.menuBars.firstMatch.menuBarItems
+            let windowMenu = items.element(boundBy: items.count - 2)
+            windowMenu.click()
+            windowMenu.menuItems[window.title].click()
+            window.buttons[XCUIIdentifierCloseWindow].click()
         }
     }
 
@@ -344,7 +356,7 @@ extension LaunchTests {
     }
     private static let settle: TimeInterval = 2
     private static let finderGrabHeight: CGFloat = 8
-    private static let finderTopMargin: CGFloat = 40
+    private static let finderGap: CGFloat = 20
 
     private static let landingPoll: TimeInterval = 0.2
     private static let dragHold: TimeInterval = 0.6
