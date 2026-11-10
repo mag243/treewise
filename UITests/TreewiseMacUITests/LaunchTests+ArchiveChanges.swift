@@ -125,6 +125,8 @@ extension LaunchTests {
         XCTAssertTrue(field.appeared(timeout: Self.launchTimeout), "renaming starts")
         field.typeText("Box\r")
         assertShows("Box", in: window, "the folder is there")
+        // The list is read again when the rename ends, which would move the rows mid-drag.
+        waitUntilUndoable("Undo Rename", in: app)
 
         drag(window.tables.staticTexts["inside.txt"], onto: window.tables.staticTexts["Box"])
 
