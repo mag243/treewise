@@ -15,6 +15,8 @@ public final class ChangingFileSystem: FileOperating {
         var isHeld = false
         var released: [FileItem.ID] = []
         var edits: [ArchiveEdit] = []
+        var listingsToHold = 0
+        var heldListings = 0
 
         mutating func newID(_ prefix: String) -> FileItem.ID {
             defer { nextNumber += 1 }
@@ -106,7 +108,35 @@ public final class ChangingFileSystem: FileOperating {
     }
 
     public func contents(of folder: FileItem.ID) async throws -> [FileItem] {
-        try await tree().contents(of: folder)
+        // Read before waiting, as a slow listing shows what was there when it began.
+        let (tree, isHeld) = state.withLock { state in
+            let isHeld = state.listingsToHold > 0
+            if isHeld {
+                state.listingsToHold -= 1
+                state.heldListings += 1
+            }
+            return (state.tree, isHeld)
+        }
+        if isHeld {
+            while state.withLock({ $0.heldListings > 0 }) { await Task.yield() }
+        }
+        return try await tree.contents(of: folder)
+    }
+
+    /// Makes the next listing of a folder read what is there now and then wait
+    /// until `releaseListings()`, as a slow listing of a large archive does.
+    public func holdNextListing() {
+        state.withLock { $0.listingsToHold += 1 }
+    }
+
+    /// The listings waiting for `releaseListings()`.
+    public var heldListingCount: Int {
+        state.withLock { $0.heldListings }
+    }
+
+    /// Lets held listings end, with what they read when they began.
+    public func releaseListings() {
+        state.withLock { $0.heldListings = 0 }
     }
 
     public func item(at id: FileItem.ID) async throws -> FileItem {

@@ -8,17 +8,21 @@ extension BrowserState {
     }
 
     /// Reads the folder a tab shows. When the folder is gone, the tab moves to
-    /// the nearest folder that is left. Results for a folder the tab has left
-    /// in the meantime are dropped.
+    /// the nearest folder that is left. Only the tab's latest reading shows:
+    /// an earlier one that ends later read an older state, such as a large
+    /// archive's listing that began before a change to it ended.
     func load(_ tab: TabModel.ID) async {
         guard let folder = layout.tab(tab)?.folder else { return }
-        releaseArchivesNoLongerShown()
+        let number = (latestLoads[tab] ?? 0) + 1
+        latestLoads[tab] = number
+        // Watched before it is read, so that a change during the reading is heard.
+        updateWatches()
         do {
             let items = try await fileSystem.contents(of: folder)
             let folderItem = try? await fileSystem.item(at: folder)
             let ancestry = (try? await fileSystem.ancestorIDs(of: folder)) ?? []
             let capacity = try? await fileSystem.availableCapacity(of: folder)
-            guard layout.tab(tab)?.folder == folder else { return }
+            guard latestLoads[tab] == number, layout.tab(tab)?.folder == folder else { return }
             var content = content(of: tab)
             let present = Set(items.map(\.id))
             content.folder = folderItem
@@ -29,7 +33,7 @@ extension BrowserState {
             content.availableCapacity = capacity
             contents[tab] = content
         } catch {
-            guard layout.tab(tab)?.folder == folder else { return }
+            guard latestLoads[tab] == number, layout.tab(tab)?.folder == folder else { return }
             await recover(tab, folder: folder, from: error)
         }
         updateWatches()

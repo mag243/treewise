@@ -58,6 +58,8 @@ public final class BrowserState {
     @ObservationIgnored let watcher: any FolderWatching
     @ObservationIgnored private let kinds: KindFormatter
     @ObservationIgnored var watches: [TabModel.ID: Watch] = [:]
+    /// The number of each tab's latest reading; only that reading may show.
+    @ObservationIgnored var latestLoads: [TabModel.ID: Int] = [:]
     /// The archives a tab shows, whose listing and copies are kept (ADR 0076).
     @ObservationIgnored var shownArchives: Set<FileItem.ID> = []
     /// The watch on This Mac, which keeps the Locations current (ADR 0044).
