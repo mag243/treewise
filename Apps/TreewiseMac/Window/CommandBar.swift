@@ -131,10 +131,11 @@ final class CommandBar: NSView {
         let text = String(localized: title)
         let button = NSButton(
             title: text,
-            image: NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+            image: NSImage(systemSymbolName: symbol, accessibilityDescription: text)
                 ?? NSImage(), target: self, action: action)
         button.isBordered = false
         button.imagePosition = .imageLeading
+        button.setAccessibilityLabel(text)
         titled.append((button, text))
         return button
     }

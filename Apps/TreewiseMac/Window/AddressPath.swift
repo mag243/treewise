@@ -180,6 +180,10 @@ private final class TypePathArea: NSView {
         edit()
     }
 
+    override func isAccessibilityEnabled() -> Bool {
+        true
+    }
+
     override func accessibilityPerformPress() -> Bool {
         edit()
         return true

@@ -129,10 +129,11 @@ final class ActionButton: NSButton {
         self.run = run
         super.init(frame: .zero)
         self.title = title
-        image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+        image = NSImage(systemSymbolName: symbol, accessibilityDescription: title)
         imagePosition = .imageOnly
         isBordered = false
         toolTip = title
+        setAccessibilityLabel(title)
         target = self
         action = #selector(runAction)
     }
