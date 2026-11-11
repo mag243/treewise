@@ -12,7 +12,7 @@ extension LaunchTests {
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         XCTAssertTrue(
-            settings.staticTexts["Show hidden files"].appeared(timeout: Self.launchTimeout))
+            settings.checkBoxes["Show hidden files"].appeared(timeout: Self.launchTimeout))
         XCTAssertFalse(settings.scrollBars.firstMatch.exists)
     }
 
@@ -59,7 +59,7 @@ extension LaunchTests {
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         XCTAssertTrue(
-            settings.staticTexts["Show hidden files"].appeared(timeout: Self.launchTimeout),
+            settings.checkBoxes["Show hidden files"].appeared(timeout: Self.launchTimeout),
             "Settings opens at General")
         let size = settings.frame.size
         XCTAssertGreaterThanOrEqual(size.width, 600, "room for long names")

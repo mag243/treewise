@@ -6,109 +6,178 @@ import TreewiseUI
 /// Enter Licence Key…, as Settings and the review's add-ons header offer it (ADR 0071): a
 /// sheet with room for the whole key, Paste, and why a key unlocks nothing, shown in the
 /// sheet so the user can try again. The closed modules judge the key; the app keeps it
-/// only when one takes it, and then says what it unlocked.
-struct LicenceKeyEntry: ViewModifier {
-    @Binding var isPresented: Bool
-    let keeper: LicenceKeeper?
-    let host: any NameModuleHosting
-    /// Called when a key unlocked an add-on, to show it at once.
-    let onUnlocked: () -> Void
-
-    @State private var unlocked: String?
-
-    func body(content: Content) -> some View {
-        content
-            .sheet(isPresented: $isPresented) {
-                LicenceKeySheet(keeper: keeper, host: host) { message in
-                    isPresented = false
-                    unlocked = message
-                    onUnlocked()
-                }
-            }
-            .alert(
-                unlocked ?? "",
-                isPresented: Binding(get: { unlocked != nil }, set: { if !$0 { unlocked = nil } })
-            ) {
-                Button("OK") { unlocked = nil }
-            }
-    }
-}
-
-/// The sheet in which a key is pasted.
-private struct LicenceKeySheet: View {
-    private static let width: CGFloat = 520
-    private static let fieldHeight: CGFloat = 110
-    private static let cornerRadius: CGFloat = 5
-
-    let keeper: LicenceKeeper?
-    let host: any NameModuleHosting
-    /// Called with what a key unlocked.
-    let onUnlocked: (String) -> Void
-
-    @Environment(\.dismiss) private var dismiss
-    @State private var key = ""
-    @State private var problem: String?
-    @State private var isChecking = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Enter Licence Key").font(.headline)
-            Text("Paste the licence key from the e-mail you received.")
-                .foregroundStyle(.secondary)
-            TextEditor(text: $key)
-                .font(.body.monospaced())
-                .frame(height: Self.fieldHeight)
-                .overlay(RoundedRectangle(cornerRadius: Self.cornerRadius).stroke(.quaternary))
-                .accessibilityLabel(Text("Licence key"))
-                .onChange(of: key) { problem = nil }
-            HStack {
-                Button("Paste") {
-                    if let text = NSPasteboard.general.string(forType: .string) { key = text }
-                }
-                if let problem {
-                    Label(problem, systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption).foregroundStyle(.orange)
-                }
-                Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-                Button("Add") { Task { await enter() } }
-                    .keyboardShortcut(.defaultAction)
-                    .disabled(
-                        isChecking || key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
+/// only when one takes it, and then says what it unlocked in an alert.
+@MainActor
+enum LicenceKeyEntry {
+    /// Shows the sheet on `window`; `onUnlocked` is called once a key unlocked an add-on.
+    static func present(
+        on window: NSWindow, keeper: LicenceKeeper?, host: any NameModuleHosting,
+        onUnlocked: @escaping () -> Void = {}
+    ) {
+        let sheet = LicenceKeySheet(keeper: keeper, host: host)
+        let sheetWindow = NSWindow(contentViewController: sheet)
+        sheet.finish = { [weak window, weak sheetWindow] message in
+            guard let window, let sheetWindow else { return }
+            window.endSheet(sheetWindow)
+            guard let message else { return }
+            onUnlocked()
+            let alert = NSAlert()
+            alert.messageText = message
+            alert.beginSheetModal(for: window)
         }
-        .padding(20)
-        .frame(width: Self.width)
-    }
-
-    private func enter() async {
-        guard let keeper else { return }
-        isChecking = true
-        defer { isChecking = false }
-        switch await keeper.enter(key: key, host: host) {
-        case .notAKey:
-            problem = String(localized: "This is not a Treewise licence key.")
-        case .unlocksNothing:
-            problem = String(
-                localized:
-                    "This key unlocks none of your add-ons. It may be for another add-on, or withdrawn."
-            )
-        case .unlocked(let modules, let licensee):
-            let names = modules.map { NameReviewText.name(ofModule: $0) }.joined(separator: ", ")
-            onUnlocked(String(localized: "Unlocked \(names) for \(licensee)."))
-        }
+        window.beginSheet(sheetWindow)
     }
 }
 
 extension View {
-    /// Offers Enter Licence Key… while `isPresented`.
+    /// Offers Enter Licence Key… in the key window while `isPresented`.
     func licenceKeyEntry(
         isPresented: Binding<Bool>, keeper: LicenceKeeper?, host: any NameModuleHosting,
         onUnlocked: @escaping () -> Void = {}
     ) -> some View {
-        modifier(
-            LicenceKeyEntry(
-                isPresented: isPresented, keeper: keeper, host: host, onUnlocked: onUnlocked))
+        onChange(of: isPresented.wrappedValue) { _, shows in
+            guard shows, let window = NSApp.keyWindow else { return }
+            isPresented.wrappedValue = false
+            LicenceKeyEntry.present(
+                on: window, keeper: keeper, host: host, onUnlocked: onUnlocked)
+        }
+    }
+}
+
+/// The sheet in which a key is pasted.
+@MainActor
+private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
+    private static let width: CGFloat = 520
+    private static let fieldHeight: CGFloat = 110
+    private static let padding: CGFloat = 20
+    private static let spacing: CGFloat = 12
+
+    private let keeper: LicenceKeeper?
+    private let host: any NameModuleHosting
+    /// Called with what a key unlocked, or `nil` on Cancel.
+    var finish: (String?) -> Void = { _ in }
+    private let key = NSTextView()
+    private let problem = NSTextField(labelWithString: "")
+    private let problemIcon = NSImageView(
+        image: NSImage(
+            systemSymbolName: "exclamationmark.triangle.fill", accessibilityDescription: nil)
+            ?? NSImage())
+    private lazy var add = ClosureButton(title: String(localized: "Add")) { [weak self] in
+        self?.enter()
+    }
+    private var isChecking = false {
+        didSet { updateAdd() }
+    }
+
+    init(keeper: LicenceKeeper?, host: any NameModuleHosting) {
+        self.keeper = keeper
+        self.host = host
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
+
+    override func loadView() {
+        let title = NSTextField(labelWithString: String(localized: "Enter Licence Key"))
+        title.font = .preferredFont(forTextStyle: .headline)
+        let explanation = NSTextField(
+            labelWithString: String(
+                localized: "Paste the licence key from the e-mail you received."))
+        explanation.textColor = .secondaryLabelColor
+        let stack = NSStackView(views: [title, explanation, keyField(), buttons()])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = Self.spacing
+        stack.edgeInsets = NSEdgeInsets(
+            top: Self.padding, left: Self.padding, bottom: Self.padding, right: Self.padding)
+        stack.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
+        view = stack
+        updateAdd()
+    }
+
+    private func keyField() -> NSView {
+        key.font = .monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        key.isRichText = false
+        key.delegate = self
+        key.setAccessibilityLabel(String(localized: "Licence key"))
+        key.autoresizingMask = [.width]
+        let scroll = NSScrollView()
+        scroll.documentView = key
+        scroll.hasVerticalScroller = true
+        scroll.borderType = .bezelBorder
+        NSLayoutConstraint.activate([
+            scroll.heightAnchor.constraint(equalToConstant: Self.fieldHeight),
+            scroll.widthAnchor.constraint(equalToConstant: Self.width - Self.padding * 2),
+        ])
+        return scroll
+    }
+
+    private func buttons() -> NSView {
+        let paste = ClosureButton(title: String(localized: "Paste")) { [weak self] in
+            if let text = NSPasteboard.general.string(forType: .string) {
+                self?.key.string = text
+                self?.keyChanged()
+            }
+        }
+        problem.font = .preferredFont(forTextStyle: .caption1)
+        problem.textColor = .systemOrange
+        problemIcon.contentTintColor = .systemOrange
+        show(problem: nil)
+        let cancel = ClosureButton(title: String(localized: "Cancel")) { [weak self] in
+            self?.finish(nil)
+        }
+        cancel.keyEquivalent = "\u{1b}"
+        add.keyEquivalent = "\r"
+        let row = NSStackView()
+        row.setViews([paste, problemIcon, problem], in: .leading)
+        row.setViews([cancel, add], in: .trailing)
+        row.widthAnchor.constraint(equalToConstant: Self.width - Self.padding * 2).isActive = true
+        return row
+    }
+
+    func textDidChange(_ notification: Notification) {
+        keyChanged()
+    }
+
+    private func keyChanged() {
+        show(problem: nil)
+        updateAdd()
+    }
+
+    private func updateAdd() {
+        add.isEnabled =
+            !isChecking && !key.string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func show(problem text: String?) {
+        problem.stringValue = text ?? ""
+        problem.isHidden = text == nil
+        problemIcon.isHidden = text == nil
+    }
+
+    private func enter() {
+        guard let keeper else { return }
+        isChecking = true
+        let text = key.string
+        let host = host
+        Task {
+            let result = await keeper.enter(key: text, host: host)
+            isChecking = false
+            switch result {
+            case .notAKey:
+                show(problem: String(localized: "This is not a Treewise licence key."))
+            case .unlocksNothing:
+                show(
+                    problem: String(
+                        localized:
+                            "This key unlocks none of your add-ons. It may be for another add-on, or withdrawn."
+                    ))
+            case .unlocked(let modules, let licensee):
+                let names = modules.map { NameReviewText.name(ofModule: $0) }
+                    .joined(separator: ", ")
+                finish(String(localized: "Unlocked \(names) for \(licensee)."))
+            }
+        }
     }
 }

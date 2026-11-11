@@ -1,9 +1,9 @@
 import AppKit
-import SwiftUI
 
 /// The Settings window (⌘,), as Mac apps have it (ADR 0081): a tab view in the
 /// window's toolbar with General, Names (ADR 0057) and Add-ons (ADR 0070),
-/// each a SwiftUI pane. It opens on General each time, and changes apply at once.
+/// laid out as Mac apps lay out settings. It opens on General each time, and
+/// changes apply at once.
 @MainActor
 enum SettingsWindow {
     /// The size of every pane: wide enough for long add-on names and patterns,
@@ -35,9 +35,7 @@ enum SettingsWindow {
         tabs.addTabViewItem(
             pane(
                 AddOnsSettingsTab(
-                    settings: settings, licences: LaunchOptions.licenceKeeper(for: settings)
-                )
-                .frame(width: paneSize.width, height: paneSize.height),
+                    settings: settings, licences: LaunchOptions.licenceKeeper(for: settings)),
                 "Add-ons", "puzzlepiece.extension"))
         let window = NSWindow(contentViewController: tabs)
         window.identifier = identifier
@@ -48,10 +46,8 @@ enum SettingsWindow {
     }
 
     private static func pane(
-        _ view: some View, _ label: String.LocalizationValue, _ symbol: String
+        _ controller: NSViewController, _ label: String.LocalizationValue, _ symbol: String
     ) -> NSTabViewItem {
-        let controller = NSHostingController(rootView: view)
-        controller.sizingOptions = .preferredContentSize
         let item = NSTabViewItem(viewController: controller)
         item.label = String(localized: label)
         item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: item.label)

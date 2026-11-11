@@ -1,20 +1,41 @@
-import SwiftUI
+import AppKit
 import TreewiseCore
 import TreewiseModuleInterface
 import TreewiseUI
-import UniformTypeIdentifiers
 
 /// The Add-ons tab of Settings (ADR 0070): every add-on the app has, with what it reads,
 /// which files it is for and the fields it fills in; on or off for every folder, on in new
 /// folders or not, and dragged into the order folders without their own take. A paid one
 /// shows its licence, with Buy…; one Enter Licence Key… serves them all (ADR 0071).
-struct AddOnsSettingsTab: View {
-    @Bindable var settings: BrowserSettings
+@MainActor
+final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
+    private static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.add-on")
+    private static let spacing: CGFloat = 8
+    private static let width: CGFloat = 520
+    private static let listHeight: CGFloat = 420
+
+    private let settings: BrowserSettings
     /// The app's licences.
-    let licences: LicenceKeeper
-    @State private var modules: [NameModuleDescription] = []
-    @State private var states: [String: ModuleLicenceState] = [:]
-    @State private var entersKey = false
+    private let licences: LicenceKeeper
+    private let table = NSTableView()
+    private lazy var enterKey = SettingsForm.button("Enter Licence Key…") { [weak self] in
+        guard let self, let window = view.window else { return }
+        LicenceKeyEntry.present(
+            on: window, keeper: licences, host: NameReviewWindow.host
+        ) { [weak self] in self?.load() }
+    }
+    private var modules: [NameModuleDescription] = []
+    private var states: [String: ModuleLicenceState] = [:]
+    private var shown: [NameModuleDescription] = []
+
+    init(settings: BrowserSettings, licences: LicenceKeeper) {
+        self.settings = settings
+        self.licences = licences
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
 
     private var catalog: [String] { modules.map(\.id) }
     /// The add-ons on that may work: one of them stays on.
@@ -26,176 +47,156 @@ struct AddOnsSettingsTab: View {
         settings.addOns.ordered(catalog).compactMap { id in modules.first { $0.id == id } }
     }
 
-    var body: some View {
-        Form {
-            Section {
-                ForEach(ordered, id: \.id) { module in
-                    AddOnRow(
-                        settings: settings, module: module, catalog: catalog,
-                        defaultID: NameModuleDescription.defaultID(among: modules),
-                        licence: states[module.id], isLastWorking: working == [module.id]
-                    )
-                    .accessibilityActions {
-                        Button("Move Up") { move(module.id, by: -1) }
-                        Button("Move Down") { move(module.id, by: 1) }
-                    }
-                }
-                .onMove { source, destination in
-                    guard let from = source.first else { return }
-                    let id = ordered[from].id
-                    settings.addOns.move(
-                        id, to: destination > from ? destination - 1 : destination, catalog: catalog
-                    )
-                }
-            } header: {
-                Text("Add-ons")
-            } footer: {
-                Text(
+    override func loadView() {
+        let header = NSTextField(labelWithString: String(localized: "Add-ons"))
+        header.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
+        let note = NSTextField(
+            wrappingLabelWithString: String(
+                localized:
                     "An add-on that is off is offered in no folder. Drag to set the order for folders without their own."
-                )
-                .font(.caption).foregroundStyle(.secondary)
-            }
-            if !states.isEmpty {
-                Section {
-                    Button("Enter Licence Key…") { entersKey = true }
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .task { await load() }
-        .licenceKeyEntry(
-            isPresented: $entersKey, keeper: licences, host: NameReviewWindow.host,
-            onUnlocked: { Task { await load() } })
+            ))
+        note.font = .preferredFont(forTextStyle: .caption1)
+        note.textColor = .secondaryLabelColor
+        note.preferredMaxLayoutWidth = Self.width
+        enterKey.isHidden = true
+        let stack = NSStackView(views: [header, list(), note, enterKey])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = Self.spacing
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        let size = SettingsWindow.paneSize
+        let view = NSView(frame: NSRect(origin: .zero, size: size))
+        view.addSubview(stack)
+        NSLayoutConstraint.activate([
+            view.widthAnchor.constraint(equalToConstant: size.width),
+            view.heightAnchor.constraint(equalToConstant: size.height),
+            stack.topAnchor.constraint(equalTo: view.topAnchor, constant: SettingsForm.margin),
+            stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        ])
+        self.view = view
+        Observing.follow(self) { $0.update() }
+        load()
+    }
+
+    private func list() -> NSView {
+        table.addTableColumn(NSTableColumn(identifier: .init("add-on")))
+        table.headerView = nil
+        table.usesAutomaticRowHeights = true
+        table.selectionHighlightStyle = .none
+        table.style = .plain
+        table.dataSource = self
+        table.delegate = self
+        table.registerForDraggedTypes([Self.dragType])
+        let scroll = NSScrollView()
+        scroll.documentView = table
+        scroll.hasVerticalScroller = true
+        scroll.autohidesScrollers = true
+        scroll.drawsBackground = false
+        table.backgroundColor = .clear
+        NSLayoutConstraint.activate([
+            scroll.widthAnchor.constraint(equalToConstant: Self.width),
+            scroll.heightAnchor.constraint(equalToConstant: Self.listHeight),
+        ])
+        return scroll
+    }
+
+    private func update() {
+        shown = ordered
+        table.reloadData()
     }
 
     /// The add-ons, with each paid one's licence. None that another replaces is shown while
     /// that one may work, and the choices made for it go to that one (ADR 0067); one without
     /// a licence replaces nothing (ADR 0071).
-    private func load() async {
+    private func load() {
         let host = NameReviewWindow.host
-        let all = (try? await host.availableModules()) ?? []
         let context = licences.context()
-        var found: [String: ModuleLicenceState] = [:]
-        for module in all where !module.isFree {
-            found[module.id] = try? await host.licenceState(moduleID: module.id, licence: context)
-        }
-        let mayWork = { (module: NameModuleDescription) in found[module.id] != .unlicensed }
-        let offered = NameModuleDescription.offered(all.filter(mayWork))
-        for module in all where !mayWork(module) {
-            for replaced in module.replaces {
-                settings.addOns.handOver(from: module.id, to: replaced)
+        let settings = settings
+        Task { [weak self] in
+            let all = (try? await host.availableModules()) ?? []
+            var found: [String: ModuleLicenceState] = [:]
+            for module in all where !module.isFree {
+                found[module.id] = try? await host.licenceState(
+                    moduleID: module.id, licence: context)
             }
-        }
-        for module in offered {
-            for replaced in module.replaces {
-                settings.addOns.handOver(from: replaced, to: module.id)
-            }
-        }
-        states = found
-        modules = offered + all.filter { !mayWork($0) }
-    }
-
-    private func move(_ id: String, by offset: Int) {
-        guard let index = ordered.firstIndex(where: { $0.id == id }) else { return }
-        settings.addOns.move(id, to: index + offset, catalog: catalog)
-    }
-}
-
-/// One add-on.
-private struct AddOnRow: View {
-    @Bindable var settings: BrowserSettings
-    let module: NameModuleDescription
-    let catalog: [String]
-    /// The add-on that plays the default module's part (ADR 0067).
-    let defaultID: String
-    /// Its licence, for a paid add-on (ADR 0071).
-    let licence: ModuleLicenceState?
-    /// Whether it is the last add-on on that may work, which stays on.
-    let isLastWorking: Bool
-
-    /// Without a licence it is off and cannot be turned on; what was chosen is kept.
-    private var isLocked: Bool { licence == .unlicensed }
-    private var isOn: Bool { settings.addOns.isOn(module.id) && !isLocked }
-    private var isLast: Bool { isOn && isLastWorking }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack {
-                Toggle(
-                    NameReviewText.name(of: module),
-                    isOn: Binding(
-                        get: { isOn },
-                        set: { settings.addOns.setOn(module.id, on: $0, catalog: catalog) })
-                )
-                .toggleStyle(.checkbox)
-                .disabled(isLast || isLocked)
-                .help(isLast ? Text("At least one add-on stays on") : Text(verbatim: ""))
-                Spacer()
-                Text(module.isFree ? "Free" : "Paid").font(.caption).foregroundStyle(.secondary)
-            }
-            Group {
-                Text(Self.reads(module))
-                Text("For \(Self.files(module))")
-                Text("Fields: \(module.fields.map { "{\($0.name)}" }.joined(separator: " "))")
-            }
-            .font(.caption).foregroundStyle(.secondary)
-            .padding(.leading, 20)
-            if let licence {
-                HStack(spacing: 6) {
-                    Label(
-                        LicenceText.state(licence),
-                        systemImage: isLocked ? "lock.fill" : "key.fill"
-                    )
-                    .foregroundStyle(isLocked ? Color.orange : .secondary)
-                    if !Self.isLicensed(licence), module.purchaseURL != nil {
-                        Button("Buy…") { LicenceText.buy(module) }.buttonStyle(.link)
-                    }
+            let mayWork = { (module: NameModuleDescription) in found[module.id] != .unlicensed }
+            let offered = NameModuleDescription.offered(all.filter(mayWork))
+            for module in all where !mayWork(module) {
+                for replaced in module.replaces {
+                    settings.addOns.handOver(from: module.id, to: replaced)
                 }
-                .font(.caption)
-                .padding(.leading, 20)
             }
-            Toggle(
-                "On in new folders",
-                isOn: Binding(
-                    get: {
-                        settings.addOns.isOnInNewFolders(
-                            module.id, defaultID: defaultID)
-                    },
-                    set: {
-                        settings.addOns.setOnInNewFolders(
-                            module.id, on: $0, catalog: catalog,
-                            defaultID: defaultID)
-                    })
-            )
-            .toggleStyle(.checkbox)
-            .font(.caption)
-            .padding(.leading, 20)
-            .disabled(!isOn)
+            for module in offered {
+                for replaced in module.replaces {
+                    settings.addOns.handOver(from: replaced, to: module.id)
+                }
+            }
+            guard let self else { return }
+            states = found
+            modules = offered + all.filter { !mayWork($0) }
+            enterKey.isHidden = found.isEmpty
+            update()
         }
-        .opacity(isOn ? 1 : 0.6)
     }
 
-    private static func isLicensed(_ state: ModuleLicenceState) -> Bool {
-        if case .licensed = state { true } else { false }
+    private func move(_ id: String, to index: Int) {
+        settings.addOns.move(id, to: index, catalog: catalog)
     }
 
-    /// What the add-on reads of a file, in words (ADR 0061, ADR 0062).
-    static func reads(_ module: NameModuleDescription) -> String {
-        if module.neededContent.contains(.pageImages) {
-            return String(localized: "Reads names and the pages of a file")
-        }
-        if !module.neededContent.isEmpty {
-            return String(localized: "Reads names and the text of a file")
-        }
-        return String(localized: "Reads names only")
+    // MARK: - NSTableViewDataSource and NSTableViewDelegate
+
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        shown.count
     }
 
-    /// Which files the add-on is for, in words from its content types.
-    static func files(_ module: NameModuleDescription) -> String {
-        let types = module.contentTypes.compactMap { UTType($0) }
-        if types.contains(where: { $0 == .item || $0 == .data }) {
-            return String(localized: "all files")
-        }
-        return types.compactMap(\.localizedDescription).sorted().joined(separator: ", ")
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int)
+        -> NSView?
+    {
+        let module = shown[row]
+        let view = AddOnRow(
+            settings: settings, module: module, catalog: catalog,
+            defaultID: NameModuleDescription.defaultID(among: modules),
+            licence: states[module.id], isLastWorking: working == [module.id])
+        view.setAccessibilityCustomActions([
+            NSAccessibilityCustomAction(name: String(localized: "Move Up")) { [weak self] in
+                self?.move(module.id, to: row - 1)
+                return true
+            },
+            NSAccessibilityCustomAction(name: String(localized: "Move Down")) { [weak self] in
+                self?.move(module.id, to: row + 1)
+                return true
+            },
+        ])
+        return view
+    }
+
+    func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int)
+        -> (any NSPasteboardWriting)?
+    {
+        let item = NSPasteboardItem()
+        item.setString(shown[row].id, forType: Self.dragType)
+        return item
+    }
+
+    func tableView(
+        _ tableView: NSTableView, validateDrop info: any NSDraggingInfo, proposedRow row: Int,
+        proposedDropOperation dropOperation: NSTableView.DropOperation
+    ) -> NSDragOperation {
+        guard info.draggingSource as? NSTableView === table else { return [] }
+        tableView.setDropRow(row, dropOperation: .above)
+        return .move
+    }
+
+    func tableView(
+        _ tableView: NSTableView, acceptDrop info: any NSDraggingInfo, row: Int,
+        dropOperation: NSTableView.DropOperation
+    ) -> Bool {
+        guard
+            let id = info.draggingPasteboard.pasteboardItems?.first?.string(
+                forType: Self.dragType),
+            let from = shown.firstIndex(where: { $0.id == id })
+        else { return false }
+        move(id, to: row > from ? row - 1 : row)
+        return true
     }
 }
