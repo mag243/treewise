@@ -2,18 +2,29 @@ import AppKit
 import OSLog
 import TreewiseFileSystem
 
-/// Builds the menu bar and opens the first window (ADR 0081), runs the offer
-/// to move to Applications right after that window opens, before anyone
-/// starts working in it, and saves the windows when Treewise quits (ADR 0038).
+/// Builds the menu bar, has AppKit restore the windows of the launch before
+/// (ADR 0083) or opens a first one (ADR 0081), and runs the offer to move to
+/// Applications right after that, before anyone starts working in a window.
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// Whether AppKit keeps an app's windows when it quits; an app's own value
+    /// goes before the system setting "Close windows when quitting an application".
+    private static let quitAlwaysKeepsWindows = "NSQuitAlwaysKeepsWindows"
+
     func applicationWillFinishLaunching(_ notification: Notification) {
+        // Every quit keeps the windows for the next launch, whatever the system says.
+        UserDefaults.standard.set(true, forKey: Self.quitAlwaysKeepsWindows)
         MainActor.assumeIsolated { MainMenu.install() }
+    }
+
+    func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
+        true
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         MainActor.assumeIsolated {
             if let appearance = LaunchOptions.appearance { NSApp.appearance = appearance }
-            WindowTabs.shared.openFirstWindow()
+            // AppKit restored the windows it kept between will- and did-finish-launching.
+            WindowTabs.shared.openWindowIfNoneRestored()
             ApplicationsMover.offerIfNeeded()
             FolderSettingsCleaner.start(with: NameReviewWindow.store)
             FileOperationRunner.removeLeftoverArchiveCopies(in: LaunchOptions.locations)
@@ -22,7 +33,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         MainActor.assumeIsolated {
-            WindowSession.saveForQuitting()
             ArchiveEntryDrag.releasePromises()
             FileOperationRunner.removeLeftoverArchiveCopies(in: LaunchOptions.locations)
         }

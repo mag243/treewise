@@ -1,12 +1,13 @@
 import AppKit
 import OSLog
 import TreewiseCore
+import TreewiseFileSystem
 import TreewiseUI
 
 /// The folder a window opens at, as a tab or as a window of its own.
 struct TabRequest {
     var folder: String
-    /// The panes, sort order and view of a tab restored at launch (ADR 0038).
+    /// The panes, sort order and view of a window restored at launch (ADR 0083).
     var snapshot: WindowSnapshot?
 
     init(folder: FileItem.ID) {
@@ -36,19 +37,31 @@ final class WindowTabs {
     /// windows; zero until the first window is placed.
     private var cascadePoint = NSPoint.zero
 
-    /// Opens the first window of a launch, which restores the session before
-    /// it (ADR 0038).
-    func openFirstWindow() {
-        let controller = make(nil)
-        place(controller.window)
-        controller.open(restoringSession: true)
+    /// Opens a window at the start folder when AppKit restored none: at
+    /// launch, after AppKit brought back the windows before it (ADR 0083).
+    func openWindowIfNoneRestored() {
+        guard controllers.isEmpty else { return }
+        openWindow()
     }
 
     /// Opens a window at the start folder: File > New Window (⌘N).
     func openWindow() {
         let controller = make(nil)
         place(controller.window)
-        controller.open(restoringSession: false)
+        controller.open()
+    }
+
+    /// A window as it was before a restart, for AppKit to put back: at the
+    /// start folder when none of its folders can be shown any more.
+    func restore(_ snapshot: WindowSnapshot?) -> NSWindow {
+        let reader = LocalFileSystem(locations: LaunchOptions.locations)
+        let restored = snapshot?.restored { (try? reader.currentItem(at: $0))?.isContainer == true }
+        let controller = make(restored.map(TabRequest.init(restoring:)))
+        controller.openRestored()
+        Self.logger.info(
+            "Restored a window, \(restored == nil ? "at the start folder" : "as it was")")
+        // A window controller always has the window it was made with.
+        return controller.window ?? NSWindow()
     }
 
     /// Puts the first window in the middle of the main screen, the one with
@@ -85,7 +98,7 @@ final class WindowTabs {
     @discardableResult
     func open(_ request: TabRequest) -> NSWindow {
         let controller = make(request)
-        controller.open(restoringSession: false)
+        controller.open()
         // A window controller always has the window it was made with.
         return controller.window ?? NSWindow()
     }

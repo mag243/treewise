@@ -35,8 +35,10 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
             backing: .buffered, defer: false)
         super.init(window: window)
         window.delegate = self
-        // Treewise restores its windows itself, on every Mac (ADR 0038).
-        window.isRestorable = false
+        // AppKit restores the window at the next launch (ADR 0083).
+        window.isRestorable = true
+        window.identifier = BrowserWindowRestoration.identifier
+        window.restorationClass = BrowserWindowRestoration.self
         window.isReleasedWhenClosed = false
         window.tabbingIdentifier = "browser"
         // The address bar already names the folder; the title stays for the
@@ -86,27 +88,29 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         return split
     }
 
-    /// Shows the window, centered for screenshots (ADR 0041), and then what
-    /// it was opened for: a restored tab, or for the first window of a
-    /// launch the session before it, whose other tabs it opens.
-    func open(restoringSession: Bool) {
+    /// Shows the window, centered for screenshots (ADR 0041), at the folder
+    /// it was opened for.
+    func open() {
         guard let window else { return }
         if LaunchOptions.windowSize != nil { Self.center(window) }
-        WindowSession.watch(browser.settings)
-        WindowSession.open(window)
         window.makeKeyAndOrderFront(nil)
         if let splitView = (window.contentViewController as? NSSplitViewController)?.splitView {
             splitView.setPosition(WindowWidths.sidebarIdeal, ofDividerAt: 0)
         }
-        let groups = restoringSession ? WindowSession.claim(from: browser.settings) : []
-        let requested = request?.snapshot?.restored { _ in true }
-        if let restored = groups.first?.tabs.first ?? requested {
+        start()
+    }
+
+    /// Starts the window at the folder it showed before a restart, for AppKit
+    /// to show it where it was (ADR 0083).
+    func openRestored() {
+        start()
+    }
+
+    private func start() {
+        if let restored = request?.snapshot?.restored(isUsable: { _ in true }) {
             browser.restore(restored.layout, sort: restored.sort, viewMode: restored.viewMode)
         }
-        Task {
-            await browser.start()
-            if !groups.isEmpty { WindowSession.restore(groups, after: window) }
-        }
+        Task { await browser.start() }
     }
 
     /// Puts `window` in the middle of the main display.
@@ -132,7 +136,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - Following the browser
 
-    /// Follows what the window shows in its title, search field and session,
+    /// Follows what the window shows in its title, search field and restorable state,
     /// and shows a failure.
     private func update() {
         let tab = browser.layout.focusedPane.activeTabID
@@ -140,7 +144,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         window?.title = title
         toolbarItems.show(title: title, query: browser.content(of: tab).query)
         let snapshot = browser.snapshot
-        if let lastSnapshot, lastSnapshot != snapshot { WindowSession.save() }
+        if lastSnapshot != snapshot { window?.invalidateRestorableState() }
         lastSnapshot = snapshot
         if let failure = browser.failure { show(failure) }
     }
@@ -162,6 +166,11 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     /// Every window's file operations share one history (ADR 0037).
     func windowWillReturnUndoManager(_ window: NSWindow) -> UndoManager? {
         SharedUndo.manager
+    }
+
+    /// The folder, sort order and view, which AppKit keeps beside the frame and tab group.
+    func window(_ window: NSWindow, willEncodeRestorableState state: NSCoder) {
+        BrowserWindowRestoration.encode(browser.snapshot, in: state)
     }
 
     func windowWillClose(_ notification: Notification) {

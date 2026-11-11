@@ -6,31 +6,10 @@ public struct RestoredGroup {
     public var tabs: [RestoredWindow]
     /// Which of `tabs` is selected.
     public var selectedTab: Int
-
-    /// The group with each tab of each pane as a tab of its own, for a Mac
-    /// window that shows one folder (ADR 0037): a window of a release with
-    /// split view and tabs per pane becomes its tabs from left to right, each
-    /// with the window's sort order and view. The selected window's focused
-    /// pane's active tab stays selected.
-    public func oneFolderPerTab() -> RestoredGroup {
-        var flat: [RestoredWindow] = []
-        var selected = 0
-        for (index, window) in tabs.enumerated() {
-            let folders = window.layout.panes.flatMap(\.tabs)
-            let active = window.layout.focusedPane.activeTabID
-            if index == selectedTab, let offset = folders.firstIndex(where: { $0.id == active }) {
-                selected = flat.count + offset
-            }
-            flat += folders.map {
-                RestoredWindow(
-                    layout: PaneLayout(at: $0.folder), sort: window.sort, viewMode: window.viewMode)
-            }
-        }
-        return RestoredGroup(tabs: flat, selectedTab: selected)
-    }
 }
 
-/// What a restart brings back of all windows (ADR 0038): the tab groups from
+/// What a restart of the iOS app brings back (ADR 0038; on the Mac AppKit
+/// restores the windows, ADR 0083): the tab groups from
 /// front to back, each with its tabs from left to right and the selected one.
 /// A window without tabs is a group of one.
 public struct SessionSnapshot: Codable, Equatable, Sendable {

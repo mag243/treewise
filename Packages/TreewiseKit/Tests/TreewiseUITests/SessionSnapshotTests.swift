@@ -50,24 +50,6 @@ import TreewiseUI
         #expect(session().restored { _ in false }.isEmpty)
     }
 
-    @Test func makesEveryTabOfEveryPaneATabOfItsOwn() throws {
-        var left = PaneModel(at: "documents")
-        left.openTab(at: "projects")
-        let split = WindowSnapshot(
-            layout: PaneLayout(panes: [left, PaneModel(at: "downloads")], focused: 1),
-            sort: ItemSort(column: .size, ascending: false), viewMode: .icons)
-        let session = SessionSnapshot(groups: [
-            .init(tabs: [tab("music"), split], selectedTab: 1)
-        ])
-        let group = try #require(session.restored { _ in true }.first).oneFolderPerTab()
-
-        #expect(folders([group]) == [["music", "documents", "projects", "downloads"]])
-        #expect(group.tabs.allSatisfy { $0.layout.panes.count == 1 })
-        #expect(group.selectedTab == 3, "the focused pane's tab of the selected window")
-        #expect(group.tabs[1].viewMode == .icons, "each keeps its window's view")
-        #expect(group.tabs[1].sort == ItemSort(column: .size, ascending: false))
-    }
-
     @Test func aWindowOfOneReleaseBackIsASessionOfOneGroup() {
         let window = tab("projects")
         #expect(
