@@ -13,6 +13,8 @@ final class ScreenshotTests: XCTestCase {
     /// details pane's preview load in the background and offer nothing to
     /// wait for. A screenshot tests no behaviour, so a fixed pause is fine.
     private static let settle: TimeInterval = 2
+    /// A point in the list below its rows, empty in every scene's folder.
+    private static let emptyPartOfList = CGVector(dx: 0.5, dy: 0.8)
 
     // Each scene in light and in dark, to choose from for the page.
 
@@ -26,6 +28,8 @@ final class ScreenshotTests: XCTestCase {
     @MainActor func testTwoWindowsBesideDark() throws { try twoWindowsBeside(dark: true) }
     @MainActor func testNameSuggestionsLight() throws { try nameSuggestions(dark: false) }
     @MainActor func testNameSuggestionsDark() throws { try nameSuggestions(dark: true) }
+    @MainActor func testCopyToAnotherVolumeLight() throws { try copyToAnotherVolume(dark: false) }
+    @MainActor func testCopyToAnotherVolumeDark() throws { try copyToAnotherVolume(dark: true) }
 
     // MARK: - Scenes
 
@@ -104,6 +108,31 @@ final class ScreenshotTests: XCTestCase {
         alreadyFit.click()
         settleScene()
         keep(review.screenshot(), as: name("05-names", dark: dark))
+    }
+
+    /// A folder of clips copied to the other volume, and the progress of its copy.
+    @MainActor
+    private func copyToAnotherVolume(dark: Bool) throws {
+        let app = try launch(dark: dark)
+        go(to: "Movies", in: app)
+        let window = app.windows.firstMatch
+        let folder = window.tables.staticTexts["Raw footage"]
+        XCTAssertTrue(folder.waitForExistence(timeout: Self.timeout))
+        folder.click()
+        app.typeKey("c", modifierFlags: .command)
+        let volume = window.outlines.staticTexts["T7"]
+        XCTAssertTrue(volume.waitForExistence(timeout: Self.timeout))
+        volume.click()
+        XCTAssertTrue(
+            window.tables.staticTexts["Footage"].waitForExistence(timeout: Self.timeout),
+            "the volume shows")
+        // Paste goes to the folder that has the focus, so the list takes it from the sidebar.
+        window.tables.firstMatch.coordinate(withNormalizedOffset: Self.emptyPartOfList).click()
+        app.typeKey("v", modifierFlags: .command)
+        let stop = window.buttons["Stop"]
+        XCTAssertTrue(stop.waitForExistence(timeout: Self.timeout), "the copy shows its progress")
+        keep(window.screenshot(), as: name("06-progress", dark: dark))
+        stop.click()
     }
 
     @MainActor
