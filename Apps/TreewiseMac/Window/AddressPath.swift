@@ -20,6 +20,8 @@ final class AddressPath: NSView {
     private var buttons: [CrumbButton] = []
     private var separators: [AddressSeparator] = []
     private var hiddenCount = 0
+    /// The empty part takes the bar's whole height, so a click anywhere in it types.
+    private lazy var typeAreaHeight = typeArea.heightAnchor.constraint(equalTo: heightAnchor)
     private let go: (FileItem.ID) -> Void
 
     /// A path whose folders call `go`, and whose empty part calls `edit`.
@@ -32,7 +34,8 @@ final class AddressPath: NSView {
         row.orientation = .horizontal
         row.spacing = Self.spacing
         row.distribution = .fill
-        row.alignment = .height
+        // Folders and separators keep their own heights, level in the middle of the bar.
+        row.alignment = .centerY
         row.edgeInsets = NSEdgeInsets(top: 0, left: Self.padding, bottom: 0, right: Self.padding)
         row.translatesAutoresizingMaskIntoConstraints = false
         addSubview(row)
@@ -75,6 +78,8 @@ final class AddressPath: NSView {
         }
         views.append(typeArea)
         row.setViews(views, in: .leading)
+        // Taking the area out of the row and back drops its constraint to the bar.
+        typeAreaHeight.isActive = true
         hiddenCount = -1
         needsLayout = true
     }

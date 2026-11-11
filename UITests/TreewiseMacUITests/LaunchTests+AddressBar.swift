@@ -106,3 +106,30 @@ extension LaunchTests {
         }
     }
 }
+
+/// The path sits in the middle of the address bar, its folders and separators on one line.
+extension LaunchTests {
+    /// How far apart two middles may be and still look level.
+    private static let levelTolerance: CGFloat = 1
+
+    @MainActor
+    func testThePathSitsInTheMiddleOfTheAddressBar() throws {
+        let app = try launchApp()
+        let rootName = try rootName
+        XCTAssertTrue(
+            app.tables.staticTexts["Projects"].appeared(timeout: Self.launchTimeout))
+        app.tables.staticTexts["Projects"].doubleClick()
+        let window = app.windows(titled: "Projects").firstMatch
+        XCTAssertTrue(window.appeared(timeout: Self.launchTimeout))
+        let bar = window.buttons["Type a path"]
+        let folder = window.buttons["Projects"]
+        let separator = window.buttons["Folders in \(rootName)"]
+        XCTAssertTrue(separator.appeared(timeout: Self.launchTimeout))
+        let middle = bar.frame.midY
+        for (name, element) in [("folder", folder), ("separator", separator)] {
+            XCTAssertEqual(
+                element.frame.midY, middle, accuracy: Self.levelTolerance,
+                "the \(name) sits in the middle of the bar: \(element.frame) in \(bar.frame)")
+        }
+    }
+}
