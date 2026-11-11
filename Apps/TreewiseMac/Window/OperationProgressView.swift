@@ -6,7 +6,7 @@ import TreewiseUI
 /// resume and stop it (ADR 0026), shown only once it has run for a second, so
 /// quick operations do not flash it (PLAN.md §5).
 @MainActor
-final class OperationProgressView: NSVisualEffectView {
+final class OperationProgressView: NSView {
     private static let delay = Duration.seconds(1)
     private static let width: CGFloat = 340
     private static let padding: CGFloat = 12
@@ -26,11 +26,6 @@ final class OperationProgressView: NSVisualEffectView {
     init(browser: BrowserState) {
         self.browser = browser
         super.init(frame: .zero)
-        material = .popover
-        blendingMode = .withinWindow
-        state = .active
-        wantsLayer = true
-        layer?.cornerRadius = Self.padding
         isHidden = true
         text.font = .preferredFont(forTextStyle: .callout)
         text.lineBreakMode = .byTruncatingMiddle
@@ -58,13 +53,15 @@ final class OperationProgressView: NSVisualEffectView {
         row.alignment = .bottom
         row.edgeInsets = NSEdgeInsets(
             top: Self.padding, left: Self.padding, bottom: Self.padding, right: Self.padding)
-        row.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(row)
+        let surface = GlassSurface(content: row, material: .popover, blendingMode: .withinWindow)
+        surface.cornerRadius = Self.padding
+        surface.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(surface)
         NSLayoutConstraint.activate([
-            row.leadingAnchor.constraint(equalTo: leadingAnchor),
-            row.trailingAnchor.constraint(equalTo: trailingAnchor),
-            row.topAnchor.constraint(equalTo: topAnchor),
-            row.bottomAnchor.constraint(equalTo: bottomAnchor),
+            surface.leadingAnchor.constraint(equalTo: leadingAnchor),
+            surface.trailingAnchor.constraint(equalTo: trailingAnchor),
+            surface.topAnchor.constraint(equalTo: topAnchor),
+            surface.bottomAnchor.constraint(equalTo: bottomAnchor),
             widthAnchor.constraint(equalToConstant: Self.width + Self.padding * 2),
         ])
     }
