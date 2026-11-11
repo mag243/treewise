@@ -205,51 +205,22 @@
             #expect(ids == [id(directory, "to/a copy.txt")])
         }
 
-        @Test func aPromisedFileIsWrittenWhileTheOtherAppHoldsItsPlace() async throws {
+        /// The app a file is promised to holds its place until the file is written,
+        /// so a write that coordinates the place would wait for that app for ever.
+        @Test func aPromisedFileIsWrittenWithoutAskingForItsPlace() async throws {
             let directory = try TempDirectory()
             try makeArchive(directory)
             try directory.makeFolder("to")
             let runner = runner(directory)
             let item = try await entry(runner, directory, "Photos.zip", "Photos/a.txt")
             let target = directory.url("to/promised.txt")
-            let held = DispatchSemaphore(value: 0)
-            let release = DispatchSemaphore(value: 0)
-            DispatchQueue.global().async {
-                var error: NSError?
-                NSFileCoordinator(filePresenter: nil).coordinate(
-                    readingItemAt: target, options: [], error: &error
-                ) { _ in
-                    held.signal()
-                    release.wait()
-                }
-            }
-            waitUntilHeld(held)
+            let place = PlacePresenter(target)
+            defer { place.stop() }
 
-            let finished = await withTaskGroup(of: Bool.self) { group in
-                group.addTask {
-                    try? await runner.writeEntry(item, toPromisedFile: target)
-                    return true
-                }
-                group.addTask {
-                    try? await Task.sleep(for: Self.promiseLimit)
-                    return false
-                }
-                let first = await group.next() ?? false
-                release.signal()
-                group.cancelAll()
-                return first
-            }
+            try await runner.writeEntry(item, toPromisedFile: target)
 
-            #expect(finished)
+            #expect(!place.wasAskedToGiveWay, "the write leaves the place to the app")
             #expect(try text(directory, "to/promised.txt") == "hello")
-        }
-
-        /// Long enough for the serial queue of file operations on a busy runner;
-        /// a write that waits for the held place never ends at all.
-        private static let promiseLimit = Duration.seconds(30)
-
-        private func waitUntilHeld(_ held: DispatchSemaphore) {
-            held.wait()
         }
 
         @Test func aPromisedFileOutsideTheBoundaryIsRefused() async throws {
