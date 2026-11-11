@@ -38,12 +38,14 @@ final class NameReviewRowView: NSView {
         names.orientation = .vertical
         names.alignment = .leading
         names.spacing = 0
-        names.setContentHuggingPriority(.init(1), for: .horizontal)
+        // A stack view hugs its views by its own priority, not by content hugging: the
+        // names take the width the row leaves, and the side keeps to its own.
+        names.setHuggingPriority(.init(1), for: .horizontal)
         for label in [original, newName, nameField.field] {
             label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         }
         side.spacing = Self.sideSpacing
-        side.setContentHuggingPriority(.required, for: .horizontal)
+        side.setHuggingPriority(.required, for: .horizontal)
         original.textColor = .secondaryLabelColor
         icon.imageScaling = .scaleProportionallyUpOrDown
         let iconBox = NSView()
