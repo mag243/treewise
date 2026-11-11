@@ -50,7 +50,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         window.contentMinSize = NSSize(
             width: WindowWidths.windowMinimum, height: Self.minimumHeight)
         window.setContentSize(LaunchOptions.windowSize ?? Self.defaultSize)
-        observe()
+        Observing.follow(self) { $0.update() }
     }
 
     @available(*, unavailable)
@@ -80,10 +80,10 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         sidebar.minimumThickness = WindowWidths.sidebarMinimum
         sidebar.maximumThickness = WindowWidths.sidebarMaximum
         split.addSplitViewItem(sidebar)
-        let content = BrowserContentView(browser: browser, model: model) { [weak self] in
+        let content = BrowserContentController(browser: browser, model: model) { [weak self] in
             self?.actions.windowBeside()
         }
-        split.addSplitViewItem(NSSplitViewItem(viewController: Self.hosting(content)))
+        split.addSplitViewItem(NSSplitViewItem(viewController: content))
         return split
     }
 
@@ -142,15 +142,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     // MARK: - Following the browser
 
     /// Follows what the window shows in its title, search field and session,
-    /// and shows a failure; observed again after each change.
-    private func observe() {
-        withObservationTracking {
-            update()
-        } onChange: { [weak self] in
-            Task { @MainActor in self?.observe() }
-        }
-    }
-
+    /// and shows a failure.
     private func update() {
         let tab = browser.layout.focusedPane.activeTabID
         let title = browser.content(of: tab).folder?.name ?? "Treewise"
