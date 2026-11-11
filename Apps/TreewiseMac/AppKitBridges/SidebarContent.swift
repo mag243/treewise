@@ -1,10 +1,10 @@
 import AppKit
-import SwiftUI
 import TreewiseCore
 
-/// The sidebar as an `NSOutlineView` (ADR 0002): Favorites as a flat list,
-/// Locations as a tree whose folders load their subfolders when expanded.
-struct SidebarOutlineView: NSViewRepresentable {
+/// What the sidebar shows, as an `NSOutlineView` (ADR 0002): Favorites as a
+/// flat list, Locations as a tree whose folders load their subfolders when
+/// expanded. The sidebar hands it to the outline's coordinator on every change.
+struct SidebarContent {
     var favorites: [FileItem]
     var locations: [FileItem]
     /// The folder the active pane shows; its row is selected when visible.
@@ -20,23 +20,18 @@ struct SidebarOutlineView: NSViewRepresentable {
     var drop: DropAction
     /// Adds, removes and moves favorites (ADR 0050).
     var favoriteActions: SidebarFavoriteActions
+}
 
-    func makeCoordinator() -> SidebarCoordinator {
-        SidebarCoordinator()
-    }
-
-    func makeNSView(context: Context) -> NSScrollView {
+extension SidebarCoordinator {
+    /// A new outline fed by this coordinator, in a scroll view.
+    func makeScrollView() -> NSScrollView {
         let outline = SidebarOutline()
-        context.coordinator.attach(to: outline)
+        attach(to: outline)
         let scrollView = NSScrollView()
         scrollView.documentView = outline
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
         scrollView.drawsBackground = false
         return scrollView
-    }
-
-    func updateNSView(_ scrollView: NSScrollView, context: Context) {
-        context.coordinator.update(with: self)
     }
 }

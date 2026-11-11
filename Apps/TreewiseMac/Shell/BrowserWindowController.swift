@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import TreewiseCore
 import TreewiseFileSystem
 import TreewiseUI
@@ -76,7 +75,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     private func makeSplit() -> NSSplitViewController {
         let split = NSSplitViewController()
         let sidebar = NSSplitViewItem(
-            sidebarWithViewController: Self.hosting(SidebarView(browser: browser)))
+            sidebarWithViewController: SidebarController(browser: browser))
         sidebar.minimumThickness = WindowWidths.sidebarMinimum
         sidebar.maximumThickness = WindowWidths.sidebarMaximum
         split.addSplitViewItem(sidebar)
@@ -85,14 +84,6 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         }
         split.addSplitViewItem(NSSplitViewItem(viewController: content))
         return split
-    }
-
-    private static func hosting(_ view: some View) -> NSViewController {
-        let controller = NSHostingController(
-            rootView: view.environment(\.fileUndoManager, SharedUndo.manager))
-        // The window sets the size; the views fill what they are given.
-        controller.sizingOptions = []
-        return controller
     }
 
     /// Shows the window, centered for screenshots (ADR 0041), and then what

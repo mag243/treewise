@@ -50,7 +50,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         }
     }
 
-    func update(with view: SidebarOutlineView) {
+    func update(with view: SidebarContent) {
         loadSubfolders = view.loadSubfolders
         select = view.select
         eject = view.eject
