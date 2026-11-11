@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import TreewiseUI
 
 /// The folder side of a browser window: the address row, the command bar, the
@@ -7,6 +6,9 @@ import TreewiseUI
 /// progress of a transfer over them.
 @MainActor
 final class BrowserContentController: NSViewController {
+    /// The space between the progress panel and the bottom of the window.
+    private static let progressMargin: CGFloat = 12
+
     private let browser: BrowserState
     private let model: WindowModel
     private let windowBeside: () -> Void
@@ -32,7 +34,7 @@ final class BrowserContentController: NSViewController {
         for row in rows.arrangedSubviews {
             row.widthAnchor.constraint(equalTo: rows.widthAnchor).isActive = true
         }
-        let progress = Self.hosting(OperationProgressView(browser: browser))
+        let progress = OperationProgressView(browser: browser)
         let view = NSView()
         view.addSubview(rows)
         view.addSubview(progress)
@@ -44,7 +46,8 @@ final class BrowserContentController: NSViewController {
             rows.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             rows.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             progress.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            progress.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            progress.bottomAnchor.constraint(
+                equalTo: view.bottomAnchor, constant: -Self.progressMargin),
         ])
         self.view = view
         Observing.follow(self) { $0.update() }
@@ -69,10 +72,10 @@ final class BrowserContentController: NSViewController {
         let pane = paneController.view
         pane.setContentHuggingPriority(.defaultLow, for: .horizontal)
         pane.setContentHuggingPriority(.defaultLow, for: .vertical)
-        let detailsPane = Self.hosting(DetailsPane(browser: browser))
-        detailsPane.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
-        detailsPane.setContentHuggingPriority(.defaultLow, for: .vertical)
-        details.setViews([Self.separator(), detailsPane], in: .leading)
+        let detailsPane = DetailsPane(browser: browser)
+        let line = Self.separator()
+        line.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        details.setViews([line, detailsPane], in: .leading)
         details.spacing = 0
         details.alignment = .height
         let row = NSStackView(views: [pane, details])
@@ -86,9 +89,5 @@ final class BrowserContentController: NSViewController {
         let box = NSBox()
         box.boxType = .separator
         return box
-    }
-
-    private static func hosting(_ view: some View) -> NSHostingView<some View> {
-        NSHostingView(rootView: view.environment(\.fileUndoManager, SharedUndo.manager))
     }
 }
