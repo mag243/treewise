@@ -6,7 +6,8 @@
 #     no way to reach a file, so a module receives data only (ADR 0057).
 #   - TreewiseModuleXPC, the module catalog and the modules' service reach no file
 #     system or UI code, and the service's entitlements are the App Sandbox alone.
-#   - the macOS app reaches a file on disk through diskURL or diskPath (ADR 0076);
+#   - the macOS app reaches a file on disk through diskURL or diskPath (ADR 0076),
+#     and uses no SwiftUI (ADR 0082);
 #   - removeItem( appears only in TreewiseFileSystem's FileOperationRunner, the
 #     one place that removes a user's file without the Trash (ADR 0004, 0018),
 #     and for folders Treewise made itself (ADR 0020, 0074).
@@ -90,5 +91,8 @@ raw_paths="$(grep -rnE --include='*.swift' 'URL\(fileURLWithPath:.*rawValue|forF
   sed "s|^$ROOT_DIR/||" || true)"
 report "An item's file on disk comes from diskURL or diskPath, which are nil inside an archive (ADR 0076)" \
   "$raw_paths"
+
+report "The macOS app uses AppKit, not SwiftUI (ADR 0082)" \
+  "$(violations "$ROOT_DIR/Apps/TreewiseMac" 'SwiftUI')"
 
 ((found == 0)) || exit 1
