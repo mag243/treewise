@@ -15,9 +15,11 @@ All notable changes to Treewise are recorded here. The format follows
 - A Go menu with Back, Forward and Enclosing Folder, as in Finder.
 
 ### Changed
-- Treewise's windows, menus, toolbar and Settings are built the way Mac apps build them, which keeps a menu held open while a change ends from closing Treewise on macOS 26.
+- Treewise's windows, menus, toolbar, Settings and everything in them are built the way Mac apps build them, which keeps a menu held open while a change ends from closing Treewise on macOS 26.
+- Settings are laid out as other Mac apps lay out theirs: labels on the left, checkboxes and menus on the right.
 
 ### Fixed
+- The first window opens on the main screen, not on the screen another display happened to give it.
 - A new archive, an extracted folder, a new folder and a renamed item are scrolled into view, also when sorting puts them far from where you were working.
 
 ## [0.6.0] - 2026-11-09
