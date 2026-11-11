@@ -58,6 +58,12 @@ final class SettingsNamesPane: NSViewController {
         Observing.follow(self) { $0.update() }
     }
 
+    /// A pattern being typed is kept when the user leaves the tab or the window.
+    override func viewWillDisappear() {
+        super.viewWillDisappear()
+        patterns.commitEditing()
+    }
+
     private func update() {
         personalData.selectItem(
             at: Self.choices.firstIndex(of: settings.personalDataInNames) ?? 0)

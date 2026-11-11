@@ -109,6 +109,11 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
         editor.edit(selected)
     }
 
+    /// Keeps the pattern being typed, as the user leaves the list.
+    func commitEditing() {
+        editor.commit()
+    }
+
     private func addPattern() {
         if case .success(let id) = settings.savedPatterns.save(
             name: String(localized: "New Pattern"), text: "{date:yyyy.MM.dd} {text}")

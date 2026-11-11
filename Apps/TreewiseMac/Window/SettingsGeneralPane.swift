@@ -115,7 +115,9 @@ final class SettingsGeneralPane: NSViewController {
         panel.directoryURL = LaunchOptions.homeFolder
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
-            self?.useStartFolder(FileItem.ID(url.standardizedFileURL.path), in: window)
+            let id = FileItem.ID(url.standardizedFileURL.path)
+            // After the panel's sheet has gone, so a refusal can show as a sheet of its own.
+            Task { @MainActor in self?.useStartFolder(id, in: window) }
         }
     }
 
