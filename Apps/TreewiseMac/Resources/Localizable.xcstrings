@@ -2464,6 +2464,22 @@
         }
       }
     },
+    "Next" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weiter"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volgende"
+          }
+        }
+      }
+    },
     "No proposal." : {
       "localizations" : {
         "de" : {
@@ -2851,6 +2867,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pauzeer"
+          }
+        }
+      }
+    },
+    "Previous" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zurück"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorige"
           }
         }
       }
@@ -4713,6 +4745,7 @@
       }
     },
     "{%@}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

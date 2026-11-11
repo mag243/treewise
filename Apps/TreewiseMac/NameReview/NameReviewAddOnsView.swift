@@ -1,110 +1,158 @@
-import SwiftUI
+import AppKit
 import TreewiseCore
 import TreewiseModuleInterface
 import TreewiseUI
 
-/// The add-ons and their patterns, which close to one line.
-struct NameReviewAddOnsView: View {
+/// The add-ons and their patterns at the top of the overview, which close to one line.
+@MainActor
+final class NameReviewAddOnsView: NSObject {
     private static let visibleInSummary = 2
     private static let listMaximumHeight: CGFloat = 132
+    private static let padding: CGFloat = 12
+    private static let verticalPadding: CGFloat = 8
+    private static let spacing: CGFloat = 6
+    private static let blockSpacing: CGFloat = 5
+    /// Whether the header was open when the user last left it, kept between reviews.
+    private static let openKey = "nameReviewAddOnsOpen"
 
-    let model: NameReviewModel
-    @Binding var isOpen: Bool
+    private let model: NameReviewModel
     /// The app's licences, for Enter Licence Key… (ADR 0071).
-    let licences: LicenceKeeper?
-    @State private var entersKey = false
-    @State private var editing: String?
-    @State private var draft = ""
-    @State private var insertion: PatternInsertion?
-    /// The add-on whose pattern is being saved, while its name is asked (ADR 0068).
-    @State private var savingFor: String?
-    @State private var savedName = ""
+    private let licences: LicenceKeeper?
+    private let stack = NSStackView()
+    private lazy var toggle = ClosureButton(title: "") { [weak self] in self?.toggleOpen() }
+    private let reading = NSProgressIndicator()
+    private let readingText = NSTextField(labelWithString: "")
+    private let blocks = NSStackView()
+    private lazy var list = scrolling(blocks)
+    private var shownBlocks: [String: AddOnBlock] = [:]
+    /// Whether the user opened or closed the header in this review, and which.
+    private var wasToggled = false
+    private var isOpenNow = false
+    /// The add-on whose pattern is being edited.
+    private var editing: String?
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Button {
-                    isOpen.toggle()
-                    if !isOpen { editing = nil }
-                } label: {
-                    Label(title, systemImage: isOpen ? "chevron.down" : "chevron.right")
-                        .font(.callout)
-                }
-                .buttonStyle(.plain)
-                .disabled(isOpen && mustStayOpen)
-                Spacer()
-                if model.readingCount > 0 {
-                    ProgressView().controlSize(.small)
-                    Text("Reading \(model.readingCount) files…").font(.caption).foregroundStyle(
-                        .secondary)
-                }
-            }
-            if isOpen {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 5) {
-                        ForEach(model.modules) { row(for: $0) }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(maxHeight: Self.listMaximumHeight)
-                .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .licenceKeyEntry(
-            isPresented: $entersKey, keeper: licences, host: NameReviewWindow.host,
-            onUnlocked: { Task { await model.start() } }
-        )
-        .alert("Save Pattern", isPresented: isSaving) {
-            TextField("Name", text: $savedName)
-            Button("Save") {
-                if let savingFor { _ = model.savePattern(of: savingFor, as: savedName) }
-                savingFor = nil
-            }
-            .disabled(savedName.trimmingCharacters(in: .whitespaces).isEmpty)
-            Button("Cancel", role: .cancel) { savingFor = nil }
-        } message: {
-            Text("The pattern is kept under this name, to pick in other folders.")
-        }
+    init(model: NameReviewModel, licences: LicenceKeeper?) {
+        self.model = model
+        self.licences = licences
+        super.init()
     }
 
-    private var isSaving: Binding<Bool> {
-        Binding(get: { savingFor != nil }, set: { if !$0 { savingFor = nil } })
+    private var isOpen: Bool {
+        wasToggled ? isOpenNow : (model.isFirstReview || Self.storedOpen)
     }
 
-    /// The menu of saved patterns for an add-on, as an icon or under a title.
-    private func savedPatterns(for module: NameReviewModule, title: String? = nil) -> some View {
-        SavedPatternsMenu(
-            title: title,
-            choices: { model.savedPatternChoices(for: module.id) },
-            found: {
-                let now = model.modules.first { $0.id == module.id }
-                return (now?.candidates ?? [], now?.templateText ?? "")
-            },
-            use: { id in
-                Task {
-                    await model.useSavedPattern(id, for: module.id)
-                    if editing == module.id {
-                        draft = model.modules.first { $0.id == module.id }?.templateText ?? draft
-                    }
-                }
-            },
-            useFound: { text in
-                Task {
-                    await model.useFoundPattern(text, for: module.id)
-                    if editing == module.id { draft = text }
-                }
-            },
-            toUpdate: { model.savedPatternToUpdate(for: module.id)?.name },
-            update: { Task { await model.updateSavedPattern(for: module.id) } },
-            save: {
-                savedName = ""
-                savingFor = module.id
-            },
-            edit: { SettingsWindow.show() }
-        )
-        .fixedSize()
+    private static var storedOpen: Bool {
+        UserDefaults.standard.object(forKey: openKey) as? Bool ?? true
+    }
+
+    func makeView() -> NSView {
+        toggle.isBordered = false
+        toggle.imagePosition = .imageLeading
+        toggle.font = .preferredFont(forTextStyle: .callout)
+        reading.style = .spinning
+        reading.controlSize = .small
+        readingText.font = .preferredFont(forTextStyle: .caption1)
+        readingText.textColor = .secondaryLabelColor
+        let top = NSStackView()
+        top.setViews([toggle], in: .leading)
+        top.setViews([reading, readingText], in: .trailing)
+        blocks.orientation = .vertical
+        blocks.alignment = .leading
+        blocks.spacing = Self.blockSpacing
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = Self.spacing
+        stack.edgeInsets = NSEdgeInsets(
+            top: Self.verticalPadding, left: Self.padding, bottom: Self.verticalPadding,
+            right: Self.padding)
+        stack.setViews([top, list], in: .leading)
+        for view in [top, list] {
+            view.widthAnchor.constraint(
+                equalTo: stack.widthAnchor, constant: -Self.padding * 2
+            ).isActive = true
+        }
+        Observing.follow(self) { $0.update() }
+        return stack
+    }
+
+    private func scrolling(_ content: NSView) -> NSScrollView {
+        let document = FlippedView()
+        content.translatesAutoresizingMaskIntoConstraints = false
+        document.translatesAutoresizingMaskIntoConstraints = false
+        document.addSubview(content)
+        let scroll = NSScrollView()
+        scroll.documentView = document
+        scroll.hasVerticalScroller = true
+        scroll.autohidesScrollers = true
+        scroll.drawsBackground = false
+        let height = scroll.heightAnchor.constraint(equalTo: document.heightAnchor)
+        height.priority = .defaultHigh
+        NSLayoutConstraint.activate([
+            document.widthAnchor.constraint(equalTo: scroll.contentView.widthAnchor),
+            content.leadingAnchor.constraint(equalTo: document.leadingAnchor),
+            content.trailingAnchor.constraint(equalTo: document.trailingAnchor),
+            content.topAnchor.constraint(equalTo: document.topAnchor),
+            content.bottomAnchor.constraint(equalTo: document.bottomAnchor),
+            scroll.heightAnchor.constraint(lessThanOrEqualToConstant: Self.listMaximumHeight),
+            height,
+        ])
+        return scroll
+    }
+
+    private func update() {
+        let isOpen = isOpen
+        let title = title(isOpen: isOpen)
+        toggle.title = title
+        toggle.setAccessibilityLabel(title)
+        toggle.image = NSImage(
+            systemSymbolName: isOpen ? "chevron.down" : "chevron.right",
+            accessibilityDescription: nil)
+        toggle.isEnabled = !(isOpen && mustStayOpen)
+        let count = model.readingCount
+        reading.isHidden = count == 0
+        readingText.isHidden = count == 0
+        if count > 0 {
+            reading.startAnimation(nil)
+            readingText.stringValue = String(localized: "Reading \(count) files…")
+        } else {
+            reading.stopAnimation(nil)
+        }
+        list.isHidden = !isOpen
+        if isOpen { showBlocks() }
+    }
+
+    private func showBlocks() {
+        var shown: [AddOnBlock] = []
+        for module in model.modules {
+            let block = shownBlocks[module.id] ?? makeBlock(for: module.id)
+            shownBlocks[module.id] = block
+            block.show(module, isEditing: editing == module.id)
+            shown.append(block)
+        }
+        if blocks.arrangedSubviews != shown { blocks.setViews(shown, in: .leading) }
+    }
+
+    private func makeBlock(for id: String) -> AddOnBlock {
+        AddOnBlock(
+            moduleID: id, model: model,
+            actions: AddOnBlockActions(
+                edit: { [weak self] in self?.edit($0) },
+                save: { [weak self] in self?.askNameToSave($0) },
+                enterKey: { [weak self] in self?.enterKey() }))
+    }
+
+    private func edit(_ id: String?) {
+        editing = id
+        update()
+    }
+
+    private func toggleOpen() {
+        let open = !isOpen
+        wasToggled = true
+        isOpenNow = open
+        UserDefaults.standard.set(open, forKey: Self.openKey)
+        if !open { editing = nil }
+        update()
     }
 
     private var mustStayOpen: Bool {
@@ -112,7 +160,7 @@ struct NameReviewAddOnsView: View {
         return model.modules.first { $0.id == editing }?.templateProblem != nil
     }
 
-    private var title: String {
+    private func title(isOpen: Bool) -> String {
         guard !isOpen else { return String(localized: "Add-ons and their patterns") }
         let on = model.modules.filter(\.isOn)
         var names = on.prefix(Self.visibleInSummary).map { module in
@@ -123,148 +171,41 @@ struct NameReviewAddOnsView: View {
         return String(localized: "Add-ons: \(names)")
     }
 
-    @ViewBuilder
-    private func row(for module: NameReviewModule) -> some View {
-        HStack(spacing: 10) {
-            if model.modules.count > 1 {
-                // The grip moves the add-on: the first one gives the first name (ADR 0065).
-                Image(systemName: "line.3.horizontal").foregroundStyle(.tertiary)
-                    .help("Drag to change the order of the add-ons")
-                    .draggable(module.id)
-            }
-            Toggle(
-                NameReviewText.name(of: module),
-                isOn: Binding(
-                    get: { module.isOn },
-                    set: { isOn in Task { await model.setModule(module.id, on: isOn) } })
-            )
-            .toggleStyle(.checkbox)
-            // One without a licence cannot be turned on (ADR 0071).
-            .disabled(
-                module.licence == .unlicensed
-                    || (module.isOn && model.modules.filter(\.isOn).count == 1)
-            )
-            .frame(minWidth: 130, alignment: .leading)
-            Text(Self.colored(module.templateText)).font(.caption.monospaced()).lineLimit(1)
-                .opacity(module.isOn ? 1 : 0.5)
-            Text(NameReviewText.origin(of: module)).font(.caption)
-                .foregroundStyle(module.origin == .user ? Color.accentColor : .secondary)
-            licence(of: module)
-            links(for: module)
-        }
-        .dropDestination(for: String.self) { ids, _ in
-            guard let id = ids.first, id != module.id,
-                let place = model.modules.firstIndex(where: { $0.id == module.id })
-            else { return false }
-            Task { await model.moveModule(id, to: place) }
-            return true
-        }
-        .accessibilityAction(named: Text("Move Up")) { move(module, by: -1) }
-        .accessibilityAction(named: Text("Move Down")) { move(module, by: 1) }
-        if editing == module.id { editor(for: module) }
-        if module.isOn, let newer = model.newerSavedPattern(for: module.id) {
-            NewerPatternVersion(model: model, pattern: newer, moduleID: module.id)
+    // MARK: - Saving a pattern and entering a key
+
+    /// Asks the name to save the add-on's pattern under (ADR 0068).
+    private func askNameToSave(_ id: String) {
+        guard let window = stack.window else { return }
+        let alert = NSAlert()
+        alert.messageText = String(localized: "Save Pattern")
+        alert.informativeText = String(
+            localized: "The pattern is kept under this name, to pick in other folders.")
+        let name = NSTextField(string: "")
+        name.placeholderString = String(localized: "Name")
+        name.setFrameSize(
+            NSSize(width: SavePatternAlert.fieldWidth, height: name.fittingSize.height))
+        alert.accessoryView = name
+        alert.addButton(withTitle: String(localized: "Save"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
+        alert.window.initialFirstResponder = name
+        let model = model
+        alert.beginSheetModal(for: window) { response in
+            let text = name.stringValue.trimmingCharacters(in: .whitespaces)
+            guard response == .alertFirstButtonReturn, !text.isEmpty else { return }
+            _ = model.savePattern(of: id, as: name.stringValue)
         }
     }
 
-    /// The licence of a paid add-on: quiet in its trial, a lock and the way to a licence
-    /// when it needs one, nothing when licensed (ADR 0071).
-    @ViewBuilder
-    private func licence(of module: NameReviewModule) -> some View {
-        switch module.licence {
-        case .trial(let days):
-            Text(LicenceText.state(.trial(daysLeft: days))).font(.caption).foregroundStyle(
-                .secondary)
-        case .unlicensed:
-            Label(LicenceText.state(.unlicensed), systemImage: "lock.fill")
-                .font(.caption).foregroundStyle(.orange)
-            if module.description.purchaseURL != nil {
-                Button("Buy…") { LicenceText.buy(module.description) }
-                    .buttonStyle(.link).font(.caption)
-            }
-            Button("Enter Licence Key…") { entersKey = true }
-                .buttonStyle(.link).font(.caption)
-        case .licensed, nil:
-            EmptyView()
+    private func enterKey() {
+        guard let window = stack.window else { return }
+        let model = model
+        LicenceKeyEntry.present(on: window, keeper: licences, host: NameReviewWindow.host) {
+            Task { await model.start() }
         }
     }
+}
 
-    @ViewBuilder
-    private func links(for module: NameReviewModule) -> some View {
-        if module.isOn, module.origin == .notRecognized, editing != module.id {
-            Button("Use Your Default: \(model.defaultPattern)") {
-                Task { await model.useDefaultPattern(module.id) }
-            }
-            .buttonStyle(.link).font(.caption)
-            savedPatterns(for: module, title: String(localized: "Choose a Saved Pattern"))
-        } else if module.isOn {
-            savedPatterns(for: module)
-        }
-        if module.isOn, editing != module.id {
-            Button("Change") {
-                draft = module.templateText
-                editing = module.id
-            }
-            .buttonStyle(.link).font(.caption)
-        }
-    }
-
-    private func move(_ module: NameReviewModule, by offset: Int) {
-        guard let place = model.modules.firstIndex(where: { $0.id == module.id }) else { return }
-        Task { await model.moveModule(module.id, to: place + offset) }
-    }
-
-    private func editor(for module: NameReviewModule) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            PatternField(text: $draft, insertion: insertion, onSubmit: finish)
-                .frame(height: 20)
-                .onChange(of: draft) { _, text in
-                    Task { await model.setTemplate(module.id, to: text) }
-                }
-            HStack(spacing: 5) {
-                ForEach(
-                    module.description.fields + NameTemplate.Field.suppliedByTreewise, id: \.name
-                ) { field in
-                    Button("{\(field.name)}") { insertion = PatternInsertion(token: token(field)) }
-                        .font(.caption.monospaced()).controlSize(.small)
-                }
-                Spacer()
-                Button(
-                    module.description.takesTheDefaultModulesPart
-                        ? "Recognize Again" : "Use Default"
-                ) {
-                    Task {
-                        await model.resetTemplate(module.id)
-                        draft = model.modules.first { $0.id == module.id }?.templateText ?? draft
-                    }
-                }
-                .buttonStyle(.link).font(.caption)
-                Button("Done", action: finish).controlSize(.small).disabled(
-                    module.templateProblem != nil)
-            }
-            if let problem = module.templateProblem {
-                Label(NameReviewText.text(for: problem), systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(.orange)
-            }
-        }
-        .padding(.leading, 140)
-    }
-
-    /// A pattern with each field in its colour, as the name it made shows them.
-    static func colored(_ pattern: String) -> AttributedString {
-        var text = AttributedString(pattern)
-        for mark in FieldColors.marks(inPattern: pattern) {
-            guard let range = Range(mark.range, in: text) else { continue }
-            text[range].backgroundColor = Color(nsColor: mark.color)
-        }
-        return text
-    }
-
-    private func token(_ field: NameTemplate.Field) -> String {
-        field.kind == .date ? "{\(field.name):yyyy.MM.dd}" : "{\(field.name)}"
-    }
-
-    private func finish() {
-        if !mustStayOpen { editing = nil }
-    }
+/// The size of the field in which a pattern's name is asked.
+private enum SavePatternAlert {
+    static let fieldWidth: CGFloat = 240
 }

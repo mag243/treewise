@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import TreewiseCore
 import TreewiseFileSystem
 import TreewiseModuleXPC
@@ -53,11 +52,10 @@ enum NameReviewWindow {
         window.minSize = minimumSize
         window.isReleasedWhenClosed = false
         window.tabbingMode = .disallowed
-        window.contentViewController = NSHostingController(
-            rootView: NameReviewView(
-                model: model, browser: browser, undoManager: undoManager,
-                close: { [weak window] in window?.close() }))
-        // A window takes the size of the content it is given, here SwiftUI's smallest.
+        window.contentViewController = NameReviewController(
+            model: model, browser: browser, undoManager: undoManager,
+            close: { [weak window] in window?.close() })
+        // A window takes the size of the content it is given, here its smallest.
         window.setContentSize(defaultSize)
         window.center()
         let closing = NameReviewWindowCloser(model: model) { window in
@@ -69,12 +67,10 @@ enum NameReviewWindow {
     }
 }
 
-/// Stops a review's reading when its window closes.
+/// Stops a review's reading when its window closes. Its Quick Look preview closes itself
+/// with the window (`QuickLookView`).
 @MainActor
 final class NameReviewWindowCloser: NSObject, NSWindowDelegate {
-    /// Long enough for SwiftUI to take the preview away after the window closed.
-    private static let previewTeardownDelay: TimeInterval = 1
-
     private let model: NameReviewModel
     private let onClose: (NSWindow) -> Void
 
@@ -85,13 +81,7 @@ final class NameReviewWindowCloser: NSObject, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         model.stop()
-        // Quick Look aborts the app when its preview goes away with a window that is
-        // already released. So the preview leaves first, while the window still exists.
-        model.isClosing = true
         guard let window = notification.object as? NSWindow else { return }
-        let onClose = onClose
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.previewTeardownDelay) {
-            MainActor.assumeIsolated { onClose(window) }
-        }
+        onClose(window)
     }
 }

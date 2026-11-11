@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import TreewiseModuleInterface
 import TreewiseUI
 
@@ -26,21 +25,6 @@ enum LicenceKeyEntry {
             alert.beginSheetModal(for: window)
         }
         window.beginSheet(sheetWindow)
-    }
-}
-
-extension View {
-    /// Offers Enter Licence Key… in the key window while `isPresented`.
-    func licenceKeyEntry(
-        isPresented: Binding<Bool>, keeper: LicenceKeeper?, host: any NameModuleHosting,
-        onUnlocked: @escaping () -> Void = {}
-    ) -> some View {
-        onChange(of: isPresented.wrappedValue) { _, shows in
-            guard shows, let window = NSApp.keyWindow else { return }
-            isPresented.wrappedValue = false
-            LicenceKeyEntry.present(
-                on: window, keeper: keeper, host: host, onUnlocked: onUnlocked)
-        }
     }
 }
 

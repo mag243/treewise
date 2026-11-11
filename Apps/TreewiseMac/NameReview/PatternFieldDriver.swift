@@ -54,3 +54,29 @@ final class PatternFieldDriver: NSObject, NSTextFieldDelegate {
         return true
     }
 }
+
+/// A text field that remembers its selection after it loses the focus, as it does when
+/// a button beside it is clicked.
+final class SelectionKeepingField: MarkingTextField {
+    var lastSelection = NSRange(location: 0, length: 0)
+
+    @objc func textViewDidChangeSelection(_ notification: Notification) {
+        if let editor = notification.object as? NSTextView {
+            lastSelection = editor.selectedRange()
+        }
+    }
+
+    /// Puts text in place of the remembered selection, and the cursor after it.
+    func insert(_ token: String) {
+        let current = stringValue as NSString
+        let range = NSIntersectionRange(lastSelection, NSRange(location: 0, length: current.length))
+        let place =
+            range.length == 0 && lastSelection.location > current.length
+            ? NSRange(location: current.length, length: 0) : range
+        stringValue = current.replacingCharacters(in: place, with: token)
+        let after = NSRange(location: place.location + (token as NSString).length, length: 0)
+        lastSelection = after
+        window?.makeFirstResponder(self)
+        currentEditor()?.selectedRange = after
+    }
+}

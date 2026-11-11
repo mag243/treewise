@@ -134,10 +134,14 @@ final class ClosurePopUp: NSPopUpButton {
     }
 }
 
-/// A push button that runs a closure.
+/// A push button that runs a closure, named for VoiceOver by its title.
 @MainActor
 final class ClosureButton: NSButton {
     private let run: @MainActor () -> Void
+
+    override var title: String {
+        didSet { setAccessibilityLabel(title) }
+    }
 
     init(title: String, run: @escaping @MainActor () -> Void) {
         self.run = run
