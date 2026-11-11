@@ -51,11 +51,18 @@ final class WindowTabs {
         controller.open(restoringSession: false)
     }
 
-    /// Puts the first window in the middle of the screen, and each later one
-    /// a step down and to the right of the one before.
+    /// Puts the first window in the middle of the main screen, the one with
+    /// the menu bar or the key window, and each later one a step down and to
+    /// the right of the one before. `center()` takes the screen the window
+    /// happens to be on, which need not be the one the user works on.
     private func place(_ window: NSWindow?) {
         guard let window else { return }
-        if cascadePoint == .zero { window.center() }
+        if cascadePoint == .zero, let screen = NSScreen.main?.visibleFrame {
+            window.setFrameOrigin(
+                NSPoint(
+                    x: screen.midX - window.frame.width / 2,
+                    y: screen.midY - window.frame.height / 2))
+        }
         cascadePoint = window.cascadeTopLeft(from: cascadePoint)
     }
 
