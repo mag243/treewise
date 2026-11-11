@@ -78,7 +78,7 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
             selectedURLs: { [weak self] in await self?.selectedURLs() ?? [] })
     }
 
-    func update(with view: FileGridView) {
+    func update(with view: FileGridContent) {
         guard let grid else { return }
         actions = view.actions
         folder = view.folder

@@ -61,7 +61,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             selectedURLs: { [weak self] in await self?.selectedURLs() ?? [] })
     }
 
-    func update(with view: FileTableView) {
+    func update(with view: FileTableContent) {
         guard let table else { return }
         actions = view.actions
         folder = view.folder

@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import TreewiseCore
 
 /// What the list reports back to its pane.
@@ -31,9 +30,10 @@ struct FileTableActions {
     var archiveDrag: (FileItem) -> any NSPasteboardWriting
 }
 
-/// A pane's list of items: an `NSTableView` with Name, Date Modified, Size and
-/// Kind, sortable by its headers (ADR 0002). It shows `items` in the order given.
-struct FileTableView: NSViewRepresentable {
+/// What a pane's list shows: an `NSTableView` with Name, Date Modified, Size
+/// and Kind, sortable by its headers (ADR 0002), which shows `items` in the
+/// order given. Its pane hands it to the list's coordinator on every change.
+struct FileTableContent {
     /// The folder the list shows: the target of a drop on a file or on empty space.
     var folder: FileItem?
     var items: [FileItem]
@@ -53,25 +53,21 @@ struct FileTableView: NSViewRepresentable {
     /// The height of the rows, from the row density setting.
     var rowHeight: CGFloat
     var actions: FileTableActions
+}
 
-    func makeCoordinator() -> FileTableCoordinator {
-        FileTableCoordinator()
-    }
-
-    func makeNSView(context: Context) -> NSScrollView {
+extension FileTableCoordinator {
+    /// A new view fed by this coordinator, in a scroll view; a click anywhere
+    /// in it makes the pane active.
+    func makeScrollView() -> NSScrollView {
         let table = PaneTableView()
-        context.coordinator.attach(to: table)
+        attach(to: table)
         let scrollView = NSScrollView()
         scrollView.documentView = table
-        let coordinator = context.coordinator
-        let focus: () -> Void = { [weak coordinator] in coordinator?.actions?.focus() }
-        coordinator.clickFocus = PaneClickFocus(focusing: table, in: scrollView, onClick: focus)
+        clickFocus = PaneClickFocus(focusing: table, in: scrollView) { [weak self] in
+            self?.actions?.focus()
+        }
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
         return scrollView
-    }
-
-    func updateNSView(_ scrollView: NSScrollView, context: Context) {
-        context.coordinator.update(with: self)
     }
 }

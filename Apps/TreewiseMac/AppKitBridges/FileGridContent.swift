@@ -1,10 +1,10 @@
 import AppKit
-import SwiftUI
 import TreewiseCore
 
-/// A pane's icon view: an `NSCollectionView` of tiles (ADR 0025), with the
-/// same actions as the list. It shows `items` in the order given.
-struct FileGridView: NSViewRepresentable {
+/// What a pane's icon view shows: an `NSCollectionView` of tiles (ADR 0025),
+/// with the same actions as the list, which shows `items` in the order given.
+/// Its pane hands it to the view's coordinator on every change.
+struct FileGridContent {
     /// The folder the view shows: the target of a drop beside the tiles.
     var folder: FileItem?
     var items: [FileItem]
@@ -21,25 +21,21 @@ struct FileGridView: NSViewRepresentable {
     /// Whether names show their extension (ADR 0023).
     var showsExtensions: Bool
     var actions: FileTableActions
+}
 
-    func makeCoordinator() -> FileGridCoordinator {
-        FileGridCoordinator()
-    }
-
-    func makeNSView(context: Context) -> NSScrollView {
+extension FileGridCoordinator {
+    /// A new view fed by this coordinator, in a scroll view; a click anywhere
+    /// in it makes the pane active.
+    func makeScrollView() -> NSScrollView {
         let grid = PaneCollectionView()
-        context.coordinator.attach(to: grid)
+        attach(to: grid)
         let scrollView = NSScrollView()
         scrollView.documentView = grid
-        let coordinator = context.coordinator
-        let focus: () -> Void = { [weak coordinator] in coordinator?.actions?.focus() }
-        coordinator.clickFocus = PaneClickFocus(focusing: grid, in: scrollView, onClick: focus)
+        clickFocus = PaneClickFocus(focusing: grid, in: scrollView) { [weak self] in
+            self?.actions?.focus()
+        }
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
         return scrollView
-    }
-
-    func updateNSView(_ scrollView: NSScrollView, context: Context) {
-        context.coordinator.update(with: self)
     }
 }

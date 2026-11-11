@@ -73,9 +73,9 @@ final class BrowserContentController: NSViewController {
 
     /// The folder, and the details pane at its right when shown.
     private func folderRow() -> NSView {
-        let pane = Self.hosting(
-            PaneView(browser: browser, paneIndex: browser.layout.focusedPaneIndex))
-        pane.sizingOptions = [.minSize]
+        let paneController = PaneController(browser: browser)
+        addChild(paneController)
+        let pane = paneController.view
         pane.setContentHuggingPriority(.defaultLow, for: .horizontal)
         pane.setContentHuggingPriority(.defaultLow, for: .vertical)
         let detailsPane = Self.hosting(DetailsPane(browser: browser))
