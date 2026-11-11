@@ -1,134 +1,151 @@
-import SwiftUI
+import AppKit
 import TreewiseCore
 import TreewiseUI
 
-/// Explorer's command bar as a row of the window, under the tab bar (ADR
+/// Explorer's command bar as a row of the window, under the address bar (ADR
 /// 0037): New, the actions (ADR 0036), Sort and View as menus with a label,
-/// and Window Beside and the details pane at the end.
-struct CommandBar: View {
+/// and Window Beside and the details pane at the end. In a narrow window the
+/// menus and buttons drop their titles and keep their icons, so nothing is
+/// cut off.
+@MainActor
+final class CommandBar: NSView {
     private static let height: CGFloat = 34
     private static let padding: CGFloat = 8
     private static let dividerHeight: CGFloat = 18
 
-    let browser: BrowserState
-    let undoManager: UndoManager?
-    /// Opens a window beside this one (⌥⌘N).
-    let windowBeside: () -> Void
+    private let browser: BrowserState
+    private let menus: CommandBarMenus
+    private let actions: CommandBarActions
+    private let row = NSStackView()
+    private let windowBeside: () -> Void
+    private lazy var newButton = pullDown(menus.new, "New", "plus.circle")
+    private lazy var sortButton = pullDown(menus.sort, "Sort", "arrow.up.arrow.down")
+    private lazy var viewButton = pullDown(menus.view, "View", "eye")
+    private lazy var besideButton = button(
+        "Window Beside", "rectangle.split.2x1", #selector(openBeside))
+    private lazy var detailsButton = button("Details", "sidebar.right", #selector(toggleDetails))
+    /// The titles of the buttons that drop them in a narrow window.
+    private var titled: [(button: NSButton, title: String)] = []
+    private var showsTitles = true
+    /// The width the row needs with its titles.
+    private var titledWidth: CGFloat = 0
 
-    var body: some View {
-        // In a narrow window the menus and buttons drop their titles and keep
-        // their icons, so nothing wraps or is cut off.
-        ViewThatFits(in: .horizontal) {
-            row.labelStyle(.titleAndIcon)
-            row.labelStyle(.iconOnly)
+    init(browser: BrowserState, windowBeside: @escaping () -> Void) {
+        self.browser = browser
+        self.windowBeside = windowBeside
+        menus = CommandBarMenus(browser: browser)
+        actions = CommandBarActions(browser: browser)
+        super.init(frame: .zero)
+        besideButton.toolTip = String(localized: "Open a window beside this one")
+        detailsButton.setButtonType(.pushOnPushOff)
+        detailsButton.toolTip = String(localized: "Show or hide the details pane")
+        newButton.toolTip = String(localized: "Make something new in this folder")
+        row.setViews(
+            [newButton, Self.divider(), actions, Self.divider(), sortButton, viewButton],
+            in: .leading)
+        row.setViews([besideButton, detailsButton], in: .trailing)
+        row.spacing = Self.padding
+        row.edgeInsets = NSEdgeInsets(top: 0, left: Self.padding, bottom: 0, right: Self.padding)
+        row.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(row)
+        NSLayoutConstraint.activate([
+            row.leadingAnchor.constraint(equalTo: leadingAnchor),
+            row.trailingAnchor.constraint(equalTo: trailingAnchor),
+            row.centerYAnchor.constraint(equalTo: centerYAnchor),
+            heightAnchor.constraint(equalToConstant: Self.height),
+        ])
+        for view in row.arrangedSubviews {
+            view.setContentCompressionResistancePriority(
+                CrumbButton.yieldsToWindow, for: .horizontal)
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, Self.padding)
-        .frame(height: Self.height)
+        Observing.follow(self) { $0.update() }
     }
 
-    private var row: some View {
-        HStack(spacing: Self.padding) {
-            newMenu
-            divider
-            CommandBarActions(browser: browser, undoManager: undoManager)
-            divider
-            sortMenu
-            viewMenu
-            Spacer(minLength: 0)
-            Button("Window Beside", systemImage: "rectangle.split.2x1", action: windowBeside)
-                .buttonStyle(.borderless)
-                .fixedSize()
-                .help(Text("Open a window beside this one"))
-            Toggle(isOn: showsDetails) {
-                Label("Details", systemImage: "sidebar.right")
-            }
-            .toggleStyle(.button)
-            .buttonStyle(.borderless)
-            .fixedSize()
-            .help(Text("Show or hide the details pane"))
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
+
+    private func update() {
+        detailsButton.state = browser.settings.showsDetails ? .on : .off
+        if actions.update() { remeasure() }
+    }
+
+    // MARK: - Titles in a narrow window
+
+    override func layout() {
+        super.layout()
+        if showsTitles {
+            titledWidth = row.fittingSize.width
+            if titledWidth > bounds.width { show(titles: false) }
+        } else if titledWidth <= bounds.width {
+            show(titles: true)
         }
     }
 
-    private var divider: some View {
-        Divider().frame(height: Self.dividerHeight)
+    /// Measures the row with its titles again, as its buttons changed.
+    private func remeasure() {
+        if !showsTitles { show(titles: true) }
+        needsLayout = true
     }
 
-    private var newMenu: some View {
-        Menu {
-            Button("New Folder", systemImage: "folder.badge.plus") {
-                Task { await browser.newFolder(undoManager: undoManager) }
+    private func show(titles: Bool) {
+        showsTitles = titles
+        for (button, title) in titled {
+            if let pullDown = button as? NSPopUpButton {
+                pullDown.menu?.items.first?.title = titles ? title : ""
+                pullDown.synchronizeTitleAndSelectedItem()
+            } else {
+                button.imagePosition = titles ? .imageLeading : .imageOnly
             }
-            .disabled(!browser.canAddItems)
-        } label: {
-            Label("New", systemImage: "plus.circle")
         }
-        .fixedSize()
-        .help(Text("Make something new in this folder"))
+        needsLayout = true
     }
 
-    private var sortMenu: some View {
-        Menu {
-            Picker("Sort By", selection: sortColumn) {
-                Text("Name").tag(SortColumn.name)
-                Text("Date Modified").tag(SortColumn.dateModified)
-                Text("Kind").tag(SortColumn.kind)
-                Text("Size").tag(SortColumn.size)
-            }
-            .pickerStyle(.inline)
-            Picker("Order", selection: ascending) {
-                Text("Ascending").tag(true)
-                Text("Descending").tag(false)
-            }
-            .pickerStyle(.inline)
-        } label: {
-            Label("Sort", systemImage: "arrow.up.arrow.down")
-        }
-        .fixedSize()
+    // MARK: - Buttons
+
+    @objc private func openBeside() {
+        windowBeside()
     }
 
-    private var viewMenu: some View {
-        @Bindable var settings = browser.settings
-        return Menu {
-            Picker("View", selection: viewMode) {
-                Label("as Icons", systemImage: "square.grid.2x2").tag(ViewMode.icons)
-                Label("as List", systemImage: "list.bullet").tag(ViewMode.list)
-            }
-            .pickerStyle(.inline)
-            Picker("Row Size", selection: $settings.rowDensity) {
-                Text("Small").tag(RowDensity.small)
-                Text("Medium").tag(RowDensity.medium)
-                Text("Large").tag(RowDensity.large)
-            }
-            Divider()
-            Toggle("Show Hidden Files", isOn: $settings.showsHiddenFiles)
-            Toggle("Show File Extensions", isOn: $settings.showsExtensions)
-        } label: {
-            Label("View", systemImage: "eye")
-        }
-        .fixedSize()
+    @objc private func toggleDetails() {
+        browser.settings.showsDetails = detailsButton.state == .on
     }
 
-    private var sortColumn: Binding<SortColumn> {
-        Binding(
-            get: { browser.sort.column },
-            set: { browser.sort(by: $0, ascending: browser.sort.ascending) })
+    private func pullDown(_ menu: NSMenu, _ title: String.LocalizationValue, _ symbol: String)
+        -> NSPopUpButton
+    {
+        let text = String(localized: title)
+        let titleItem = NSMenuItem(title: text, action: nil, keyEquivalent: "")
+        titleItem.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+        menus.setTitle(titleItem, of: menu)
+        let button = NSPopUpButton(frame: .zero, pullsDown: true)
+        button.menu = menu
+        button.isBordered = false
+        button.setAccessibilityLabel(text)
+        titled.append((button, text))
+        return button
     }
 
-    private var ascending: Binding<Bool> {
-        Binding(
-            get: { browser.sort.ascending },
-            set: { browser.sort(by: browser.sort.column, ascending: $0) })
+    private func button(_ title: String.LocalizationValue, _ symbol: String, _ action: Selector)
+        -> NSButton
+    {
+        let text = String(localized: title)
+        let button = NSButton(
+            title: text,
+            image: NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+                ?? NSImage(), target: self, action: action)
+        button.isBordered = false
+        button.imagePosition = .imageLeading
+        titled.append((button, text))
+        return button
     }
 
-    private var showsDetails: Binding<Bool> {
-        Binding(
-            get: { browser.settings.showsDetails },
-            set: { browser.settings.showsDetails = $0 })
-    }
-
-    private var viewMode: Binding<ViewMode> {
-        Binding(get: { browser.viewMode }, set: { browser.viewMode = $0 })
+    private static func divider() -> NSView {
+        let box = NSBox()
+        box.boxType = .separator
+        NSLayoutConstraint.activate([
+            box.heightAnchor.constraint(equalToConstant: dividerHeight),
+            box.widthAnchor.constraint(equalToConstant: 1),
+        ])
+        return box
     }
 }

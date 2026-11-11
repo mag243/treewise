@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import TreewiseCore
 import TreewiseFileSystem
 import TreewiseUI
@@ -9,29 +8,20 @@ import TreewiseUI
 /// folder names as they are typed (`TypedPath`), goes there on Return and
 /// stops on Escape or when it loses the focus. A path that names no folder
 /// inside the boundary (ADR 0019) is refused with a message.
-struct AddressField: NSViewRepresentable {
-    let browser: BrowserState
-    let paneIndex: Int
-    let folder: FileItem.ID
-    /// Ends editing, with or without going anywhere.
-    let done: () -> Void
-
-    func makeCoordinator() -> AddressFieldCoordinator {
-        AddressFieldCoordinator(browser: browser, paneIndex: paneIndex, folder: folder, done: done)
-    }
-
-    func makeNSView(context: Context) -> FocusingTextField {
+@MainActor
+enum AddressField {
+    /// A field for `folder` of the pane, run by `coordinator`, which the
+    /// caller keeps while the field shows.
+    static func make(coordinator: AddressFieldCoordinator, folder: FileItem.ID) -> NSTextField {
         let field = FocusingTextField(string: folder.shownPath)
         field.bezelStyle = .roundedBezel
         field.placeholderString = String(localized: "Address")
         field.setAccessibilityLabel(String(localized: "Address"))
         field.lineBreakMode = .byTruncatingHead
-        field.delegate = context.coordinator
-        field.suggestionsDelegate = context.coordinator
+        field.delegate = coordinator
+        field.suggestionsDelegate = coordinator
         return field
     }
-
-    func updateNSView(_ field: FocusingTextField, context: Context) {}
 }
 
 /// A text field that takes the keyboard focus once it is in a window, and

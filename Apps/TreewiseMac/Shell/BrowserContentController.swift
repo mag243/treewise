@@ -55,20 +55,11 @@ final class BrowserContentController: NSViewController {
     }
 
     private func addressRow() -> NSView {
-        let model = model
-        let isEditing = Binding(
-            get: { model.isEditingAddress }, set: { model.isEditingAddress = $0 })
-        let row = Self.hosting(AddressRow(browser: browser, isEditing: isEditing))
-        row.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        return row
+        AddressBar(browser: browser, model: model)
     }
 
     private func commandBar() -> NSView {
-        let bar = Self.hosting(
-            CommandBar(
-                browser: browser, undoManager: SharedUndo.manager, windowBeside: windowBeside))
-        bar.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        return bar
+        CommandBar(browser: browser, windowBeside: windowBeside)
     }
 
     /// The folder, and the details pane at its right when shown.
