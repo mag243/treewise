@@ -77,9 +77,19 @@ final class BrowserContentController: NSViewController {
         line.widthAnchor.constraint(equalToConstant: 1).isActive = true
         details.setViews([line, detailsPane], in: .leading)
         details.spacing = 0
+        details.distribution = .fill
         details.alignment = .height
+        // The pane and its line run from the top of the folder down: a stack view's
+        // alignment does not stretch a view whose content gives it a height of its own.
+        for view in [line, detailsPane] {
+            view.heightAnchor.constraint(equalTo: details.heightAnchor).isActive = true
+        }
+        // The details are as wide as the pane, and the folder takes the rest.
+        details.setHuggingPriority(.defaultHigh, for: .horizontal)
         let row = NSStackView(views: [pane, details])
         row.spacing = 0
+        // The width the details leave goes to the folder, not between them.
+        row.distribution = .fill
         row.alignment = .height
         row.setContentHuggingPriority(.defaultLow, for: .vertical)
         return row
