@@ -1,7 +1,6 @@
 import AppKit
 import Combine
 import Sparkle
-import SwiftUI
 
 /// Sparkle's updater (ADR 0032). It starts only in an unconfined Release
 /// build (`LaunchOptions.isUnconfinedRelease`), so a development build never

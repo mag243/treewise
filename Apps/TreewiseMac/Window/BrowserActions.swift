@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
