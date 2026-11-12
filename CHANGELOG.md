@@ -6,6 +6,8 @@ All notable changes to Treewise are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-12
+
 ### Added
 - Extract All… unpacks zip, tar, `.tar.gz`, `.tar.bz2`, `.tar.xz`, 7z, rar, iso, cpio and xar archives to a new folder, from the command bar, the context menu and the File menu. Nothing lands in the destination unless the whole archive extracted.
 - Compress to ZIP puts an archive next to the selection and starts renaming it; Compress to also makes 7z and `.tar.gz` files. A zip or 7z leaves out `__MACOSX`, `._` files, `.DS_Store` and extended attributes.
@@ -13,13 +15,19 @@ All notable changes to Treewise are recorded here. The format follows
 - A double click opens an archive as a folder, and the sidebar's tree unfolds it. Inside it you can browse, sort, search, preview with Quick Look and copy or drag files out; Extract All extracts that archive. Zip, tar and 7z archives can be changed like a folder: add, replace, rename, move, copy, make folders and delete, with undo. A failed change leaves the archive as it was, and the first change puts a copy of the original in the Trash. Rar, iso, cpio and xar stay read-only.
 - The sidebar's tree opens down to the folder or archive a tab shows; Settings can turn this off.
 - A Go menu with Back, Forward and Enclosing Folder, as in Finder.
+- Edit > Spelling and Grammar checks the spelling of a name you are typing; checking while typing is off until you turn it on.
 
 ### Changed
 - Treewise's windows, menus, toolbar, Settings and everything in them are built the way Mac apps build them, which keeps a menu held open while a change ends from closing Treewise on macOS 26.
 - Settings are laid out as other Mac apps lay out theirs: labels on the left, checkboxes and menus on the right.
+- Treewise always opens again with the windows and tabs it had when it quit, whatever the system's setting for keeping windows says.
+- On macOS 26 the progress panel and the badge on a drag stand on Liquid Glass.
 
 ### Fixed
 - The first window opens on the main screen, not on the screen another display happened to give it.
+- Ending a drag over the sidebar no longer closes Treewise.
+- A change to a folder made while Treewise was reading it shows up, and an older reading no longer replaces a newer one.
+- Renaming no longer offers one-time codes from AutoFill, which on macOS 26 could take the keyboard away from the name, so that ⌥Esc and Escape seemed to do nothing.
 - A new archive, an extracted folder, a new folder and a renamed item are scrolled into view, also when sorting puts them far from where you were working.
 
 ## [0.6.0] - 2026-11-09
