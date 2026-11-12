@@ -65,7 +65,11 @@ final class CommandBar: NSView {
     required init?(coder: NSCoder) { nil }
 
     private func update() {
-        detailsButton.state = browser.settings.showsDetails ? .on : .off
+        let showsDetails = browser.settings.showsDetails
+        detailsButton.state = showsDetails ? .on : .off
+        // A borderless button draws its on state like its off state, so the accent
+        // colour shows that the pane is open.
+        detailsButton.contentTintColor = showsDetails ? .controlAccentColor : nil
         if actions.update() { remeasure() }
     }
 
