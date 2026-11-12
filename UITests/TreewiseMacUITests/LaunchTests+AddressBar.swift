@@ -86,24 +86,14 @@ extension LaunchTests {
         app.typeKey("a", modifierFlags: .command)
         let path = try XCTUnwrap(root).appendingPathComponent("Projects").path + "/"
         let half = path.index(path.startIndex, offsetBy: path.count / 2)
-        type(String(path[..<half]), in: app)
+        app.typeText(String(path[..<half]))
         XCUIApplication(bundleIdentifier: "com.apple.finder").activate()
         app.activate()
-        type(String(path[half...]), in: app)
+        app.typeText(String(path[half...]))
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(
             app.windows(titled: "Projects").firstMatch.appeared(timeout: Self.launchTimeout),
             "the typing goes on in the field, and Return goes there")
-    }
-
-    /// Types `text` one key at a time, as a person types.
-    @MainActor
-    private func type(_ text: String, in app: XCUIApplication) {
-        for character in text {
-            let key = String(character)
-            let isUpper = key != key.lowercased()
-            app.typeKey(key.lowercased(), modifierFlags: isUpper ? .shift : [])
-        }
     }
 }
 

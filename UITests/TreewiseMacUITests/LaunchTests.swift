@@ -223,13 +223,8 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(field.appeared(timeout: Self.launchTimeout), "⌘L shows the field")
         app.typeKey("a", modifierFlags: .command)
         // With the slash nothing is left to suggest, so Return goes instead of
-        // taking a suggestion; Projects is empty. One key at a time, as a
-        // person types: typeText dropped the first "c" of "Projects".
-        for character in try XCTUnwrap(root).appendingPathComponent("Projects").path + "/" {
-            let key = String(character)
-            let isUpper = key != key.lowercased()
-            app.typeKey(key.lowercased(), modifierFlags: isUpper ? .shift : [])
-        }
+        // taking a suggestion; Projects is empty.
+        app.typeText(try XCTUnwrap(root).appendingPathComponent("Projects").path + "/")
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(
             app.windows(titled: "Projects").firstMatch.appeared(
