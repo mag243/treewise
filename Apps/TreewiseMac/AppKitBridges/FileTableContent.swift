@@ -21,6 +21,8 @@ struct FileTableActions {
     var revealed: () -> Void
     /// Asks for proposals for the item being renamed in this field (ADR 0066).
     var suggestName: (FileItem, NSTextField) -> Void
+    /// Whether a name being typed shows its misspelled words (ADR 0084).
+    var checksSpelling: () -> Bool
     /// The context menu for the given items, or for the folder when empty.
     var contextMenu: ([FileItem]) -> NSMenu
     var drop: DropAction

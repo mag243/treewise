@@ -59,6 +59,7 @@ public final class BrowserSettings {
         static let lastSession = "lastSession"
         static let favoriteFolders = "favoriteFolders"
         static let terminalApp = "terminalApp"
+        static let checksSpellingWhileTyping = "checksSpellingWhileTyping"
         /// The single default pattern kept before the saved patterns, read when there
         /// is no list yet (ADR 0068).
         static let defaultNamePattern = "defaultNamePattern"
@@ -114,6 +115,15 @@ public final class BrowserSettings {
     /// `nil` for the system's Terminal.
     public var terminalApp: String? {
         didSet { store.setSetting(terminalApp, for: Key.terminalApp) }
+    }
+
+    /// Whether a name being typed shows its misspelled words (ADR 0084); off, a name's
+    /// spelling is checked only when the user asks.
+    public var checksSpellingWhileTyping: Bool {
+        didSet {
+            store.setSetting(
+                String(checksSpellingWhileTyping), for: Key.checksSpellingWhileTyping)
+        }
     }
 
     /// The user's named patterns, one of them the default (ADR 0068).
@@ -201,6 +211,7 @@ public final class BrowserSettings {
             store.setting(Key.doubleClickOpensIn) == "otherPane" ? .otherPane : .samePane
         showsDetails = store.setting(Key.showsDetails) == "true"
         terminalApp = store.setting(Key.terminalApp)
+        checksSpellingWhileTyping = store.setting(Key.checksSpellingWhileTyping) == "true"
         savedPatterns =
             store.setting(Key.savedPatterns).flatMap {
                 try? JSONDecoder().decode(SavedPatterns.self, from: Data($0.utf8))

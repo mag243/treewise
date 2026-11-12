@@ -5,7 +5,7 @@ import TreewiseCore
 /// editable with the full name, the part before its extension selected
 /// (ADR 0023). Return commits, Escape cancels, and ⌥Esc or F5 asks the add-ons
 /// for proposals (ADR 0066).
-extension FileGridCoordinator: NSTextFieldDelegate {
+extension FileGridCoordinator: NameFieldEditing {
     /// Scrolls to a tile and lays out what comes into view, because the grid
     /// has no tile for an item out of view. A tile in view stays where it is.
     func reveal(index: Int) {
@@ -33,6 +33,7 @@ extension FileGridCoordinator: NSTextFieldDelegate {
         let base =
             item.kind == .folder ? name.length : (name.deletingPathExtension as NSString).length
         field.currentEditor()?.selectedRange = NSRange(location: 0, length: base)
+        NameSpelling.check(field, actions?.checksSpelling() ?? false)
         if suggests { actions?.suggestName(item, field) }
     }
 
@@ -55,6 +56,7 @@ extension FileGridCoordinator: NSTextFieldDelegate {
     }
 
     func controlTextDidEndEditing(_ notification: Notification) {
+        NameSpelling.stop(after: notification)
         guard let field = notification.object as? NSTextField else { return }
         field.isEditable = false
         field.isSelectable = false

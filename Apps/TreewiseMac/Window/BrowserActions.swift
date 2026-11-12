@@ -89,6 +89,14 @@ struct BrowserActions {
     var showsDetails: Bool { browser.settings.showsDetails }
     func toggleDetails() { browser.settings.showsDetails.toggle() }
 
+    var checksSpellingWhileTyping: Bool { browser.settings.checksSpellingWhileTyping }
+    /// Turns Check Spelling While Typing on or off, also in a name being typed (ADR 0084).
+    func toggleSpellingWhileTyping() {
+        browser.settings.checksSpellingWhileTyping.toggle()
+        NameSpelling.update(
+            in: NSApp.keyWindow, checks: browser.settings.checksSpellingWhileTyping)
+    }
+
     /// Opens the selection: ⌘↓, or ⌥⌘↓ for the window the setting does not choose.
     func openSelection(option: Bool) {
         let placement = OpenPlacement.forOpening(

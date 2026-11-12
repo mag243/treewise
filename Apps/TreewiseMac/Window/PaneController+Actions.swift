@@ -36,6 +36,7 @@ extension PaneController {
                 NameSuggestionList.show(
                     for: item, in: field, browser: browser, undoManager: undoManager)
             },
+            checksSpelling: { browser.settings.checksSpellingWhileTyping },
             contextMenu: { [contextMenu] in contextMenu.menu(for: $0) },
             drop: DropRouting.action(for: browser, undoManager: undoManager),
             previewURLs: { await browser.previewURLs(for: $0) },

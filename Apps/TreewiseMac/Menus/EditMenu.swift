@@ -2,7 +2,8 @@ import AppKit
 
 /// The Edit menu: Undo and Redo of the window's undo manager, which all
 /// browser windows share (ADR 0037), or of the text being edited; the
-/// standard pasteboard items; and Treewise's own (ADR 0022).
+/// standard pasteboard items; Treewise's own (ADR 0022); and Spelling and
+/// Grammar for the name being typed (ADR 0084).
 @MainActor
 enum EditMenu {
     private typealias Window = BrowserWindowController
@@ -30,6 +31,25 @@ enum EditMenu {
                 MenuItem.make("Move to Other Window", #selector(Window.moveToOtherWindow(_:))),
                 .separator(),
                 MenuItem.make("Find", #selector(Window.findInFolder(_:)), key: "f"),
+                .separator(),
+                spelling(),
+            ])
+    }
+
+    /// AppKit's own checking of the text being edited, and whether a name shows its
+    /// misspelled words while it is typed. A name is never corrected automatically: the
+    /// user picks each correction.
+    private static func spelling() -> NSMenuItem {
+        MenuItem.menu(
+            "Spelling and Grammar",
+            [
+                MenuItem.make(
+                    "Show Spelling and Grammar", #selector(NSText.showGuessPanel(_:)), key: ":"),
+                MenuItem.make("Check Document Now", #selector(NSText.checkSpelling(_:)), key: ";"),
+                .separator(),
+                MenuItem.make(
+                    "Check Spelling While Typing",
+                    #selector(Window.toggleSpellingWhileTyping(_:))),
             ])
     }
 }

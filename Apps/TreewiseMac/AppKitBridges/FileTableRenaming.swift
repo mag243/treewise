@@ -5,7 +5,7 @@ import TreewiseCore
 /// the part before its extension selected, as in Finder, also when the list
 /// hides extensions (ADR 0023). Return commits, Escape cancels, and ⌥Esc or F5
 /// asks the add-ons for proposals (ADR 0066).
-extension FileTableCoordinator: NSTextFieldDelegate {
+extension FileTableCoordinator: NameFieldEditing {
     func beginRename(row: Int, suggests: Bool = false) {
         guard let table, items.indices.contains(row) else { return }
         table.scrollRowToVisible(row)
@@ -23,6 +23,7 @@ extension FileTableCoordinator: NSTextFieldDelegate {
             items[row].kind == .folder
             ? name.length : (name.deletingPathExtension as NSString).length
         field.currentEditor()?.selectedRange = NSRange(location: 0, length: base)
+        NameSpelling.check(field, actions?.checksSpelling() ?? false)
         if suggests { actions?.suggestName(items[row], field) }
     }
 
@@ -45,6 +46,7 @@ extension FileTableCoordinator: NSTextFieldDelegate {
     }
 
     func controlTextDidEndEditing(_ notification: Notification) {
+        NameSpelling.stop(after: notification)
         guard let field = notification.object as? NSTextField else { return }
         field.isEditable = false
         defer { renaming = nil }

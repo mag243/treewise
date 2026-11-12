@@ -33,6 +33,7 @@ extension BrowserWindowController: NSMenuItemValidation, NSToolbarItemValidation
     @objc func copyToOtherWindow(_ sender: Any?) { actions.sendToOtherWindow(.copy) }
     @objc func moveToOtherWindow(_ sender: Any?) { actions.sendToOtherWindow(.move) }
     @objc func findInFolder(_ sender: Any?) { actions.focusSearch() }
+    @objc func toggleSpellingWhileTyping(_ sender: Any?) { actions.toggleSpellingWhileTyping() }
 
     // MARK: View
 
@@ -73,6 +74,9 @@ extension BrowserWindowController: NSMenuItemValidation, NSToolbarItemValidation
             item.title =
                 actions.showsDetails
                 ? String(localized: "Hide Details") : String(localized: "Show Details")
+        }
+        if item.action == #selector(toggleSpellingWhileTyping(_:)) {
+            item.state = actions.checksSpellingWhileTyping ? .on : .off
         }
         return item.action.map(canPerform) ?? false
     }

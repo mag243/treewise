@@ -19,6 +19,13 @@ import TreewiseUI
         #expect(settings.terminalApp == nil)
     }
 
+    @Test func checksSpellingInNamesOnlyWhenAsked() {
+        let store = MemorySettingsStore()
+        #expect(!BrowserSettings(store: store).checksSpellingWhileTyping)
+        BrowserSettings(store: store).checksSpellingWhileTyping = true
+        #expect(BrowserSettings(store: store).checksSpellingWhileTyping)
+    }
+
     @Test func keepsTheTerminalApp() {
         let store = MemorySettingsStore()
         BrowserSettings(store: store).terminalApp = "com.example.terminal"

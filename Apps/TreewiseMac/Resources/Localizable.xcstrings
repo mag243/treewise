@@ -712,6 +712,38 @@
         }
       }
     },
+    "Check Document Now" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokument jetzt prüfen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleer document nu"
+          }
+        }
+      }
+    },
+    "Check Spelling While Typing" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechtschreibung während der Texteingabe prüfen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleer spelling tijdens typen"
+          }
+        }
+      }
+    },
     "Check for Updates…" : {
       "localizations" : {
         "de" : {
@@ -3583,6 +3615,22 @@
         }
       }
     },
+    "Show Spelling and Grammar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechtschreibung und Grammatik einblenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon spelling en grammatica"
+          }
+        }
+      }
+    },
     "Show file extensions" : {
       "localizations" : {
         "de" : {
@@ -3759,6 +3807,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sorteer op"
+          }
+        }
+      }
+    },
+    "Spelling and Grammar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechtschreibung und Grammatik"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spelling en grammatica"
           }
         }
       }
