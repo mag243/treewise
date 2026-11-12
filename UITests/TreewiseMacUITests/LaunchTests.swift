@@ -18,7 +18,9 @@ final class LaunchTests: XCTestCase {
         root = folder
     }
 
+    /// Quits the app before its folder goes, so the next test starts it at once.
     override func tearDownWithError() throws {
+        MainActor.assumeIsolated { XCUIApplication().quit() }
         if let root { try FileManager.default.removeItem(at: root) }
     }
 
