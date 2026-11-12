@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Keys Xcode's generated Info.plist has no build setting for, merged into
-     it: Sparkle's feed, its public key and daily checks (ADR 0032). -->
+     it: Sparkle's feed, its public key and daily checks (ADR 0032), and
+     AutoFill of one-time codes only in a field asking for one, which Treewise
+     has none of (ADR 0085). -->
 <plist version="1.0">
 <dict>
 	<key>SUFeedURL</key>
@@ -9,6 +11,8 @@
 	<key>SUPublicEDKey</key>
 	<string>PcPBmr57lEVBurMNhOVc7S+Jnzx/RuULFSXrVn6Iifg=</string>
 	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>NSAutoFillRequiresTextContentTypeForOneTimeCodeOnMac</key>
 	<true/>
 </dict>
 </plist>
