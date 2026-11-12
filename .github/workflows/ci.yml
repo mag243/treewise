@@ -46,6 +46,21 @@ jobs:
       - name: Set up the environment
         run: tools/setup.sh --no-simulator
 
+      - name: Restore the build caches
+        # What a build makes once for an Xcode and the package versions: the SDK's
+        # and Sparkle's precompiled modules and the resolved packages. A checkout
+        # gives every file a new date, so Treewise's own sources compile again
+        # anyway. The cache is saved only when its key is new, so a run does not
+        # spend minutes uploading gigabytes that are already there.
+        uses: actions/cache@v5
+        with:
+          key: build-${{ runner.os }}-${{ hashFiles('tools/versions.env', '**/Package.resolved', 'Packages/TreewiseKit/Package.swift') }}
+          path: |
+            build/DerivedData
+            !build/DerivedData/Logs
+            !build/DerivedData/Index.noindex
+            Packages/TreewiseKit/.build
+
       # The same as tools/build.sh ci, in separate steps: each shows its own time.
       - name: Sample package tests that hang
         # Healthy package tests take seconds, so any still running after six minutes
