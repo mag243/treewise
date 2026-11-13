@@ -62,7 +62,10 @@ enum NameReviewText {
         case .unknownField(let field): String(localized: "This add-on has no field {\(field)}")
         case .containsPathSeparator: String(localized: "A pattern cannot hold :")
         case .invalidFormat:
-            String(localized: "After : comes a date format, or a number from 2 after {seq}")
+            String(
+                localized:
+                    "After : comes a date format; 4, 2-4, 2,4,6 or 5- after {seq}; yy after {year}; a number after {folder}; or lower, upper or title"
+            )
         }
     }
 

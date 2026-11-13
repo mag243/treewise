@@ -421,6 +421,7 @@
       }
     },
     "After : comes a date format, or a number from 2 after {seq}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -432,6 +433,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Na : komt een datumnotatie, of na {seq} een getal vanaf 2"
+          }
+        }
+      }
+    },
+    "After : comes a date format; 4, 2-4, 2,4,6 or 5- after {seq}; yy after {year}; a number after {folder}; or lower, upper or title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach : folgt ein Datumsformat; 4, 2-4, 2,4,6 oder 5- nach {seq}; yy nach {year}; eine Zahl nach {folder}; oder lower, upper oder title"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na : komt een datumnotatie; 4, 2-4, 2,4,6 of 5- na {seq}; yy na {year}; een getal na {folder}; of lower, upper of title"
           }
         }
       }
