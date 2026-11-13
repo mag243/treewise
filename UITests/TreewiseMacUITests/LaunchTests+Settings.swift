@@ -49,6 +49,9 @@ extension LaunchTests {
         XCTAssertFalse(free.isEnabled, "the last add-on that is on stays on (ADR 0070)")
         XCTAssertTrue(settings.staticTexts["Reads names only"].exists, "it says what it reads")
         XCTAssertFalse(settings.scrollBars.firstMatch.exists, "the add-ons fit")
+        XCTAssertFalse(
+            settings.checkBoxes["Also read names in the same folder a year before"].exists,
+            "no add-on here reads the year before, so the choice is not offered (ADR 0090)")
     }
 
     @MainActor

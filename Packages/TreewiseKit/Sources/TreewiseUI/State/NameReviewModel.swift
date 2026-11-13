@@ -141,7 +141,8 @@ public final class NameReviewModel {
     var yearBefore: YearBefore?
     /// Whether an add-on here was given the names of the same folder a year before.
     public var readsYearBefore: Bool {
-        yearBefore != nil && modules.contains { $0.description.readsYearBefore }
+        yearBefore?.folderFound == true
+            && modules.contains { $0.description.readsYearBefore && mayWork($0.id) }
     }
     /// Whether a module failed to answer.
     public internal(set) var moduleFailed = false
@@ -309,7 +310,7 @@ public final class NameReviewModel {
     private func makeModule(_ description: NameModuleDescription, names: [String]) async
         -> NameReviewModule
     {
-        let years = description.readsYearBefore ? yearBefore?.years : nil
+        let years = years(for: description)
         let templates =
             (try? await dependencies.host.derivedTemplates(
                 moduleID: description.id, names: names, folderName: folder.name, years: years,
@@ -324,7 +325,9 @@ public final class NameReviewModel {
         module.licence = licenceStates[description.id]
         module.namesGiven = names.count + (years?.namesYearBefore.count ?? 0)
         module.candidates = candidates(templates, for: description, names: names)
-        if years != nil, names.count < PatternFit.minimumFits, let before = yearBefore {
+        if years != nil, names.count < PatternFit.minimumFits, let before = yearBefore,
+            !before.years.namesYearBefore.isEmpty
+        {
             module.candidates = candidates(
                 templates, for: description, names: before.years.namesYearBefore,
                 fixed: before.folderValues)

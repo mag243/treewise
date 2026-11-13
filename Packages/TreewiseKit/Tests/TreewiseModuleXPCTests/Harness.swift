@@ -85,6 +85,14 @@
             return derivedTemplate(fromNames: names, folderName: folderName)
         }
 
+        /// A module that reads the same folder a year before (ADR 0090).
+        init(readingTheYearBefore id: String) {
+            let plain = Self.describe(id)
+            description = NameModuleDescription(
+                id: id, contentTypes: plain.contentTypes, neededContent: [], fields: plain.fields,
+                defaultTemplate: plain.defaultTemplate, readsYearBefore: true)
+        }
+
         init(id: String, derived: String) {
             description = Self.describe(id)
             self.derived = derived

@@ -6,6 +6,10 @@ All notable changes to Treewise are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+- The Advanced Folder Pattern add-on learns a series that starts again each year from a complete year: where it ends, a list of numbers it skips, and how wide they are written, as `{seq:24:1}` or `{seq:5,10,15,20}`. In a folder per year it can read the names in the same folder a year before, as `Administration/2025/Tax` beside `Administration/2026/Tax`, so a new year's folder gets last year's pattern at once. Settings > Add-ons has Also read names in the same folder a year before, on by default; only names are read.
+- Halves after an H, as `H1` and `H2`, continue as a series of two.
+
 ## [0.8.0] - 2026-11-13
 
 ### Added

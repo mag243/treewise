@@ -19,6 +19,13 @@
             #expect(modules == [StubModule(id: "m", neededContent: [.text]).description])
         }
 
+        @Test func saysWhichModulesReadTheYearBefore() async throws {
+            let harness = Harness(modules: [StubModule(readingTheYearBefore: "m")])
+            defer { withExtendedLifetime(harness) {} }
+            let modules = try await harness.host().availableModules()
+            #expect(modules.map(\.readsYearBefore) == [true])
+        }
+
         @Test func carriesTheKeysToTheModuleAndItsLicenceStateBack() async throws {
             let harness = Harness(modules: [StubModule(id: "m", needsLicence: true)])
             defer { withExtendedLifetime(harness) {} }

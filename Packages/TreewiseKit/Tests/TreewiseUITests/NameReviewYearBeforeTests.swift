@@ -104,11 +104,27 @@ import TreewiseUI
         #expect(!model.readsYearBefore)
     }
 
-    @Test func givesNoneWhenTheFolderAYearBeforeIsNotThere() async throws {
+    /// The folder's year still reaches the add-on, so a year in a name can be `{year}`.
+    @Test func givesOnlyTheYearWhenTheFolderAYearBeforeIsNotThere() async throws {
         addFolder("Admin/2026/Bank")
         let host = host()
         let model = try await model(of: "Admin/2026/Bank", host)
-        #expect(yearsAsked(by: "advanced", in: host) == [nil])
+        #expect(
+            yearsAsked(by: "advanced", in: host) == [FolderYears(year: 2026, namesYearBefore: [])])
+        #expect(!model.readsYearBefore)
+    }
+
+    @Test func givesNothingOfThemToAnAddOnThatMayNotWork() async throws {
+        addFile("Tax 2025.1.pdf", in: "Admin/2025/Tax")
+        let locked = NameModuleDescription(
+            id: "advanced", contentTypes: ["public.item"], neededContent: [],
+            fields: [.init(name: "text", kind: .text)], defaultTemplate: "Adv {text}",
+            isFree: false, name: "Advanced", readsYearBefore: true)
+        let lockedHost = ScriptedModuleHost(
+            modules: [locked], answers: ["advanced": .success([["text": .text("A")]])])
+        lockedHost.setLicenceState(.notTried, for: "advanced")
+        let model = try await model(of: "Admin/2026/Tax", lockedHost)
+        #expect(yearsAsked(by: "advanced", in: lockedHost).allSatisfy { $0 == nil })
         #expect(!model.readsYearBefore)
     }
 
