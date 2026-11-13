@@ -2071,6 +2071,66 @@
         }
       }
     },
+    "Licensed to %@, %lld days left" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenziert für %1$@, noch %2$lld Tage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Licensed to %1$@, %2$lld days left"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licentie op naam van %1$@, nog %2$lld dagen"
+          }
+        }
+      }
+    },
+    "Licensed to %@, until %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenziert für %1$@, bis %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Licensed to %1$@, until %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licentie op naam van %1$@, tot %2$@"
+          }
+        }
+      }
+    },
+    "Licensed to %@, until today" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lizenziert für %@, bis heute"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licentie op naam van %@, tot en met vandaag"
+          }
+        }
+      }
+    },
     "Locations" : {
       "comment" : "Sidebar section",
       "localizations" : {

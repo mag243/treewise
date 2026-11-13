@@ -73,7 +73,7 @@ public final class LicenceKeeper {
         var unlocked: [String] = []
         var licensee = ""
         for module in (try? await host.availableModules()) ?? [] where !module.isFree {
-            if case .licensed(let name) = try? await host.licenceState(
+            if case .licensed(let name, _) = try? await host.licenceState(
                 moduleID: module.id, licence: question)
             {
                 unlocked.append(module.id)
