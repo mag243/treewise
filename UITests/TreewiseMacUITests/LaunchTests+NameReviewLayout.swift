@@ -34,12 +34,14 @@ extension LaunchTests {
         let app = try launchApp()
         let review = try openReview(of: Self.oddName, in: app)
         let window = review.frame
-        for title in ["Cancel", "Show Preview"] {
-            let button = review.buttons[title]
-            XCTAssertTrue(button.appeared(timeout: Self.launchTimeout), "\(title) shows")
+        // Show Preview or Hide Preview, as the panel was left.
+        let preview = review.buttons.matching(NSPredicate(format: "title ENDSWITH 'Preview'"))
+            .firstMatch
+        for (title, button) in [("Cancel", review.buttons["Cancel"]), ("the preview's", preview)] {
+            XCTAssertTrue(button.appeared(timeout: Self.launchTimeout), "\(title) button shows")
             XCTAssertGreaterThanOrEqual(
                 window.maxY - button.frame.maxY, Self.footMargin - Self.marginTolerance,
-                "room below \(title): \(button.frame) in \(window)")
+                "room below \(title) button: \(button.frame) in \(window)")
         }
         let rename = review.buttons.matching(NSPredicate(format: "title BEGINSWITH 'Rename'"))
             .firstMatch
