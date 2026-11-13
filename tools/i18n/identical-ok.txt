@@ -19,6 +19,7 @@ OK
 Open
 Open in Terminal
 Stop
+Text
 Volume
 
 # The app's own term for its extensions, kept in Dutch and German as in other apps.

@@ -842,6 +842,22 @@
         }
       }
     },
+    "Choice" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auswahl"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keuze"
+          }
+        }
+      }
+    },
     "Choose a Saved Pattern" : {
       "localizations" : {
         "de" : {
@@ -1130,6 +1146,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datum van het bestand, controleer het"
+          }
+        }
+      }
+    },
+    "Dates" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datums"
           }
         }
       }
@@ -2966,22 +2998,6 @@
         }
       }
     },
-    "Paid" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kostenpflichtig"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Betaald"
-          }
-        }
-      }
-    },
     "Paste" : {
       "localizations" : {
         "de" : {
@@ -3110,6 +3126,22 @@
         }
       }
     },
+    "Reading" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lesen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lezen"
+          }
+        }
+      }
+    },
     "Reading %lld files…" : {
       "localizations" : {
         "de" : {
@@ -3206,18 +3238,18 @@
         }
       }
     },
-    "Recognizes: %@" : {
+    "Recognizes" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erkennt: %@"
+            "value" : "Erkennt"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Herkent: %@"
+            "value" : "Herkent"
           }
         }
       }
@@ -3608,6 +3640,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selecteer alles"
+          }
+        }
+      }
+    },
+    "Series" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reihen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reeksen"
           }
         }
       }
@@ -4162,6 +4210,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminal-app:"
+          }
+        }
+      }
+    },
+    "Text" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst"
           }
         }
       }

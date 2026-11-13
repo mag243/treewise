@@ -43,14 +43,20 @@ extension LaunchTests {
         XCTAssertTrue(
             tab.appeared(timeout: Self.launchTimeout), "Settings has an Add-ons tab")
         tab.click()
-        let free = settings.checkBoxes["Folder Pattern"]
+        let free = settings.switches["Folder Pattern"]
         XCTAssertTrue(
             free.appeared(timeout: Self.launchTimeout), "the free add-on is listed")
         XCTAssertFalse(free.isEnabled, "the last add-on that is on stays on (ADR 0070)")
-        XCTAssertTrue(settings.staticTexts["Reads names only"].exists, "it says what it reads")
+        XCTAssertTrue(
+            settings.staticTexts.matching(
+                NSPredicate(format: "value BEGINSWITH 'Reads names only'")
+            ).firstMatch.exists, "it says what it reads")
+        XCTAssertTrue(
+            settings.staticTexts["Recognizes"].exists,
+            "the first card is selected and open (ADR 0092)")
         XCTAssertFalse(settings.scrollBars.firstMatch.exists, "the add-ons fit")
         XCTAssertFalse(
-            settings.checkBoxes["Also read names in the same folder a year before"].exists,
+            settings.switches["Also read names in the same folder a year before"].exists,
             "no add-on here reads the year before, so the choice is not offered (ADR 0090)")
     }
 

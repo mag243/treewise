@@ -4,122 +4,179 @@ import TreewiseModuleInterface
 import TreewiseUI
 import UniformTypeIdentifiers
 
-/// One add-on in Settings' Add-ons tab: on or off with what it reads, which files it is
-/// for and its fields, its licence for a paid one, and whether it is on in new folders.
+/// One add-on in Settings' Add-ons tab, as a card (ADR 0092): a header with its icon, name,
+/// what it reads and for which files, its licence as a badge and an on/off switch; and,
+/// when it is the selected card, a body with its summary, what it recognizes, its trial
+/// or purchase, and On in new folders.
 @MainActor
-final class AddOnRow: NSStackView {
-    private static let indent: CGFloat = 20
-    private static let lineSpacing: CGFloat = 3
-    private static let rowPadding: CGFloat = 6
-    private static let dimmed: CGFloat = 0.6
+final class AddOnCardView: NSView {
+    /// What the card's controls do.
+    struct Actions {
+        let turnOn: @MainActor (Bool) -> Void
+        let turnOnInNewFolders: @MainActor (Bool) -> Void
+        let startTrial: @MainActor () -> Void
+    }
 
-    /// Builds the row. `defaultID` is the add-on that plays the default module's part (ADR
-    /// 0067), `licence` the licence of a paid one (ADR 0071), `isLastWorking` whether it is
-    /// the last add-on on that may work, which stays on, and `startTrial` starts the
-    /// add-on's trial when the user asks (ADR 0088).
+    private static let padding = NSSize(width: 12, height: 9)
+    private static let iconSize: CGFloat = 26
+    private static let iconRadius: CGFloat = 6
+    private static let iconInset: CGFloat = 4
+    private static let headerSpacing: CGFloat = 10
+    private static let bodySpacing: CGFloat = 8
+    private static let selectedEdge: CGFloat = 2
+    /// The body starts under the name, past the icon.
+    private static var bodyIndent: CGFloat { iconSize + headerSpacing }
+
+    private let module: NameModuleDescription
+    private let card: AddOnCard
+    private let licence: ModuleLicenceState?
+    private let actions: Actions
+
+    /// Builds the card at `width`, open when `isSelected`.
     init(
-        settings: BrowserSettings, module: NameModuleDescription, catalog: [String],
-        defaultID: String, licence: ModuleLicenceState?, isLastWorking: Bool,
-        startTrial: @escaping (String) -> Void
+        module: NameModuleDescription, card: AddOnCard, licence: ModuleLicenceState?,
+        isSelected: Bool, isOnInNewFolders: Bool, width: CGFloat, actions: Actions
     ) {
+        self.module = module
+        self.card = card
+        self.licence = licence
+        self.actions = actions
         super.init(frame: .zero)
-        // One that may not work is off and cannot be turned on; what was chosen is kept.
-        let isLocked = licence.map { !$0.mayWork } ?? false
-        let isOn = settings.addOns.isOn(module.id) && !isLocked
-        let isLast = isOn && isLastWorking
-        orientation = .vertical
-        alignment = .leading
-        spacing = Self.lineSpacing
-        edgeInsets = NSEdgeInsets(
-            top: Self.rowPadding, left: 0, bottom: Self.rowPadding, right: 0)
-        let toggle = ClosureCheckbox(title: NameReviewText.name(of: module)) {
-            settings.addOns.setOn(module.id, on: $0, catalog: catalog)
+        let box = AddOnCardStyle.group(
+            fill: AddOnCardStyle.cardFill,
+            border: isSelected ? .controlAccentColor : .separatorColor,
+            radius: AddOnCardStyle.cardRadius, borderWidth: isSelected ? Self.selectedEdge : 1)
+        box.contentViewMargins = Self.padding
+        let inner = width - 2 * Self.padding.width
+        var rows: [NSView] = [header()]
+        if isSelected {
+            rows.append(body(isOnInNewFolders: isOnInNewFolders, width: inner - Self.bodyIndent))
         }
-        toggle.state = isOn ? .on : .off
-        toggle.isEnabled = !(isLast || isLocked)
-        if isLast { toggle.toolTip = String(localized: "At least one add-on stays on") }
-        let price = Self.caption(
-            module.isFree ? String(localized: "Free") : String(localized: "Paid"))
-        let top = NSStackView()
-        top.setViews([toggle], in: .leading)
-        top.setViews([price], in: .trailing)
-        addArrangedSubview(top)
-        addDetails(of: module)
-        if let licence {
-            addIndented(
-                licenceLine(licence, module: module, isLocked: isLocked, startTrial: startTrial))
-        }
-        let newFolders = ClosureCheckbox(title: String(localized: "On in new folders")) {
-            settings.addOns.setOnInNewFolders(
-                module.id, on: $0, catalog: catalog, defaultID: defaultID)
-        }
-        newFolders.font = .preferredFont(forTextStyle: .caption1)
-        newFolders.state =
-            settings.addOns.isOnInNewFolders(module.id, defaultID: defaultID) ? .on : .off
-        newFolders.isEnabled = isOn
-        addIndented(newFolders)
-        alphaValue = isOn ? 1 : Self.dimmed
+        let stack = NSStackView(views: rows)
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = Self.bodySpacing
+        Self.fill(box.contentView, with: stack)
+        Self.fill(self, with: box)
+        widthAnchor.constraint(equalToConstant: width).isActive = true
+        setAccessibilityElement(true)
+        setAccessibilityRole(.group)
+        setAccessibilityLabel(NameReviewText.name(of: module))
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
 
-    /// What the add-on does, what it reads, which files it is for and what it recognizes
-    /// (ADR 0070, ADR 0088).
-    private func addDetails(of module: NameModuleDescription) {
+    /// The add-on symbol on a tile of the accent colour: an add-on has no icon of its own.
+    private static func icon() -> NSView {
+        let icon = AddOnCardStyle.group(
+            fill: .controlAccentColor, border: .clear, radius: iconRadius)
+        let symbol = NSImageView(
+            image: NSImage(
+                systemSymbolName: "puzzlepiece.extension.fill", accessibilityDescription: nil)
+                ?? NSImage())
+        symbol.contentTintColor = .white
+        fill(icon.contentView, with: symbol, inset: iconInset)
+        icon.widthAnchor.constraint(equalToConstant: iconSize).isActive = true
+        icon.heightAnchor.constraint(equalToConstant: iconSize).isActive = true
+        return icon
+    }
+
+    private func header() -> NSView {
+        let name = NSTextField(labelWithString: NameReviewText.name(of: module))
+        name.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
+        let reads = Self.caption(
+            Self.reads(module) + " · " + String(localized: "For \(Self.files(module))"))
+        let titles = NSStackView(views: [name, reads])
+        titles.orientation = .vertical
+        titles.alignment = .leading
+        titles.spacing = 1
+        titles.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        let badgeText = Self.caption(
+            licence.map(LicenceText.state) ?? String(localized: "Free"))
+        let color = AddOnCardStyle.color(of: card.tone)
+        badgeText.textColor = color
+        badgeText.font = .systemFont(
+            ofSize: NSFont.preferredFont(forTextStyle: .caption1).pointSize, weight: .semibold)
+        let badge = AddOnCardStyle.pill(badgeText, color: color)
+        let toggle = ClosureSwitch(label: NameReviewText.name(of: module), change: actions.turnOn)
+        toggle.state = card.isOn ? .on : .off
+        toggle.isEnabled = card.canSwitch
+        if card.isOn, !card.canSwitch {
+            toggle.toolTip = String(localized: "At least one add-on stays on")
+        }
+        let header = NSStackView(views: [Self.icon(), titles, badge, toggle])
+        header.spacing = Self.headerSpacing
+        header.alignment = .centerY
+        return header
+    }
+
+    private func body(isOnInNewFolders: Bool, width: CGFloat) -> NSView {
+        var views: [NSView] = []
         if let summary = module.summary(preferring: Locale.preferredLanguages) {
             let line = NSTextField(wrappingLabelWithString: summary)
-            line.font = .preferredFont(forTextStyle: .callout)
-            addIndented(line)
+            line.preferredMaxLayoutWidth = width
+            views.append(line)
         }
-        var lines = [Self.reads(module), String(localized: "For \(Self.files(module))")]
         // What it finds in a folder's names tells add-ons apart (ADR 0088).
         if !module.recognizes.isEmpty {
-            lines.append(
-                String(localized: "Recognizes: \(module.recognizes.joined(separator: " "))"))
-        }
-        for line in lines { addIndented(Self.caption(line)) }
-    }
-
-    private func addIndented(_ view: NSView) {
-        let line = NSStackView(views: [view])
-        line.edgeInsets = NSEdgeInsets(top: 0, left: Self.indent, bottom: 0, right: 0)
-        addArrangedSubview(line)
-    }
-
-    private func licenceLine(
-        _ licence: ModuleLicenceState, module: NameModuleDescription, isLocked: Bool,
-        startTrial: @escaping (String) -> Void
-    ) -> NSView {
-        // Not tried yet is an offer, not a problem: only an add-on that needs a licence
-        // shows the orange lock.
-        let needsLicence = isLocked && licence != .notTried
-        let color: NSColor = needsLicence ? .systemOrange : .secondaryLabelColor
-        let symbol = needsLicence ? "lock.fill" : licence == .notTried ? "gift" : "key.fill"
-        let icon = NSImageView(
-            image: NSImage(systemSymbolName: symbol, accessibilityDescription: nil) ?? NSImage())
-        icon.contentTintColor = color
-        let text = Self.caption(LicenceText.state(licence))
-        text.textColor = color
-        var views: [NSView] = [icon, text]
-        if licence == .notTried {
-            let id = module.id
-            let tryIt = ClosureButton(title: String(localized: "Try for 14 Days")) {
-                startTrial(id)
+            views.append(Self.caption(String(localized: "Recognizes")))
+            let fields = module.recognizes.map {
+                RecognizedField($0, today: Date(), calendar: .current)
             }
-            tryIt.isBordered = false
-            tryIt.contentTintColor = .linkColor
-            tryIt.font = .preferredFont(forTextStyle: .caption1)
-            views.append(tryIt)
+            views.append(RecognizedFieldsView(fields, width: width))
+            views.append(AddOnCardStyle.legend())
         }
-        if !Self.isLicensed(licence), module.purchaseURL != nil {
-            let link = ClosureButton(title: String(localized: "Buy…")) { LicenceText.buy(module) }
-            link.isBordered = false
-            link.contentTintColor = .linkColor
-            link.font = .preferredFont(forTextStyle: .caption1)
-            views.append(link)
+        if let offer = Self.offer(module, licence: licence, startTrial: actions.startTrial) {
+            views.append(offer)
         }
-        return NSStackView(views: views)
+        if card.canSwitch || card.isOn {
+            let newFolders = ClosureSwitch(
+                label: String(localized: "On in new folders"), change: actions.turnOnInNewFolders)
+            newFolders.state = card.isOn && isOnInNewFolders ? .on : .off
+            newFolders.isEnabled = card.newFoldersEnabled
+            let label = NSTextField(labelWithString: String(localized: "On in new folders"))
+            views.append(NSStackView(views: [newFolders, label]))
+        }
+        let body = NSStackView(views: views)
+        body.orientation = .vertical
+        body.alignment = .leading
+        body.spacing = Self.bodySpacing
+        body.edgeInsets = NSEdgeInsets(top: 0, left: Self.bodyIndent, bottom: 0, right: 0)
+        return body
+    }
+
+    /// Try for 14 Days before a paid add-on was tried, and Buy… where it is sold without a
+    /// licence (ADR 0071, ADR 0088); nil when neither applies.
+    private static func offer(
+        _ module: NameModuleDescription, licence: ModuleLicenceState?,
+        startTrial: @escaping @MainActor () -> Void
+    ) -> NSView? {
+        guard let licence else { return nil }
+        var buttons: [NSView] = []
+        if licence == .notTried {
+            buttons.append(
+                ClosureButton(title: String(localized: "Try for 14 Days"), run: startTrial))
+        }
+        let isLicensed = if case .licensed = licence { true } else { false }
+        if !isLicensed, module.purchaseURL != nil {
+            buttons.append(
+                ClosureButton(title: String(localized: "Buy…")) { LicenceText.buy(module) })
+        }
+        for case let button as NSButton in buttons { button.controlSize = .small }
+        return buttons.isEmpty ? nil : NSStackView(views: buttons)
+    }
+
+    private static func fill(_ container: NSView?, with view: NSView, inset: CGFloat = 0) {
+        guard let container else { return }
+        view.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(view)
+        NSLayoutConstraint.activate([
+            view.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: inset),
+            view.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -inset),
+            view.topAnchor.constraint(equalTo: container.topAnchor, constant: inset),
+            view.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -inset),
+        ])
     }
 
     private static func caption(_ text: String) -> NSTextField {
@@ -127,10 +184,6 @@ final class AddOnRow: NSStackView {
         label.font = .preferredFont(forTextStyle: .caption1)
         label.textColor = .secondaryLabelColor
         return label
-    }
-
-    private static func isLicensed(_ state: ModuleLicenceState) -> Bool {
-        if case .licensed = state { true } else { false }
     }
 
     /// What the add-on reads of a file, in words (ADR 0061, ADR 0062).

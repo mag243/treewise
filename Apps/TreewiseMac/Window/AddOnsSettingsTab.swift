@@ -3,22 +3,25 @@ import TreewiseCore
 import TreewiseModuleInterface
 import TreewiseUI
 
-/// The Add-ons tab of Settings (ADR 0070): every add-on the app has, with what it reads,
-/// which files it is for and the fields it fills in; on or off for every folder, on in new
-/// folders or not, and dragged into the order folders without their own take. A paid one
-/// shows its licence, with Try for 14 Days before it was tried and Buy… where it is sold;
-/// one Enter Licence Key… serves them all (ADR 0071, ADR 0088).
+/// The Add-ons tab of Settings (ADR 0070, ADR 0092): every add-on the app has as a card,
+/// the selected one open, in a list that fills the tab and is dragged to set the order;
+/// below it, in place, the settings for all add-ons and Enter Licence Key…, which serves
+/// every paid one (ADR 0071, ADR 0088).
 @MainActor
 final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
-    private static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.add-on")
+    static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.add-on")
     private static let spacing: CGFloat = 8
-    private static let width: CGFloat = 520
-    private static let listHeight: CGFloat = 380
+    private static let cardSpacing: CGFloat = 8
+    private static let footSpacing: CGFloat = 6
+    private static let groupPadding = NSSize(width: 12, height: 9)
+    /// The width of the cards and the foot.
+    static let width = SettingsWindow.paneSize.width - 2 * SettingsForm.margin
 
-    private let settings: BrowserSettings
+    let settings: BrowserSettings
     /// The app's licences.
-    private let licences: LicenceKeeper
-    private let table = NSTableView()
+    let licences: LicenceKeeper
+    let table = NSTableView()
+    private let scroll = NSScrollView()
     private lazy var enterKey = SettingsForm.button("Enter Licence Key…") { [weak self] in
         guard let self, let window = view.window else { return }
         LicenceKeyEntry.present(
@@ -26,17 +29,15 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         ) { [weak self] in self?.load() }
     }
     /// Whether an add-on that asks may read the same folder a year before (ADR 0090).
-    private lazy var yearBefore = SettingsForm.checkbox(
-        "Also read names in the same folder a year before"
+    private lazy var yearBefore = ClosureSwitch(
+        label: String(localized: "Also read names in the same folder a year before")
     ) { [settings] in settings.addOns.readsYearBefore = $0 }
-    private let yearBeforeNote = NSTextField(
-        wrappingLabelWithString: String(
-            localized:
-                "For an add-on that learns from last year, as in Administration/2025/Tax beside Administration/2026/Tax. Only names are read."
-        ))
-    private var modules: [NameModuleDescription] = []
-    private var states: [String: ModuleLicenceState] = [:]
-    private var shown: [NameModuleDescription] = []
+    private var reading: [NSView] = []
+    var modules: [NameModuleDescription] = []
+    var states: [String: ModuleLicenceState] = [:]
+    var shown: [NameModuleDescription] = []
+    /// The add-on whose card is open; the first when none was chosen.
+    var selectedID: String?
 
     init(settings: BrowserSettings, licences: LicenceKeeper) {
         self.settings = settings
@@ -47,9 +48,9 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
 
-    private var catalog: [String] { modules.map(\.id) }
+    var catalog: [String] { modules.map(\.id) }
     /// The add-ons on that may work: one of them stays on.
-    private var working: [String] {
+    var working: [String] {
         settings.addOns.available(catalog).filter { states[$0]?.mayWork ?? true }
     }
 
@@ -60,20 +61,9 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     override func loadView() {
         let header = NSTextField(labelWithString: String(localized: "Add-ons"))
         header.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
-        let note = NSTextField(
-            wrappingLabelWithString: String(
-                localized:
-                    "An add-on that is off is offered in no folder. Drag to set the order for folders without their own."
-            ))
-        note.font = .preferredFont(forTextStyle: .caption1)
-        note.textColor = .secondaryLabelColor
-        note.preferredMaxLayoutWidth = Self.width
         enterKey.isHidden = true
-        yearBeforeNote.font = .preferredFont(forTextStyle: .caption1)
-        yearBeforeNote.textColor = .secondaryLabelColor
-        yearBeforeNote.preferredMaxLayoutWidth = Self.width
-        let stack = NSStackView(
-            views: [header, list(), note, yearBefore, yearBeforeNote, enterKey])
+        let list = list()
+        let stack = NSStackView(views: [header, list] + foot())
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = Self.spacing
@@ -85,47 +75,127 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
             view.widthAnchor.constraint(equalToConstant: size.width),
             view.heightAnchor.constraint(equalToConstant: size.height),
             stack.topAnchor.constraint(equalTo: view.topAnchor, constant: SettingsForm.margin),
+            stack.bottomAnchor.constraint(
+                equalTo: view.bottomAnchor, constant: -SettingsForm.margin),
             stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stack.widthAnchor.constraint(equalToConstant: Self.width),
         ])
         self.view = view
         Observing.follow(self) { $0.update() }
         load()
     }
 
+    /// The cards, in a list that takes the height the foot leaves.
     private func list() -> NSView {
         table.addTableColumn(NSTableColumn(identifier: .init("add-on")))
         table.headerView = nil
         table.usesAutomaticRowHeights = true
         table.selectionHighlightStyle = .none
+        table.allowsEmptySelection = false
         table.style = .plain
+        table.intercellSpacing = NSSize(width: 0, height: Self.cardSpacing)
+        table.backgroundColor = .clear
         table.dataSource = self
         table.delegate = self
         table.registerForDraggedTypes([Self.dragType])
-        let scroll = NSScrollView()
+        table.setAccessibilityLabel(String(localized: "Add-ons"))
         scroll.documentView = table
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
         scroll.drawsBackground = false
-        table.backgroundColor = .clear
-        NSLayoutConstraint.activate([
-            scroll.widthAnchor.constraint(equalToConstant: Self.width),
-            scroll.heightAnchor.constraint(equalToConstant: Self.listHeight),
-        ])
+        scroll.setContentHuggingPriority(.defaultLow, for: .vertical)
+        scroll.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        scroll.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
         return scroll
+    }
+
+    /// Reading, with the year before, then the note and Enter Licence Key…, in place.
+    private func foot() -> [NSView] {
+        let heading = NSTextField(labelWithString: String(localized: "Reading"))
+        heading.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
+        heading.textColor = .secondaryLabelColor
+        reading = [heading, readingGroup()]
+        return reading + [bottomRow()]
+    }
+
+    /// The year before as a switch, with its title and note, in a group (ADR 0090).
+    private func readingGroup() -> NSView {
+        let title = NSTextField(
+            labelWithString: String(localized: "Also read names in the same folder a year before"))
+        let note = Self.note(
+            String(
+                localized:
+                    "For an add-on that learns from last year, as in Administration/2025/Tax beside Administration/2026/Tax. Only names are read."
+            ),
+            width: Self.width - 2 * Self.groupPadding.width - yearBefore.fittingSize.width
+                - Self.spacing)
+        let words = NSStackView(views: [title, note])
+        words.orientation = .vertical
+        words.alignment = .leading
+        words.spacing = 2
+        let row = NSStackView(views: [words, yearBefore])
+        row.alignment = .centerY
+        row.spacing = Self.spacing
+        let group = AddOnCardStyle.group(
+            fill: AddOnCardStyle.cardFill, border: .separatorColor,
+            radius: AddOnCardStyle.cardRadius)
+        group.contentViewMargins = Self.groupPadding
+        group.contentView?.addSubview(row)
+        row.translatesAutoresizingMaskIntoConstraints = false
+        if let content = group.contentView {
+            NSLayoutConstraint.activate([
+                row.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+                row.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+                row.topAnchor.constraint(equalTo: content.topAnchor),
+                row.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            ])
+        }
+        group.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
+        return group
+    }
+
+    /// The note on turning off and dragging, beside Enter Licence Key….
+    private func bottomRow() -> NSView {
+        enterKey.setContentCompressionResistancePriority(.required, for: .horizontal)
+        enterKey.setContentHuggingPriority(.required, for: .horizontal)
+        let note = Self.note(
+            String(
+                localized:
+                    "An add-on that is off is offered in no folder. Drag to set the order for folders without their own."
+            ), width: Self.width - enterKey.fittingSize.width - Self.spacing)
+        let bottom = NSStackView(views: [note, enterKey])
+        bottom.alignment = .centerY
+        bottom.spacing = Self.spacing
+        bottom.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
+        return bottom
+    }
+
+    private static func note(_ text: String, width: CGFloat) -> NSTextField {
+        let note = NSTextField(wrappingLabelWithString: text)
+        note.font = .preferredFont(forTextStyle: .caption1)
+        note.textColor = .secondaryLabelColor
+        note.preferredMaxLayoutWidth = width
+        note.setContentCompressionResistancePriority(.required, for: .vertical)
+        return note
     }
 
     private func update() {
         yearBefore.state = settings.addOns.readsYearBefore ? .on : .off
-        yearBefore.isHidden = !modules.contains(where: \.readsYearBefore)
-        yearBeforeNote.isHidden = yearBefore.isHidden
+        let readsYearBefore = modules.contains(where: \.readsYearBefore)
+        for view in reading { view.isHidden = !readsYearBefore }
         shown = ordered
         table.reloadData()
+        let index = shown.firstIndex { $0.id == selectedID } ?? 0
+        if index < shown.count {
+            selectedID = shown[index].id
+            table.selectRowIndexes([index], byExtendingSelection: false)
+        }
     }
 
     /// The add-ons, with each paid one's licence. None that another replaces is shown while
     /// that one may work, and the choices made for it go to that one (ADR 0067); one without
     /// a licence replaces nothing (ADR 0071).
-    private func load() {
+    func load() {
         let host = NameReviewWindow.host
         let context = licences.context()
         let settings = settings
@@ -156,68 +226,33 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         }
     }
 
-    private func move(_ id: String, to index: Int) {
+    func move(_ id: String, to index: Int) {
         settings.addOns.move(id, to: index, catalog: catalog)
     }
 
-    // MARK: - NSTableViewDataSource and NSTableViewDelegate
-
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        shown.count
-    }
-
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int)
-        -> NSView?
-    {
-        let module = shown[row]
-        let view = AddOnRow(
-            settings: settings, module: module, catalog: catalog,
-            defaultID: NameModuleDescription.defaultID(among: modules),
-            licence: states[module.id], isLastWorking: working == [module.id]
-        ) { [weak self] id in
-            self?.licences.startTrial(of: id)
-            self?.load()
+    /// Scrolls the list so the selected card shows whole, or its top when it is taller
+    /// than the list (ADR 0092).
+    func revealSelection() {
+        let row = table.selectedRow
+        guard row >= 0 else { return }
+        table.layoutSubtreeIfNeeded()
+        let card = table.rect(ofRow: row)
+        let clip = scroll.contentView
+        let visible = clip.bounds
+        var top = visible.minY
+        if card.height > visible.height || card.minY < visible.minY {
+            top = card.minY
+        } else if card.maxY > visible.maxY {
+            top = card.maxY - visible.height
         }
-        view.setAccessibilityCustomActions([
-            NSAccessibilityCustomAction(name: String(localized: "Move Up")) { [weak self] in
-                self?.move(module.id, to: row - 1)
-                return true
-            },
-            NSAccessibilityCustomAction(name: String(localized: "Move Down")) { [weak self] in
-                self?.move(module.id, to: row + 1)
-                return true
-            },
-        ])
-        return view
-    }
-
-    func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int)
-        -> (any NSPasteboardWriting)?
-    {
-        let item = NSPasteboardItem()
-        item.setString(shown[row].id, forType: Self.dragType)
-        return item
-    }
-
-    func tableView(
-        _ tableView: NSTableView, validateDrop info: any NSDraggingInfo, proposedRow row: Int,
-        proposedDropOperation dropOperation: NSTableView.DropOperation
-    ) -> NSDragOperation {
-        guard info.draggingSource as? NSTableView === table else { return [] }
-        tableView.setDropRow(row, dropOperation: .above)
-        return .move
-    }
-
-    func tableView(
-        _ tableView: NSTableView, acceptDrop info: any NSDraggingInfo, row: Int,
-        dropOperation: NSTableView.DropOperation
-    ) -> Bool {
-        guard
-            let id = info.draggingPasteboard.pasteboardItems?.first?.string(
-                forType: Self.dragType),
-            let from = shown.firstIndex(where: { $0.id == id })
-        else { return false }
-        move(id, to: row > from ? row - 1 : row)
-        return true
+        top = max(0, min(top, table.frame.height - visible.height))
+        guard top != visible.minY else { return }
+        let origin = NSPoint(x: visible.minX, y: top)
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            clip.setBoundsOrigin(origin)
+        } else {
+            NSAnimationContext.runAnimationGroup { _ in clip.animator().setBoundsOrigin(origin) }
+        }
+        scroll.reflectScrolledClipView(clip)
     }
 }
