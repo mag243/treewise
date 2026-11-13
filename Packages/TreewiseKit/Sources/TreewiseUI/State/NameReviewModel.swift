@@ -108,6 +108,13 @@ public final class NameReviewModel {
 
     /// The folder under review.
     public let folder: FileItem
+    /// The names of the folders above it, nearest first, for `{folder:2}` and higher
+    /// (ADR 0089).
+    var foldersAbove: [String] { Array(NameTemplate.folderNames(of: folder.id).dropFirst()) }
+    /// The folders' names by the keys a template reads them under.
+    var folderValues: [String: String] {
+        NameTemplate.folderValues([folder.name] + foldersAbove)
+    }
     /// What the user opened the review for.
     public let scope: NameReviewRules.Scope
     /// The review of every item.
@@ -316,7 +323,7 @@ public final class NameReviewModel {
         return templates.compactMap { text in
             guard let template = Self.parse(text, for: description) else { return nil }
             let fits = stems.count {
-                template.matches($0, fixed: [NameTemplate.Field.folder.name: folder.name])
+                template.matches($0, fixed: folderValues)
             }
             return PatternCandidate(text: text, fits: fits, of: stems.count)
         }

@@ -29,6 +29,18 @@ import TreewiseCore
             modules: try modules())
     }
 
+    /// A name with the folder above its own fits `{folder:2}` (ADR 0089).
+    @Test func aNameFitsTheFolderAboveItsOwn() throws {
+        let template = try NameTemplate.parse(
+            "{folder:2} {text}", fields: Self.fields + [.folder]
+        ).get()
+        let plan = NameReviewRules.plan(
+            for: .init(name: "Acme Invoice.pdf", kind: .file, handledBy: ["m"]),
+            in: .init(name: "2026", alwaysSkipped: [], foldersAbove: ["Acme"]),
+            scope: .wholeFolder, modules: [.init(id: "m", template: template)])
+        #expect(plan?.fittingModules == ["m"])
+    }
+
     @Test(arguments: [ItemKind.folder, .volume, .cloud, .computer, .home])
     func aWholeFolderLeavesContainersOut(_ kind: ItemKind) throws {
         #expect(try plan("Sub", kind: kind) == nil)

@@ -87,6 +87,22 @@ import TreewiseCore
         #expect(try !template("{folder:2} {text}").matches("2026 Invoice", fixed: fixed))
     }
 
+    @Test(arguments: [
+        ("/Users/ada/Documents/Invoices", ["Invoices", "Documents", "ada", "Users"]),
+        ("/Volumes/T7/Clients/Acme", ["Acme", "Clients", "T7"]),
+        ("/Volumes/T7", ["T7"]),
+        ("/Users/ada/Photos.zip//2026/Summer", ["Summer", "2026", "Photos.zip", "ada", "Users"]),
+    ])
+    func namesTheFoldersAboveAnItemUpToItsVolume(_ path: String, _ names: [String]) {
+        #expect(NameTemplate.folderNames(of: FileItem.ID(path)) == names)
+    }
+
+    @Test func passesTheFoldersByTheKeysATemplateReads() {
+        #expect(
+            NameTemplate.folderValues(["Acme", "Clients"])
+                == ["folder": "Acme", "folder:2": "Clients"])
+    }
+
     // MARK: The case of text
 
     @Test(arguments: [

@@ -79,6 +79,19 @@ extension NameTemplate {
         level <= 1 ? Field.folder.name : "\(Field.folder.name):\(level)"
     }
 
+    /// The names of a folder and the folders above it, nearest first, up to its volume: in
+    /// `/Volumes/T7/Clients` that is `Clients` and `T7`. A place inside an archive counts
+    /// the folders in it, then the archive, then the folders it is in (ADR 0076, ADR 0089).
+    public static func folderNames(of folder: FileItem.ID) -> [String] {
+        let volumes = "/Volumes/"
+        func parts(of path: String) -> [String] {
+            let inside = path.hasPrefix(volumes) ? String(path.dropFirst(volumes.count)) : path
+            return inside.split(separator: "/").map(String.init)
+        }
+        guard let place = ArchivePath(folder) else { return parts(of: folder.rawValue).reversed() }
+        return (parts(of: place.archive.rawValue) + parts(of: place.entry)).reversed()
+    }
+
     /// The names of the folders above an item, nearest first, by the keys a template reads
     /// them under: `folder`, `folder:2`, … (ADR 0089).
     public static func folderValues(_ names: [String]) -> [String: String] {

@@ -61,12 +61,16 @@ public enum NameReviewRules {
     public struct Folder: Hashable, Sendable {
         /// Its name.
         public let name: String
+        /// The names of the folders above it, nearest first, for `{folder:2}` and higher
+        /// (ADR 0089).
+        public let foldersAbove: [String]
         /// The names the user always skips in it, on disk.
         public let alwaysSkipped: Set<String>
 
         /// Creates a folder.
-        public init(name: String, alwaysSkipped: Set<String>) {
+        public init(name: String, alwaysSkipped: Set<String>, foldersAbove: [String] = []) {
             self.name = name
+            self.foldersAbove = foldersAbove
             self.alwaysSkipped = alwaysSkipped
         }
     }
@@ -80,7 +84,7 @@ public enum NameReviewRules {
         if scope == .wholeFolder, kind.isContainer { return nil }
         let shown = ProposedName.shownName(fromDisk: name)
         let handling = modules.filter { item.handledBy.contains($0.id) }
-        let fixed = [NameTemplate.Field.folder.name: folder.name]
+        let fixed = NameTemplate.folderValues([folder.name] + folder.foldersAbove)
         let fits = { (candidate: String, module: Module) in
             module.template.matches(ConflictResolver.split(candidate, kind: kind).0, fixed: fixed)
         }

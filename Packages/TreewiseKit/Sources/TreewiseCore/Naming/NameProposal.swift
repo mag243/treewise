@@ -35,25 +35,28 @@ public struct NameProposal: Hashable, Sendable {
     /// date's source.
     ///
     /// - Parameters:
+    ///   - foldersAbove: The names of the folders above the item's folder, nearest first,
+    ///     for `{folder:2}` and higher (ADR 0089).
     ///   - siblingNames: The names of the other items in the folder, for the series.
     ///   - currentName: The item's name, which puts the part it fits first. When it nearly
     ///     fits, it comes first itself, with the template's fixed text and the folder's name
     ///     written right.
     public static func make(
         from valueSets: [[String: NameTemplate.Value]], template: NameTemplate, moduleID: String,
-        folderName: String, suggestedDate: SuggestedDate?, siblingNames: [String] = [],
-        currentName: String = ""
+        folderName: String, foldersAbove: [String] = [], suggestedDate: SuggestedDate?,
+        siblingNames: [String] = [], currentName: String = ""
     ) -> [NameProposal] {
+        let folders = NameTemplate.folderValues([folderName] + foldersAbove)
         let context = NameTemplate.Context(
             siblingNames: siblingNames.map(ProposedName.stem(of:)),
             currentName: ProposedName.stem(of: currentName), fileYear: suggestedDate?.year)
         // A name that nearly fits comes first, written right (ADR 0067).
-        let corrected = template.correctedName(
-            context.currentName, fixed: [NameTemplate.Field.folder.name: folderName]
-        ).map { NameProposal(name: $0, moduleID: moduleID) }
+        let corrected = template.correctedName(context.currentName, fixed: folders)
+            .map { NameProposal(name: $0, moduleID: moduleID) }
         let made = valueSets.flatMap { values in
+            // Treewise names the folders; a module cannot.
             var all = values
-            all[NameTemplate.Field.folder.name] = .text(folderName)
+            for (key, name) in folders { all[key] = .text(name) }
             let usesDate = suggestedDate.map { template.uses(date: $0.value, in: all) } ?? false
             return template.names(from: all, context: context).map { made in
                 NameProposal(

@@ -103,7 +103,9 @@ extension NameReviewModel {
             }.map(\.id)
             let plan = NameReviewRules.plan(
                 for: .init(name: item.name, kind: item.kind, handledBy: handledBy),
-                in: .init(name: folder.name, alwaysSkipped: settings.alwaysSkipped), scope: scope,
+                in: .init(
+                    name: folder.name, alwaysSkipped: settings.alwaysSkipped,
+                    foldersAbove: foldersAbove), scope: scope,
                 modules: reviewModules)
             plans[item.id] = plan
             session?.setFit(item.id, moduleIDs: plan?.fittingModules ?? [])
@@ -132,7 +134,8 @@ extension NameReviewModel {
         let siblings = folderItems.filter { !$0.isHidden && $0.id != item.id }.map(\.name)
         let proposals = NameProposal.make(
             from: values, template: template, moduleID: moduleID, folderName: folder.name,
-            suggestedDate: facts[item.id]?.suggestedDate, siblingNames: siblings,
+            foldersAbove: foldersAbove, suggestedDate: facts[item.id]?.suggestedDate,
+            siblingNames: siblings,
             currentName: item.name)
         session?.replaceProposals(proposals, from: moduleID, for: item.id)
     }

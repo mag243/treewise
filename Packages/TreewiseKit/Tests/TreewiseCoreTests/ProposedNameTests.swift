@@ -138,6 +138,16 @@ import TreewiseCore
         #expect(proposals.first?.name == "Invoices")
     }
 
+    /// `{folder:2}` is the folder above the item's folder (ADR 0089).
+    @Test func namesTheFoldersAboveTheItem() throws {
+        let fields = [NameTemplate.Field(name: "number", kind: .number), .folder]
+        let template = try NameTemplate.parse("{folder:2} {folder} {number}", fields: fields).get()
+        let proposals = NameProposal.make(
+            from: [["number": .text("1")]], template: template, moduleID: "m",
+            folderName: "2026", foldersAbove: ["Acme", "Clients"], suggestedDate: nil)
+        #expect(proposals.first?.name == "Acme 2026 1")
+    }
+
     @Test func aDateFromTheFileKeepsItsSource() throws {
         let fields = [NameTemplate.Field(name: "date", kind: .date)]
         let template = try NameTemplate.parse("{date}", fields: fields).get()

@@ -52,7 +52,7 @@ extension NameReviewModel {
         // The extension comes after the stem, so ranges in the stem hold in the name.
         let order = NameTemplate.fieldOrder(in: template.text)
         return template.fieldMarks(
-            in: ProposedName.stem(of: name), fixed: [NameTemplate.Field.folder.name: folder.name]
+            in: ProposedName.stem(of: name), fixed: folderValues
         ).map { NameFieldMark(range: $0.range, colorIndex: order.firstIndex(of: $0.key) ?? 0) }
     }
 }
