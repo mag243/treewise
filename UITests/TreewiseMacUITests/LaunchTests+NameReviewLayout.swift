@@ -22,6 +22,32 @@ extension LaunchTests {
         XCTAssertGreaterThanOrEqual(review.frame.height, Self.openingSize.height, "its height")
     }
 
+    /// The room around the buttons at the foot of the overview, as Apple's guidelines ask
+    /// of a window's content.
+    private static let footMargin: CGFloat = 20
+    /// How far a measured edge may be off, for rounding to points.
+    private static let marginTolerance: CGFloat = 1
+
+    @MainActor
+    func testTheButtonsAtTheFootHaveRoomAroundThem() throws {
+        _ = try makeHolidayFolder()
+        let app = try launchApp()
+        let review = try openReview(of: Self.oddName, in: app)
+        let window = review.frame
+        for title in ["Cancel", "Show Preview"] {
+            let button = review.buttons[title]
+            XCTAssertTrue(button.appeared(timeout: Self.launchTimeout), "\(title) shows")
+            XCTAssertGreaterThanOrEqual(
+                window.maxY - button.frame.maxY, Self.footMargin - Self.marginTolerance,
+                "room below \(title): \(button.frame) in \(window)")
+        }
+        let rename = review.buttons.matching(NSPredicate(format: "title BEGINSWITH 'Rename'"))
+            .firstMatch
+        XCTAssertGreaterThanOrEqual(
+            window.maxX - rename.frame.maxX, Self.footMargin - Self.marginTolerance,
+            "room right of Rename: \(rename.frame) in \(window)")
+    }
+
     @MainActor
     func testANameThatAlreadyFitsShowsOnce() throws {
         _ = try makeHolidayFolder()

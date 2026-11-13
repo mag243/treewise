@@ -7,7 +7,7 @@ import TreewiseUI
 @MainActor
 final class NameReviewPanel: NSObject {
     private static let previewHeight: CGFloat = 200
-    private static let padding: CGFloat = 12
+    private static let padding: CGFloat = 20
     private static let spacing: CGFloat = 10
     private static let neighbourSpacing: CGFloat = 3
     private static let neighbourRadius: CGFloat = 3

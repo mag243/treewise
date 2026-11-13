@@ -7,7 +7,8 @@ import TreewiseUI
 @MainActor
 final class NameReviewController: NSViewController {
     private static let panelWidth: CGFloat = 300
-    private static let footerPadding: CGFloat = 10
+    /// The room around the footer's buttons, as around a window's content elsewhere.
+    private static let footerPadding: CGFloat = 20
     /// Whether the panel beside the list shows, kept between reviews.
     private static let panelKey = "nameReviewShowsPanel"
 
@@ -105,6 +106,11 @@ final class NameReviewController: NSViewController {
         row.edgeInsets = NSEdgeInsets(
             top: Self.footerPadding, left: Self.footerPadding, bottom: Self.footerPadding,
             right: Self.footerPadding)
+        // The footer is pulled to its least height, which its edge insets alone do not hold,
+        // so it keeps the buttons and the room around them by a constraint of its own.
+        row.heightAnchor.constraint(
+            greaterThanOrEqualTo: rename.heightAnchor, constant: 2 * Self.footerPadding
+        ).isActive = true
         return row
     }
 
