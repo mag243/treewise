@@ -17,9 +17,12 @@ extension AddOnsSettingsTab {
         let catalog = catalog
         let settings = settings
         let defaultID = NameModuleDescription.defaultID(among: modules)
+        let inNewFolders = working.filter {
+            settings.addOns.isOnInNewFolders($0, defaultID: defaultID)
+        }
         let card = AddOnCard(
             isOnSetting: settings.addOns.isOn(id), licence: states[id],
-            isLastWorking: working == [id])
+            isLastWorking: working == [id], isLastInNewFolders: inNewFolders == [id])
         let view = AddOnCardView(
             module: module, card: card, licence: states[id], isSelected: id == selectedID,
             isOnInNewFolders: settings.addOns.isOnInNewFolders(id, defaultID: defaultID),

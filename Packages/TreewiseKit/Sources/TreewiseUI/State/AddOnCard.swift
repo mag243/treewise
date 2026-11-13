@@ -15,15 +15,21 @@ public struct AddOnCard: Equatable, Sendable {
     public let canSwitch: Bool
     public let tone: Tone
 
-    /// Whether On in new folders can be changed: only while the add-on is on.
-    public var newFoldersEnabled: Bool { isOn }
+    /// Whether On in new folders can be changed: while the add-on is on, and not when it is
+    /// the last add-on on in new folders, which stays on there (ADR 0070).
+    public let newFoldersCanSwitch: Bool
 
     /// The card of an add-on chosen on or off (`isOnSetting`), with its licence when it is
-    /// paid, and `isLastWorking` when it is the last add-on on that may work.
-    public init(isOnSetting: Bool, licence: ModuleLicenceState?, isLastWorking: Bool) {
+    /// paid, `isLastWorking` when it is the last add-on on that may work, and
+    /// `isLastInNewFolders` when it is the last add-on on in new folders.
+    public init(
+        isOnSetting: Bool, licence: ModuleLicenceState?, isLastWorking: Bool,
+        isLastInNewFolders: Bool = false
+    ) {
         let isLocked = licence.map { !$0.mayWork } ?? false
         isOn = isOnSetting && !isLocked
         canSwitch = !isLocked && !(isOn && isLastWorking)
+        newFoldersCanSwitch = isOn && !isLastInNewFolders
         tone =
             switch licence {
             case nil: .free

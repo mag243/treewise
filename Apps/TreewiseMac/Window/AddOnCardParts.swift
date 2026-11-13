@@ -116,10 +116,10 @@ enum AddOnCardStyle {
             item.spacing = 4
             return item
         }
-        let legend = NSStackView(views: items)
+        // In the leading gravity area, so a stack that grows wider leaves them together.
+        let legend = NSStackView()
+        legend.setViews(items, in: .leading)
         legend.spacing = legendSpacing
-        legend.distribution = .fill
-        legend.setContentHuggingPriority(.required, for: .horizontal)
         return legend
     }
 }

@@ -60,7 +60,19 @@ import TreewiseUI
             isLastWorking: expected.isLastWorking)
         #expect(card.isOn == expected.isOn)
         #expect(card.canSwitch == expected.canSwitch)
-        #expect(card.newFoldersEnabled == expected.isOn)
+        #expect(card.newFoldersCanSwitch == expected.isOn)
+    }
+
+    @Test func onInNewFoldersCannotBeTurnedOffForTheLastAddOnOnThere() {
+        let last = AddOnCard(
+            isOnSetting: true, licence: nil, isLastWorking: false, isLastInNewFolders: true)
+        #expect(!last.newFoldersCanSwitch)
+        let other = AddOnCard(
+            isOnSetting: true, licence: nil, isLastWorking: false, isLastInNewFolders: false)
+        #expect(other.newFoldersCanSwitch)
+        let off = AddOnCard(
+            isOnSetting: false, licence: nil, isLastWorking: false, isLastInNewFolders: false)
+        #expect(!off.newFoldersCanSwitch)
     }
 
     @Test(

@@ -102,8 +102,10 @@ final class AddOnCardView: NSView {
         if card.isOn, !card.canSwitch {
             toggle.toolTip = String(localized: "At least one add-on stays on")
         }
-        views.append(toggle)
-        let header = NSStackView(views: views)
+        // The name at the leading edge, the badge and the switch at the trailing one.
+        let header = NSStackView()
+        header.setViews(Array(views.prefix(2)), in: .leading)
+        header.setViews(Array(views.dropFirst(2)) + [toggle], in: .trailing)
         header.spacing = Self.headerSpacing
         header.alignment = .centerY
         return header
@@ -151,7 +153,11 @@ final class AddOnCardView: NSView {
             let newFolders = ClosureSwitch(
                 label: String(localized: "On in new folders"), change: actions.turnOnInNewFolders)
             newFolders.state = card.isOn && isOnInNewFolders ? .on : .off
-            newFolders.isEnabled = card.newFoldersEnabled
+            newFolders.isEnabled = card.newFoldersCanSwitch
+            if card.isOn, !card.newFoldersCanSwitch {
+                newFolders.toolTip = String(
+                    localized: "At least one add-on stays on in new folders")
+            }
             let label = NSTextField(labelWithString: String(localized: "On in new folders"))
             views.append(NSStackView(views: [newFolders, label]))
         }
