@@ -27,6 +27,7 @@
         struct NamesOfFolder: Codable {
             let names: [String]
             let folderName: String
+            let years: FolderYears?
             let licence: LicenceContext
         }
 

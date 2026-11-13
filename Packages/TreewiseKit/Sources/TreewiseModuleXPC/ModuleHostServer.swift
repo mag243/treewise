@@ -47,7 +47,8 @@
                 return
             }
             let templates = module.derivedTemplates(
-                fromNames: decoded.names, folderName: decoded.folderName, licence: decoded.licence)
+                fromNames: decoded.names, folderName: decoded.folderName, years: decoded.years,
+                licence: decoded.licence)
             reply(try? ModuleWire.encode(Array(templates.prefix(Self.maximumTemplates))))
         }
 

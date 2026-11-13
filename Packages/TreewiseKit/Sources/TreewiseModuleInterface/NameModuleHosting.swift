@@ -31,13 +31,17 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     /// What it finds by itself in a folder's names, written as in a pattern, as `{date}`,
     /// `{seq:4}` or `<…|…>` (ADR 0088).
     public let recognizes: [String]
+    /// Whether it reads the names in the same folder a year before, which Treewise gives it
+    /// only while the user allows it (ADR 0090).
+    public let readsYearBefore: Bool
 
     /// Creates a description.
     public init(
         id: String, contentTypes: Set<String>, neededContent: Set<ModuleContentKind>,
         fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false,
         name: String? = nil, replaces: Set<String> = [], purchaseURL: String? = nil,
-        summaries: [String: String] = [:], recognizes: [String] = []
+        summaries: [String: String] = [:], recognizes: [String] = [],
+        readsYearBefore: Bool = false
     ) {
         self.id = id
         self.contentTypes = contentTypes
@@ -50,6 +54,7 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
         self.purchaseURL = purchaseURL
         self.summaries = summaries
         self.recognizes = recognizes
+        self.readsYearBefore = readsYearBefore
     }
 
     /// What it does, in the first of the languages it has a summary in, by their codes as
@@ -105,11 +110,24 @@ public protocol NameModuleHosting: Sendable {
     func fieldValues(moduleID: String, request: NameRequest) async throws
         -> [[String: NameTemplate.Value]]
     /// Asks a module which templates a folder's names might follow, the best first; none
-    /// when it recognizes none (ADR 0067).
+    /// when it recognizes none (ADR 0067). `years` holds the folder's year and the names a
+    /// year before, for a module that reads them (ADR 0090).
     func derivedTemplates(
-        moduleID: String, names: [String], folderName: String, licence: LicenceContext
+        moduleID: String, names: [String], folderName: String, years: FolderYears?,
+        licence: LicenceContext
     ) async throws -> [String]
     /// Asks a module what its licence lets it do; nil when it needs no licence (ADR 0071).
     func licenceState(moduleID: String, licence: LicenceContext) async throws
         -> ModuleLicenceState?
+}
+
+extension NameModuleHosting {
+    /// Asks a module which templates a folder's names might follow, without the year before.
+    public func derivedTemplates(
+        moduleID: String, names: [String], folderName: String, licence: LicenceContext
+    ) async throws -> [String] {
+        try await derivedTemplates(
+            moduleID: moduleID, names: names, folderName: folderName, years: nil,
+            licence: licence)
+    }
 }

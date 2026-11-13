@@ -56,10 +56,12 @@
 
         /// Asks a module which templates names might follow, the best first.
         public func derivedTemplates(
-            moduleID: String, names: [String], folderName: String, licence: LicenceContext
+            moduleID: String, names: [String], folderName: String, years: FolderYears?,
+            licence: LicenceContext
         ) async throws -> [String] {
             let encoded = try ModuleWire.encode(
-                ModuleWire.NamesOfFolder(names: names, folderName: folderName, licence: licence))
+                ModuleWire.NamesOfFolder(
+                    names: names, folderName: folderName, years: years, licence: licence))
             let data = try await ask { service, reply in
                 service.derivedTemplate(moduleID: moduleID, names: encoded, reply: reply)
             }

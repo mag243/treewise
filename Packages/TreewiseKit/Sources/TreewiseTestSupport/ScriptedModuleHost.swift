@@ -12,6 +12,7 @@ public final class ScriptedModuleHost: NameModuleHosting {
     private let licences = Mutex<[String: ModuleLicenceState]>([:])
     private let askedKeys = Mutex<[[String]]>([])
     private let askedNames = Mutex<[[String]]>([])
+    private let askedYears = Mutex<[(moduleID: String, years: FolderYears?)]>([])
     private let gate = Mutex(Gate())
 
     /// The requests being answered, and those held back until enough are open.
@@ -52,12 +53,18 @@ public final class ScriptedModuleHost: NameModuleHosting {
 
     /// The names each question for templates carried, in order.
     public var namesAskedAbout: [[String]] { askedNames.withLock { $0 } }
+    /// The years each question for templates carried, by module id, in order.
+    public var yearsAskedAbout: [(moduleID: String, years: FolderYears?)] {
+        askedYears.withLock { $0 }
+    }
 
     /// The scripted templates, if any.
     public func derivedTemplates(
-        moduleID: String, names: [String], folderName: String, licence: LicenceContext
+        moduleID: String, names: [String], folderName: String, years: FolderYears?,
+        licence: LicenceContext
     ) async throws -> [String] {
         askedNames.withLock { $0.append(names) }
+        askedYears.withLock { $0.append((moduleID, years)) }
         return templates.withLock { $0[moduleID] ?? [] }
     }
 

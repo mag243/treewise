@@ -102,6 +102,16 @@
             #expect(templates == ["{text}", "Doc {text}", "Scan {seq}"])
         }
 
+        /// The folder's year and the names a year before reach the module (ADR 0090).
+        @Test func carriesTheYearBeforeToTheModule() async throws {
+            let harness = Harness(modules: [StubModule(id: "m", derived: "{text}")])
+            defer { withExtendedLifetime(harness) {} }
+            let templates = try await harness.host().derivedTemplates(
+                moduleID: "m", names: ["a"], folderName: "Tax",
+                years: FolderYears(year: 2026, namesYearBefore: ["x", "y"]), licence: .none)
+            #expect(templates == ["2026 x y"])
+        }
+
         @Test func carriesTheFolderNameToTheModule() async throws {
             let harness = Harness(modules: [StubModule(id: "m", derived: "{text}")])
             defer { withExtendedLifetime(harness) {} }

@@ -27,6 +27,12 @@ public protocol NameModule: Sendable {
     /// (ADR 0067); a module that recognizes one template gives that one.
     func derivedTemplates(fromNames names: [String], folderName: String, licence: LicenceContext)
         -> [String]
+    /// The templates, for a module that reads the same folder a year before (ADR 0090):
+    /// `years` holds the folder's year and those names, or is nil without them.
+    func derivedTemplates(
+        fromNames names: [String], folderName: String, years: FolderYears?,
+        licence: LicenceContext
+    ) -> [String]
     /// What its licence lets it do, or nil when it needs no licence (ADR 0071).
     func licenceState(licence: LicenceContext) -> ModuleLicenceState?
 }
@@ -53,6 +59,14 @@ extension NameModule {
     ) -> [String] {
         [derivedTemplate(fromNames: names, folderName: folderName, licence: licence)]
             .compactMap(\.self)
+    }
+
+    /// A module that does not read the year before recognizes from the folder's names.
+    public func derivedTemplates(
+        fromNames names: [String], folderName: String, years: FolderYears?,
+        licence: LicenceContext
+    ) -> [String] {
+        derivedTemplates(fromNames: names, folderName: folderName, licence: licence)
     }
 
     /// A module needs no licence unless it says so.

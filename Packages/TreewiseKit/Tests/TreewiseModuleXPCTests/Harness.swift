@@ -58,6 +58,17 @@
             return licence.trialStart(of: description.id) == nil ? .notTried : .unlicensed
         }
 
+        /// With the year before, a template that tells the year and those names.
+        func derivedTemplates(
+            fromNames names: [String], folderName: String, years: FolderYears?,
+            licence: LicenceContext
+        ) -> [String] {
+            guard let years else {
+                return derivedTemplates(fromNames: names, folderName: folderName, licence: licence)
+            }
+            return ["\(years.year) " + years.namesYearBefore.joined(separator: " ")]
+        }
+
         /// The derived template and the alternatives after it.
         func derivedTemplates(
             fromNames names: [String], folderName: String, licence: LicenceContext
