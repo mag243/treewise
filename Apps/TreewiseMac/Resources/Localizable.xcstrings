@@ -388,6 +388,22 @@
         }
       }
     },
+    "Add-ons see only the names of files they handle, here and in the same folder a year before, and cannot reach the internet." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons sehen nur die Namen von Dateien, die sie verarbeiten, hier und im selben Ordner ein Jahr davor, und können nicht ins Internet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add-ons zien alleen de namen van bestanden die ze aankunnen, hier en in dezelfde map een jaar eerder, en kunnen niet op internet."
+          }
+        }
+      }
+    },
     "Add-ons: %@" : {
       "localizations" : {
         "de" : {
@@ -498,6 +514,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Past al bij %@"
+          }
+        }
+      }
+    },
+    "Also read names in the same folder a year before" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auch Namen im selben Ordner ein Jahr davor lesen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ook namen lezen in dezelfde map een jaar eerder"
           }
         }
       }
@@ -1664,6 +1696,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voor %@"
+          }
+        }
+      }
+    },
+    "For an add-on that learns from last year, as in Administration/2025/Tax beside Administration/2026/Tax. Only names are read." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für ein Add-on, das aus dem Vorjahr lernt, etwa Verwaltung/2025/Steuern neben Verwaltung/2026/Steuern. Es werden nur Namen gelesen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor een add-on die leert van vorig jaar, zoals Administratie/2025/Belasting naast Administratie/2026/Belasting. Alleen namen worden gelezen."
           }
         }
       }
@@ -4947,6 +4995,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "herkend uit %1$lld van %2$lld namen"
+          }
+        }
+      }
+    },
+    "recognized in the same folder a year before" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "im selben Ordner ein Jahr davor erkannt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herkend in dezelfde map een jaar eerder"
           }
         }
       }

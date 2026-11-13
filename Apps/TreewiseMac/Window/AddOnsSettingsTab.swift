@@ -13,7 +13,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.add-on")
     private static let spacing: CGFloat = 8
     private static let width: CGFloat = 520
-    private static let listHeight: CGFloat = 420
+    private static let listHeight: CGFloat = 380
 
     private let settings: BrowserSettings
     /// The app's licences.
@@ -25,6 +25,15 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
             on: window, keeper: licences, host: NameReviewWindow.host
         ) { [weak self] in self?.load() }
     }
+    /// Whether an add-on that asks may read the same folder a year before (ADR 0090).
+    private lazy var yearBefore = SettingsForm.checkbox(
+        "Also read names in the same folder a year before"
+    ) { [settings] in settings.addOns.readsYearBefore = $0 }
+    private let yearBeforeNote = NSTextField(
+        wrappingLabelWithString: String(
+            localized:
+                "For an add-on that learns from last year, as in Administration/2025/Tax beside Administration/2026/Tax. Only names are read."
+        ))
     private var modules: [NameModuleDescription] = []
     private var states: [String: ModuleLicenceState] = [:]
     private var shown: [NameModuleDescription] = []
@@ -60,7 +69,11 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         note.textColor = .secondaryLabelColor
         note.preferredMaxLayoutWidth = Self.width
         enterKey.isHidden = true
-        let stack = NSStackView(views: [header, list(), note, enterKey])
+        yearBeforeNote.font = .preferredFont(forTextStyle: .caption1)
+        yearBeforeNote.textColor = .secondaryLabelColor
+        yearBeforeNote.preferredMaxLayoutWidth = Self.width
+        let stack = NSStackView(
+            views: [header, list(), note, yearBefore, yearBeforeNote, enterKey])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = Self.spacing
@@ -102,6 +115,9 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     }
 
     private func update() {
+        yearBefore.state = settings.addOns.readsYearBefore ? .on : .off
+        yearBefore.isHidden = !modules.contains(where: \.readsYearBefore)
+        yearBeforeNote.isHidden = yearBefore.isHidden
         shown = ordered
         table.reloadData()
     }

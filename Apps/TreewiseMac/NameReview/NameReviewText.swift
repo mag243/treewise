@@ -34,7 +34,9 @@ enum NameReviewText {
     static func origin(of module: NameReviewModule) -> String {
         switch module.origin {
         case .derived:
-            if !module.isClearlyRecognized, let fit = module.recognizedFit {
+            if module.recognizedInYearBefore {
+                String(localized: "recognized in the same folder a year before")
+            } else if !module.isClearlyRecognized, let fit = module.recognizedFit {
                 String(localized: "recognized from \(fit.fits) of \(fit.of) names")
             } else {
                 String(localized: "recognized in this folder")

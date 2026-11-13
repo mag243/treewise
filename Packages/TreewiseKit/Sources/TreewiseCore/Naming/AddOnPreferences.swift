@@ -13,9 +13,32 @@ public struct AddOnPreferences: Hashable, Sendable, Codable {
     private var onInNewFolders: Set<String>?
     /// The user's default order, those turned off included; empty until the user drags.
     private var order: [String] = []
+    /// Whether the user turned off reading the same folder a year before.
+    private var yearBeforeTurnedOff = false
+
+    private enum CodingKeys: String, CodingKey {
+        case turnedOff, onInNewFolders, order, yearBeforeTurnedOff
+    }
 
     /// Preferences as a new user has them.
     public init() {}
+
+    /// Preferences as kept; those kept before a choice existed take its default.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        turnedOff = try container.decodeIfPresent(Set<String>.self, forKey: .turnedOff) ?? []
+        onInNewFolders = try container.decodeIfPresent(Set<String>.self, forKey: .onInNewFolders)
+        order = try container.decodeIfPresent([String].self, forKey: .order) ?? []
+        yearBeforeTurnedOff =
+            try container.decodeIfPresent(Bool.self, forKey: .yearBeforeTurnedOff) ?? false
+    }
+
+    /// Whether an add-on that asks is given the names in the same folder a year before
+    /// (ADR 0090); on until the user turns it off.
+    public var readsYearBefore: Bool {
+        get { !yearBeforeTurnedOff }
+        set { yearBeforeTurnedOff = !newValue }
+    }
 
     /// Whether an add-on is offered at all.
     public func isOn(_ id: String) -> Bool {

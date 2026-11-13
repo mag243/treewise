@@ -94,8 +94,12 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     public internal(set) var licence: ModuleLicenceState?
     /// The templates it recognized in the folder, the best first, to pick from (ADR 0067).
     public internal(set) var candidates: [PatternCandidate] = []
-    /// How many names of the folder it was given to recognize a pattern in.
+    /// How many names of the folder it was given to recognize a pattern in, those of the
+    /// same folder a year before included.
     var namesGiven = 0
+    /// Whether its pattern was counted against the names of the same folder a year before,
+    /// as the folder holds too few of its own (ADR 0090).
+    public internal(set) var recognizedInYearBefore = false
 
     /// Whether the folder has too few names to recognize a pattern in: fewer than
     /// `PatternFit.minimumFits` (ADR 0067).
@@ -133,6 +137,12 @@ public final class NameReviewModel {
     public internal(set) var readingCount = 0
     /// Whether this folder is reviewed for the first time.
     public internal(set) var isFirstReview = false
+    /// The names of the same folder a year before, read for the add-ons that ask (ADR 0090).
+    var yearBefore: YearBefore?
+    /// Whether an add-on here was given the names of the same folder a year before.
+    public var readsYearBefore: Bool {
+        yearBefore != nil && modules.contains { $0.description.readsYearBefore }
+    }
     /// Whether a module failed to answer.
     public internal(set) var moduleFailed = false
     /// What stands in the way of each name shown now.
@@ -209,6 +219,7 @@ public final class NameReviewModel {
         }
         let (descriptions, catalog) = await loadSettings()
         await dropStaleSavedPatternLinks(descriptions)
+        yearBefore = await readYearBefore(for: descriptions)
         // Subfolders get no names proposed, so they do not count against a pattern.
         let names = visible.filter { !$0.isContainer }.map(\.name)
         modules = []
@@ -298,9 +309,10 @@ public final class NameReviewModel {
     private func makeModule(_ description: NameModuleDescription, names: [String]) async
         -> NameReviewModule
     {
+        let years = description.readsYearBefore ? yearBefore?.years : nil
         let templates =
             (try? await dependencies.host.derivedTemplates(
-                moduleID: description.id, names: names, folderName: folder.name,
+                moduleID: description.id, names: names, folderName: folder.name, years: years,
                 licence: licence)) ?? []
         let derived = templates.first
         // The default module imposes no pattern on a folder that shows none.
@@ -310,8 +322,14 @@ public final class NameReviewModel {
             templateText: "", origin: .notRecognized,
             recognized: derived ?? (isDefault ? nil : description.defaultTemplate))
         module.licence = licenceStates[description.id]
-        module.namesGiven = names.count
+        module.namesGiven = names.count + (years?.namesYearBefore.count ?? 0)
         module.candidates = candidates(templates, for: description, names: names)
+        if years != nil, names.count < PatternFit.minimumFits, let before = yearBefore {
+            module.candidates = candidates(
+                templates, for: description, names: before.years.namesYearBefore,
+                fixed: before.folderValues)
+            module.recognizedInYearBefore = derived != nil
+        }
         if let own = settings.templates[description.id] {
             module.templateText = own
             module.origin = .user
@@ -324,13 +342,15 @@ public final class NameReviewModel {
     /// The templates a module recognized, with how many of the folder's names each fits,
     /// as Treewise's own matcher counts them, not the module.
     private func candidates(
-        _ templates: [String], for description: NameModuleDescription, names: [String]
+        _ templates: [String], for description: NameModuleDescription, names: [String],
+        fixed: [String: String]? = nil
     ) -> [PatternCandidate] {
         let stems = names.map(ProposedName.stem(of:))
+        let fixed = fixed ?? folderValues
         return templates.compactMap { text in
             guard let template = Self.parse(text, for: description) else { return nil }
             let fits = stems.count {
-                template.matches($0, fixed: folderValues)
+                template.matches($0, fixed: fixed)
             }
             return PatternCandidate(text: text, fits: fits, of: stems.count)
         }

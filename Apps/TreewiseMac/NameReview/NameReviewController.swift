@@ -20,6 +20,8 @@ final class NameReviewController: NSViewController {
     private lazy var list = NameReviewList(model: model)
     private lazy var panel = NameReviewPanel(model: model)
     private let summary = NSTextField(labelWithString: "")
+    /// What add-ons see, at the foot (ADR 0057, ADR 0090).
+    private let note = NSTextField(labelWithString: "")
     private lazy var panelView = panel.makeView(width: Self.panelWidth)
     private let panelLine = NSBox()
     private lazy var previewButton = ClosureButton(title: "") { [weak self] in
@@ -84,9 +86,6 @@ final class NameReviewController: NSViewController {
 
     private func footer() -> NSView {
         summary.textColor = .secondaryLabelColor
-        let note = NSTextField(
-            labelWithString: String(
-                localized: "Add-ons see only files they handle, and cannot reach the internet."))
         note.font = .preferredFont(forTextStyle: .caption1)
         note.textColor = .tertiaryLabelColor
         note.lineBreakMode = .byTruncatingTail
@@ -121,6 +120,15 @@ final class NameReviewController: NSViewController {
         }
         let approved = model.session?.approvedRenames.count ?? 0
         summary.stringValue = String(localized: "\(approved) of \(model.rows.count) approved")
+        note.stringValue =
+            model.readsYearBefore
+            ? String(
+                localized:
+                    "Add-ons see only the names of files they handle, here and in the same folder a year before, and cannot reach the internet."
+            )
+            : String(
+                localized: "Add-ons see only files they handle, and cannot reach the internet.")
+        note.toolTip = note.stringValue
         rename.title =
             approved == 0
             ? String(localized: "Rename") : String(localized: "Rename \(approved) Items")
