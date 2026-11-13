@@ -234,8 +234,8 @@ extension NameTemplate {
                     $0.map { pattern(for: $0, fixed: fixed, captured: &captured) }.joined()
                 }
                 .joined(separator: "|") + ")"
-        case .counter:
-            return group(seqGroup, "[0-9]+", field: Field.seq.name, captured: &captured)
+        case .counter(let series):
+            return group(seqGroup, series.pattern, field: Field.seq.name, captured: &captured)
         case .field(let field, let format):
             return pattern(for: field, format: format, fixed: fixed, captured: &captured)
         }

@@ -82,8 +82,8 @@ public struct NameTemplate: Hashable, Sendable {
         case unknownField(String)
         /// Fixed text holds `:`, which a name on screen cannot have.
         case containsPathSeparator
-        /// What follows `:` does not fit the field: a date format on a date, or a cycle
-        /// of 2 or more on `{seq}`.
+        /// What follows `:` does not fit the field: a date format on a date, or a series on
+        /// `{seq}` (ADR 0089).
         case invalidFormat
     }
 
@@ -119,8 +119,8 @@ public struct NameTemplate: Hashable, Sendable {
     enum Part: Hashable, Sendable {
         case text(String)
         case field(Field, format: DateTemplate?)
-        /// `{seq}`, which runs from 1 to `cycle` when one is given.
-        case counter(cycle: Int?)
+        /// `{seq}`, which gives the numbers of its series (ADR 0064, ADR 0089).
+        case counter(Series)
         /// Fields of which the first with a value is written (ADR 0063).
         case choice([Part])
         case optional([Part])

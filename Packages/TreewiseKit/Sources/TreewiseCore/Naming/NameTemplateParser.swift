@@ -4,9 +4,6 @@ import Foundation
 struct NameTemplateParser {
     /// A `/` is allowed, because it shows what a `:` is on disk, as in Finder.
     private static let pathSeparators: Set<Character> = [":"]
-    /// The shortest cycle `{seq}` can have.
-    private static let shortestCycle = 2
-
     private var rest: Substring
     private let fields: [NameTemplate.Field]
     private var required: [NameTemplate.Part] = []
@@ -130,11 +127,9 @@ struct NameTemplateParser {
         let after = pieces.count > 1 ? String(pieces[1]) : nil
         switch field.kind {
         case .sequence:
-            guard let after else { return .success(.counter(cycle: nil)) }
-            guard let cycle = Int(after), cycle >= Self.shortestCycle else {
-                return .failure(.invalidFormat)
-            }
-            return .success(.counter(cycle: cycle))
+            guard let after else { return .success(.counter(.counting)) }
+            guard let series = NameTemplate.Series(after) else { return .failure(.invalidFormat) }
+            return .success(.counter(series))
         case .date:
             guard let after else { return .success(.field(field, format: nil)) }
             guard let format = DateTemplate(after) else { return .failure(.invalidFormat) }

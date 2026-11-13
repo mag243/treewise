@@ -22,36 +22,36 @@ extension NameTemplate {
         let fields = fields(in: parts)
         let hasYear = fields.contains { $0.kind == .year }
         let fileYear = hasYear ? context.fileYear : nil
-        guard let cycle = counterCycle(in: parts) else {
+        guard let series = counterSeries(in: parts) else {
             return Period(year: fileYear, seq: nil, usesFileYear: fileYear != nil)
         }
+        // Only names that fit count, so a number the series cannot give starts nothing.
         let steps = context.siblingNames.compactMap { step(in: $0, parts: parts, fixed: fixed) }
         guard let last = steps.max(by: { ($0.year ?? 0, $0.seq) < ($1.year ?? 0, $1.seq) }) else {
-            let width = cycle.map { String($0).count } ?? 1
-            return Period(year: fileYear, seq: padded(1, to: width), usesFileYear: fileYear != nil)
+            return Period(
+                year: fileYear, seq: padded(series.first, to: series.width),
+                usesFileYear: fileYear != nil)
         }
-        var seq = last.seq + 1
-        var year = last.year
-        if let limit = cycle, seq > limit {
-            seq = 1
-            year = year.map { $0 + 1 }
-        }
+        let following = series.number(after: last.seq)
+        let seq = following ?? series.first
+        // After its last number a series starts again, in the next year.
+        let year = following == nil ? last.year.map { $0 + 1 } : last.year
         guard hasYear else { return Period(year: nil, seq: padded(seq, to: last.width)) }
         return Period(
             year: year ?? fileYear, seq: padded(seq, to: last.width),
             usesFileYear: year == nil && fileYear != nil)
     }
 
-    /// The cycle of the first `{seq}`: `.some(nil)` when it keeps counting, nil without one.
-    private static func counterCycle(in parts: [Part]) -> Int?? {
+    /// The series of the first `{seq}`, or nil without one.
+    private static func counterSeries(in parts: [Part]) -> Series? {
         for part in parts {
             switch part {
-            case .counter(let cycle):
-                return .some(cycle)
+            case .counter(let series):
+                return series
             case .optional(let inner), .choice(let inner):
-                if let found = counterCycle(in: inner) { return found }
+                if let found = counterSeries(in: inner) { return found }
             case .alternatives(let all):
-                if let found = all.lazy.compactMap(counterCycle(in:)).first { return found }
+                if let found = all.lazy.compactMap(counterSeries(in:)).first { return found }
             case .text, .field:
                 continue
             }
