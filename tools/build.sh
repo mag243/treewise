@@ -23,7 +23,8 @@
 #               starts it confined to the sandbox volumes, attached first (ADR 0019).
 #   run-official The same as run, with the official build from the private workspace
 #               (ADR 0057): tools/build.sh run-official sandbox.
-#   package     Release archive of the macOS app, signed with the Developer ID,
+#   package     Release archive of the official macOS app, from the workspace in
+#               treewise-modules with its paid add-on (ADR 0087), signed with the Developer ID,
 #               notarized and stapled, zipped as build/release/Treewise-<version>-<build>.zip,
 #               and a notarized .dmg beside it (ADR 0014, ADR 0030, ADR 0034).
 #               Notarizes with the keychain profile treewise-notary
@@ -33,7 +34,7 @@
 #               tag v<MARKETING_VERSION> points at HEAD, here and on GitHub, runs package,
 #               then tools/publish.sh: GitHub Release, appcast and download link on the
 #               site branch, and the Homebrew cask. It pushes to GitHub: the owner runs it.
-#   export      Release archive and Developer ID export of the macOS app ->
+#   export      Release archive and Developer ID export of the official macOS app ->
 #               build/TreewiseMac/, with tools/ExportOptions-mac.plist; not notarized.
 #   quick       check + test: the gate for a step that leaves the apps alone.
 #   verify      check + test + build: the gate for a change to an app. Leaves the
@@ -507,10 +508,14 @@ launch_app() {
 }
 
 # Archives the macOS app in Release to build/archives/; prints the archive path.
+# A release is the official build (ADR 0087): archived from the workspace in
+# treewise-modules, after its catalog has said it holds a paid module.
 archive_mac() {
   local archive="$BUILD_DIR/archives/$MAC_SCHEME.xcarchive"
   rm -rf "$archive"
-  xcode archive -scheme "$MAC_SCHEME" -configuration Release -destination "generic/platform=macOS" \
+  require_paid_module >&2
+  xcodebuild_logged archive -workspace "$OFFICIAL_WORKSPACE" -derivedDataPath "$OFFICIAL_DERIVED_DATA" \
+    -scheme "$MAC_SCHEME" -configuration Release -destination "generic/platform=macOS" \
     -archivePath "$archive" archive >&2
   echo "$archive"
 }
@@ -851,6 +856,7 @@ build_official() {
 # packages' tests, and the catalog asked whether it lists a paid module.
 cmd_official() {
   step "Official build"
+  require_paid_module
   build_official
   local package name log
   for package in "$MODULES_DIR"/Packages/*/; do
@@ -862,9 +868,18 @@ cmd_official() {
       || { tail -n 30 "$log" >&2; fail "$name's tests failed; log: ${log#"$ROOT_DIR"/}"; }
     ok "$name's tests"
   done
+}
+
+# Fails unless the catalog of the official build lists a paid module, by asking the
+# catalog, not by searching a binary (ADR 0057, ADR 0087): a release or official build
+# without its paid add-on stops here.
+require_paid_module() {
+  [[ -d "$OFFICIAL_WORKSPACE" ]] \
+    || fail "No ${OFFICIAL_WORKSPACE}: the private treewise-modules folder belongs beside treewise."
   local catalog
   catalog="$(cd "$MODULES_DIR/Packages/TreewiseModuleCatalog" \
-    && swift run --quiet --scratch-path "$BUILD_DIR/official/TreewiseModuleCatalog" treewise-catalog)" \
+    && swift run --quiet --disable-sandbox --scratch-path "$BUILD_DIR/official/TreewiseModuleCatalog" \
+      treewise-catalog)" \
     || fail "The catalog could not be asked for its modules."
   grep -q " paid$" <<<"$catalog" || fail "The catalog lists no paid module: $catalog"
   ok "The catalog lists $(grep -c . <<<"$catalog") modules, a paid one among them"
