@@ -6,7 +6,8 @@ import TreewiseUI
 /// The Add-ons tab of Settings (ADR 0070): every add-on the app has, with what it reads,
 /// which files it is for and the fields it fills in; on or off for every folder, on in new
 /// folders or not, and dragged into the order folders without their own take. A paid one
-/// shows its licence, with Buy…; one Enter Licence Key… serves them all (ADR 0071).
+/// shows its licence, with Try for 14 Days before it was tried and Buy… where it is sold;
+/// one Enter Licence Key… serves them all (ADR 0071, ADR 0088).
 @MainActor
 final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
     private static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.add-on")
@@ -40,7 +41,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private var catalog: [String] { modules.map(\.id) }
     /// The add-ons on that may work: one of them stays on.
     private var working: [String] {
-        settings.addOns.available(catalog).filter { states[$0] != .unlicensed }
+        settings.addOns.available(catalog).filter { states[$0]?.mayWork ?? true }
     }
 
     private var ordered: [NameModuleDescription] {
@@ -119,7 +120,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
                 found[module.id] = try? await host.licenceState(
                     moduleID: module.id, licence: context)
             }
-            let mayWork = { (module: NameModuleDescription) in found[module.id] != .unlicensed }
+            let mayWork = { (module: NameModuleDescription) in found[module.id]?.mayWork ?? true }
             let offered = NameModuleDescription.offered(all.filter(mayWork))
             for module in all where !mayWork(module) {
                 for replaced in module.replaces {
@@ -156,7 +157,11 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         let view = AddOnRow(
             settings: settings, module: module, catalog: catalog,
             defaultID: NameModuleDescription.defaultID(among: modules),
-            licence: states[module.id], isLastWorking: working == [module.id])
+            licence: states[module.id], isLastWorking: working == [module.id]
+        ) { [weak self] id in
+            self?.licences.startTrial(of: id)
+            self?.load()
+        }
         view.setAccessibilityCustomActions([
             NSAccessibilityCustomAction(name: String(localized: "Move Up")) { [weak self] in
                 self?.move(module.id, to: row - 1)

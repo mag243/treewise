@@ -64,8 +64,7 @@ import TreewiseUI
         selection: [FileItem] = [], suggestedDate: SuggestedDate? = nil,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
         addOns: AddOnPreferences = AddOnPreferences(),
-        licence: LicenceContext = .none,
-        startTrial: @escaping @MainActor () -> Void = {}
+        licence: LicenceContext = .none
     ) async -> NameReviewModel {
         let patterns = savedPatterns
         let model = NameReviewModel(
@@ -75,12 +74,6 @@ import TreewiseUI
                 personalDataInNames: personalDataInNames,
                 addOns: addOns,
                 licence: { licence },
-                startTrial: {
-                    startTrial()
-                    var started = licence
-                    started.trialStart = Date()
-                    return started
-                },
                 savedPatterns: { patterns.list },
                 savePattern: { patterns.save(name: $0, text: $1) },
                 changeSavedPattern: { patterns.change($0, to: $1) },

@@ -24,13 +24,16 @@ public enum LicenceKeyOutcome: Hashable, Sendable {
     case unlocked(modules: [String], licensee: String)
 }
 
-/// What the app keeps of licences (ADR 0071): the keys the user entered, with the app's
-/// settings, the trial's start in those settings and in the secure store, and the latest
-/// day seen in the secure store. It reads no key: the closed modules check them.
+/// What the app keeps of licences (ADR 0071, ADR 0088): the keys the user entered, with
+/// the app's settings, the start of each add-on's trial in those settings and in the secure
+/// store, and the latest day seen in the secure store. It reads no key: the closed modules
+/// check them.
 @MainActor
 public final class LicenceKeeper {
-    /// Where the trial's start is kept in the secure store.
-    public static let trialStartKey = "licence.trialStart"
+    /// Where the start of each add-on's trial is kept in the secure store, by its id.
+    public static let trialStartsKey = "licence.trialStarts"
+    /// Where the one trial start of ADR 0071 was kept; forgotten since ADR 0088.
+    static let oldTrialStartKey = "licence.trialStart"
     /// Where the latest day seen is kept in the secure store.
     public static let lastSeenKey = "licence.lastSeen"
     /// How a key's text starts; anything else is no key at all.
@@ -42,7 +45,7 @@ public final class LicenceKeeper {
     private let givenTrialStart: Date?
 
     /// Creates a keeper. A trial start given at launch, as a Debug build allows, stands in
-    /// for the one kept, to try a trial's days.
+    /// for the start of every trial the user started, to try a trial's days.
     public init(
         settings: BrowserSettings, secure: any SecureValueStoring,
         now: @escaping () -> Date = Date.init, trialStart: Date? = nil
@@ -51,6 +54,7 @@ public final class LicenceKeeper {
         self.secure = secure
         self.now = now
         givenTrialStart = trialStart
+        secure.setValue(nil, for: Self.oldTrialStartKey)
     }
 
     /// Keeps a key the user entered, without spaces and line breaks, once. Whether it is
@@ -68,8 +72,8 @@ public final class LicenceKeeper {
     public func enter(key text: String, host: any NameModuleHosting) async -> LicenceKeyOutcome {
         let key = text.filter { !$0.isWhitespace }
         guard Self.looksLikeKey(key) else { return .notAKey }
-        // Asked with this key alone and a trial long over, so only a licence counts.
-        let question = LicenceContext(keys: [key], trialStart: .distantPast, lastSeen: nil)
+        // Asked with this key alone and no trial, so only a licence counts.
+        let question = LicenceContext(keys: [key], trialStarts: [:], lastSeen: nil)
         var unlocked: [String] = []
         var licensee = ""
         for module in (try? await host.availableModules()) ?? [] where !module.isFree {
@@ -97,28 +101,45 @@ public final class LicenceKeeper {
         let latest = max(seen ?? today, today)
         secure.setValue(text(latest), for: Self.lastSeenKey)
         return LicenceContext(
-            keys: settings.licenceKeys, trialStart: trialStart(), lastSeen: latest)
+            keys: settings.licenceKeys, trialStarts: trialStarts(), lastSeen: latest)
     }
 
-    /// Starts the trial when it has not started, and gives the context after.
-    public func startTrial() -> LicenceContext {
-        if trialStart() == nil {
-            let today = text(now())
-            settings.licenceTrialStart = today
-            secure.setValue(today, for: Self.trialStartKey)
+    /// Starts an add-on's trial because the user asked, unless it started before: each
+    /// add-on has one trial (ADR 0088). Gives the context after.
+    @discardableResult
+    public func startTrial(of moduleID: String) -> LicenceContext {
+        var starts = keptStarts()
+        if starts[moduleID] == nil {
+            starts[moduleID] = now()
+            keep(starts)
         }
         return context()
     }
 
-    /// The earliest start kept in either place, written back to the place that lost it.
-    private func trialStart() -> Date? {
-        if let givenTrialStart { return givenTrialStart }
-        let kept = [date(settings.licenceTrialStart), date(secure.value(for: Self.trialStartKey))]
-            .compactMap(\.self)
-        guard let start = kept.min() else { return nil }
-        settings.licenceTrialStart = text(start)
-        secure.setValue(text(start), for: Self.trialStartKey)
-        return start
+    /// The start of every add-on's trial, each the earliest kept in either place and
+    /// written back to the place that lost it; a start given at launch stands in for each.
+    private func trialStarts() -> [String: Date] {
+        let starts = keptStarts()
+        keep(starts)
+        guard let givenTrialStart else { return starts }
+        return starts.mapValues { _ in givenTrialStart }
+    }
+
+    private func keptStarts() -> [String: Date] {
+        let inSecure = secure.value(for: Self.trialStartsKey).flatMap {
+            try? JSONDecoder().decode([String: String].self, from: Data($0.utf8))
+        }
+        let both = [settings.licenceTrialStarts, inSecure ?? [:]].map {
+            $0.compactMapValues { date($0) }
+        }
+        return both[0].merging(both[1], uniquingKeysWith: min)
+    }
+
+    private func keep(_ starts: [String: Date]) {
+        let texts = starts.mapValues { text($0) }
+        if settings.licenceTrialStarts != texts { settings.licenceTrialStarts = texts }
+        let json = (try? JSONEncoder().encode(texts)).flatMap { String(data: $0, encoding: .utf8) }
+        secure.setValue(json, for: Self.trialStartsKey)
     }
 
     private func text(_ date: Date) -> String {

@@ -26,12 +26,12 @@
             #expect(
                 try await host.licenceState(
                     moduleID: "m",
-                    licence: LicenceContext(keys: ["bad", "good"], trialStart: nil, lastSeen: nil))
+                    licence: LicenceContext(keys: ["bad", "good"], trialStarts: [:], lastSeen: nil))
                     == .licensed(licensee: "Ada"))
             #expect(
                 try await host.licenceState(
                     moduleID: "m",
-                    licence: LicenceContext(keys: [], trialStart: Date(), lastSeen: nil))
+                    licence: LicenceContext(keys: [], trialStarts: ["m": Date()], lastSeen: nil))
                     == .unlicensed)
         }
 
@@ -48,7 +48,7 @@
             #expect(
                 try await host.derivedTemplates(
                     moduleID: "m", names: ["a"], folderName: "",
-                    licence: LicenceContext(keys: ["good"], trialStart: nil, lastSeen: nil))
+                    licence: LicenceContext(keys: ["good"], trialStarts: [:], lastSeen: nil))
                     == ["{text}"])
         }
 

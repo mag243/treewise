@@ -21,6 +21,13 @@ import TreewiseModuleInterface
         try #require(try await module.fieldValues(for: request).first)
     }
 
+    /// Settings says what it does, in English, Dutch and German (ADR 0088).
+    @Test func saysWhatItDoesInEnglishDutchAndGerman() {
+        let module = FolderPatternModule()
+        #expect(Set(module.description.summaries.keys) == ["en", "nl", "de"])
+        #expect(module.description.summary(preferring: ["de-DE"])?.isEmpty == false)
+    }
+
     @Test func asksForNoContent() {
         #expect(module.description.neededContent.isEmpty)
     }

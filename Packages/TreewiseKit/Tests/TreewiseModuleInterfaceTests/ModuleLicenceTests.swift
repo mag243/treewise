@@ -18,7 +18,7 @@ import TreewiseModuleInterface
     @Test func aModuleWithoutALicenceHasNoState() {
         #expect(
             FreeModule().licenceState(
-                licence: LicenceContext(keys: ["TW1-x"], trialStart: nil, lastSeen: nil)) == nil)
+                licence: LicenceContext(keys: ["TW1-x"], trialStarts: [:], lastSeen: nil)) == nil)
     }
 
     @Test func aModuleSaysWhereToBuyIt() {
@@ -31,7 +31,7 @@ import TreewiseModuleInterface
     @Test func aStateTravelsAsData() throws {
         let states: [ModuleLicenceState] = [
             .licensed(licensee: "Ada"), .licensed(licensee: "Ada", until: Self.day(30)),
-            .trial(daysLeft: 3), .unlicensed,
+            .notTried, .trial(daysLeft: 3), .unlicensed,
         ]
         let data = try JSONEncoder().encode(states)
         #expect(try JSONDecoder().decode([ModuleLicenceState].self, from: data) == states)
@@ -53,9 +53,49 @@ import TreewiseModuleInterface
     }
 
     @Test(arguments: [
-        ModuleLicenceState.licensed(licensee: "Ada"), .trial(daysLeft: 3), .unlicensed,
+        ModuleLicenceState.licensed(licensee: "Ada"), .notTried, .trial(daysLeft: 3), .unlicensed,
     ])
     func hasNoDaysLeftWithoutAnEndDate(_ state: ModuleLicenceState) {
         #expect(state.daysLeft(now: Self.day(10), calendar: Self.calendar) == nil)
+    }
+
+    @Test(arguments: [
+        (ModuleLicenceState.licensed(licensee: "Ada"), true), (.trial(daysLeft: 1), true),
+        (.notTried, false), (.unlicensed, false),
+    ])
+    func mayWorkWithALicenceOrInItsTrialOnly(_ state: ModuleLicenceState, _ works: Bool) {
+        #expect(state.mayWork == works)
+    }
+
+    /// Each add-on has its own trial start (ADR 0088).
+    @Test func aContextHoldsATrialStartForEachModule() throws {
+        let context = LicenceContext(
+            keys: [], trialStarts: ["paid": Self.day(3)], lastSeen: Self.day(5))
+        #expect(context.trialStart(of: "paid") == Self.day(3))
+        #expect(context.trialStart(of: "other") == nil)
+        let data = try JSONEncoder().encode(context)
+        #expect(try JSONDecoder().decode(LicenceContext.self, from: data) == context)
+    }
+}
+
+/// An add-on says in one line what it does, in English, Dutch and German (ADR 0088).
+@Suite struct ModuleSummaryTests {
+    private static let module = NameModuleDescription(
+        id: "paid", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
+        summaries: ["en": "Recognizes more patterns.", "nl": "Herkent meer patronen."])
+
+    @Test(arguments: [
+        (["nl-NL", "en"], "Herkent meer patronen."), (["nl"], "Herkent meer patronen."),
+        (["de-DE", "nl-NL"], "Herkent meer patronen."), (["en-GB"], "Recognizes more patterns."),
+        (["fr-FR"], "Recognizes more patterns."), ([], "Recognizes more patterns."),
+    ])
+    func saysItInTheFirstLanguageItHasElseEnglish(_ languages: [String], _ summary: String) {
+        #expect(Self.module.summary(preferring: languages) == summary)
+    }
+
+    @Test func aModuleWithoutASummarySaysNothing() {
+        let bare = NameModuleDescription(
+            id: "free", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "")
+        #expect(bare.summary(preferring: ["en"]) == nil)
     }
 }

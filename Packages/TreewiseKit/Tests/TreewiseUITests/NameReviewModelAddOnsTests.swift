@@ -104,7 +104,8 @@ extension NameReviewModelTests {
 extension NameReviewModelTests {
     @Test func asksAModuleWithTheLicenceKeysAndTheTrialsDates() async {
         _ = addFile("scan.txt")
-        let licence = LicenceContext(keys: ["TW1-x"], trialStart: Date(), lastSeen: Date())
+        let licence = LicenceContext(
+            keys: ["TW1-x"], trialStarts: [Self.paid: Date()], lastSeen: Date())
         let host = host()
         _ = await model(host, licence: licence)
         #expect(host.requests.last?.licence == licence)
@@ -158,13 +159,21 @@ extension NameReviewModelTests {
             await store.settings(forFolderAt: "review")?.enabledModules.contains(Self.paid) == true)
     }
 
-    @Test func startsTheTrialTheFirstTimeAPaidAddOnIsOffered() async {
-        _ = addFile("scan.pdf")
-        let host = host(modules: [Self.freeDescription, Self.paidDescription])
-        host.setLicenceState(.trial(daysLeft: 14), for: Self.paid)
-        let started = TrialStarts()
-        _ = await model(host, startTrial: { started.count += 1 })
-        #expect(started.count == 1)
+    /// A trial starts only when the user asks (ADR 0088): until then the add-on is off and
+    /// cannot be turned on, and the one it replaces keeps working.
+    @Test func anAddOnNotTriedIsOffAndGivesTheFreeOneBack() async {
+        _ = addFile("scan.txt")
+        let host = host(
+            modules: [Self.freeDescription, Self.advancedDescription],
+            answers: [Self.free: .success([["text": .text("New")]])])
+        host.setLicenceState(.notTried, for: "advanced")
+        let model = await model(host)
+        #expect(model.modules.first { $0.id == Self.free }?.isOn == true)
+        let advanced = model.modules.first { $0.id == "advanced" }
+        #expect(advanced?.licence == .notTried)
+        #expect(advanced?.isOn != true)
+        await model.setModule("advanced", on: true)
+        #expect(model.modules.first { $0.id == "advanced" }?.isOn != true, "it cannot be turned on")
     }
 
     @Test func aReplacingAddOnWithoutALicenceGivesTheFreeOneBack() async {
@@ -177,12 +186,6 @@ extension NameReviewModelTests {
         #expect(model.modules.first { $0.id == Self.free }?.isOn == true)
         #expect(model.modules.first { $0.id == "advanced" }?.licence == .unlicensed)
     }
-}
-
-/// Counts the trial's starts, for a test.
-@MainActor
-final class TrialStarts {
-    var count = 0
 }
 
 /// More than one pattern to pick from (ADR 0067).

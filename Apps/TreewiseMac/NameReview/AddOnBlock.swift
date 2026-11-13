@@ -12,6 +12,8 @@ struct AddOnBlockActions {
     var save: (String) -> Void
     /// Offers Enter Licence Key… (ADR 0071).
     var enterKey: () -> Void
+    /// Starts an add-on's trial, because the user asked (ADR 0088).
+    var startTrial: (String) -> Void
 }
 
 /// One add-on in the overview's header: its line, the editor of its pattern while that is
@@ -103,9 +105,9 @@ final class AddOnBlock: NSStackView {
             Task { await model.setModule(id, on: isOn) }
         }
         toggle.state = module.isOn ? .on : .off
-        // One without a licence cannot be turned on (ADR 0071).
+        // One that may not work cannot be turned on (ADR 0071, ADR 0088).
         toggle.isEnabled =
-            !(module.licence == .unlicensed
+            !(module.licence?.mayWork == false
             || (module.isOn && model.modules.filter(\.isOn).count == 1))
         toggle.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.toggleWidth).isActive =
             true
@@ -125,10 +127,13 @@ final class AddOnBlock: NSStackView {
         return views
     }
 
-    /// The licence of a paid add-on: quiet in its trial, a lock and the way to a licence
-    /// when it needs one, nothing when licensed (ADR 0071).
+    /// The licence of a paid add-on: quiet in its trial, the way to try it when it was
+    /// never tried, a lock and the way to a licence when it needs one, nothing when
+    /// licensed (ADR 0071, ADR 0088).
     private func licenceViews(_ module: NameReviewModule) -> [NSView] {
         switch module.licence {
+        case .notTried:
+            return notTriedViews(module.id)
         case .trial(let days):
             let text = NSTextField(labelWithString: LicenceText.state(.trial(daysLeft: days)))
             text.font = .preferredFont(forTextStyle: .caption1)
@@ -155,6 +160,22 @@ final class AddOnBlock: NSStackView {
         case .licensed, nil:
             return []
         }
+    }
+
+    /// An add-on never tried: the offer to try it, and the way to a licence (ADR 0088).
+    private func notTriedViews(_ id: String) -> [NSView] {
+        let text = NSTextField(labelWithString: LicenceText.state(.notTried))
+        text.font = .preferredFont(forTextStyle: .caption1)
+        text.textColor = .secondaryLabelColor
+        return [
+            text,
+            LinkButton(String(localized: "Try for 14 Days")) { [actions] in
+                actions.startTrial(id)
+            },
+            LinkButton(String(localized: "Enter Licence Key…")) { [actions] in
+                actions.enterKey()
+            },
+        ]
     }
 
     private func links(_ module: NameReviewModule, isEditing: Bool) -> [NSView] {

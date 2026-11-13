@@ -138,7 +138,8 @@ final class NameReviewAddOnsView: NSObject {
             actions: AddOnBlockActions(
                 edit: { [weak self] in self?.edit($0) },
                 save: { [weak self] in self?.askNameToSave($0) },
-                enterKey: { [weak self] in self?.enterKey() }))
+                enterKey: { [weak self] in self?.enterKey() },
+                startTrial: { [weak self] in self?.startTrial(of: $0) }))
     }
 
     private func edit(_ id: String?) {
@@ -194,6 +195,12 @@ final class NameReviewAddOnsView: NSObject {
             guard response == .alertFirstButtonReturn, !text.isEmpty else { return }
             _ = model.savePattern(of: id, as: name.stringValue)
         }
+    }
+
+    private func startTrial(of moduleID: String) {
+        licences?.startTrial(of: moduleID)
+        let model = model
+        Task { await model.start() }
     }
 
     private func enterKey() {

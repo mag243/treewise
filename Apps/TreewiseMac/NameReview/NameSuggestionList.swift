@@ -106,9 +106,13 @@ final class NameSuggestionList {
     {
         if entry?.isOutOfScope == true { return String(localized: "Not for these add-ons.") }
         if entry?.restsFitting == true { return String(localized: "This name already fits.") }
-        // An add-on without a licence gives nothing, which is worth saying (ADR 0071).
-        if let locked = model.modules.first(where: { $0.licence == .unlicensed }) {
-            return String(localized: "\(NameReviewText.name(of: locked)) needs a licence.")
+        // An add-on that may not work gives nothing, which is worth saying (ADR 0071, ADR 0088).
+        if let locked = model.modules.first(where: { $0.licence?.mayWork == false }) {
+            let name = NameReviewText.name(of: locked)
+            if locked.licence == .notTried {
+                return String(localized: "Try \(name) in Settings › Add-ons.")
+            }
+            return String(localized: "\(name) needs a licence.")
         }
         return String(localized: "No proposal.")
     }

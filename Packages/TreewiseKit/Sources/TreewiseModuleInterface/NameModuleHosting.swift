@@ -25,12 +25,16 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     public let replaces: Set<String>
     /// Where it can be bought, for a paid module (ADR 0071).
     public let purchaseURL: String?
+    /// What it does, in one line, by language code (`en`, `nl`, `de`): a closed module
+    /// brings its own words, as the open app does not know it (ADR 0088).
+    public let summaries: [String: String]
 
     /// Creates a description.
     public init(
         id: String, contentTypes: Set<String>, neededContent: Set<ModuleContentKind>,
         fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false,
-        name: String? = nil, replaces: Set<String> = [], purchaseURL: String? = nil
+        name: String? = nil, replaces: Set<String> = [], purchaseURL: String? = nil,
+        summaries: [String: String] = [:]
     ) {
         self.id = id
         self.contentTypes = contentTypes
@@ -41,6 +45,18 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
         self.name = name
         self.replaces = replaces
         self.purchaseURL = purchaseURL
+        self.summaries = summaries
+    }
+
+    /// What it does, in the first of the languages it has a summary in, by their codes as
+    /// `Locale.preferredLanguages` gives them (`nl-NL`), else in English; nil when it has
+    /// none.
+    public func summary(preferring languages: [String]) -> String? {
+        for language in languages {
+            let code = language.split(separator: "-").first.map(String.init) ?? language
+            if let summary = summaries[code] { return summary }
+        }
+        return summaries["en"]
     }
 
     /// Whether it plays the default module's part: on in a new folder, imposing no

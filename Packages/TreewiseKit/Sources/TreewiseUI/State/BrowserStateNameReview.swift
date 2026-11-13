@@ -52,7 +52,6 @@ extension BrowserState {
                 personalDataInNames: settings.personalDataInNames,
                 addOns: settings.addOns,
                 licence: { [licences] in licences?.context() ?? .none },
-                startTrial: { [licences] in licences?.startTrial() ?? .none },
                 savedPatterns: { [settings] in settings.savedPatterns },
                 savePattern: { [settings] name, text in
                     if case .failure(let problem) = settings.savedPatterns.save(

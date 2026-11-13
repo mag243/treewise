@@ -9,6 +9,7 @@ enum LicenceText {
     static func state(_ state: ModuleLicenceState) -> String {
         switch state {
         case .licensed(let licensee, let until): licensed(licensee, until: until, state: state)
+        case .notTried: String(localized: "Not tried yet")
         case .trial(let days): String(localized: "Trial: \(days) days left")
         case .unlicensed: String(localized: "Needs a licence")
         }

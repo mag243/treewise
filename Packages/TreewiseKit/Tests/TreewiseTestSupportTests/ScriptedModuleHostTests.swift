@@ -20,7 +20,8 @@ import TreewiseTestSupport
         host.setLicenceState(.trial(daysLeft: 5), for: "m")
         #expect(
             try await host.licenceState(
-                moduleID: "m", licence: LicenceContext(keys: ["k"], trialStart: nil, lastSeen: nil))
+                moduleID: "m", licence: LicenceContext(keys: ["k"], trialStarts: [:], lastSeen: nil)
+            )
                 == .trial(daysLeft: 5))
         #expect(try await host.licenceState(moduleID: "other", licence: .none) == nil)
         #expect(host.licenceKeys == [["k"], []])

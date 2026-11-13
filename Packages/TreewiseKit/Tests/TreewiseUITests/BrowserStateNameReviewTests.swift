@@ -91,9 +91,9 @@ import TreewiseUI
         id: "paid", contentTypes: ["public.item"], neededContent: [], fields: [],
         defaultTemplate: "{folder}")
 
-    @Test func asksWithTheKeysAndStartsTheTrial() async throws {
+    @Test func asksWithTheKeysAndStartsNoTrial() async throws {
         let host = ScriptedModuleHost(modules: [Self.paid], answers: [:])
-        host.setLicenceState(.trial(daysLeft: 14), for: "paid")
+        host.setLicenceState(.notTried, for: "paid")
         let browser = await makeBrowser(fileSystem: fileSystem)
         let secure = MemorySecureStore()
         browser.licences = LicenceKeeper(settings: browser.settings, secure: secure)
@@ -101,6 +101,8 @@ import TreewiseUI
         let review = await browser.makeNameReview(host: host, store: MemoryFolderSettings())
         await review?.start()
         #expect(host.licenceKeys.last == ["TW1-abc.def"])
-        #expect(secure.value(for: LicenceKeeper.trialStartKey) != nil, "the trial started")
+        #expect(
+            browser.settings.licenceTrialStarts.isEmpty, "a trial starts only when asked (ADR 0088)"
+        )
     }
 }

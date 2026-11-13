@@ -55,7 +55,7 @@
         func licenceState(licence: LicenceContext) -> ModuleLicenceState? {
             guard needsLicence else { return nil }
             if licence.keys.contains("good") { return .licensed(licensee: "Ada") }
-            return licence.trialStart == nil ? .trial(daysLeft: 14) : .unlicensed
+            return licence.trialStart(of: description.id) == nil ? .notTried : .unlicensed
         }
 
         /// The derived template and the alternatives after it.

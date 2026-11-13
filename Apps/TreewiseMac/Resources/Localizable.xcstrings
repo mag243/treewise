@@ -2636,6 +2636,22 @@
         }
       }
     },
+    "Not tried yet" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch nicht ausprobiert"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nog niet geprobeerd"
+          }
+        }
+      }
+    },
     "OK" : {
       "comment" : "The label of a button that dismisses an alert.",
       "extractionState" : "stale",
@@ -4468,6 +4484,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Proefperiode: nog %lld dagen"
+          }
+        }
+      }
+    },
+    "Try %@ in Settings › Add-ons." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teste %@ in Einstellungen › Add-ons."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer %@ in Instellingen › Add-ons."
+          }
+        }
+      }
+    },
+    "Try for 14 Days" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "14 Tage testen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer 14 dagen"
           }
         }
       }

@@ -22,7 +22,13 @@ public struct FolderPatternModule: NameModule {
     /// What this module is.
     public let description = NameModuleDescription(
         id: NameModuleDescription.defaultModuleID, contentTypes: ["public.item"], neededContent: [],
-        fields: fields, defaultTemplate: "{date:yyyy.MM.dd} {text}", isFree: true)
+        fields: fields, defaultTemplate: "{date:yyyy.MM.dd} {text}", isFree: true,
+        summaries: [
+            "en": "Proposes names from a file's date and name, in the pattern its folder uses.",
+            "nl":
+                "Stelt namen voor uit de datum en naam van een bestand, in het patroon van de map.",
+            "de": "Schlägt Namen aus Datum und Namen einer Datei vor, im Muster ihres Ordners.",
+        ])
 
     /// Creates the module.
     public init() {}

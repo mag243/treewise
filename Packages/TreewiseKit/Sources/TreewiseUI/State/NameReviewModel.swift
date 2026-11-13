@@ -25,10 +25,8 @@ public struct NameReviewDependencies: Sendable {
     let makeRequest: MakeRequest
     /// What Settings decides for the add-ons across the app (ADR 0070).
     let addOns: AddOnPreferences
-    /// The licence keys and the trial's dates, for paid modules (ADR 0071).
+    /// The licence keys and the trials' dates, for paid modules (ADR 0071, ADR 0088).
     let licence: @MainActor @Sendable () -> LicenceContext
-    /// Starts the trial of paid modules, and gives the dates after.
-    let startTrial: @MainActor @Sendable () -> LicenceContext
     /// The user's saved patterns (ADR 0068).
     let savedPatterns: @MainActor @Sendable () -> SavedPatterns
     let savePattern: SavePattern
@@ -42,7 +40,6 @@ public struct NameReviewDependencies: Sendable {
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
         addOns: AddOnPreferences = AddOnPreferences(),
         licence: @escaping @MainActor @Sendable () -> LicenceContext = { .none },
-        startTrial: @escaping @MainActor @Sendable () -> LicenceContext = { .none },
         savedPatterns: @escaping @MainActor @Sendable () -> SavedPatterns = { .examples() },
         savePattern: @escaping SavePattern = { _, _ in nil },
         changeSavedPattern: @escaping ChangeSavedPattern = { _, _ in },
@@ -56,7 +53,6 @@ public struct NameReviewDependencies: Sendable {
         self.makeRequest = makeRequest
         self.addOns = addOns
         self.licence = licence
-        self.startTrial = startTrial
         self.savedPatterns = savedPatterns
         self.savePattern = savePattern
         self.changeSavedPattern = changeSavedPattern
@@ -234,15 +230,15 @@ public final class NameReviewModel {
     }
 
     /// Reads the folder's settings and the modules it is offered, after asking the paid
-    /// ones about their licence and starting the trial the first time one is offered
-    /// (ADR 0071). No module that another replaces is offered, while that one may work, and
+    /// ones about their licence (ADR 0071); a trial starts only when the user asks
+    /// (ADR 0088). No module that another replaces is offered, while that one may work, and
     /// the settings go to the one that may (ADR 0067); none turned off in Settings is
     /// offered (ADR 0070). One without a licence comes last, off.
     private func loadSettings() async -> (descriptions: [NameModuleDescription], catalog: [String])
     {
         let all = (try? await dependencies.host.availableModules()) ?? []
         let states = await licenceStates(of: all)
-        let mayWork = { (module: NameModuleDescription) in states[module.id] != .unlicensed }
+        let mayWork = { (module: NameModuleDescription) in states[module.id]?.mayWork ?? true }
         let offered = NameModuleDescription.offered(all.filter(mayWork))
         var addOns = dependencies.addOns
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
@@ -271,25 +267,16 @@ public final class NameReviewModel {
         return (offered.filter { working.contains($0.id) } + locked, working + locked.map(\.id))
     }
 
-    /// Each paid module's licence state, with the trial started when one is in it and it
-    /// has not started yet; the context they were asked with is kept for the review.
+    /// Each paid module's licence state; the context they were asked with is kept for the
+    /// review.
     private func licenceStates(of modules: [NameModuleDescription]) async
         -> [String: ModuleLicenceState]
     {
-        func ask(_ context: LicenceContext) async -> [String: ModuleLicenceState] {
-            var states: [String: ModuleLicenceState] = [:]
-            for module in modules where !module.isFree {
-                states[module.id] = try? await dependencies.host.licenceState(
-                    moduleID: module.id, licence: context)
-            }
-            return states
-        }
         licence = dependencies.licence()
-        var states = await ask(licence)
-        let inTrial = states.values.contains { if case .trial = $0 { true } else { false } }
-        if inTrial, licence.trialStart == nil {
-            licence = dependencies.startTrial()
-            states = await ask(licence)
+        var states: [String: ModuleLicenceState] = [:]
+        for module in modules where !module.isFree {
+            states[module.id] = try? await dependencies.host.licenceState(
+                moduleID: module.id, licence: licence)
         }
         licenceStates = states
         return states

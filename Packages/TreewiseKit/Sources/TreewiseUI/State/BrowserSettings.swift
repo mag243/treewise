@@ -66,7 +66,9 @@ public final class BrowserSettings {
         static let savedPatterns = "savedPatterns"
         static let addOns = "addOns"
         static let licenceKeys = "licenceKeys"
-        static let licenceTrialStart = "licenceTrialStart"
+        static let licenceTrialStarts = "licenceTrialStarts"
+        /// The one trial start of ADR 0071, forgotten since ADR 0088.
+        static let oldLicenceTrialStart = "licenceTrialStart"
         static let personalDataInNames = "personalDataInNames"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
@@ -156,10 +158,15 @@ public final class BrowserSettings {
         }
     }
 
-    /// When the trial of paid add-ons started, as ISO 8601, kept here and in the keychain
-    /// (ADR 0071).
-    public var licenceTrialStart: String? {
-        didSet { store.setSetting(licenceTrialStart, for: Key.licenceTrialStart) }
+    /// When the user started each paid add-on's trial, by its id, as ISO 8601, kept here
+    /// and in the keychain (ADR 0071, ADR 0088).
+    public var licenceTrialStarts: [String: String] {
+        didSet {
+            let json = (try? JSONEncoder().encode(licenceTrialStarts)).flatMap {
+                String(data: $0, encoding: .utf8)
+            }
+            store.setSetting(json, for: Key.licenceTrialStarts)
+        }
     }
 
     /// The pattern a folder without one of its own gets when the user asks for it, or
@@ -222,7 +229,11 @@ public final class BrowserSettings {
             store.setting(Key.licenceKeys).flatMap {
                 try? JSONDecoder().decode([String].self, from: Data($0.utf8))
             } ?? []
-        licenceTrialStart = store.setting(Key.licenceTrialStart)
+        licenceTrialStarts =
+            store.setting(Key.licenceTrialStarts).flatMap {
+                try? JSONDecoder().decode([String: String].self, from: Data($0.utf8))
+            } ?? [:]
+        store.setSetting(nil, for: Key.oldLicenceTrialStart)
         addOns =
             store.setting(Key.addOns).flatMap {
                 try? JSONDecoder().decode(AddOnPreferences.self, from: Data($0.utf8))
