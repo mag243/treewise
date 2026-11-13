@@ -64,7 +64,7 @@ enum NameReviewText {
         case .invalidFormat:
             String(
                 localized:
-                    "After : comes a date format; 4, 2-4, 2,4,6 or 5- after {seq}; yy after {year}; a number after {folder}; or lower, upper or title"
+                    "After : comes a date format; 4, 2-4, 2,4,6, 5- or 001- after {seq}, with :3 for a width; yy after {year}; a number after {folder}; or lower, upper or title"
             )
         }
     }

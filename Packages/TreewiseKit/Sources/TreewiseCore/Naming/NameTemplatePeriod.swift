@@ -36,9 +36,11 @@ extension NameTemplate {
         let seq = following ?? series.first
         // After its last number a series starts again, in the next year.
         let year = following == nil ? last.year.map { $0 + 1 } : last.year
-        guard hasYear else { return Period(year: nil, seq: padded(seq, to: last.width)) }
+        // A width written in the pattern wins over that of the names there (ADR 0089).
+        let width = series.writtenWidth ?? last.width
+        guard hasYear else { return Period(year: nil, seq: padded(seq, to: width)) }
         return Period(
-            year: year ?? fileYear, seq: padded(seq, to: last.width),
+            year: year ?? fileYear, seq: padded(seq, to: width),
             usesFileYear: year == nil && fileYear != nil)
     }
 

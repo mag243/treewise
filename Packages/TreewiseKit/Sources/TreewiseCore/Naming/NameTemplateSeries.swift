@@ -13,37 +13,64 @@ extension NameTemplate {
         }
 
         let numbers: Numbers
+        /// The least number of digits written for the series: by leading zeros, as in
+        /// `001-`, or after a second colon, as in `5-:3`; nil when none is written.
+        let writtenWidth: Int?
 
         /// `{seq}` without anything after its colon: 1, 2, 3, … without end.
-        static let counting = Series(numbers: .range(first: 1, last: nil))
+        static let counting = Series(numbers: .range(first: 1, last: nil), writtenWidth: nil)
 
-        /// The series written after `{seq:`, as `4`, `2-4`, `5-` or `2,4,6,8`, or nil when the
-        /// text is no series.
+        /// The series written after `{seq:`, as `4`, `2-4`, `5-` or `2,4,6,8`, each with
+        /// leading zeros for a width or followed by `:` and one, as `5-:3` or `:3`; nil when
+        /// the text is no series (ADR 0089).
         init?(_ text: String) {
+            let pieces = text.split(separator: ":", omittingEmptySubsequences: false)
+            guard pieces.count <= 2 else { return nil }
+            var width: Int?
+            if pieces.count == 2 {
+                guard let written = Self.number(pieces[1]), written >= 1 else { return nil }
+                width = written
+            }
+            let series = String(pieces[0])
+            if series.isEmpty, width != nil {
+                numbers = Self.counting.numbers
+            } else {
+                guard let read = Self.numbers(series) else { return nil }
+                numbers = read
+            }
+            writtenWidth = width ?? Self.widthOfLeadingZeros(in: series)
+        }
+
+        private init(numbers: Numbers, writtenWidth: Int?) {
+            self.numbers = numbers
+            self.writtenWidth = writtenWidth
+        }
+
+        /// The length of the longest number written with a leading zero, or nil when none is.
+        private static func widthOfLeadingZeros(in text: String) -> Int? {
+            let written = text.split(whereSeparator: { $0 == "," || $0 == "-" })
+            guard written.contains(where: { $0.count > 1 && $0.first == "0" }) else { return nil }
+            return written.map(\.count).max()
+        }
+
+        private static func numbers(_ text: String) -> Numbers? {
             if text.contains(",") {
                 let parts = text.split(separator: ",", omittingEmptySubsequences: false)
                 let list = parts.compactMap { Self.number($0) }
                 guard list.count == parts.count, list.count >= 2,
                     zip(list, list.dropFirst()).allSatisfy({ $0 < $1 })
                 else { return nil }
-                numbers = .list(list)
-            } else if text.contains("-") {
+                return .list(list)
+            }
+            if text.contains("-") {
                 let parts = text.split(separator: "-", omittingEmptySubsequences: false)
                 guard parts.count == 2, let first = Self.number(parts[0]) else { return nil }
-                if parts[1].isEmpty {
-                    numbers = .range(first: first, last: nil)
-                } else {
-                    guard let last = Self.number(parts[1]), last > first else { return nil }
-                    numbers = .range(first: first, last: last)
-                }
-            } else {
-                guard let last = Self.number(Substring(text)), last >= 2 else { return nil }
-                numbers = .range(first: 1, last: last)
+                if parts[1].isEmpty { return .range(first: first, last: nil) }
+                guard let last = Self.number(parts[1]), last > first else { return nil }
+                return .range(first: first, last: last)
             }
-        }
-
-        private init(numbers: Numbers) {
-            self.numbers = numbers
+            guard let last = Self.number(Substring(text)), last >= 2 else { return nil }
+            return .range(first: 1, last: last)
         }
 
         private static func number(_ text: Substring) -> Int? {
@@ -59,9 +86,11 @@ extension NameTemplate {
             }
         }
 
-        /// The width its numbers are written in: that of its highest, or 1 without an end.
+        /// The width its numbers are written in: the width written, else that of its
+        /// highest, or 1 without an end.
         var width: Int {
-            switch numbers {
+            if let writtenWidth { return writtenWidth }
+            return switch numbers {
             case .range(_, let last?): String(last).count
             case .range: 1
             case .list(let list): String(list[list.count - 1]).count

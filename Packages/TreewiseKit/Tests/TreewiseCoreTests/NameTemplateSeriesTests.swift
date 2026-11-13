@@ -93,4 +93,43 @@ import TreewiseCore
     @Test func continuesOnlyFromNamesThatFit() throws {
         #expect(try next("R {seq:2-4}", after: ["R 3", "R 9"]) == "R 4")
     }
+
+    // MARK: Width
+
+    @Test(arguments: [
+        "{seq:001-}", "{seq:0001-0012}", "{seq:2,4,010}", "{seq:5-:3}", "{seq::3}",
+        "{seq:1-12:1}", "{seq:04}",
+    ])
+    func readsAWidth(_ series: String) {
+        #expect(problem("R \(series)") == nil)
+    }
+
+    @Test(arguments: ["{seq:5-:0}", "{seq::}", "{seq:5-:x}", "{seq:1-4:2:3}", "{seq:5-:-1}"])
+    func refusesAWidthThatIsNoNumberFromOne(_ series: String) {
+        #expect(problem("R \(series)") == .invalidFormat)
+    }
+
+    @Test(arguments: [
+        ("R {seq:001-}", "R 001"), ("R {seq:0001-0012}", "R 0001"), ("R {seq:2,4,010}", "R 002"),
+        ("R {seq:5-:3}", "R 005"), ("R {seq::3}", "R 001"), ("R {seq:1-12:1}", "R 1"),
+        ("R {seq:04}", "R 01"), ("R {seq:001-:1}", "R 1"),
+    ])
+    func startsInTheWidthWritten(_ text: String, _ first: String) throws {
+        #expect(try next(text) == first)
+    }
+
+    @Test func aWidthWrittenWinsOverTheNamesThere() throws {
+        #expect(try next("Letter {seq:001-}", after: ["Letter 8", "Letter 9"]) == "Letter 010")
+        #expect(try next("R {year}.{seq:1-12:1}", after: ["R 2026.09"]) == "R 2026.10")
+        #expect(try next("R {year}.{seq:1-12:1}", after: ["R 2026.08"]) == "R 2026.9")
+    }
+
+    @Test func withoutAWidthTheNamesThereKeepTheirs() throws {
+        #expect(try next("Letter {seq}", after: ["Letter 008"]) == "Letter 009")
+    }
+
+    @Test(arguments: [("Letter 8", true), ("Letter 008", true), ("Letter 0008", true)])
+    func aNameFitsInAnyWidth(_ name: String, _ fits: Bool) throws {
+        #expect(try template("Letter {seq:001-}").matches(name) == fits)
+    }
 }
