@@ -550,6 +550,22 @@
         }
       }
     },
+    "Always on" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immer ein"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altijd aan"
+          }
+        }
+      }
+    },
     "An add-on that is off is offered in no folder. Drag to set the order for folders without their own." : {
       "localizations" : {
         "de" : {

@@ -96,12 +96,7 @@ final class AddOnCardView: NSView {
         titles.setContentHuggingPriority(.defaultLow, for: .horizontal)
         var views: [NSView] = [Self.icon(), titles]
         if let badge = badge() { views.append(badge) }
-        let toggle = ClosureSwitch(label: NameReviewText.name(of: module), change: actions.turnOn)
-        toggle.state = card.isOn ? .on : .off
-        toggle.isEnabled = card.canSwitch
-        if card.isOn, !card.canSwitch {
-            toggle.toolTip = String(localized: "At least one add-on stays on")
-        }
+        let toggle = control()
         // The name at the leading edge, the badge and the switch at the trailing one.
         let header = NSStackView()
         header.setViews(Array(views.prefix(2)), in: .leading)
@@ -109,6 +104,20 @@ final class AddOnCardView: NSView {
         header.spacing = Self.headerSpacing
         header.alignment = .centerY
         return header
+    }
+
+    /// The add-on's on/off switch; for the last add-on on that may work, which stays on
+    /// (ADR 0070), the words Always on in its place, so no switch is there that cannot move.
+    private func control() -> NSView {
+        if card.isOn, !card.canSwitch {
+            let always = Self.caption(String(localized: "Always on"))
+            always.toolTip = String(localized: "At least one add-on stays on")
+            return always
+        }
+        let toggle = ClosureSwitch(label: NameReviewText.name(of: module), change: actions.turnOn)
+        toggle.state = card.isOn ? .on : .off
+        toggle.isEnabled = card.canSwitch
+        return toggle
     }
 
     /// Free for a free add-on, a paid one's licence; none for a paid one whose licence

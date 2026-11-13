@@ -43,10 +43,12 @@ extension LaunchTests {
         XCTAssertTrue(
             tab.appeared(timeout: Self.launchTimeout), "Settings has an Add-ons tab")
         tab.click()
-        let free = settings.switches["Folder Pattern"]
         XCTAssertTrue(
-            free.appeared(timeout: Self.launchTimeout), "the free add-on is listed")
-        XCTAssertFalse(free.isEnabled, "the last add-on that is on stays on (ADR 0070)")
+            settings.staticTexts["Folder Pattern"].appeared(timeout: Self.launchTimeout),
+            "the free add-on is listed")
+        XCTAssertTrue(
+            settings.staticTexts["Always on"].exists && !settings.switches["Folder Pattern"].exists,
+            "the last add-on that is on stays on, without a switch (ADR 0070, ADR 0092)")
         XCTAssertTrue(
             settings.staticTexts.matching(
                 NSPredicate(format: "value BEGINSWITH 'Reads names only'")
@@ -73,7 +75,7 @@ extension LaunchTests {
         XCTAssertTrue(tab.appeared(timeout: Self.launchTimeout))
         tab.click()
         XCTAssertTrue(
-            settings.switches["Folder Pattern"].appeared(timeout: Self.launchTimeout))
+            settings.staticTexts["Folder Pattern"].appeared(timeout: Self.launchTimeout))
         let advanced = settings.staticTexts["Advanced Folder Pattern"]
         try XCTSkipUnless(advanced.exists, "the open build has one add-on")
         let newFolders = settings.switches["On in new folders"]
