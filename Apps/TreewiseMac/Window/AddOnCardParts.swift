@@ -112,14 +112,18 @@ enum AddOnCardStyle {
             let label = NSTextField(labelWithString: name)
             label.font = .preferredFont(forTextStyle: .caption2)
             label.textColor = .secondaryLabelColor
+            // Each item keeps its own width, so a wider legend leaves its items together.
+            label.setContentHuggingPriority(.required, for: .horizontal)
             let item = NSStackView(views: [mark, label])
             item.spacing = 4
+            item.setContentHuggingPriority(.required, for: .horizontal)
             return item
         }
         // In the leading gravity area, so a stack that grows wider leaves them together.
         let legend = NSStackView()
         legend.setViews(items, in: .leading)
         legend.spacing = legendSpacing
+        legend.setContentHuggingPriority(.required, for: .horizontal)
         return legend
     }
 }

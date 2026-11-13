@@ -96,11 +96,11 @@ final class AddOnCardView: NSView {
         titles.setContentHuggingPriority(.defaultLow, for: .horizontal)
         var views: [NSView] = [Self.icon(), titles]
         if let badge = badge() { views.append(badge) }
-        let toggle = control()
+        let toggle = card.hasChoices ? control() : nil
         // The name at the leading edge, the badge and the switch at the trailing one.
         let header = NSStackView()
         header.setViews(Array(views.prefix(2)), in: .leading)
-        header.setViews(Array(views.dropFirst(2)) + [toggle], in: .trailing)
+        header.setViews(Array(views.dropFirst(2)) + [toggle].compactMap { $0 }, in: .trailing)
         header.spacing = Self.headerSpacing
         header.alignment = .centerY
         return header
@@ -158,24 +158,31 @@ final class AddOnCardView: NSView {
         if let offer = Self.offer(module, licence: licence, startTrial: actions.startTrial) {
             views.append(offer)
         }
-        if card.canSwitch || card.isOn {
-            let newFolders = ClosureSwitch(
-                label: String(localized: "On in new folders"), change: actions.turnOnInNewFolders)
-            newFolders.state = card.isOn && isOnInNewFolders ? .on : .off
-            newFolders.isEnabled = card.newFoldersCanSwitch
-            if card.isOn, !card.newFoldersCanSwitch {
-                newFolders.toolTip = String(
-                    localized: "At least one add-on stays on in new folders")
-            }
-            let label = NSTextField(labelWithString: String(localized: "On in new folders"))
-            views.append(NSStackView(views: [newFolders, label]))
-        }
+        if let newFolders = newFoldersRow(isOn: isOnInNewFolders) { views.append(newFolders) }
         let body = NSStackView(views: views)
         body.orientation = .vertical
         body.alignment = .leading
         body.spacing = Self.bodySpacing
         body.edgeInsets = NSEdgeInsets(top: 0, left: Self.bodyIndent, bottom: 0, right: 0)
         return body
+    }
+
+    /// On in new folders with its switch; for the last add-on on there, which stays on
+    /// (ADR 0070), the words Always on in new folders in its place (ADR 0092); nil for an
+    /// add-on that may not work, and for the only one that may.
+    private func newFoldersRow(isOn isOnInNewFolders: Bool) -> NSView? {
+        guard card.hasChoices, card.canSwitch || card.isOn else { return nil }
+        if card.isOn, !card.newFoldersCanSwitch {
+            let always = Self.caption(String(localized: "Always on in new folders"))
+            always.toolTip = String(localized: "At least one add-on stays on in new folders")
+            return always
+        }
+        let newFolders = ClosureSwitch(
+            label: String(localized: "On in new folders"), change: actions.turnOnInNewFolders)
+        newFolders.state = card.isOn && isOnInNewFolders ? .on : .off
+        newFolders.isEnabled = card.newFoldersCanSwitch
+        let label = NSTextField(labelWithString: String(localized: "On in new folders"))
+        return NSStackView(views: [newFolders, label])
     }
 
     /// Try for 14 Days before a paid add-on was tried, and Buy… where it is sold without a

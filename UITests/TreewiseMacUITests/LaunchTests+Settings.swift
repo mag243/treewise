@@ -46,9 +46,9 @@ extension LaunchTests {
         XCTAssertTrue(
             settings.staticTexts["Folder Pattern"].appeared(timeout: Self.launchTimeout),
             "the free add-on is listed")
-        XCTAssertTrue(
-            settings.staticTexts["Always on"].exists && !settings.switches["Folder Pattern"].exists,
-            "the last add-on that is on stays on, without a switch (ADR 0070, ADR 0092)")
+        XCTAssertFalse(
+            settings.switches["Folder Pattern"].exists || settings.staticTexts["Always on"].exists,
+            "the only add-on offers no on or off: it stays on (ADR 0070, ADR 0092)")
         XCTAssertTrue(
             settings.staticTexts.matching(
                 NSPredicate(format: "value BEGINSWITH 'Reads names only'")
@@ -56,6 +56,10 @@ extension LaunchTests {
         XCTAssertTrue(
             settings.staticTexts["Recognizes"].exists,
             "the first card is selected and open (ADR 0092)")
+        XCTAssertFalse(
+            settings.switches["On in new folders"].exists
+                || settings.staticTexts["Always on in new folders"].exists,
+            "the only add-on offers no choice for new folders")
         XCTAssertFalse(settings.scrollBars.firstMatch.exists, "the add-ons fit")
         XCTAssertFalse(
             settings.switches["Also read names in the same folder a year before"].exists
@@ -78,13 +82,13 @@ extension LaunchTests {
             settings.staticTexts["Folder Pattern"].appeared(timeout: Self.launchTimeout))
         let advanced = settings.staticTexts["Advanced Folder Pattern"]
         try XCTSkipUnless(advanced.exists, "the open build has one add-on")
-        let newFolders = settings.switches["On in new folders"]
+        let recognizes = settings.staticTexts.matching(identifier: "Recognizes")
         let tryIt = settings.buttons["Try for 14 Days"]
-        XCTAssertTrue(newFolders.exists, "the first card is open")
+        XCTAssertEqual(recognizes.count, 1, "the first card is open, and only that one")
         XCTAssertFalse(tryIt.exists, "the second card is folded")
         advanced.click()
         XCTAssertTrue(tryIt.appeared(timeout: Self.launchTimeout), "the card selected opens")
-        XCTAssertFalse(newFolders.exists, "the card before folds")
+        XCTAssertEqual(recognizes.count, 1, "the card before folds")
     }
 
     @MainActor

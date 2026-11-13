@@ -22,7 +22,8 @@ extension AddOnsSettingsTab {
         }
         let card = AddOnCard(
             isOnSetting: settings.addOns.isOn(id), licence: states[id],
-            isLastWorking: working == [id], isLastInNewFolders: inNewFolders == [id])
+            isLastWorking: working == [id], isLastInNewFolders: inNewFolders == [id],
+            isOnlyWorking: modules.filter { states[$0.id]?.mayWork ?? true }.map(\.id) == [id])
         let view = AddOnCardView(
             module: module, card: card, licence: states[id], isSelected: id == selectedID,
             isOnInNewFolders: settings.addOns.isOnInNewFolders(id, defaultID: defaultID),

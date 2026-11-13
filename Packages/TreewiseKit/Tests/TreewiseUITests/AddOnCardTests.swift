@@ -63,6 +63,15 @@ import TreewiseUI
         #expect(card.newFoldersCanSwitch == expected.isOn)
     }
 
+    @Test func offersNoChoicesForTheOnlyAddOnThatMayWork() {
+        let only = AddOnCard(
+            isOnSetting: true, licence: nil, isLastWorking: true, isOnlyWorking: true)
+        #expect(!only.hasChoices)
+        let oneOfTwo = AddOnCard(
+            isOnSetting: true, licence: nil, isLastWorking: true, isOnlyWorking: false)
+        #expect(oneOfTwo.hasChoices)
+    }
+
     @Test func onInNewFoldersCannotBeTurnedOffForTheLastAddOnOnThere() {
         let last = AddOnCard(
             isOnSetting: true, licence: nil, isLastWorking: false, isLastInNewFolders: true)
