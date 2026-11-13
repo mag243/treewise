@@ -6,6 +6,22 @@ All notable changes to Treewise are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-13
+
+### Added
+- The Advanced Folder Pattern add-on comes with Treewise. It recognizes more in a folder's names than the free add-on: years, quarters after a Q and months after a year that continue a series, and names that follow one of several patterns. Try it for 14 days with Try for 14 Days in Settings > Add-ons or in the overview of proposed names; after that it works with a licence key, entered with Enter Licence Key…. It is not for sale yet.
+- A licence key can have an end date; Settings then says until when it counts, and how many days are left in its last week.
+- Settings > Add-ons says what each add-on does and what it recognizes in a folder's names.
+- `{seq}` takes a range, a list or an open end: `{seq:2-4}`, `{seq:2,4,6,8}`, `{seq:5-}`, and its width by leading zeros or a second colon: `{seq:001-}`, `{seq:5-:3}`.
+- `{year:yy}` writes the year in two digits, `{folder:2}` is the folder above the one that holds the file, and `:lower`, `:upper` and `:title` write a field's text in small letters, capitals or with a capital at each word.
+
+### Changed
+- A name fits a pattern with `{seq}` only when its number is one the series can give, so `Q5` no longer fits `Q{seq:4}`.
+- The overview says when a folder has too few names to recognize a pattern in: it needs at least 3.
+
+### Fixed
+- The buttons at the foot of the overview of proposed names have room around them again, instead of touching the window's edge.
+
 ## [0.7.0] - 2026-11-12
 
 ### Added
