@@ -49,7 +49,7 @@ final class AddOnCardView: NSView {
         box.contentViewMargins = Self.padding
         let inner = width - 2 * Self.padding.width
         let header = header()
-        header.widthAnchor.constraint(equalToConstant: inner).isActive = true
+        Self.prefer(header.widthAnchor.constraint(equalToConstant: inner))
         var rows: [NSView] = [header]
         if isSelected {
             rows.append(body(isOnInNewFolders: isOnInNewFolders, width: inner - Self.bodyIndent))
@@ -60,7 +60,7 @@ final class AddOnCardView: NSView {
         stack.spacing = Self.bodySpacing
         Self.fill(box.contentView, with: stack)
         Self.fill(self, with: box)
-        widthAnchor.constraint(equalToConstant: width).isActive = true
+        Self.prefer(widthAnchor.constraint(equalToConstant: width))
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
         setAccessibilityLabel(NameReviewText.name(of: module))
@@ -204,6 +204,13 @@ final class AddOnCardView: NSView {
         }
         for case let button as NSButton in buttons { button.controlSize = .small }
         return buttons.isEmpty ? nil : NSStackView(views: buttons)
+    }
+
+    /// Activates a width the card would like, below the width the list's column gives it,
+    /// which wins when the two differ by a scroll bar or a rounding.
+    private static func prefer(_ width: NSLayoutConstraint) {
+        width.priority = .init(NSLayoutConstraint.Priority.required.rawValue - 1)
+        width.isActive = true
     }
 
     private static func fill(_ container: NSView?, with view: NSView, inset: CGFloat = 0) {
