@@ -3,6 +3,26 @@
     <channel>
         <title>Treewise</title>
         <item>
+            <title>0.8.5</title>
+            <pubDate>Fri, 13 Nov 2026 19:57:45 +0100</pubDate>
+            <sparkle:version>2026.1113.195502</sparkle:version>
+            <sparkle:shortVersionString>0.8.5</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[### Added
+- The Advanced Folder Pattern add-on learns a series that starts again each year from a complete year: where it ends, a list of numbers it skips, and how wide they are written, as `{seq:24:1}` or `{seq:5,10,15,20}`. In a folder per year it can read the names in the same folder a year before, as `Administration/2025/Tax` beside `Administration/2026/Tax`, so a new year's folder gets last year's pattern at once. Settings > Add-ons has Also read names in the same folder a year before, on by default; only names are read.
+- Halves after an H, as `H1` and `H2`, continue as a series of two.
+
+### Changed
+- Settings > Add-ons shows each add-on as a card with its licence as a coloured badge and a switch. Selecting a card opens it and folds the others; the list fills the tab and scrolls to the card selected. What an add-on recognizes shows with an example of each field, as `{seq:4}` 1–4, coloured by kind.
+- Advanced Folder Pattern learns a list from one complete year whose numbers step evenly, as 2, 4, 6, 8, and such a list comes before the months.
+- The sidebar can be made wider, up to 400 points, and starts at 260. Each window keeps its sidebar's width, also after a restart, and a new window starts at the width last chosen. When the window is made narrower, the sidebar gives way first. The sidebar's button stands at the right over the sidebar, away from the window's buttons.
+
+### Fixed
+- The Settings window is titled by the tab chosen, instead of Untitled.
+]]></description>
+            <enclosure url="https://github.com/mag243/treewise/releases/download/v0.8.5/Treewise-0.8.5-2026.1113.195502.zip" length="5016456" type="application/octet-stream" sparkle:edSignature="X/jCsTmvucvOiGPXFksogDC0UQ8RsAGU0cKAVp3inqrjnnuaj47dCsTsZxxzjC5lu3uE9ONsc/skhWecK9A3Cg=="/>
+        </item>
+        <item>
             <title>0.8.0</title>
             <pubDate>Fri, 13 Nov 2026 13:13:14 +0100</pubDate>
             <sparkle:version>2026.1113.131101</sparkle:version>
