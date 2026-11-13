@@ -93,6 +93,13 @@ import TreewiseModuleInterface
         #expect(Self.module.summary(preferring: languages) == summary)
     }
 
+    @Test func saysWhatItRecognizesAsWrittenInAPattern() {
+        let module = NameModuleDescription(
+            id: "paid", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
+            recognizes: ["{date}", "{year}", "{seq:4}"])
+        #expect(module.recognizes == ["{date}", "{year}", "{seq:4}"])
+    }
+
     @Test func aModuleWithoutASummarySaysNothing() {
         let bare = NameModuleDescription(
             id: "free", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "")

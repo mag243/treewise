@@ -28,6 +28,14 @@ import TreewiseModuleInterface
         #expect(module.description.summary(preferring: ["de-DE"])?.isEmpty == false)
     }
 
+    /// What it finds in a folder's names, as Settings shows it (ADR 0088).
+    @Test func saysWhatItRecognizes() {
+        #expect(
+            FolderPatternModule().description.recognizes == [
+                "{date}", "{text}", "{folder}", "{seq}",
+            ])
+    }
+
     @Test func asksForNoContent() {
         #expect(module.description.neededContent.isEmpty)
     }

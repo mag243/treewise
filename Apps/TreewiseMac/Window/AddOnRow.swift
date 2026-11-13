@@ -64,7 +64,7 @@ final class AddOnRow: NSStackView {
     @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
 
-    /// What the add-on does, what it reads, which files it is for and its fields
+    /// What the add-on does, what it reads, which files it is for and what it recognizes
     /// (ADR 0070, ADR 0088).
     private func addDetails(of module: NameModuleDescription) {
         if let summary = module.summary(preferring: Locale.preferredLanguages) {
@@ -72,13 +72,13 @@ final class AddOnRow: NSStackView {
             line.font = .preferredFont(forTextStyle: .callout)
             addIndented(line)
         }
-        let fields = module.fields.map { "{\($0.name)}" }.joined(separator: " ")
-        for line in [
-            Self.reads(module), String(localized: "For \(Self.files(module))"),
-            String(localized: "Fields: \(fields)"),
-        ] {
-            addIndented(Self.caption(line))
+        var lines = [Self.reads(module), String(localized: "For \(Self.files(module))")]
+        // What it finds in a folder's names tells add-ons apart (ADR 0088).
+        if !module.recognizes.isEmpty {
+            lines.append(
+                String(localized: "Recognizes: \(module.recognizes.joined(separator: " "))"))
         }
+        for line in lines { addIndented(Self.caption(line)) }
     }
 
     private func addIndented(_ view: NSView) {

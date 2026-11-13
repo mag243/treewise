@@ -28,13 +28,16 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     /// What it does, in one line, by language code (`en`, `nl`, `de`): a closed module
     /// brings its own words, as the open app does not know it (ADR 0088).
     public let summaries: [String: String]
+    /// What it finds by itself in a folder's names, written as in a pattern, as `{date}`,
+    /// `{seq:4}` or `<…|…>` (ADR 0088).
+    public let recognizes: [String]
 
     /// Creates a description.
     public init(
         id: String, contentTypes: Set<String>, neededContent: Set<ModuleContentKind>,
         fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false,
         name: String? = nil, replaces: Set<String> = [], purchaseURL: String? = nil,
-        summaries: [String: String] = [:]
+        summaries: [String: String] = [:], recognizes: [String] = []
     ) {
         self.id = id
         self.contentTypes = contentTypes
@@ -46,6 +49,7 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
         self.replaces = replaces
         self.purchaseURL = purchaseURL
         self.summaries = summaries
+        self.recognizes = recognizes
     }
 
     /// What it does, in the first of the languages it has a summary in, by their codes as

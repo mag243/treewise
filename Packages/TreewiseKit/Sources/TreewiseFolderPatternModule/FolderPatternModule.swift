@@ -28,7 +28,8 @@ public struct FolderPatternModule: NameModule {
             "nl":
                 "Stelt namen voor uit de datum en naam van een bestand, in het patroon van de map.",
             "de": "Schlägt Namen aus Datum und Namen einer Datei vor, im Muster ihres Ordners.",
-        ])
+        ],
+        recognizes: ["{date}", "{text}", "{folder}", "{seq}"])
 
     /// Creates the module.
     public init() {}
