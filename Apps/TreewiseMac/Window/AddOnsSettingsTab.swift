@@ -184,10 +184,11 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         let readsYearBefore = modules.contains(where: \.readsYearBefore)
         for view in reading { view.isHidden = !readsYearBefore }
         shown = ordered
-        table.reloadData()
+        // The selection is known before the cards are made, so the right one opens.
         let index = shown.firstIndex { $0.id == selectedID } ?? 0
+        selectedID = index < shown.count ? shown[index].id : nil
+        table.reloadData()
         if index < shown.count {
-            selectedID = shown[index].id
             table.selectRowIndexes([index], byExtendingSelection: false)
         }
     }
@@ -239,15 +240,12 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         let card = table.rect(ofRow: row)
         let clip = scroll.contentView
         let visible = clip.bounds
-        var top = visible.minY
-        if card.height > visible.height || card.minY < visible.minY {
-            top = card.minY
-        } else if card.maxY > visible.maxY {
-            top = card.maxY - visible.height
-        }
-        top = max(0, min(top, table.frame.height - visible.height))
-        guard top != visible.minY else { return }
-        let origin = NSPoint(x: visible.minX, y: top)
+        guard
+            let top = RevealScroll.top(
+                card: Double(card.minY)..<Double(card.maxY), visibleTop: Double(visible.minY),
+                visibleHeight: Double(visible.height), contentHeight: Double(table.frame.height))
+        else { return }
+        let origin = NSPoint(x: visible.minX, y: CGFloat(top))
         if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
             clip.setBoundsOrigin(origin)
         } else {

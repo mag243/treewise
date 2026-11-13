@@ -51,8 +51,12 @@ extension AddOnsSettingsTab {
     func tableViewSelectionDidChange(_ notification: Notification) {
         let row = table.selectedRow
         guard row >= 0, row < shown.count, shown[row].id != selectedID else { return }
+        let before = shown.firstIndex { $0.id == selectedID }
         selectedID = shown[row].id
-        table.reloadData()
+        // Only the two cards that change are made again, so a drag that starts here goes on.
+        var changed = IndexSet(integer: row)
+        if let before { changed.insert(before) }
+        table.reloadData(forRowIndexes: changed, columnIndexes: [0])
         revealSelection()
     }
 

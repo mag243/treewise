@@ -56,8 +56,33 @@ extension LaunchTests {
             "the first card is selected and open (ADR 0092)")
         XCTAssertFalse(settings.scrollBars.firstMatch.exists, "the add-ons fit")
         XCTAssertFalse(
-            settings.switches["Also read names in the same folder a year before"].exists,
+            settings.switches["Also read names in the same folder a year before"].exists
+                || settings.staticTexts["Also read names in the same folder a year before"].exists,
             "no add-on here reads the year before, so the choice is not offered (ADR 0090)")
+    }
+
+    /// Needs two add-ons, as the official build has with Advanced Folder Pattern not tried.
+    @MainActor
+    func testSettingsOpensTheAddOnCardSelected() throws {
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
+        app.typeKey(",", modifierFlags: .command)
+        let settings = app.windows[Self.settingsWindow]
+        let tab = settings.toolbars.buttons["Add-ons"]
+        XCTAssertTrue(tab.appeared(timeout: Self.launchTimeout))
+        tab.click()
+        XCTAssertTrue(
+            settings.switches["Folder Pattern"].appeared(timeout: Self.launchTimeout))
+        let advanced = settings.staticTexts["Advanced Folder Pattern"]
+        try XCTSkipUnless(advanced.exists, "the open build has one add-on")
+        let newFolders = settings.switches["On in new folders"]
+        let tryIt = settings.buttons["Try for 14 Days"]
+        XCTAssertTrue(newFolders.exists, "the first card is open")
+        XCTAssertFalse(tryIt.exists, "the second card is folded")
+        advanced.click()
+        XCTAssertTrue(tryIt.appeared(timeout: Self.launchTimeout), "the card selected opens")
+        XCTAssertFalse(newFolders.exists, "the card before folds")
     }
 
     @MainActor

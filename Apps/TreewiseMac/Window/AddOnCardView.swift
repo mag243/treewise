@@ -92,23 +92,38 @@ final class AddOnCardView: NSView {
         titles.alignment = .leading
         titles.spacing = 1
         titles.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        let badgeText = Self.caption(
-            licence.map(LicenceText.state) ?? String(localized: "Free"))
-        let color = AddOnCardStyle.color(of: card.tone)
-        badgeText.textColor = color
-        badgeText.font = .systemFont(
-            ofSize: NSFont.preferredFont(forTextStyle: .caption1).pointSize, weight: .semibold)
-        let badge = AddOnCardStyle.pill(badgeText, color: color)
+        var views: [NSView] = [Self.icon(), titles]
+        if let badge = badge() { views.append(badge) }
         let toggle = ClosureSwitch(label: NameReviewText.name(of: module), change: actions.turnOn)
         toggle.state = card.isOn ? .on : .off
         toggle.isEnabled = card.canSwitch
         if card.isOn, !card.canSwitch {
             toggle.toolTip = String(localized: "At least one add-on stays on")
         }
-        let header = NSStackView(views: [Self.icon(), titles, badge, toggle])
+        views.append(toggle)
+        let header = NSStackView(views: views)
         header.spacing = Self.headerSpacing
         header.alignment = .centerY
         return header
+    }
+
+    /// Free for a free add-on, a paid one's licence; none for a paid one whose licence
+    /// could not be read.
+    private func badge() -> NSView? {
+        let text: String
+        if module.isFree {
+            text = String(localized: "Free")
+        } else if let licence {
+            text = LicenceText.state(licence)
+        } else {
+            return nil
+        }
+        let label = Self.caption(text)
+        let color = AddOnCardStyle.color(of: card.tone)
+        label.textColor = color
+        label.font = .systemFont(
+            ofSize: NSFont.preferredFont(forTextStyle: .caption1).pointSize, weight: .semibold)
+        return AddOnCardStyle.pill(label, color: color)
     }
 
     private func body(isOnInNewFolders: Bool, width: CGFloat) -> NSView {
