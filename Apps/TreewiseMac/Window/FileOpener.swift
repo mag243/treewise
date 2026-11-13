@@ -18,6 +18,23 @@ enum FileOpener {
     /// Opens a file in its default application.
     static func open(_ item: FileItem) {
         guard let url = item.id.diskURL else { return }
-        NSWorkspace.shared.open(url)
+        openInDefaultApp(url)
+    }
+
+    /// Opens a file in its default application, or, under a UI test, notes it in the test's
+    /// log instead, so no other app starts on the Mac the tests run on.
+    static func openInDefaultApp(_ url: URL) {
+        guard let log = LaunchOptions.openedLog else {
+            NSWorkspace.shared.open(url)
+            return
+        }
+        let line = Data((url.path + "\n").utf8)
+        if let handle = try? FileHandle(forWritingTo: log) {
+            _ = try? handle.seekToEnd()
+            try? handle.write(contentsOf: line)
+            try? handle.close()
+        } else {
+            try? line.write(to: log)
+        }
     }
 }

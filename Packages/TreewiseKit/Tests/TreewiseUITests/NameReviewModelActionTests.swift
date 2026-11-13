@@ -137,6 +137,17 @@ extension NameReviewModelTests {
         #expect(model.session?.entry(item.id)?.currentName == "Doc Two.txt")
     }
 
+    /// A pattern needs at least `PatternFit.minimumFits` names, which the overview says
+    /// when a folder has fewer (ADR 0067).
+    @Test(arguments: [(2, true), (3, false)])
+    func saysWhenAFolderHasTooFewNamesForAPattern(_ count: Int, _ tooFew: Bool) async {
+        for index in 1...count { _ = addFile("scan \(index).txt") }
+        let host = ScriptedModuleHost(modules: [Self.freeDescription], answers: [:])
+        let model = await model(host)
+        #expect(model.modules.first?.origin == .notRecognized)
+        #expect(model.modules.first?.hasTooFewNamesForAPattern == tooFew)
+    }
+
     @Test func aWholeFolderWithoutAPatternGetsNoProposals() async {
         let item = addFile("scan.txt")
         let host = ScriptedModuleHost(

@@ -45,10 +45,11 @@ extension LaunchTests {
             },
             withIntermediateDirectories: true)
         let app = XCUIApplication()
-        app.launchArguments = [
-            "-TreewiseRoot", root.path, "-ApplePersistenceIgnoreState", "YES",
-            "-TreewiseWindowSize", "640x420",
-        ]
+        app.launchArguments =
+            [
+                "-TreewiseRoot", root.path, "-ApplePersistenceIgnoreState", "YES",
+                "-TreewiseWindowSize", "640x420",
+            ] + OpenedLog.arguments(for: root)
         app.launch()
         for name in ["Projects"] + deep {
             let row = app.tables.staticTexts[name]

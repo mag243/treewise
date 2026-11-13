@@ -41,7 +41,14 @@ enum NameReviewText {
             }
         case .moduleDefault: String(localized: "add-on's default")
         case .user: String(localized: "changed by you")
-        case .notRecognized: String(localized: "no pattern recognized in this folder")
+        case .notRecognized:
+            if module.hasTooFewNamesForAPattern {
+                String(
+                    localized:
+                        "no pattern yet: a pattern needs at least \(PatternFit.minimumFits) names")
+            } else {
+                String(localized: "no pattern recognized in this folder")
+            }
         case .usersDefault: String(localized: "your default, as files were selected")
         }
     }

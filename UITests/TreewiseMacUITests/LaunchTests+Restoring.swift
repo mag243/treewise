@@ -10,7 +10,9 @@ extension LaunchTests {
         // Keeping the windows, as a person starts Treewise; XCUITest ignores the saved
         // state unless told, which also keeps it from being saved.
         let app = XCUIApplication()
-        app.launchArguments = ["-TreewiseRoot", root.path, "-ApplePersistenceIgnoreState", "NO"]
+        app.launchArguments =
+            ["-TreewiseRoot", root.path, "-ApplePersistenceIgnoreState", "NO"]
+            + OpenedLog.arguments(for: root)
         app.launch()
         XCTAssertTrue(app.tables.staticTexts["Projects"].appeared(timeout: Self.launchTimeout))
         XCTAssertTrue(app.waitForNewTab())

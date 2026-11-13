@@ -4913,6 +4913,22 @@
         }
       }
     },
+    "no pattern yet: a pattern needs at least %lld names" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "noch kein Muster: ein Muster braucht mindestens %lld Namen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nog geen patroon: een patroon heeft minstens %lld namen nodig"
+          }
+        }
+      }
+    },
     "recognized from %lld of %lld names" : {
       "localizations" : {
         "de" : {

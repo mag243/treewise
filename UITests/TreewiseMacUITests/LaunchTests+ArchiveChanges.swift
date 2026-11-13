@@ -149,7 +149,9 @@ extension LaunchTests {
         drag(notes, onto: row)
 
         XCTAssertTrue(notes.exists, "the file stays where it was")
-        // Opened while the change may still run: the list follows when it ends.
+        // Opened once the change has ended, so the list holds still under the double click
+        // and it cannot land on a row the list moved there.
+        waitUntilUndoable("Undo Copy", in: app)
         window.tables.staticTexts["Photos.zip"].doubleClick()
         assertShows("Notes.md", in: window, "a copy is in the zip")
     }

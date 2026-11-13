@@ -24,7 +24,10 @@ final class SmokeTests: XCTestCase {
     /// Quits the app before its folder goes, so the next test starts it at once.
     override func tearDownWithError() throws {
         MainActor.assumeIsolated { XCUIApplication().quit() }
-        if let root { try FileManager.default.removeItem(at: root) }
+        if let root {
+            OpenedLog.check(root: root)
+            try FileManager.default.removeItem(at: root)
+        }
     }
 
     private func exists(_ path: String) throws -> Bool {
@@ -44,9 +47,10 @@ final class SmokeTests: XCTestCase {
     @MainActor
     func testOpenTabWindowBesideDragUndo() throws {
         let app = XCUIApplication()
-        app.launchArguments = [
-            "-TreewiseRoot", try XCTUnwrap(root).path, "-ApplePersistenceIgnoreState", "YES",
-        ]
+        let root = try XCTUnwrap(root)
+        app.launchArguments =
+            ["-TreewiseRoot", root.path, "-ApplePersistenceIgnoreState", "YES"]
+            + OpenedLog.arguments(for: root)
         app.launch()
         let notes = app.tables.staticTexts["Notes.md"]
         XCTAssertTrue(notes.appeared(timeout: Self.timeout))

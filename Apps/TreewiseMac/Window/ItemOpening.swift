@@ -26,7 +26,7 @@ enum ItemOpening {
             else { continue }
             if file.id.isInsideArchive {
                 for copy in await browser.previewURLs(for: [file]) {
-                    NSWorkspace.shared.open(copy)
+                    FileOpener.openInDefaultApp(copy)
                 }
             } else if let folder = FileOpener.linkedFolder(of: file) {
                 await browser.navigate(pane: pane, to: folder)

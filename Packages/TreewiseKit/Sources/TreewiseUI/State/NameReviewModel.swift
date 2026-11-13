@@ -94,6 +94,12 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     public internal(set) var licence: ModuleLicenceState?
     /// The templates it recognized in the folder, the best first, to pick from (ADR 0067).
     public internal(set) var candidates: [PatternCandidate] = []
+    /// How many names of the folder it was given to recognize a pattern in.
+    var namesGiven = 0
+
+    /// Whether the folder has too few names to recognize a pattern in: fewer than
+    /// `PatternFit.minimumFits` (ADR 0067).
+    public var hasTooFewNamesForAPattern: Bool { namesGiven < PatternFit.minimumFits }
 
     /// The module's id.
     public var id: String { description.id }
@@ -304,6 +310,7 @@ public final class NameReviewModel {
             templateText: "", origin: .notRecognized,
             recognized: derived ?? (isDefault ? nil : description.defaultTemplate))
         module.licence = licenceStates[description.id]
+        module.namesGiven = names.count
         module.candidates = candidates(templates, for: description, names: names)
         if let own = settings.templates[description.id] {
             module.templateText = own

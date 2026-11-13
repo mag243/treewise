@@ -12,7 +12,9 @@ import TreewiseUI
 ///   are mounted (ADR 0046), with home and Applications on the first.
 /// Screenshots (ADR 0041) add `-TreewiseFreshSettings YES`,
 /// `-TreewiseWindowSize <width>x<height>` and `-TreewiseAppearance light|dark`.
-/// A Debug build takes `-TreewiseTrialStart yyyy-MM-dd`, to try a trial's days (ADR 0071).
+/// A Debug build takes `-TreewiseTrialStart yyyy-MM-dd`, to try a trial's days (ADR 0071),
+/// and `-TreewiseOpenedLog <file>`, which UI tests give so a file Treewise would open in
+/// another app is noted in the file instead, and no app starts on the Mac they run on.
 enum LaunchOptions {
     private static let rootArgument = "TreewiseRoot"
     private static let sandboxArgument = "TreewiseSandbox"
@@ -20,6 +22,7 @@ enum LaunchOptions {
     private static let windowSizeArgument = "TreewiseWindowSize"
     private static let appearanceArgument = "TreewiseAppearance"
     private static let trialStartArgument = "TreewiseTrialStart"
+    private static let openedLogArgument = "TreewiseOpenedLog"
     /// The keychain service of the sandbox's licence dates, apart from the real ones.
     private static let sandboxKeychainService = KeychainStore.appService + ".sandbox"
     /// Where the demo tree has its home folder on the first sandbox volume.
@@ -158,6 +161,17 @@ enum LaunchOptions {
                 sandboxFolderSettings, isDirectory: true)
         }
         return FolderSettingsStore.defaultDirectory
+    }
+
+    /// Where a file to open in another app is noted instead, in a Debug build only.
+    static var openedLog: URL? {
+        #if DEBUG
+            UserDefaults.standard.string(forKey: openedLogArgument).map {
+                URL(fileURLWithPath: $0)
+            }
+        #else
+            nil
+        #endif
     }
 
     /// The trial's start given at launch, in a Debug build only, to try a trial's days.

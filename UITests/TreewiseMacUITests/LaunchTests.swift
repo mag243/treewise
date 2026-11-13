@@ -18,10 +18,14 @@ final class LaunchTests: XCTestCase {
         root = folder
     }
 
-    /// Quits the app before its folder goes, so the next test starts it at once.
+    /// Quits the app before its folder goes, so the next test starts it at once, and fails
+    /// the test when the app opened a file in another app.
     override func tearDownWithError() throws {
         MainActor.assumeIsolated { XCUIApplication().quit() }
-        if let root { try FileManager.default.removeItem(at: root) }
+        if let root {
+            OpenedLog.check(root: root)
+            try FileManager.default.removeItem(at: root)
+        }
     }
 
     /// Starts the app in the temporary root without restoring windows, so the
@@ -29,11 +33,28 @@ final class LaunchTests: XCTestCase {
     @MainActor
     func launchApp() throws -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = [
-            "-TreewiseRoot", try XCTUnwrap(root).path, "-ApplePersistenceIgnoreState", "YES",
-        ]
+        let root = try XCTUnwrap(root)
+        app.launchArguments =
+            ["-TreewiseRoot", root.path, "-ApplePersistenceIgnoreState", "YES"]
+            + OpenedLog.arguments(for: root)
         app.launch()
         return app
+    }
+
+    /// A file opened in a UI test is noted, and no other app starts.
+    @MainActor
+    func testOpeningAFileNotesItInsteadOfStartingAnApp() throws {
+        let app = try launchApp()
+        let notes = app.tables.staticTexts["Notes.md"]
+        XCTAssertTrue(notes.appeared(timeout: Self.launchTimeout))
+        notes.doubleClick()
+        let root = try XCTUnwrap(self.root)
+        let noted = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in OpenedLog.opened(for: root).contains("Notes.md") },
+            object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [noted], timeout: Self.launchTimeout), .completed)
+        // This test opens a file on purpose, so the check after it finds none.
+        try FileManager.default.removeItem(at: OpenedLog.url(for: root))
     }
 
     @MainActor
