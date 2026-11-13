@@ -67,6 +67,34 @@ extension LaunchTests {
             "no add-on here reads the year before, so the choice is not offered (ADR 0090)")
     }
 
+    /// The legend's kinds stay side by side, also when a setting lays the cards out again.
+    @MainActor
+    func testTheLegendKeepsItsKindsTogether() throws {
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
+        app.typeKey(",", modifierFlags: .command)
+        let settings = app.windows[Self.settingsWindow]
+        let tab = settings.toolbars.buttons["Add-ons"]
+        XCTAssertTrue(tab.appeared(timeout: Self.launchTimeout))
+        tab.click()
+        let dates = settings.staticTexts["Dates"]
+        let series = settings.staticTexts["Series"]
+        XCTAssertTrue(dates.appeared(timeout: Self.launchTimeout), "the open card has a legend")
+        let together: CGFloat = 40
+        XCTAssertLessThan(series.frame.minX - dates.frame.maxX, together, "side by side")
+        let yearBefore = settings.switches["Also read names in the same folder a year before"]
+        guard yearBefore.exists else { return }
+        for _ in 0..<2 {
+            let value = yearBefore.value as? Int
+            yearBefore.click()
+            XCTAssertTrue(app.eventually { yearBefore.value as? Int != value })
+            XCTAssertLessThan(
+                series.frame.minX - dates.frame.maxX, together,
+                "still side by side after the cards are laid out again")
+        }
+    }
+
     /// Needs two add-ons, as the official build has with Advanced Folder Pattern not tried.
     @MainActor
     func testSettingsOpensTheAddOnCardSelected() throws {

@@ -35,8 +35,6 @@ enum AddOnCardStyle {
     private static let lightFill: CGFloat = 0.75
     private static let darkFill: CGFloat = 0.06
     private static let pillMargins = NSSize(width: 7, height: 2)
-    private static let legendMark: CGFloat = 8
-    private static let legendSpacing: CGFloat = 12
 
     /// The fill of a card: lighter than the window, in both appearances.
     static let cardFill = NSColor(name: nil) { appearance in
@@ -101,30 +99,84 @@ enum AddOnCardStyle {
 
     /// The kinds of field, each with its colour, for under the labels.
     static func legend() -> NSView {
-        let kinds: [(RecognizedField.Kind, String)] = [
+        LegendView(kinds: [
             (.date, String(localized: "Dates")), (.series, String(localized: "Series")),
             (.text, String(localized: "Text")), (.choice, String(localized: "Choice")),
-        ]
-        let items = kinds.map { kind, name -> NSView in
-            let mark = group(fill: color(of: kind), border: .clear, radius: 2)
-            mark.widthAnchor.constraint(equalToConstant: legendMark).isActive = true
-            mark.heightAnchor.constraint(equalToConstant: legendMark).isActive = true
+        ])
+    }
+}
+
+/// The kinds of field, each a mark in its colour and its name, side by side from the
+/// leading edge. Placed by frame and sized to them, so no stack can spread them out when
+/// the card is laid out again.
+@MainActor
+final class LegendView: NSView {
+    private static let mark: CGFloat = 8
+    private static let markSpacing: CGFloat = 4
+    private static let itemSpacing: CGFloat = 12
+
+    override var isFlipped: Bool { true }
+
+    init(kinds: [(RecognizedField.Kind, String)]) {
+        var placed: [(NSView, NSRect)] = []
+        var x: CGFloat = 0
+        let labels = kinds.map { _, name in
             let label = NSTextField(labelWithString: name)
             label.font = .preferredFont(forTextStyle: .caption2)
             label.textColor = .secondaryLabelColor
-            // Each item keeps its own width, so a wider legend leaves its items together.
-            label.setContentHuggingPriority(.required, for: .horizontal)
-            let item = NSStackView(views: [mark, label])
-            item.spacing = 4
-            item.setContentHuggingPriority(.required, for: .horizontal)
-            return item
+            return label
         }
-        // In the leading gravity area, so a stack that grows wider leaves them together.
-        let legend = NSStackView()
-        legend.setViews(items, in: .leading)
-        legend.spacing = legendSpacing
-        legend.setContentHuggingPriority(.required, for: .horizontal)
-        return legend
+        let height = labels.map(\.fittingSize.height).max() ?? Self.mark
+        for ((kind, _), label) in zip(kinds, labels) {
+            let mark = ColourMark(color: AddOnCardStyle.color(of: kind))
+            placed.append(
+                (
+                    mark,
+                    NSRect(x: x, y: (height - Self.mark) / 2, width: Self.mark, height: Self.mark)
+                ))
+            x += Self.mark + Self.markSpacing
+            let size = label.fittingSize
+            placed.append(
+                (
+                    label,
+                    NSRect(
+                        x: x, y: (height - size.height) / 2, width: size.width, height: size.height)
+                ))
+            x += size.width + Self.itemSpacing
+        }
+        let width = max(0, x - Self.itemSpacing)
+        super.init(frame: NSRect(x: 0, y: 0, width: width, height: height))
+        for (view, frame) in placed {
+            view.frame = frame
+            addSubview(view)
+        }
+        NSLayoutConstraint.activate([
+            widthAnchor.constraint(equalToConstant: width),
+            heightAnchor.constraint(equalToConstant: height),
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
+}
+
+/// A small rounded square in a colour, drawn in the view's appearance.
+@MainActor
+final class ColourMark: NSView {
+    private static let radius: CGFloat = 2
+    private let color: NSColor
+
+    init(color: NSColor) {
+        self.color = color
+        super.init(frame: .zero)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
+
+    override func draw(_ dirtyRect: NSRect) {
+        color.setFill()
+        NSBezierPath(roundedRect: bounds, xRadius: Self.radius, yRadius: Self.radius).fill()
     }
 }
 
