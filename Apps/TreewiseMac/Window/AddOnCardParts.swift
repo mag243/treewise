@@ -32,7 +32,6 @@ enum AddOnCardStyle {
     static let cardRadius: CGFloat = 10
     static let pillRadius: CGFloat = 6
     private static let tint: CGFloat = 0.14
-    private static let edge: CGFloat = 0.32
     private static let lightFill: CGFloat = 0.75
     private static let darkFill: CGFloat = 0.06
     private static let pillMargins = NSSize(width: 7, height: 2)
@@ -60,11 +59,11 @@ enum AddOnCardStyle {
         return box
     }
 
-    /// `label` on a light fill of `color`, as a badge or a field's label.
-    static func pill(_ label: NSTextField, color: NSColor, edged: Bool = false) -> NSBox {
+    /// `label` on a light fill of `color`, as a badge.
+    static func pill(_ label: NSTextField, color: NSColor) -> NSBox {
         let box = group(
             fill: color.withAlphaComponent(tint),
-            border: edged ? color.withAlphaComponent(edge) : .clear, radius: pillRadius)
+            border: .clear, radius: pillRadius)
         box.contentViewMargins = pillMargins
         box.contentView?.addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -119,6 +118,8 @@ enum AddOnCardStyle {
         }
         let legend = NSStackView(views: items)
         legend.spacing = legendSpacing
+        legend.distribution = .fill
+        legend.setContentHuggingPriority(.required, for: .horizontal)
         return legend
     }
 }
@@ -128,7 +129,6 @@ enum AddOnCardStyle {
 @MainActor
 final class RecognizedFieldsView: NSView {
     private static let spacing: CGFloat = 5
-    private let height: CGFloat
 
     override var isFlipped: Bool { true }
 
@@ -137,23 +137,21 @@ final class RecognizedFieldsView: NSView {
         var origin = NSPoint.zero
         var lineHeight: CGFloat = 0
         for field in fields {
-            let label = NSTextField(labelWithAttributedString: Self.text(of: field))
-            let pill = AddOnCardStyle.pill(
-                label, color: AddOnCardStyle.color(of: field.kind), edged: true)
-            let size = pill.fittingSize
+            let chip = FieldChip(field)
+            let size = chip.frame.size
             if origin.x > 0, origin.x + size.width > width {
                 origin = NSPoint(x: 0, y: origin.y + lineHeight + Self.spacing)
                 lineHeight = 0
             }
-            placed.append((pill, NSRect(origin: origin, size: size)))
+            placed.append((chip, NSRect(origin: origin, size: size)))
             origin.x += size.width + Self.spacing
             lineHeight = max(lineHeight, size.height)
         }
-        height = origin.y + lineHeight
+        let height = origin.y + lineHeight
         super.init(frame: NSRect(x: 0, y: 0, width: width, height: height))
-        for (pill, frame) in placed {
-            pill.frame = frame
-            addSubview(pill)
+        for (chip, frame) in placed {
+            chip.frame = frame
+            addSubview(chip)
         }
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
@@ -167,14 +165,53 @@ final class RecognizedFieldsView: NSView {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
+}
 
-    private static func text(of field: RecognizedField) -> NSAttributedString {
+/// One field as a label: the field in the colour of its kind and its example, on a light
+/// fill of that colour with an edge. It draws itself and knows its size, so the fields can
+/// be placed by frame.
+@MainActor
+final class FieldChip: NSView {
+    private static let margins = NSSize(width: 7, height: 2)
+    private static let fill: CGFloat = 0.14
+    private static let edge: CGFloat = 0.35
+    private let text: NSAttributedString
+    private let color: NSColor
+
+    override var isFlipped: Bool { true }
+
+    init(_ field: RecognizedField) {
+        color = AddOnCardStyle.color(of: field.kind)
+        text = Self.text(of: field, color: color)
+        let size = text.size()
+        super.init(
+            frame: NSRect(
+                x: 0, y: 0, width: ceil(size.width) + 2 * Self.margins.width,
+                height: ceil(size.height) + 2 * Self.margins.height))
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
+
+    override func draw(_ dirtyRect: NSRect) {
+        // Drawn in the view's appearance, so the colours follow light and dark.
+        let shape = NSBezierPath(
+            roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: AddOnCardStyle.pillRadius,
+            yRadius: AddOnCardStyle.pillRadius)
+        color.withAlphaComponent(Self.fill).setFill()
+        shape.fill()
+        color.withAlphaComponent(Self.edge).setStroke()
+        shape.stroke()
+        text.draw(at: NSPoint(x: Self.margins.width, y: Self.margins.height))
+    }
+
+    private static func text(of field: RecognizedField, color: NSColor) -> NSAttributedString {
         let size = NSFont.preferredFont(forTextStyle: .caption1).pointSize
         let text = NSMutableAttributedString(
             string: field.token,
             attributes: [
                 .font: NSFont.monospacedSystemFont(ofSize: size, weight: .medium),
-                .foregroundColor: AddOnCardStyle.color(of: field.kind),
+                .foregroundColor: color,
             ])
         if !field.example.isEmpty {
             text.append(

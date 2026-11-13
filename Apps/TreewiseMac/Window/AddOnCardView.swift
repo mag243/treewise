@@ -48,7 +48,9 @@ final class AddOnCardView: NSView {
             radius: AddOnCardStyle.cardRadius, borderWidth: isSelected ? Self.selectedEdge : 1)
         box.contentViewMargins = Self.padding
         let inner = width - 2 * Self.padding.width
-        var rows: [NSView] = [header()]
+        let header = header()
+        header.widthAnchor.constraint(equalToConstant: inner).isActive = true
+        var rows: [NSView] = [header]
         if isSelected {
             rows.append(body(isOnInNewFolders: isOnInNewFolders, width: inner - Self.bodyIndent))
         }
