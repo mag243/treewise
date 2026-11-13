@@ -48,6 +48,9 @@ enum SettingsWindow {
     private static func pane(
         _ controller: NSViewController, _ label: String.LocalizationValue, _ symbol: String
     ) -> NSTabViewItem {
+        // The tab view controller titles the window by the chosen tab's controller, not
+        // by its label, so the controller carries the label too.
+        controller.title = String(localized: label)
         let item = NSTabViewItem(viewController: controller)
         item.label = String(localized: label)
         item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: item.label)

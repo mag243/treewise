@@ -73,6 +73,22 @@ extension LaunchTests {
     }
 
     @MainActor
+    func testSettingsIsTitledByTheChosenTab() throws {
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
+        app.typeKey(",", modifierFlags: .command)
+        let settings = app.windows[Self.settingsWindow]
+        XCTAssertTrue(
+            settings.checkBoxes["Show hidden files"].appeared(timeout: Self.launchTimeout))
+        XCTAssertEqual(settings.title, "General", "Settings opens at General")
+        for tab in ["Names", "Add-ons", "General"] {
+            settings.toolbars.buttons[tab].click()
+            XCTAssertTrue(app.eventually { settings.title == tab }, "the window is titled \(tab)")
+        }
+    }
+
+    @MainActor
     func testANamePatternIsChosenInTheListAndEditedBelow() throws {
         let app = try launchApp()
         XCTAssertTrue(
