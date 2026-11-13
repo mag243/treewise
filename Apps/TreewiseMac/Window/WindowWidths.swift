@@ -1,15 +1,12 @@
 import CoreGraphics
+import TreewiseUI
 
-/// The widths that keep the window's rows whole (ADR 0037): the sidebar's
-/// range, and the narrowest window that still fits the command bar with its
-/// icons only.
+/// The widths that keep the window's rows whole (ADR 0037, ADR 0093): the sidebar's
+/// range, the folder side's least width, which fits the command bar with its icons only,
+/// and the narrowest window, which the sidebar gives way to first.
 enum WindowWidths {
-    static let sidebarMinimum: CGFloat = 160
-    static let sidebarIdeal: CGFloat = 200
-    static let sidebarMaximum: CGFloat = 240
-    /// The command bar with its icons only, over the folder side.
-    private static let folderMinimum: CGFloat = 380
-
-    /// The narrowest window: the widest sidebar beside the folder's minimum.
-    static let windowMinimum: CGFloat = sidebarMaximum + folderMinimum
+    static let sidebarMinimum = CGFloat(SidebarWidth.minimum)
+    static let sidebarMaximum = CGFloat(SidebarWidth.maximum)
+    static let folderMinimum = CGFloat(SidebarWidth.folderMinimum)
+    static let windowMinimum = CGFloat(SidebarWidth.narrowestWindow)
 }

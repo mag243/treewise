@@ -13,6 +13,7 @@ All notable changes to Treewise are recorded here. The format follows
 ### Changed
 - Settings > Add-ons shows each add-on as a card with its licence as a coloured badge and a switch. Selecting a card opens it and folds the others; the list fills the tab and scrolls to the card selected. What an add-on recognizes shows with an example of each field, as `{seq:4}` 1–4, coloured by kind.
 - Advanced Folder Pattern learns a list from one complete year whose numbers step evenly, as 2, 4, 6, 8, and such a list comes before the months.
+- The sidebar can be made wider, up to 400 points, and starts at 260. Each window keeps its sidebar's width, also after a restart, and a new window starts at the width last chosen. When the window is made narrower, the sidebar gives way first. The sidebar's button stands at the right over the sidebar, away from the window's buttons.
 
 ### Fixed
 - The Settings window is titled by the tab chosen, instead of Untitled.

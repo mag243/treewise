@@ -20,6 +20,9 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     private let request: TabRequest?
     private let toolbarItems: BrowserToolbar
     private var lastSnapshot: WindowSnapshot?
+    /// The sidebar's width as chosen, kept with the window (ADR 0093); a sidebar that gives
+    /// way to a narrower window keeps it for when there is room again.
+    private var chosenSidebarWidth: CGFloat?
     private var isShowingFailure = false
 
     /// Creates a window that follows `settings`. A tab starts at the folder it
@@ -84,7 +87,13 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         let content = BrowserContentController(browser: browser, model: model) { [weak self] in
             self?.actions.windowBeside()
         }
-        split.addSplitViewItem(NSSplitViewItem(viewController: content))
+        let folderSide = NSSplitViewItem(viewController: content)
+        // The folder side keeps the command bar's width, so the sidebar gives way first.
+        folderSide.minimumThickness = WindowWidths.folderMinimum
+        split.addSplitViewItem(folderSide)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(sidebarResized(_:)),
+            name: NSSplitView.didResizeSubviewsNotification, object: split.splitView)
         return split
     }
 
@@ -94,16 +103,45 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         guard let window else { return }
         if LaunchOptions.windowSize != nil { Self.center(window) }
         window.makeKeyAndOrderFront(nil)
-        if let splitView = (window.contentViewController as? NSSplitViewController)?.splitView {
-            splitView.setPosition(WindowWidths.sidebarIdeal, ofDividerAt: 0)
-        }
+        showSidebarAtItsWidth()
         start()
     }
 
     /// Starts the window at the folder it showed before a restart, for AppKit
-    /// to show it where it was (ADR 0083).
+    /// to show it where it was (ADR 0083), with its sidebar as wide as it was.
     func openRestored() {
+        showSidebarAtItsWidth()
+        // AppKit sets the window's frame after this; the width is set again once it has.
+        DispatchQueue.main.async { [weak self] in self?.showSidebarAtItsWidth() }
         start()
+    }
+
+    private var splitView: NSSplitView? {
+        (window?.contentViewController as? NSSplitViewController)?.splitView
+    }
+
+    /// Sets the sidebar to the window's own width, else the last one chosen, else the
+    /// ideal (ADR 0093).
+    private func showSidebarAtItsWidth() {
+        let width = CGFloat(
+            SidebarWidth.start(
+                restored: request?.snapshot?.sidebarWidth,
+                lastChosen: AppServices.settings.sidebarWidth))
+        chosenSidebarWidth = width
+        splitView?.setPosition(width, ofDividerAt: 0)
+    }
+
+    /// Keeps the width the user dragged the sidebar to, for this window and a new one.
+    /// Only a drag of the divider tells its index; a window made narrower does not.
+    @objc private func sidebarResized(_ notification: Notification) {
+        guard notification.userInfo?["NSSplitViewDividerIndex"] != nil,
+            let sidebar = splitView?.arrangedSubviews.first, !sidebar.isHidden
+        else { return }
+        let width = sidebar.frame.width
+        guard width != chosenSidebarWidth else { return }
+        chosenSidebarWidth = width
+        AppServices.settings.sidebarWidth = Double(width)
+        window?.invalidateRestorableState()
     }
 
     private func start() {
@@ -170,7 +208,9 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
 
     /// The folder, sort order and view, which AppKit keeps beside the frame and tab group.
     func window(_ window: NSWindow, willEncodeRestorableState state: NSCoder) {
-        BrowserWindowRestoration.encode(browser.snapshot, in: state)
+        var snapshot = browser.snapshot
+        snapshot.sidebarWidth = chosenSidebarWidth.map(Double.init)
+        BrowserWindowRestoration.encode(snapshot, in: state)
     }
 
     func windowWillClose(_ notification: Notification) {

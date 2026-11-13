@@ -11,6 +11,8 @@ public struct RestoredWindow {
     public var layout: PaneLayout
     public var sort: ItemSort
     public var viewMode: ViewMode
+    /// The sidebar's width in points, when the window kept one (ADR 0093).
+    public var sidebarWidth: Double?
 }
 
 /// What a restart brings back of a window: its panes with the folders of their
@@ -29,6 +31,9 @@ public struct WindowSnapshot: Codable, Equatable, Sendable {
     public var ascending: Bool
     /// The view; absent in snapshots made before there was an icon view.
     public var viewMode: ViewMode?
+    /// The sidebar's width in points (ADR 0093); absent in snapshots made before it was
+    /// kept.
+    public var sidebarWidth: Double?
 
     /// Describes a window's layout, sort order and view.
     public init(layout: PaneLayout, sort: ItemSort, viewMode: ViewMode) {
@@ -61,6 +66,7 @@ public struct WindowSnapshot: Codable, Equatable, Sendable {
         let column = SortColumn.allCases.first { "\($0)" == sortColumn } ?? .name
         return RestoredWindow(
             layout: PaneLayout(panes: models, focused: focused),
-            sort: ItemSort(column: column, ascending: ascending), viewMode: viewMode ?? .list)
+            sort: ItemSort(column: column, ascending: ascending), viewMode: viewMode ?? .list,
+            sidebarWidth: sidebarWidth)
     }
 }

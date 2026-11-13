@@ -15,7 +15,9 @@ final class BrowserToolbar: NSObject, NSToolbarDelegate, NSSearchFieldDelegate {
     private static let enclosing = NSToolbarItem.Identifier("enclosing")
     private static let refresh = NSToolbarItem.Identifier("refresh")
     private static let order: [NSToolbarItem.Identifier] = [
-        .toggleSidebar, .sidebarTrackingSeparator, back, forward, enclosing, refresh,
+        // The space puts the sidebar's button at the right over the sidebar (ADR 0093).
+        .flexibleSpace, .toggleSidebar, .sidebarTrackingSeparator, back, forward, enclosing,
+        refresh,
         .flexibleSpace, search,
     ]
 

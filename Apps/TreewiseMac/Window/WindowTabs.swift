@@ -17,8 +17,10 @@ struct TabRequest {
     /// A request for a tab as it was before a restart.
     init(restoring window: RestoredWindow) {
         folder = window.layout.focusedPane.activeTab.folder.rawValue
-        snapshot = WindowSnapshot(
+        var kept = WindowSnapshot(
             layout: window.layout, sort: window.sort, viewMode: window.viewMode)
+        kept.sidebarWidth = window.sidebarWidth
+        snapshot = kept
     }
 }
 

@@ -58,6 +58,7 @@ public final class BrowserSettings {
         static let showsDetails = "showsDetails"
         static let lastSession = "lastSession"
         static let favoriteFolders = "favoriteFolders"
+        static let sidebarWidth = "sidebarWidth"
         static let terminalApp = "terminalApp"
         static let checksSpellingWhileTyping = "checksSpellingWhileTyping"
         /// The single default pattern kept before the saved patterns, read when there
@@ -190,6 +191,12 @@ public final class BrowserSettings {
         }
     }
 
+    /// The sidebar width the user last dragged to, for a new window (ADR 0093); nil before
+    /// a drag.
+    public var sidebarWidth: Double? {
+        didSet { store.setSetting(sidebarWidth.map { String($0) }, for: Key.sidebarWidth) }
+    }
+
     /// The windows and tabs, for the next launch to restore (ADR 0038); kept
     /// as JSON, and not observed, as it changes with every folder shown. A
     /// session without windows is not kept, so the one before it stays.
@@ -244,6 +251,7 @@ public final class BrowserSettings {
         favoriteFolders = store.setting(Key.favoriteFolders)
             .flatMap { try? JSONDecoder().decode([String].self, from: Data($0.utf8)) }?
             .map { FileItem.ID($0) }
+        sidebarWidth = store.setting(Key.sidebarWidth).flatMap(Double.init)
     }
 
     private func decoded<Value: Decodable>(_ type: Value.Type, at key: String) -> Value? {
