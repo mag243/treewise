@@ -130,12 +130,16 @@ struct NameTemplateParser {
             guard let after else { return .success(.counter(.counting)) }
             guard let series = NameTemplate.Series(after) else { return .failure(.invalidFormat) }
             return .success(.counter(series))
-        case .date:
+        case .date, .number, .text, .fixed, .year:
             guard let after else { return .success(.field(field, format: nil)) }
-            guard let format = DateTemplate(after) else { return .failure(.invalidFormat) }
+            // Only the folder field takes a level; another fixed field takes nothing.
+            if field.kind == .fixed, field.name != NameTemplate.Field.folder.name {
+                return .failure(.invalidFormat)
+            }
+            guard let format = NameTemplate.FieldFormat(after, for: field.kind) else {
+                return .failure(.invalidFormat)
+            }
             return .success(.field(field, format: format))
-        case .number, .text, .fixed, .year:
-            return after == nil ? .success(.field(field, format: nil)) : .failure(.invalidFormat)
         }
     }
 

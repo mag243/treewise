@@ -86,7 +86,7 @@ extension NameTemplate {
         for part in parts {
             switch part {
             case .field(let field, let format) where field.kind == .date:
-                return format ?? .standard
+                return format?.dateTemplate ?? .standard
             case .optional(let inner), .choice(let inner):
                 if let format = firstDateFormat(in: inner) { return format }
             case .alternatives(let all):
@@ -110,7 +110,7 @@ extension NameTemplate {
             case .text(let text):
                 filled = text
             case .field(let field, let format):
-                filled = write(values[field.name], for: field, format: format)
+                filled = write(values[key(of: field, format: format)], for: field, format: format)
             case .counter:
                 filled = write(values[Field.seq.name], for: Field.seq, format: nil)
             case .choice(let alternatives):
@@ -175,14 +175,26 @@ extension NameTemplate {
         character.map { $0.isLetter || $0.isNumber } ?? false
     }
 
-    static func write(_ value: Value?, for field: Field, format: DateTemplate?) -> String? {
+    /// The key a field's value is found under: its name, or `folder:2` and higher for a
+    /// folder further up (ADR 0089).
+    static func key(of field: Field, format: FieldFormat?) -> String {
+        guard case .level(let level) = format else { return field.name }
+        return folderKey(level: level)
+    }
+
+    static func write(_ value: Value?, for field: Field, format: FieldFormat?) -> String? {
         switch (value, field.kind) {
         case (.date(let year, let month, let day), .date):
-            return (format ?? .standard).write(year: year, month: month, day: day)
+            return (format?.dateTemplate ?? .standard).write(year: year, month: month, day: day)
         case (.text(let text), .number), (.text(let text), .text), (.text(let text), .fixed),
             (.text(let text), .year), (.text(let text), .sequence):
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            return trimmed.isEmpty ? nil : trimmed
+            guard !trimmed.isEmpty else { return nil }
+            switch format {
+            case .twoDigitYear: return String(trimmed.suffix(2))
+            case .textCase(let textCase): return textCase.apply(to: trimmed)
+            default: return trimmed
+            }
         default:
             return nil
         }
@@ -242,19 +254,28 @@ extension NameTemplate {
     }
 
     private static func pattern(
-        for field: Field, format: DateTemplate?, fixed: [String: String],
+        for field: Field, format: FieldFormat?, fixed: [String: String],
         captured: inout Capture
     ) -> String {
+        var textCase: TextCase?
+        if case .textCase(let found) = format { textCase = found }
         switch field.kind {
         case .date:
             return group(
-                dateGroup, (format ?? .standard).pattern, field: field.name, captured: &captured)
-        case .year: return group(yearGroup, "[0-9]{4}", field: field.name, captured: &captured)
+                dateGroup, (format?.dateTemplate ?? .standard).pattern, field: field.name,
+                captured: &captured)
+        case .year:
+            let digits = format == .twoDigitYear ? "[0-9]{2}" : "[0-9]{4}"
+            return group(yearGroup, digits, field: field.name, captured: &captured)
         case .sequence: return group(seqGroup, "[0-9]+", field: field.name, captured: &captured)
-        case .number: return plain("[^ ]*[0-9][^ ]*", field: field.name, captured: &captured)
-        case .text: return plain(".+?", field: field.name, captured: &captured)
+        case .number:
+            let body = textCase?.pattern(text: false) ?? "[^ ]*[0-9][^ ]*"
+            return plain(body, field: field.name, captured: &captured)
+        case .text:
+            return plain(
+                textCase?.pattern(text: true) ?? ".+?", field: field.name, captured: &captured)
         case .fixed:
-            guard let value = fixed[field.name] else { return matchNothing }
+            guard let value = fixed[key(of: field, format: format)] else { return matchNothing }
             if captured.loose != nil { return looseGroup(for: value, &captured) }
             let body = NSRegularExpression.escapedPattern(for: value)
             guard captured.everyField else { return body }

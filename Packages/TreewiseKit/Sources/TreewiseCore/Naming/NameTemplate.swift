@@ -118,7 +118,7 @@ public struct NameTemplate: Hashable, Sendable {
     /// One piece of a template.
     enum Part: Hashable, Sendable {
         case text(String)
-        case field(Field, format: DateTemplate?)
+        case field(Field, format: FieldFormat?)
         /// `{seq}`, which gives the numbers of its series (ADR 0064, ADR 0089).
         case counter(Series)
         /// Fields of which the first with a value is written (ADR 0063).
@@ -205,9 +205,13 @@ public struct NameTemplate: Hashable, Sendable {
         return MadeName(name: Self.singleSpaced(name), usesFileYear: period.usesFileYear)
     }
 
+    /// The folders' names among the values, by the keys `folder`, `folder:2`, … (ADR 0089).
     private static func fixedValues(in values: [String: Value]) -> [String: String] {
-        guard case .text(let folder) = values[Field.folder.name] else { return [:] }
-        return [Field.folder.name: folder]
+        values.reduce(into: [:]) { fixed, entry in
+            let isFolder =
+                entry.key == Field.folder.name || entry.key.hasPrefix(Field.folder.name + ":")
+            if isFolder, case .text(let name) = entry.value { fixed[entry.key] = name }
+        }
     }
 
     static func singleSpaced(_ text: String) -> String {
