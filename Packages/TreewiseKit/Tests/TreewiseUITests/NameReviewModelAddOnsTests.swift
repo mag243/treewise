@@ -239,3 +239,15 @@ extension NameReviewModelTests {
         #expect(model.modules.first?.isClearlyRecognized == true)
     }
 }
+
+/// An add-on that makes folder structures proposes no names (ADR 0091).
+extension NameReviewModelTests {
+    @Test func neverOffersAnAddOnThatMakesFolderStructures() async {
+        _ = addFile("scan.pdf")
+        let templates = NameModuleDescription(
+            id: "templates", contentTypes: ["public.item"], neededContent: [], fields: [],
+            defaultTemplate: "", kind: .folderStructure)
+        let model = await model(host(modules: [Self.freeDescription, templates]))
+        #expect(model.modules.map(\.id) == [Self.free])
+    }
+}

@@ -1,5 +1,6 @@
 #if os(macOS)
     import Foundation
+    import TreewiseCore
     import TreewiseModuleInterface
 
     /// What the app asks the modules' service over XPC (ADR 0057). Everything travels
@@ -18,6 +19,14 @@
         /// module is not known.
         func licenceState(
             moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void)
+        /// Replies with an encoded list of at most one template of a folder's tree, or nil
+        /// when the add-on is not known or makes no folder structures (ADR 0091).
+        func folderTemplate(
+            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void)
+        /// Replies with an encoded list of at most one tree of folders to make, or nil when the
+        /// add-on is not known or makes no folder structures (ADR 0091).
+        func foldersToMake(
+            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void)
     }
 
     /// How requests and answers are written for the trip. A binary property list
@@ -28,6 +37,19 @@
             let names: [String]
             let folderName: String
             let years: FolderYears?
+            let licence: LicenceContext
+        }
+
+        /// A folder's tree, for its template.
+        struct TreeOfFolder: Codable {
+            let tree: FolderTree
+            let licence: LicenceContext
+        }
+
+        /// A template and the year to make it in.
+        struct TemplateToMake: Codable {
+            let template: FolderTree
+            let year: Int?
             let licence: LicenceContext
         }
 

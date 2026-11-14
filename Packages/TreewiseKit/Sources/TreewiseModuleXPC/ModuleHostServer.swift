@@ -3,19 +3,27 @@
     import TreewiseModuleInterface
     import os
 
-    /// The service's side of the XPC connection: runs the modules it was given
-    /// (ADR 0057).
+    /// The service's side of the XPC connection: runs the add-ons it was given, of either kind
+    /// (ADR 0057, ADR 0091).
     public final class ModuleHostServer: NSObject, NSXPCListenerDelegate, ModuleHostXPCProtocol,
         Sendable
     {
         private static let logger = Logger(
             subsystem: "me.m-domain.treewise", category: "ModuleHostServer")
 
-        private let modules: [any NameModule]
+        private let modules: [any AddOnModule]
 
-        /// Creates a server for modules.
-        public init(modules: [any NameModule]) {
+        /// Creates a server for add-ons.
+        public init(modules: [any AddOnModule]) {
             self.modules = modules
+        }
+
+        private func nameModule(_ id: String) -> (any NameModule)? {
+            modules.first { $0.id == id } as? any NameModule
+        }
+
+        private func structureModule(_ id: String) -> (any FolderStructureModule)? {
+            modules.first { $0.id == id } as? any FolderStructureModule
         }
 
         /// Accepts a connection and serves it.
@@ -40,7 +48,7 @@
         public func derivedTemplate(
             moduleID: String, names: Data, reply: @escaping @Sendable (Data?) -> Void
         ) {
-            guard let module = modules.first(where: { $0.id == moduleID }),
+            guard let module = nameModule(moduleID),
                 let decoded = try? ModuleWire.decode(ModuleWire.NamesOfFolder.self, from: names)
             else {
                 reply(nil)
@@ -66,11 +74,41 @@
             reply(try? ModuleWire.encode([state].compactMap(\.self)))
         }
 
+        /// Replies with the template an add-on makes of a folder's tree, as a list of at most
+        /// one.
+        public func folderTemplate(
+            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void
+        ) {
+            guard let module = structureModule(moduleID),
+                let decoded = try? ModuleWire.decode(ModuleWire.TreeOfFolder.self, from: question)
+            else {
+                reply(nil)
+                return
+            }
+            let template = module.template(from: decoded.tree, licence: decoded.licence)
+            reply(try? ModuleWire.encode([template].compactMap(\.self)))
+        }
+
+        /// Replies with the folders an add-on makes of a template, as a list of at most one.
+        public func foldersToMake(
+            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void
+        ) {
+            guard let module = structureModule(moduleID),
+                let decoded = try? ModuleWire.decode(ModuleWire.TemplateToMake.self, from: question)
+            else {
+                reply(nil)
+                return
+            }
+            let folders = module.folders(
+                making: decoded.template, year: decoded.year, licence: decoded.licence)
+            reply(try? ModuleWire.encode([folders].compactMap(\.self)))
+        }
+
         /// Runs a module and replies with its sets of values, or nil when it fails.
         public func fieldValues(
             moduleID: String, request: Data, reply: @escaping @Sendable (Data?) -> Void
         ) {
-            guard let module = modules.first(where: { $0.id == moduleID }),
+            guard let module = nameModule(moduleID),
                 let decoded = try? ModuleWire.decode(NameRequest.self, from: request)
             else {
                 reply(nil)

@@ -79,6 +79,42 @@
             return try decode([ModuleLicenceState].self, from: data).first
         }
 
+        /// Asks an add-on for the template of a folder's tree, checked as any tree.
+        public func template(moduleID: String, from tree: FolderTree, licence: LicenceContext)
+            async throws -> FolderTree?
+        {
+            let encoded = try ModuleWire.encode(
+                ModuleWire.TreeOfFolder(tree: tree, licence: licence))
+            let data = try await ask { service, reply in
+                service.folderTemplate(moduleID: moduleID, question: encoded, reply: reply)
+            }
+            return try checked(decode([FolderTree].self, from: data).first)
+        }
+
+        /// Asks an add-on for the folders a template makes in a year, checked before anything
+        /// is made of them (ADR 0091).
+        public func foldersToMake(
+            moduleID: String, template: FolderTree, year: Int?, licence: LicenceContext
+        ) async throws -> FolderTree? {
+            let encoded = try ModuleWire.encode(
+                ModuleWire.TemplateToMake(template: template, year: year, licence: licence))
+            let data = try await ask { service, reply in
+                service.foldersToMake(moduleID: moduleID, question: encoded, reply: reply)
+            }
+            return try checked(decode([FolderTree].self, from: data).first)
+        }
+
+        /// A tree from closed code is taken only when every folder of it can be made.
+        private func checked(_ tree: FolderTree?) throws -> FolderTree? {
+            guard let tree else { return nil }
+            do {
+                try tree.check()
+            } catch {
+                throw NameModuleHostError.invalidResponse
+            }
+            return tree
+        }
+
         private func decode<Value: Decodable>(_ type: Value.Type, from data: Data) throws -> Value {
             guard data.count <= Self.maximumResponseBytes,
                 let value = try? ModuleWire.decode(type, from: data)

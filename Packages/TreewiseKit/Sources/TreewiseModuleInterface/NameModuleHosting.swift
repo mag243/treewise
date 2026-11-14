@@ -34,6 +34,8 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     /// Whether it reads the names in the same folder a year before, which Treewise gives it
     /// only while the user allows it (ADR 0090).
     public let readsYearBefore: Bool
+    /// What it does: proposes names, or makes folder structures (ADR 0091).
+    public let kind: AddOnKind
 
     /// Creates a description.
     public init(
@@ -41,7 +43,7 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
         fields: [NameTemplate.Field], defaultTemplate: String, isFree: Bool = false,
         name: String? = nil, replaces: Set<String> = [], purchaseURL: String? = nil,
         summaries: [String: String] = [:], recognizes: [String] = [],
-        readsYearBefore: Bool = false
+        readsYearBefore: Bool = false, kind: AddOnKind = .names
     ) {
         self.id = id
         self.contentTypes = contentTypes
@@ -55,6 +57,7 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
         self.summaries = summaries
         self.recognizes = recognizes
         self.readsYearBefore = readsYearBefore
+        self.kind = kind
     }
 
     /// What it does, in the first of the languages it has a summary in, by their codes as
@@ -72,13 +75,19 @@ public struct NameModuleDescription: Hashable, Sendable, Codable {
     /// pattern on a folder that shows none. The default module does, and a module that
     /// replaces it (ADR 0067).
     public var takesTheDefaultModulesPart: Bool {
-        id == Self.defaultModuleID || replaces.contains(Self.defaultModuleID)
+        kind == .names && (id == Self.defaultModuleID || replaces.contains(Self.defaultModuleID))
     }
 
     /// The modules the app offers, in the order given: those no other module replaces.
     public static func offered(_ all: [NameModuleDescription]) -> [NameModuleDescription] {
         let replaced = Set(all.filter { !$0.replaces.isEmpty }.flatMap(\.replaces))
         return all.filter { !replaced.contains($0.id) }
+    }
+
+    /// The modules the app offers for proposing names: those of `offered(_:)` that propose
+    /// names, never an add-on that makes folder structures (ADR 0091).
+    public static func offered(forNames all: [NameModuleDescription]) -> [NameModuleDescription] {
+        offered(all.filter { $0.kind == .names })
     }
 
     /// The id that plays the default module's part among offered modules: the module
@@ -119,9 +128,33 @@ public protocol NameModuleHosting: Sendable {
     /// Asks a module what its licence lets it do; nil when it needs no licence (ADR 0071).
     func licenceState(moduleID: String, licence: LicenceContext) async throws
         -> ModuleLicenceState?
+    /// Asks an add-on that makes folder structures for the template of a folder's tree, or
+    /// nil while it may not work (ADR 0091).
+    func template(moduleID: String, from tree: FolderTree, licence: LicenceContext)
+        async throws -> FolderTree?
+    /// Asks an add-on that makes folder structures for the folders a template makes in
+    /// `year`, or nil while it may not work. What comes back has passed
+    /// `FolderTree.check()`.
+    func foldersToMake(
+        moduleID: String, template: FolderTree, year: Int?, licence: LicenceContext
+    ) async throws -> FolderTree?
 }
 
 extension NameModuleHosting {
+    /// A host without add-ons that make folder structures has none to ask.
+    public func template(moduleID: String, from tree: FolderTree, licence: LicenceContext)
+        async throws -> FolderTree?
+    {
+        throw NameModuleHostError.moduleFailed
+    }
+
+    /// A host without add-ons that make folder structures has none to ask.
+    public func foldersToMake(
+        moduleID: String, template: FolderTree, year: Int?, licence: LicenceContext
+    ) async throws -> FolderTree? {
+        throw NameModuleHostError.moduleFailed
+    }
+
     /// Asks a module which templates a folder's names might follow, without the year before.
     public func derivedTemplates(
         moduleID: String, names: [String], folderName: String, licence: LicenceContext

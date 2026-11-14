@@ -261,7 +261,9 @@ public final class NameReviewModel {
     /// offered (ADR 0070). One without a licence comes last, off.
     private func loadSettings() async -> (descriptions: [NameModuleDescription], catalog: [String])
     {
-        let all = (try? await dependencies.host.availableModules()) ?? []
+        let all = ((try? await dependencies.host.availableModules()) ?? []).filter {
+            $0.kind == .names
+        }
         let states = await licenceStates(of: all)
         let mayWork = { (module: NameModuleDescription) in states[module.id]?.mayWork ?? true }
         let offered = NameModuleDescription.offered(all.filter(mayWork))

@@ -127,6 +127,41 @@
         }
     }
 
+    /// An add-on that makes folder structures: with the key "good" it writes each year in a
+    /// name as `{year}` and fills it in again; it was never tried without one.
+    struct StubStructureModule: FolderStructureModule {
+        let description: NameModuleDescription
+        /// What it returns to make, in place of the template filled in.
+        var makes: FolderTree?
+
+        init(id: String) {
+            description = NameModuleDescription(
+                id: id, contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
+                kind: .folderStructure)
+        }
+
+        static func template(of tree: FolderTree) -> FolderTree {
+            FolderTree(
+                name: tree.name.replacingOccurrences(of: "2026", with: FolderTree.yearField),
+                folders: tree.folders.map(template(of:)))
+        }
+
+        func licenceState(licence: LicenceContext) -> ModuleLicenceState? {
+            licence.keys.contains("good") ? .licensed(licensee: "Ada") : .notTried
+        }
+
+        func template(from tree: FolderTree, licence: LicenceContext) -> FolderTree? {
+            licence.keys.contains("good") ? Self.template(of: tree) : nil
+        }
+
+        func folders(making template: FolderTree, year: Int?, licence: LicenceContext)
+            -> FolderTree?
+        {
+            guard licence.keys.contains("good") else { return nil }
+            return makes ?? year.map(template.filling(year:)) ?? template
+        }
+    }
+
     /// A server on an anonymous listener: real XPC, without a separate process.
     final class Harness: NSObject, NSXPCListenerDelegate {
         private let server: ModuleHostServer
@@ -134,14 +169,14 @@
         private let signal = RequestSignal()
         private var connections: [NSXPCConnection] = []
 
-        init(modules: [StubModule]) {
+        init(modules: [StubModule], structures: [StubStructureModule] = []) {
             let signal = signal
-            server = ModuleHostServer(
-                modules: modules.map { module in
-                    var module = module
-                    module.signal = signal
-                    return module
-                })
+            let namers: [any AddOnModule] = modules.map { module in
+                var module = module
+                module.signal = signal
+                return module
+            }
+            server = ModuleHostServer(modules: namers + structures)
             super.init()
             listener.delegate = self
             listener.resume()

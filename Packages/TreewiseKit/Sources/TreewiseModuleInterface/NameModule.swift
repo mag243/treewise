@@ -9,11 +9,7 @@ import TreewiseCore
 ///
 /// This interface is internal to Treewise: it has no stability promise, and the
 /// official app loads no third-party modules (ADR 0055).
-public protocol NameModule: Sendable {
-    /// A stable id, shown with the names its values make.
-    var id: String { get }
-    /// What this module is, for the app to show and to know without running it.
-    var description: NameModuleDescription { get }
+public protocol NameModule: AddOnModule {
     /// Returns ranked sets of values for an item, best first. An empty result means
     /// the module has nothing to suggest.
     func fieldValues(for request: NameRequest) async throws -> [[String: NameTemplate.Value]]
@@ -33,14 +29,9 @@ public protocol NameModule: Sendable {
         fromNames names: [String], folderName: String, years: FolderYears?,
         licence: LicenceContext
     ) -> [String]
-    /// What its licence lets it do, or nil when it needs no licence (ADR 0071).
-    func licenceState(licence: LicenceContext) -> ModuleLicenceState?
 }
 
 extension NameModule {
-    /// The id, from the description.
-    public var id: String { description.id }
-
     /// A module starts from its default template unless it can recognize one.
     public func derivedTemplate(fromNames names: [String], folderName: String) -> String? {
         nil
@@ -67,10 +58,5 @@ extension NameModule {
         licence: LicenceContext
     ) -> [String] {
         derivedTemplates(fromNames: names, folderName: folderName, licence: licence)
-    }
-
-    /// A module needs no licence unless it says so.
-    public func licenceState(licence: LicenceContext) -> ModuleLicenceState? {
-        nil
     }
 }
