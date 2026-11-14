@@ -16,6 +16,7 @@ final class PaneController: NSViewController {
     private lazy var statusBar = PaneStatusBar { [weak self] mode in
         self?.browser.viewMode = mode
     }
+    private lazy var templateBar = TemplateBarView(browser: browser)
     private let list = FileTableCoordinator()
     private let grid = FileGridCoordinator()
     private lazy var listView = list.makeScrollView()
@@ -40,7 +41,7 @@ final class PaneController: NSViewController {
     override func loadView() {
         message.alignment = .center
         message.isSelectable = false
-        let rows = NSStackView(views: [folderArea, Self.separator(), statusBar])
+        let rows = NSStackView(views: [templateBar, folderArea, Self.separator(), statusBar])
         rows.orientation = .vertical
         rows.spacing = 0
         rows.alignment = .leading
@@ -73,6 +74,7 @@ final class PaneController: NSViewController {
         if view.window != nil { followDownloads(of: items.filter(\.isOnlyOnline).map(\.id)) }
         showFolder(content: content, items: items, tab: tab)
         showMessage(content: content, isEmpty: items.isEmpty)
+        templateBar.follow(folder: content.folder, isEmpty: items.isEmpty)
         let isFocused = browser.layout.focusedPaneIndex == paneIndex
         let counts = statusText(items: items, content: content)
         statusBar.show(
