@@ -15,6 +15,10 @@ enum FolderTemplatesService {
     /// The templates as menus, sheets and Settings show them.
     static let templates = FolderTemplatesModel(store: store)
 
+    /// The structure Copy Folder Structure copied, for Paste Folder Structure… in any window
+    /// (ADR 0099); nil until a folder's structure is copied.
+    static var copiedStructure: FolderTree?
+
     /// The id of the add-on that makes folder structures, when the build carries one.
     private static var addOnID: String?
     /// Whether that add-on may work, with a licence or in its trial (ADR 0088).

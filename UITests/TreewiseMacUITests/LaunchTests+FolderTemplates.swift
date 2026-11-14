@@ -71,6 +71,40 @@ extension LaunchTests {
     }
 
     @MainActor
+    func testPastingAFoldersStructureMakesItsFoldersWithoutSavingATemplate() throws {
+        try makeClientFolder()
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let projects = window.tables.staticTexts["Projects"]
+        XCTAssertTrue(projects.appeared(timeout: Self.launchTimeout))
+        projects.doubleClick()
+        let client = window.tables.staticTexts[Self.client]
+        XCTAssertTrue(client.appeared(timeout: Self.launchTimeout))
+        client.rightClick()
+        window.tables.menus.menuItems["Copy Folder Structure"].click()
+        app.typeKey(.upArrow, modifierFlags: .command)
+        let documents = window.tables.staticTexts["Documents"]
+        XCTAssertTrue(documents.appeared(timeout: Self.launchTimeout))
+        documents.rightClick()
+        window.tables.menus.menuItems["Paste Folder Structure…"].click()
+        let sheet = window.sheets.firstMatch
+        XCTAssertTrue(
+            sheet.staticTexts["Makes 3 folders."].appeared(timeout: Self.launchTimeout),
+            "the sheet shows what it makes")
+        XCTAssertFalse(
+            sheet.checkBoxes.firstMatch.exists, "a structure pasted is offered for no folder")
+        sheet.buttons["Create Folders"].click()
+        XCTAssertTrue(
+            window.staticTexts["Made 3 folders."].appeared(timeout: Self.launchTimeout))
+        let made = try XCTUnwrap(root).appendingPathComponent("Documents/Client A/Invoices")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: made.path), "the folders are made")
+        let templates = openTemplatesTab(in: app)
+        XCTAssertTrue(
+            templates.tables["templatesList"].textFields.firstMatch.disappeared(
+                timeout: Self.launchTimeout), "no template is saved")
+    }
+
+    @MainActor
     func testAFolderAddedToATemplateInSettingsIsUndone() throws {
         try makeClientFolder()
         let app = try launchApp()

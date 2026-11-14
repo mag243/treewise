@@ -2,9 +2,10 @@ import AppKit
 import TreewiseCore
 import TreewiseUI
 
-/// The menu items of folder structure templates (ADR 0091, ADR 0094, ADR 0095): New Folders
-/// from Template ▸ with the saved templates, and Save Folder Structure as Template…. Both are
-/// Treewise's own and show in every build (ADR 0099).
+/// The menu items of folder structure templates (ADR 0091, ADR 0094, ADR 0095, ADR 0099): New
+/// Folders from Template ▸ with the saved templates, Save Folder Structure as Template…, and
+/// Copy Folder Structure and Paste Folder Structure…, which make a folder's structure
+/// elsewhere without saving a template. All are Treewise's own and show in every build.
 @MainActor
 enum FolderTemplateMenu {
     /// New Folders from Template ▸, for making a template in `folder`.
@@ -45,6 +46,52 @@ enum FolderTemplateMenu {
             guard let window = NSApp.keyWindow else { return }
             SaveTemplateSheet.present(for: folder, browser: browser, on: window)
         }
+    }
+
+    /// Copy Folder Structure, for `folder`: reads its folders, at every depth, for Paste
+    /// Folder Structure….
+    static func copyItem(for folder: FileItem, browser: BrowserState) -> NSMenuItem? {
+        guard folder.kind == .folder else { return nil }
+        return ClosureMenuItem(
+            String(localized: "Copy Folder Structure"), symbol: "doc.on.doc"
+        ) {
+            let window = NSApp.keyWindow
+            Task {
+                do {
+                    let tree = try await browser.fileSystem.folderTree(of: folder)
+                    FolderTemplatesService.copiedStructure = tree
+                } catch {
+                    guard let window else { return }
+                    let alert = NSAlert()
+                    alert.messageText = String(localized: "The folder’s structure cannot be copied")
+                    alert.informativeText =
+                        (error as? FolderTree.Problem).map(TemplateProblemText.text(for:))
+                        ?? String(localized: "The folder’s structure could not be read.")
+                    alert.beginSheetModal(for: window) { _ in }
+                }
+            }
+        }
+    }
+
+    /// Paste Folder Structure…, which opens the sheet that makes the structure copied in
+    /// `folder`; greyed until a structure is copied.
+    static func pasteItem(
+        in folder: FileItem.ID, browser: BrowserState, undoManager: UndoManager?,
+        enabled: Bool = true
+    ) -> NSMenuItem {
+        let copied = FolderTemplatesService.copiedStructure
+        let item = ClosureMenuItem(
+            String(localized: "Paste Folder Structure…"), symbol: "doc.on.clipboard"
+        ) {
+            guard let copied, let window = NSApp.keyWindow else { return }
+            FolderTemplateSheet.present(
+                .init(
+                    title: String(localized: "Paste the Structure of “\(copied.name)”"),
+                    tree: copied, templateID: nil, place: .inside(folder)),
+                browser: browser, on: window, undoManager: undoManager)
+        }
+        item.isEnabled = enabled && copied != nil
+        return item
     }
 
     /// Opens the sheet for `template` in `folder`: a template rooted at `{year}` fills a
