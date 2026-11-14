@@ -37,6 +37,8 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private var root: Node?
     private var templateID: String?
     private var isLocked = false
+    /// The folder to select once the tree shows it, and whether to start renaming it.
+    private var pending: (path: [String], rename: Bool)?
     private lazy var add = NSButton(
         image: NSImage(named: NSImage.addTemplateName) ?? NSImage(), target: self,
         action: #selector(addFolder))
@@ -103,18 +105,30 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         outline.reloadData()
         outline.expandItem(nil, expandChildren: true)
         if let selected { select(selected) }
+        applyPending()
         updateButtons()
+    }
+
+    /// Selects the folder an edit made or moved, once the tree shows it, and starts renaming
+    /// a folder just added.
+    private func applyPending() {
+        guard let pending, select(pending.path) else { return }
+        self.pending = nil
+        if pending.rename { renameSelected() }
     }
 
     private var selectedNode: Node? { outline.item(atRow: outline.selectedRow) as? Node }
 
-    private func select(_ path: [String]) {
+    /// Selects the folder at `path`, and says whether the tree shows it.
+    @discardableResult
+    private func select(_ path: [String]) -> Bool {
         for row in 0..<outline.numberOfRows {
             guard (outline.item(atRow: row) as? Node)?.path == path else { continue }
             outline.selectRowIndexes([row], byExtendingSelection: false)
             outline.scrollRowToVisible(row)
-            return
+            return true
         }
+        return false
     }
 
     private func updateButtons() {
@@ -140,8 +154,8 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
                 let path = await model.addFolder(
                     in: node.path, of: id, named: name, undoManager: undoManager)
             else { return }
-            select(path)
-            renameSelected()
+            pending = (path, true)
+            applyPending()
         }
     }
 
@@ -220,7 +234,8 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
                 let moved = await model.moveFolder(
                     path, into: target.path, of: id, undoManager: undoManager)
             else { return }
-            select(moved)
+            pending = (moved, false)
+            applyPending()
         }
         return true
     }

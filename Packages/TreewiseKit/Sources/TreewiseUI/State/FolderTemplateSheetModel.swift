@@ -121,10 +121,13 @@ public final class FolderTemplateSheetModel {
         return (try? await fileSystem.folderContents(for: wrapper, in: folder)) ?? FolderContents()
     }
 
-    /// The number the root proposes beside the folders there, for the year chosen.
+    /// The number the root proposes beside the folders there, for the year chosen. The text
+    /// typed is left out, so the number counts among every folder of that year.
     private func proposedNumber() -> FolderTemplateValues.Number? {
         guard case .inside = place else { return nil }
-        return template.proposedNumber(beside: besideRoot, values: values)
+        var counting = values
+        counting.text = nil
+        return template.proposedNumber(beside: besideRoot, values: counting)
     }
 
     /// Sets the year; the number follows it, as it counts within the year (ADR 0096).

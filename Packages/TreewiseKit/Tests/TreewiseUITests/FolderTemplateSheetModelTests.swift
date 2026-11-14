@@ -89,6 +89,17 @@ import TreewiseUI
         #expect(sheet.canCreate)
     }
 
+    @Test func theNumberFollowsTheYearAlsoOnceTheTextIsTyped() async throws {
+        try await folder("Projects/2026-014 Bakker")
+        try await folder("Projects/2027-002 Smit")
+        let template = FolderTree(name: "{year}-{seq:001-} {text}")
+        let sheet = await sheet(template, .inside("/v/Projects"))
+        await sheet.setText("Acme")
+        await sheet.setYear(2027)
+        #expect(sheet.values.number?.value == 3)
+        #expect(sheet.tree?.name == "2027-003 Acme")
+    }
+
     @Test func saysWhyATextCannotBeAFoldersName() async throws {
         try await folder("Clients")
         let sheet = await sheet(Self.client, .inside("/v/Clients"))
