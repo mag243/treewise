@@ -87,8 +87,7 @@ final class AddOnCardView: NSView {
     private func header() -> NSView {
         let name = NSTextField(labelWithString: NameReviewText.name(of: module))
         name.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
-        let reads = Self.caption(
-            Self.reads(module) + " · " + String(localized: "For \(Self.files(module))"))
+        let reads = Self.caption(Self.subtitle(module))
         let titles = NSStackView(views: [name, reads])
         titles.orientation = .vertical
         titles.alignment = .leading
@@ -230,6 +229,16 @@ final class AddOnCardView: NSView {
         label.font = .preferredFont(forTextStyle: .caption1)
         label.textColor = .secondaryLabelColor
         return label
+    }
+
+    /// What the add-on reads and what for, under its name.
+    static func subtitle(_ module: NameModuleDescription) -> String {
+        switch module.kind {
+        case .names:
+            reads(module) + " · " + String(localized: "For \(files(module))")
+        case .folderStructure:
+            String(localized: "Reads folder names only · Makes folders from templates")
+        }
     }
 
     /// What the add-on reads of a file, in words (ADR 0061, ADR 0062).

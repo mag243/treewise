@@ -95,4 +95,18 @@ import TreewiseUI
     func tonesTheBadgeByTheLicence(licence: ModuleLicenceState?, tone: AddOnCard.Tone) {
         #expect(AddOnCard(isOnSetting: true, licence: licence, isLastWorking: false).tone == tone)
     }
+
+    /// An add-on that makes folder structures is on while it may work: it has no switch and
+    /// no On in new folders, which are for proposing names (ADR 0091).
+    @Test func anAddOnThatMakesFolderStructuresOffersNoChoices() {
+        let card = AddOnCard(
+            isOnSetting: false, licence: .trial(daysLeft: 3), isLastWorking: false,
+            makesFolderStructures: true)
+        #expect(!card.hasChoices)
+        #expect(card.isOn, "on while it may work")
+        let locked = AddOnCard(
+            isOnSetting: true, licence: .notTried, isLastWorking: false,
+            makesFolderStructures: true)
+        #expect(!locked.isOn)
+    }
 }

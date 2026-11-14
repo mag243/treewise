@@ -19,22 +19,26 @@ public struct AddOnCard: Equatable, Sendable {
     /// the last add-on on in new folders, which stays on there (ADR 0070).
     public let newFoldersCanSwitch: Bool
     /// Whether the card offers its on/off and On in new folders: not for the only add-on
-    /// that may work, which stays on everywhere, so there is nothing to choose (ADR 0092).
+    /// that may work, which stays on everywhere, so there is nothing to choose (ADR 0092),
+    /// nor for an add-on that makes folder structures, which is on while it may work
+    /// (ADR 0091).
     public let hasChoices: Bool
 
     /// The card of an add-on chosen on or off (`isOnSetting`), with its licence when it is
     /// paid, `isLastWorking` when it is the last add-on on that may work, and
     /// `isLastInNewFolders` when it is the last add-on on in new folders, and
-    /// `isOnlyWorking` when no other add-on may work.
+    /// `isOnlyWorking` when no other add-on may work, and `makesFolderStructures` for an
+    /// add-on of that kind.
     public init(
         isOnSetting: Bool, licence: ModuleLicenceState?, isLastWorking: Bool,
-        isLastInNewFolders: Bool = false, isOnlyWorking: Bool = false
+        isLastInNewFolders: Bool = false, isOnlyWorking: Bool = false,
+        makesFolderStructures: Bool = false
     ) {
         let isLocked = licence.map { !$0.mayWork } ?? false
-        isOn = isOnSetting && !isLocked
+        isOn = (isOnSetting || makesFolderStructures) && !isLocked
         canSwitch = !isLocked && !(isOn && isLastWorking)
         newFoldersCanSwitch = isOn && !isLastInNewFolders
-        hasChoices = !isOnlyWorking
+        hasChoices = !isOnlyWorking && !makesFolderStructures
         tone =
             switch licence {
             case nil: .free

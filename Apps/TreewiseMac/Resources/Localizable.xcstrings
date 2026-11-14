@@ -3222,6 +3222,22 @@
         }
       }
     },
+    "Reads folder names only · Makes folders from templates" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liest nur Ordnernamen · Legt Ordner aus Vorlagen an"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leest alleen mapnamen · Maakt mappen van sjablonen"
+          }
+        }
+      }
+    },
     "Reads names and the pages of a file" : {
       "localizations" : {
         "de" : {

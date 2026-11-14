@@ -48,14 +48,18 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
 
-    var catalog: [String] { modules.map(\.id) }
+    /// The add-ons that propose names, whose order and on or off Settings keeps (ADR 0070).
+    var catalog: [String] { modules.filter { $0.kind == .names }.map(\.id) }
     /// The add-ons on that may work: one of them stays on.
     var working: [String] {
         settings.addOns.available(catalog).filter { states[$0]?.mayWork ?? true }
     }
 
+    /// The add-ons that propose names in their order, then those that make folder structures
+    /// (ADR 0091).
     private var ordered: [NameModuleDescription] {
         settings.addOns.ordered(catalog).compactMap { id in modules.first { $0.id == id } }
+            + modules.filter { $0.kind == .folderStructure }
     }
 
     override func loadView() {
@@ -208,7 +212,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
                     moduleID: module.id, licence: context)
             }
             let mayWork = { (module: NameModuleDescription) in found[module.id]?.mayWork ?? true }
-            let offered = NameModuleDescription.offered(all.filter(mayWork))
+            let offered = NameModuleDescription.offered(forNames: all.filter(mayWork))
             for module in all where !mayWork(module) {
                 for replaced in module.replaces {
                     settings.addOns.handOver(from: module.id, to: replaced)
@@ -221,7 +225,9 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
             }
             guard let self else { return }
             states = found
-            modules = offered + all.filter { !mayWork($0) }
+            modules =
+                offered + all.filter { $0.kind == .names && !mayWork($0) }
+                + all.filter { $0.kind == .folderStructure }
             enterKey.isHidden = found.isEmpty
             update()
         }

@@ -23,7 +23,10 @@ extension AddOnsSettingsTab {
         let card = AddOnCard(
             isOnSetting: settings.addOns.isOn(id), licence: states[id],
             isLastWorking: working == [id], isLastInNewFolders: inNewFolders == [id],
-            isOnlyWorking: modules.filter { states[$0.id]?.mayWork ?? true }.map(\.id) == [id])
+            isOnlyWorking: modules.filter {
+                $0.kind == .names && states[$0.id]?.mayWork ?? true
+            }.map(\.id) == [id],
+            makesFolderStructures: module.kind == .folderStructure)
         let view = AddOnCardView(
             module: module, card: card, licence: states[id], isSelected: id == selectedID,
             isOnInNewFolders: settings.addOns.isOnInNewFolders(id, defaultID: defaultID),
@@ -67,6 +70,8 @@ extension AddOnsSettingsTab {
     func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int)
         -> (any NSPasteboardWriting)?
     {
+        // Only the order of the add-ons that propose names counts (ADR 0070, ADR 0091).
+        guard shown[row].kind == .names else { return nil }
         let item = NSPasteboardItem()
         item.setString(shown[row].id, forType: Self.dragType)
         return item
@@ -77,7 +82,8 @@ extension AddOnsSettingsTab {
         proposedDropOperation dropOperation: NSTableView.DropOperation
     ) -> NSDragOperation {
         guard info.draggingSource as? NSTableView === table else { return [] }
-        tableView.setDropRow(row, dropOperation: .above)
+        // The add-ons that propose names come first, and only their order is kept.
+        tableView.setDropRow(min(row, catalog.count), dropOperation: .above)
         return .move
     }
 
