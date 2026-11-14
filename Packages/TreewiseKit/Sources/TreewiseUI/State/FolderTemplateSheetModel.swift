@@ -20,9 +20,12 @@ public final class FolderTemplateSheetModel {
 
     /// What the sheet asks the add-on with.
     public struct Asking: Sendable {
-        let host: any AddOnHosting
-        let moduleID: String
-        let licence: @MainActor @Sendable () -> LicenceContext
+        /// The host that runs the add-on.
+        public let host: any AddOnHosting
+        /// The add-on's id.
+        public let moduleID: String
+        /// The licence it is asked with.
+        public let licence: @MainActor @Sendable () -> LicenceContext
 
         /// Asks `host`'s add-on `moduleID` with the licence `licence` gives.
         public init(

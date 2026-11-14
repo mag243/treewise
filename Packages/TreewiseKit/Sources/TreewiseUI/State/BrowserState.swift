@@ -38,6 +38,9 @@ public final class BrowserState {
     /// view; the list sets it back to `nil` when it does.
     public var revealRequest: FileItem.ID?
     /// An item the list should start renaming, such as a new folder; the
+    /// A short message the focused pane's status bar shows in place of its counts, as
+    /// `Made 14 folders.` after New Folders from Template (ADR 0095); nil shows the counts.
+    public var statusMessage: String?
     /// list sets it back to `nil` when it starts.
     public var renameRequest: FileItem.ID?
     /// Whether the rename `renameRequest` asks for opens the proposals at once, as Rename
@@ -50,7 +53,8 @@ public final class BrowserState {
     /// (ADR 0071).
     @ObservationIgnored public var licences: LicenceKeeper?
     @ObservationIgnored private let sharedClipboard: SharedClipboard
-    @ObservationIgnored let fileSystem: any FileSystemProviding
+    /// Where the browser reads its folders from.
+    @ObservationIgnored public let fileSystem: any FileSystemProviding
     /// The provider's operations, when it can change files.
     @ObservationIgnored let operations: (any FileOperating)?
     /// The provider's archive engine, when it has one (ADR 0074).

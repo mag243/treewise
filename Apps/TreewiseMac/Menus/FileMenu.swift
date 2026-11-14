@@ -14,7 +14,7 @@ enum FileMenu {
             MenuItem.make("TAR.GZ File", #selector(Window.compressToTarGz(_:))),
         ]
         let down = MenuItem.arrow(NSDownArrowFunctionKey)
-        return MenuItem.menu(
+        let file = MenuItem.menu(
             "File",
             [
                 MenuItem.make("New Window", #selector(AppDelegate.newWindow(_:)), key: "n"),
@@ -45,5 +45,7 @@ enum FileMenu {
                 .separator(),
                 MenuItem.make("Close", #selector(NSWindow.performClose(_:)), key: "w"),
             ])
+        file.submenu?.delegate = FileMenuTemplates.shared
+        return file
     }
 }

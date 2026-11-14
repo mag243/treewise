@@ -163,6 +163,12 @@ enum LaunchOptions {
         return FolderSettingsStore.defaultDirectory
     }
 
+    /// Where folder structure templates are kept (ADR 0091): beside the folder settings, so
+    /// UI tests, screenshots and the sandbox never read or change the user's templates.
+    static var folderTemplatesDirectory: URL {
+        folderSettingsDirectory.appendingPathComponent("Templates", isDirectory: true)
+    }
+
     /// Where a file to open in another app is noted instead, in a Debug build only.
     static var openedLog: URL? {
         #if DEBUG

@@ -57,7 +57,10 @@ final class CommandBarMenus: NSObject, NSMenuDelegate {
         ) { [browser] in
             Task { await browser.newFolder(undoManager: SharedUndo.manager) }
         }
-        return [folder]
+        let templates = FolderTemplateMenu.newFoldersItem(
+            in: browser.layout.focusedPane.activeTab.folder, browser: browser,
+            undoManager: SharedUndo.manager, enabled: browser.canAddItems)
+        return [folder] + [templates].compactMap(\.self)
     }
 
     // MARK: - Sort

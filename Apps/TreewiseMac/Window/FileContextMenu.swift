@@ -51,10 +51,7 @@ struct FileContextMenu {
         let menu = NSMenu()
         menu.autoenablesItems = false
         if items.isEmpty {
-            menu.addItem(
-                item("New Folder", symbol: "folder.badge.plus", enabled: browser.canAddItems) {
-                    await browser.newFolder(undoManager: undoManager)
-                })
+            addNewItems(to: menu)
         } else {
             addOpenItems(for: items, to: menu)
             if items.allSatisfy(\.isEjectable) {
@@ -66,6 +63,7 @@ struct FileContextMenu {
             menu.addItem(.separator())
             addFavoriteItem(for: items, to: menu)
             addRenameAndTrashItems(for: items, to: menu)
+            addTemplateItems(for: items, to: menu)
         }
         menu.addItem(.separator())
         addClipboardItems(for: items, to: menu)
@@ -82,6 +80,35 @@ struct FileContextMenu {
                 NSWorkspace.shared.activateFileViewerSelecting(ids.map(\.urlShownInFinder))
             })
         return menu
+    }
+
+    /// New Folder and New Folders from Template ▸, for the folder shown.
+    private func addNewItems(to menu: NSMenu) {
+        menu.addItem(
+            item("New Folder", symbol: "folder.badge.plus", enabled: browser.canAddItems) {
+                await browser.newFolder(undoManager: undoManager)
+            })
+        if let templates = FolderTemplateMenu.newFoldersItem(
+            in: browser.layout.focusedPane.activeTab.folder, browser: browser,
+            undoManager: undoManager, enabled: browser.canAddItems)
+        {
+            menu.addItem(templates)
+        }
+    }
+
+    /// On one folder, its templates' items (ADR 0091).
+    private func addTemplateItems(for items: [FileItem], to menu: NSMenu) {
+        guard items.count == 1, items[0].kind == .folder, ArchivePath(items[0].id) == nil else {
+            return
+        }
+        let shown = [
+            FolderTemplateMenu.newFoldersItem(
+                in: items[0].id, browser: browser, undoManager: undoManager),
+            FolderTemplateMenu.saveItem(for: items[0], browser: browser),
+        ].compactMap(\.self)
+        guard !shown.isEmpty else { return }
+        menu.addItem(.separator())
+        for item in shown { menu.addItem(item) }
     }
 
     private func addOpenItems(for items: [FileItem], to menu: NSMenu) {

@@ -202,6 +202,12 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     // MARK: - NSWindowDelegate
 
     /// Every window's file operations share one history (ADR 0037).
+    /// A licence or trial can change in Settings, so the template items follow it whenever a
+    /// window comes to the front (ADR 0095).
+    func windowDidBecomeKey(_ notification: Notification) {
+        Task { await FolderTemplatesService.refresh(licences: browser.licences) }
+    }
+
     func windowWillReturnUndoManager(_ window: NSWindow) -> UndoManager? {
         SharedUndo.manager
     }
