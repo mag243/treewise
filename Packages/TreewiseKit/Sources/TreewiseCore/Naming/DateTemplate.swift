@@ -72,15 +72,18 @@ struct DateTemplate: Hashable, Sendable {
         self.pieces = pieces
     }
 
-    /// Writes a date in this format.
-    func write(year: Int, month: Int, day: Int) -> String {
+    /// Writes a date in this format, a month's name in the format's language, else in
+    /// `language`.
+    func write(
+        year: Int, month: Int, day: Int, language fallback: MonthNames.Language = .app
+    ) -> String {
         pieces.map { piece in
             switch piece {
             case .longYear: String(format: "%04d", year)
             case .shortYear: String(format: "%02d", year % Self.shortYearDivisor)
             case .month: String(format: "%02d", month)
             case .monthName(let short):
-                MonthNames.name(of: month, short: short, in: language ?? .app)
+                MonthNames.name(of: month, short: short, in: language ?? fallback)
             case .day: String(format: "%02d", day)
             case .shortDay: String(day)
             case .separator(let character): String(character)

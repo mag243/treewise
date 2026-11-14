@@ -24,6 +24,11 @@ public struct FolderTree: Codable, Hashable, Sendable {
         case tooManyFolders
         /// More than `mostLevels` levels.
         case tooDeep
+        /// A name holds a template's field with a format it does not take, as `{date:qq}`
+        /// (ADR 0096).
+        case invalidFormat(String)
+        /// A name below a template's root holds `{seq}`, which only the root may (ADR 0096).
+        case numberBelowTop(String)
     }
 
     /// The folder's name.
@@ -54,38 +59,51 @@ public struct FolderTree: Codable, Hashable, Sendable {
         item.kind == .folder && !item.isHidden
     }
 
-    /// Whether a name in the tree holds `{year}`.
-    public var hasYear: Bool {
-        name.contains(Self.yearField) || folders.contains(where: \.hasYear)
-    }
-
-    /// The tree with `{year}` in each name written as `year`.
-    public func filling(year: Int) -> FolderTree {
-        FolderTree(
-            name: name.replacingOccurrences(of: Self.yearField, with: String(year)),
-            folders: folders.map { $0.filling(year: year) })
-    }
-
     /// Checks that every folder of the tree can be made where it is placed: names only,
     /// relative to the folder the tree is made in, none hidden or twice in one folder, and
     /// within `mostFolders` and `mostLevels`.
     public func check() throws(Problem) {
         var count = 0
-        try check(level: 1, count: &count)
+        try check(level: 1, count: &count) { name throws(Problem) in
+            guard FolderNaming.isValidName(name) else { throw .invalidName(name) }
+        }
     }
 
-    private func check(level: Int, count: inout Int) throws(Problem) {
+    /// Checks the tree of a template as `check()` does, with its fields (ADR 0096): they must
+    /// read, `{seq}` only in the root, and the text around them a name can hold, since a
+    /// `:` in a field is no path separator. Its names are checked once more when filled in.
+    public func checkTemplate() throws(Problem) {
+        var count = 0
+        try check(level: 1, count: &count) { name throws(Problem) in
+            let read = try FolderNameFields(name)
+            guard FolderNaming.isValidName(read.plainText) else { throw .invalidName(name) }
+        }
+        for folder in folders {
+            try folder.checkNoNumber()
+        }
+    }
+
+    private func checkNoNumber() throws(Problem) {
+        if (try? FolderNameFields(name))?.fields.contains(.number) == true {
+            throw .numberBelowTop(name)
+        }
+        for folder in folders { try folder.checkNoNumber() }
+    }
+
+    private func check(
+        level: Int, count: inout Int, name check: (String) throws(Problem) -> Void
+    ) throws(Problem) {
         guard level <= Self.mostLevels else { throw .tooDeep }
         count += 1
         guard count <= Self.mostFolders else { throw .tooManyFolders }
-        guard FolderNaming.isValidName(name) else { throw .invalidName(name) }
+        try check(name)
         guard !name.hasPrefix(".") else { throw .hiddenName(name) }
         var seen = Set<String>()
         for folder in folders {
             guard seen.insert(ConflictResolver.comparisonKey(folder.name)).inserted else {
                 throw .sameName(folder.name)
             }
-            try folder.check(level: level + 1, count: &count)
+            try folder.check(level: level + 1, count: &count, name: check)
         }
     }
 }

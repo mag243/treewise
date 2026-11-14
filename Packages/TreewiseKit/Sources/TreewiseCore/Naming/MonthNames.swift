@@ -4,7 +4,7 @@ import Foundation
 /// Treewise's own tables so a name reads the same on every Mac (ADR 0067).
 public enum MonthNames {
     /// A language a month's name is written in.
-    public enum Language: String, CaseIterable, Hashable, Sendable {
+    public enum Language: String, CaseIterable, Codable, Hashable, Sendable {
         case english = "en"
         case dutch = "nl"
         case german = "de"
@@ -16,7 +16,7 @@ public enum MonthNames {
         }
 
         /// The language the app runs in.
-        static let app = Language(preferring: Bundle.main.preferredLocalizations)
+        public static let app = Language(preferring: Bundle.main.preferredLocalizations)
     }
 
     private static let full: [Language: [String]] = [

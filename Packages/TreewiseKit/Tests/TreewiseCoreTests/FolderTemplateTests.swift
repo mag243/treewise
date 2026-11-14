@@ -60,6 +60,14 @@ import TreewiseCore
         #expect(try FolderTemplateFile.template(from: data) == template)
     }
 
+    @Test func readsBackATemplateWhoseNamesHoldFieldsWithAColon() throws {
+        let shoot = FolderTree(
+            name: "{date:yyyy-MM-dd} Shoot", folders: [FolderTree(name: "{text:upper}")])
+        let template = FolderTemplate(name: "Photo Shoot", root: shoot)
+        let data = try FolderTemplateFile.data(of: template)
+        #expect(try FolderTemplateFile.template(from: data) == template)
+    }
+
     @Test func ordersTheFoldersOfAFileByName() throws {
         let json = #"""
             {"format": 1, "name": "Year", "root": {"name": "{year}", "folders": [

@@ -36,7 +36,7 @@ public enum FolderTemplateFile {
             Envelope(format: format, name: template.name, root: template.root))
     }
 
-    /// The template in a file, checked so that its folders can be made.
+    /// The template in a file, checked as a template (ADR 0096).
     public static func template(from data: Data) throws(Problem) -> FolderTemplate {
         let decoder = JSONDecoder()
         guard let version = try? decoder.decode(Version.self, from: data) else {
@@ -47,7 +47,7 @@ public enum FolderTemplateFile {
             !envelope.name.trimmingCharacters(in: .whitespaces).isEmpty
         else { throw .unreadable }
         do {
-            try envelope.root.check()
+            try envelope.root.checkTemplate()
         } catch {
             throw .folders(error)
         }
