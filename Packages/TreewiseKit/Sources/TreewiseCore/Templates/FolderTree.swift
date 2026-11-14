@@ -29,6 +29,8 @@ public struct FolderTree: Codable, Hashable, Sendable {
         case invalidFormat(String)
         /// A name below a template's root holds `{seq}`, which only the root may (ADR 0096).
         case numberBelowTop(String)
+        /// A folder would move into itself or a folder in it (ADR 0095).
+        case intoItself
     }
 
     /// The folder's name.
