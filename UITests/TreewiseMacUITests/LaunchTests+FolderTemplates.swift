@@ -56,6 +56,9 @@ extension LaunchTests {
         XCTAssertTrue(
             sheet.staticTexts["Makes 3 folders."].appeared(timeout: Self.launchTimeout),
             "it says what it makes")
+        XCTAssertFalse(
+            sheet.checkBoxes.firstMatch.exists,
+            "offering a template for new folders needs the add-on, not tried here")
         create.click()
         XCTAssertTrue(
             window.staticTexts["Made 3 folders."].appeared(timeout: Self.launchTimeout),
