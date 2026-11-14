@@ -37,7 +37,7 @@ import TreewiseModuleInterface
     }
 
     @Test func asksForNoContent() {
-        #expect(module.description.neededContent.isEmpty)
+        #expect(module.description.names.neededContent.isEmpty)
     }
 
     @Test func isFree() {
@@ -45,13 +45,14 @@ import TreewiseModuleInterface
     }
 
     @Test func handlesEveryItem() {
-        #expect(module.description.contentTypes == ["public.item"])
+        #expect(module.description.names.contentTypes == ["public.item"])
     }
 
     @Test func itsDefaultTemplateParses() throws {
         #expect(throws: Never.self) {
             try NameTemplate.parse(
-                module.description.defaultTemplate, fields: module.description.fields + [.folder]
+                module.description.names.defaultTemplate,
+                fields: module.description.names.fields + [.folder]
             ).get()
         }
     }
@@ -85,7 +86,7 @@ import TreewiseModuleInterface
     /// A number from the file is a field of modules that read files; the next number of
     /// a series is Treewise's `{seq}` (ADR 0067).
     @Test func fillsInTheDateAndTheTextOnly() {
-        #expect(module.description.fields.map(\.name) == ["date", "text"])
+        #expect(module.description.names.fields.map(\.name) == ["date", "text"])
     }
 
     @Test(arguments: [

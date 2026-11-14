@@ -11,7 +11,7 @@
         /// The id the app asks for.
         static let id = "me.m-domain.treewise.sandbox-probe"
 
-        let description = NameModuleDescription(
+        let description = AddOnDescription(
             id: Self.id, contentTypes: ["public.item"], neededContent: [], fields: [],
             defaultTemplate: "{text}", isFree: true)
 

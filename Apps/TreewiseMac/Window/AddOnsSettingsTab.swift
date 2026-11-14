@@ -33,9 +33,9 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         label: String(localized: "Also read names in the same folder a year before")
     ) { [settings] in settings.addOns.readsYearBefore = $0 }
     private var reading: [NSView] = []
-    var modules: [NameModuleDescription] = []
+    var modules: [AddOnDescription] = []
     var states: [String: ModuleLicenceState] = [:]
-    var shown: [NameModuleDescription] = []
+    var shown: [AddOnDescription] = []
     /// The add-on whose card is open; the first when none was chosen.
     var selectedID: String?
 
@@ -49,7 +49,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     required init?(coder: NSCoder) { nil }
 
     /// The add-ons that propose names, whose order and on or off Settings keeps (ADR 0070).
-    var catalog: [String] { modules.filter { $0.kind == .names }.map(\.id) }
+    var catalog: [String] { modules.filter { $0.proposesNames }.map(\.id) }
     /// The add-ons on that may work: one of them stays on.
     var working: [String] {
         settings.addOns.available(catalog).filter { states[$0]?.mayWork ?? true }
@@ -57,9 +57,9 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
 
     /// The add-ons that propose names in their order, then those that make folder structures
     /// (ADR 0091).
-    private var ordered: [NameModuleDescription] {
+    private var ordered: [AddOnDescription] {
         settings.addOns.ordered(catalog).compactMap { id in modules.first { $0.id == id } }
-            + modules.filter { $0.kind == .folderStructure }
+            + modules.filter { $0.makesFolderStructures }
     }
 
     override func loadView() {
@@ -185,7 +185,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
 
     private func update() {
         yearBefore.state = settings.addOns.readsYearBefore ? .on : .off
-        let readsYearBefore = modules.contains(where: \.readsYearBefore)
+        let readsYearBefore = modules.contains(where: \.names.readsYearBefore)
         for view in reading { view.isHidden = !readsYearBefore }
         shown = ordered
         // The selection is known before the cards are made, so the right one opens.
@@ -211,23 +211,23 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
                 found[module.id] = try? await host.licenceState(
                     moduleID: module.id, licence: context)
             }
-            let mayWork = { (module: NameModuleDescription) in found[module.id]?.mayWork ?? true }
-            let offered = NameModuleDescription.offered(forNames: all.filter(mayWork))
+            let mayWork = { (module: AddOnDescription) in found[module.id]?.mayWork ?? true }
+            let offered = AddOnDescription.offered(forNames: all.filter(mayWork))
             for module in all where !mayWork(module) {
-                for replaced in module.replaces {
+                for replaced in module.names.replaces {
                     settings.addOns.handOver(from: module.id, to: replaced)
                 }
             }
             for module in offered {
-                for replaced in module.replaces {
+                for replaced in module.names.replaces {
                     settings.addOns.handOver(from: replaced, to: module.id)
                 }
             }
             guard let self else { return }
             states = found
             modules =
-                offered + all.filter { $0.kind == .names && !mayWork($0) }
-                + all.filter { $0.kind == .folderStructure }
+                offered + all.filter { $0.proposesNames && !mayWork($0) }
+                + all.filter { $0.makesFolderStructures }
             enterKey.isHidden = found.isEmpty
             update()
         }

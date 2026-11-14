@@ -3,38 +3,42 @@ import Testing
 import TreewiseCore
 import TreewiseModuleInterface
 
-/// Add-ons of two kinds: those that propose names and those that make folder structures
-/// (ADR 0091).
+/// Add-ons of two kinds, one description for both (ADR 0091, ADR 0098): those that propose
+/// names, with what that needs, and those that make folder structures.
 @Suite struct AddOnKindTests {
-    private func describe(_ id: String, kind: AddOnKind) -> NameModuleDescription {
-        NameModuleDescription(
-            id: id, contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
-            kind: kind)
+    private static let names = AddOnDescription(
+        id: "names", contentTypes: ["public.data"], neededContent: [],
+        fields: [NameTemplate.Field(name: "text", kind: .text)], defaultTemplate: "{text}")
+    private static let folders = AddOnDescription(id: "folders", kind: .folderStructure)
+
+    @Test func anAddOnDescribedWithWhatNamesNeedProposesNames() {
+        #expect(Self.names.proposesNames)
+        #expect(!Self.names.makesFolderStructures)
+        #expect(Self.names.names.defaultTemplate == "{text}")
     }
 
-    @Test func anAddOnProposesNamesUnlessItSaysOtherwise() {
-        let description = NameModuleDescription(
-            id: "m", contentTypes: ["public.data"], neededContent: [], fields: [],
-            defaultTemplate: "{folder}")
-        #expect(description.kind == .names)
+    @Test func anAddOnThatMakesFolderStructuresHasNothingForNames() {
+        #expect(Self.folders.makesFolderStructures)
+        #expect(!Self.folders.proposesNames)
+        #expect(Self.folders.names == .none)
     }
 
     @Test func keepsItsKindOnTheTrip() throws {
-        let description = describe("t", kind: .folderStructure)
-        let decoded = try PropertyListDecoder().decode(
-            NameModuleDescription.self, from: PropertyListEncoder().encode(description))
-        #expect(decoded.kind == .folderStructure)
+        for description in [Self.names, Self.folders] {
+            let decoded = try PropertyListDecoder().decode(
+                AddOnDescription.self, from: PropertyListEncoder().encode(description))
+            #expect(decoded == description)
+        }
     }
 
     @Test func onlyAnAddOnForNamesIsOfferedForNames() {
-        let all = [describe("names", kind: .names), describe("folders", kind: .folderStructure)]
-        #expect(NameModuleDescription.offered(forNames: all).map(\.id) == ["names"])
+        let offered = AddOnDescription.offered(forNames: [Self.names, Self.folders])
+        #expect(offered.map(\.id) == ["names"])
     }
 
     @Test func anAddOnForFoldersNeverTakesTheDefaultModulesPart() {
-        let folders = NameModuleDescription(
-            id: "folders", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
-            replaces: [NameModuleDescription.defaultModuleID], kind: .folderStructure)
+        let folders = AddOnDescription(
+            id: AddOnDescription.defaultModuleID, kind: .folderStructure)
         #expect(!folders.takesTheDefaultModulesPart)
     }
 }

@@ -6,7 +6,7 @@
     /// The app's side of the XPC connection to the modules' service (ADR 0057). What
     /// comes back is not trusted: its size and number are limited, and a module that
     /// fails or stays silent gives a typed error while the app goes on.
-    public actor XPCModuleHost: NameModuleHosting {
+    public actor XPCModuleHost: AddOnHosting {
         /// The service's name, its bundle identifier inside the app.
         public static let serviceName = "me.m-domain.treewise.modulehost"
         /// How long a module may take. It runs on the device and may read a long text.
@@ -34,9 +34,9 @@
         }
 
         /// The modules on offer.
-        public func availableModules() async throws -> [NameModuleDescription] {
+        public func availableModules() async throws -> [AddOnDescription] {
             let data = try await ask { service, reply in service.listModules(reply: reply) }
-            return try decode([NameModuleDescription].self, from: data)
+            return try decode([AddOnDescription].self, from: data)
         }
 
         /// Asks a module for sets of values, in the order it gave them.

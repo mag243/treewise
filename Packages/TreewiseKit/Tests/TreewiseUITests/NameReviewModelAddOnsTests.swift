@@ -55,7 +55,7 @@ extension NameReviewModelTests {
 
 /// A module that replaces the free one, as the advanced folder pattern module does (ADR 0067).
 extension NameReviewModelTests {
-    static let advancedDescription = NameModuleDescription(
+    static let advancedDescription = AddOnDescription(
         id: "advanced", contentTypes: ["public.item"], neededContent: [],
         fields: [.init(name: "date", kind: .date), .init(name: "text", kind: .text)],
         defaultTemplate: "Adv {text}", name: "Advanced", replaces: [free])
@@ -131,7 +131,7 @@ extension NameReviewModelTests {
 
 /// An add-on without a licence (ADR 0071).
 extension NameReviewModelTests {
-    private func unlicensedHost(_ modules: [NameModuleDescription]) -> ScriptedModuleHost {
+    private func unlicensedHost(_ modules: [AddOnDescription]) -> ScriptedModuleHost {
         let host = host(
             modules: modules,
             answers: [
@@ -244,9 +244,7 @@ extension NameReviewModelTests {
 extension NameReviewModelTests {
     @Test func neverOffersAnAddOnThatMakesFolderStructures() async {
         _ = addFile("scan.pdf")
-        let templates = NameModuleDescription(
-            id: "templates", contentTypes: ["public.item"], neededContent: [], fields: [],
-            defaultTemplate: "", kind: .folderStructure)
+        let templates = AddOnDescription(id: "templates", kind: .folderStructure)
         let model = await model(host(modules: [Self.freeDescription, templates]))
         #expect(model.modules.map(\.id) == [Self.free])
     }

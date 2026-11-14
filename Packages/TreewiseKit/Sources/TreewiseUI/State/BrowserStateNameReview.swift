@@ -9,7 +9,7 @@ extension BrowserState {
 
     /// A review of the selection, or of the focused folder's files when nothing is selected.
     public func makeNameReview(
-        host: any NameModuleHosting, store: any FolderSettingsStoring
+        host: any AddOnHosting, store: any FolderSettingsStoring
     ) async -> NameReviewModel? {
         await makeNameReview(of: selectedItems, host: host, store: store)
     }
@@ -17,7 +17,7 @@ extension BrowserState {
     /// A review of the focused folder's files, whatever is selected: in a full folder a
     /// right click nearly always lands on a file and selects it.
     public func makeFolderNameReview(
-        host: any NameModuleHosting, store: any FolderSettingsStoring
+        host: any AddOnHosting, store: any FolderSettingsStoring
     ) async -> NameReviewModel? {
         await makeNameReview(of: [], host: host, store: store)
     }
@@ -30,14 +30,14 @@ extension BrowserState {
 
     /// The proposals for one file being renamed, as a review of that file alone (ADR 0066).
     public func makeNameProposals(
-        for item: FileItem, host: any NameModuleHosting, store: any FolderSettingsStoring
+        for item: FileItem, host: any AddOnHosting, store: any FolderSettingsStoring
     ) async -> NameReviewModel? {
         guard canSuggestName(for: item) else { return nil }
         return await makeNameReview(of: [item], host: host, store: store)
     }
 
     private func makeNameReview(
-        of selection: [FileItem], host: any NameModuleHosting, store: any FolderSettingsStoring
+        of selection: [FileItem], host: any AddOnHosting, store: any FolderSettingsStoring
     ) async -> NameReviewModel? {
         guard let operations,
             let folder = try? await fileSystem.item(at: layout.focusedPane.activeTab.folder)

@@ -27,14 +27,14 @@ final class AddOnCardView: NSView {
     /// The body starts under the name, past the icon.
     private static var bodyIndent: CGFloat { iconSize + headerSpacing }
 
-    private let module: NameModuleDescription
+    private let module: AddOnDescription
     private let card: AddOnCard
     private let licence: ModuleLicenceState?
     private let actions: Actions
 
     /// Builds the card at `width`, open when `isSelected`.
     init(
-        module: NameModuleDescription, card: AddOnCard, licence: ModuleLicenceState?,
+        module: AddOnDescription, card: AddOnCard, licence: ModuleLicenceState?,
         isSelected: Bool, isOnInNewFolders: Bool, width: CGFloat, actions: Actions
     ) {
         self.module = module
@@ -187,7 +187,7 @@ final class AddOnCardView: NSView {
     /// Try for 14 Days before a paid add-on was tried, and Buy… where it is sold without a
     /// licence (ADR 0071, ADR 0088); nil when neither applies.
     private static func offer(
-        _ module: NameModuleDescription, licence: ModuleLicenceState?,
+        _ module: AddOnDescription, licence: ModuleLicenceState?,
         startTrial: @escaping @MainActor () -> Void
     ) -> NSView? {
         guard let licence else { return nil }
@@ -232,7 +232,7 @@ final class AddOnCardView: NSView {
     }
 
     /// What the add-on reads and what for, under its name.
-    static func subtitle(_ module: NameModuleDescription) -> String {
+    static func subtitle(_ module: AddOnDescription) -> String {
         switch module.kind {
         case .names:
             reads(module) + " · " + String(localized: "For \(files(module))")
@@ -242,19 +242,19 @@ final class AddOnCardView: NSView {
     }
 
     /// What the add-on reads of a file, in words (ADR 0061, ADR 0062).
-    static func reads(_ module: NameModuleDescription) -> String {
-        if module.neededContent.contains(.pageImages) {
+    static func reads(_ module: AddOnDescription) -> String {
+        if module.names.neededContent.contains(.pageImages) {
             return String(localized: "Reads names and the pages of a file")
         }
-        if !module.neededContent.isEmpty {
+        if !module.names.neededContent.isEmpty {
             return String(localized: "Reads names and the text of a file")
         }
         return String(localized: "Reads names only")
     }
 
     /// Which files the add-on is for, in words from its content types.
-    static func files(_ module: NameModuleDescription) -> String {
-        let types = module.contentTypes.compactMap { UTType($0) }
+    static func files(_ module: AddOnDescription) -> String {
+        let types = module.names.contentTypes.compactMap { UTType($0) }
         if types.contains(where: { $0 == .item || $0 == .data }) {
             return String(localized: "all files")
         }

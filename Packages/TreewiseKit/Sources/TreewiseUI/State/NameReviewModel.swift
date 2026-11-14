@@ -16,7 +16,7 @@ public struct NameReviewDependencies: Sendable {
     public typealias ChangeSavedPattern = @MainActor @Sendable (SavedPattern.ID, String) -> Void
 
     let operations: any FileOperating
-    let host: any NameModuleHosting
+    let host: any AddOnHosting
     let store: any FolderSettingsStoring
     /// The user's pattern for a folder without one.
     let defaultPattern: String
@@ -35,7 +35,7 @@ public struct NameReviewDependencies: Sendable {
 
     /// Creates the dependencies.
     public init(
-        operations: any FileOperating, host: any NameModuleHosting,
+        operations: any FileOperating, host: any AddOnHosting,
         store: any FolderSettingsStoring, defaultPattern: String,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
         addOns: AddOnPreferences = AddOnPreferences(),
@@ -76,7 +76,7 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
     }
 
     /// What the module is.
-    public let description: NameModuleDescription
+    public let description: AddOnDescription
     /// Whether it is on for this folder.
     public internal(set) var isOn: Bool
     /// Its template as last typed, usable or not.
@@ -142,7 +142,7 @@ public final class NameReviewModel {
     /// Whether an add-on here was given the names of the same folder a year before.
     public var readsYearBefore: Bool {
         yearBefore?.folderFound == true
-            && modules.contains { $0.description.readsYearBefore && mayWork($0.id) }
+            && modules.contains { $0.description.names.readsYearBefore && mayWork($0.id) }
     }
     /// Whether a module failed to answer.
     public internal(set) var moduleFailed = false
@@ -259,26 +259,25 @@ public final class NameReviewModel {
     /// (ADR 0088). No module that another replaces is offered, while that one may work, and
     /// the settings go to the one that may (ADR 0067); none turned off in Settings is
     /// offered (ADR 0070). One without a licence comes last, off.
-    private func loadSettings() async -> (descriptions: [NameModuleDescription], catalog: [String])
-    {
+    private func loadSettings() async -> (descriptions: [AddOnDescription], catalog: [String]) {
         let all = ((try? await dependencies.host.availableModules()) ?? []).filter {
-            $0.kind == .names
+            $0.proposesNames
         }
         let states = await licenceStates(of: all)
-        let mayWork = { (module: NameModuleDescription) in states[module.id]?.mayWork ?? true }
-        let offered = NameModuleDescription.offered(all.filter(mayWork))
+        let mayWork = { (module: AddOnDescription) in states[module.id]?.mayWork ?? true }
+        let offered = AddOnDescription.offered(all.filter(mayWork))
         var addOns = dependencies.addOns
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
         isFirstReview = saved == nil
         settings = saved ?? FolderSettings(enabledModules: [], templates: [:])
         for module in all where !mayWork(module) {
-            for replaced in module.replaces {
+            for replaced in module.names.replaces {
                 addOns.handOver(from: module.id, to: replaced)
                 settings.handOver(from: module.id, to: replaced)
             }
         }
         for module in offered {
-            for replaced in module.replaces {
+            for replaced in module.names.replaces {
                 addOns.handOver(from: replaced, to: module.id)
                 settings.handOver(from: replaced, to: module.id)
             }
@@ -287,7 +286,7 @@ public final class NameReviewModel {
         freshEnabled =
             addOns.newFolder(
                 catalog: offered.map(\.id),
-                defaultID: NameModuleDescription.defaultID(among: offered)
+                defaultID: AddOnDescription.defaultID(among: offered)
             ).enabledModules
         if saved == nil { settings = FolderSettings(enabledModules: freshEnabled, templates: [:]) }
         let locked = all.filter { !mayWork($0) && addOns.isOn($0.id) }
@@ -296,7 +295,7 @@ public final class NameReviewModel {
 
     /// Each paid module's licence state; the context they were asked with is kept for the
     /// review.
-    private func licenceStates(of modules: [NameModuleDescription]) async
+    private func licenceStates(of modules: [AddOnDescription]) async
         -> [String: ModuleLicenceState]
     {
         licence = dependencies.licence()
@@ -309,7 +308,7 @@ public final class NameReviewModel {
         return states
     }
 
-    private func makeModule(_ description: NameModuleDescription, names: [String]) async
+    private func makeModule(_ description: AddOnDescription, names: [String]) async
         -> NameReviewModule
     {
         let years = years(for: description)
@@ -323,7 +322,7 @@ public final class NameReviewModel {
         var module = NameReviewModule(
             description: description, isOn: enabled.contains(description.id),
             templateText: "", origin: .notRecognized,
-            recognized: derived ?? (isDefault ? nil : description.defaultTemplate))
+            recognized: derived ?? (isDefault ? nil : description.names.defaultTemplate))
         module.licence = licenceStates[description.id]
         module.namesGiven = names.count + (years?.namesYearBefore.count ?? 0)
         module.candidates = candidates(templates, for: description, names: names)
@@ -347,7 +346,7 @@ public final class NameReviewModel {
     /// The templates a module recognized, with how many of the folder's names each fits,
     /// as Treewise's own matcher counts them, not the module.
     private func candidates(
-        _ templates: [String], for description: NameModuleDescription, names: [String],
+        _ templates: [String], for description: AddOnDescription, names: [String],
         fixed: [String: String]? = nil
     ) -> [PatternCandidate] {
         let stems = names.map(ProposedName.stem(of:))
@@ -369,7 +368,7 @@ public final class NameReviewModel {
             module.templateText = recognized
             module.template = Self.parse(recognized, for: module.description)
             module.origin =
-                recognized == module.description.defaultTemplate ? .moduleDefault : .derived
+                recognized == module.description.names.defaultTemplate ? .moduleDefault : .derived
         } else if scope == .selection {
             module.templateText = dependencies.defaultPattern
             module.template = Self.parse(dependencies.defaultPattern, for: module.description)
@@ -381,9 +380,9 @@ public final class NameReviewModel {
         }
     }
 
-    static func parse(_ text: String, for description: NameModuleDescription) -> NameTemplate? {
+    static func parse(_ text: String, for description: AddOnDescription) -> NameTemplate? {
         try? NameTemplate.parse(
-            text, fields: description.fields + NameTemplate.Field.suppliedByTreewise
+            text, fields: description.names.fields + NameTemplate.Field.suppliedByTreewise
         ).get()
     }
 }

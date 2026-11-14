@@ -69,7 +69,7 @@ public final class LicenceKeeper {
 
     /// Enters a key: each paid module says whether it unlocks it, and it is kept when one
     /// does. The app reads no key itself.
-    public func enter(key text: String, host: any NameModuleHosting) async -> LicenceKeyOutcome {
+    public func enter(key text: String, host: any AddOnHosting) async -> LicenceKeyOutcome {
         let key = text.filter { !$0.isWhitespace }
         guard Self.looksLikeKey(key) else { return .notAKey }
         // Asked with this key alone and no trial, so only a licence counts.

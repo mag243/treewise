@@ -30,7 +30,7 @@ enum LicenceText {
     }
 
     /// Opens the page where an add-on is bought.
-    static func buy(_ module: NameModuleDescription) {
+    static func buy(_ module: AddOnDescription) {
         guard let page = module.purchaseURL.flatMap(URL.init(string:)) else { return }
         NSWorkspace.shared.open(page)
     }

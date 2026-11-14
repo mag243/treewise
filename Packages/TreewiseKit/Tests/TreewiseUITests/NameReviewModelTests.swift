@@ -9,15 +9,15 @@ import TreewiseUI
 /// The review overview's state, with scripted modules (ADR 0057).
 @MainActor
 @Suite struct NameReviewModelTests {
-    static let free = NameModuleDescription.defaultModuleID
+    static let free = AddOnDescription.defaultModuleID
     static let paid = "paid"
-    static let freeDescription = NameModuleDescription(
+    static let freeDescription = AddOnDescription(
         id: free, contentTypes: ["public.item"], neededContent: [],
         fields: [
             .init(name: "date", kind: .date), .init(name: "text", kind: .text),
             .init(name: "number", kind: .number),
         ], defaultTemplate: "Doc {text}")
-    static let paidDescription = NameModuleDescription(
+    static let paidDescription = AddOnDescription(
         id: paid, contentTypes: ["com.adobe.pdf"], neededContent: [.text],
         fields: [.init(name: "company", kind: .text)], defaultTemplate: "Co {company}")
 
@@ -42,7 +42,7 @@ import TreewiseUI
     }
 
     func host(
-        modules: [NameModuleDescription] = [freeDescription],
+        modules: [AddOnDescription] = [freeDescription],
         answers: [String: Result<[[String: NameTemplate.Value]], NameModuleHostError>]? = nil
     ) -> ScriptedModuleHost {
         let host = ScriptedModuleHost(

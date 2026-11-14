@@ -87,7 +87,7 @@ import TreewiseUI
 @MainActor
 @Suite struct BrowserStateLicenceTests {
     private let fileSystem = ChangingFileSystem()
-    private static let paid = NameModuleDescription(
+    private static let paid = AddOnDescription(
         id: "paid", contentTypes: ["public.item"], neededContent: [], fields: [],
         defaultTemplate: "{folder}")
 

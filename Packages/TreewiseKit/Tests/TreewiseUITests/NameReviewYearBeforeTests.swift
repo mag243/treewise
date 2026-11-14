@@ -8,11 +8,11 @@ import TreewiseUI
 /// The names in the same folder a year before, for an add-on that reads them (ADR 0090).
 @MainActor
 @Suite struct NameReviewYearBeforeTests {
-    private static let reader = NameModuleDescription(
+    private static let reader = AddOnDescription(
         id: "advanced", contentTypes: ["public.item"], neededContent: [],
         fields: [.init(name: "text", kind: .text)], defaultTemplate: "Adv {text}",
         name: "Advanced", readsYearBefore: true)
-    private static let other = NameModuleDescription(
+    private static let other = AddOnDescription(
         id: "other", contentTypes: ["public.item"], neededContent: [],
         fields: [.init(name: "text", kind: .text)], defaultTemplate: "Other {text}",
         name: "Other")
@@ -63,7 +63,7 @@ import TreewiseUI
         return model
     }
 
-    private func host(_ modules: [NameModuleDescription] = [reader]) -> ScriptedModuleHost {
+    private func host(_ modules: [AddOnDescription] = [reader]) -> ScriptedModuleHost {
         ScriptedModuleHost(
             modules: modules,
             answers: Dictionary(
@@ -116,7 +116,7 @@ import TreewiseUI
 
     @Test func givesNothingOfThemToAnAddOnThatMayNotWork() async throws {
         addFile("Tax 2025.1.pdf", in: "Admin/2025/Tax")
-        let locked = NameModuleDescription(
+        let locked = AddOnDescription(
             id: "advanced", contentTypes: ["public.item"], neededContent: [],
             fields: [.init(name: "text", kind: .text)], defaultTemplate: "Adv {text}",
             isFree: false, name: "Advanced", readsYearBefore: true)

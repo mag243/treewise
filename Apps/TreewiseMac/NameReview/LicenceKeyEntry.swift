@@ -10,7 +10,7 @@ import TreewiseUI
 enum LicenceKeyEntry {
     /// Shows the sheet on `window`; `onUnlocked` is called once a key unlocked an add-on.
     static func present(
-        on window: NSWindow, keeper: LicenceKeeper?, host: any NameModuleHosting,
+        on window: NSWindow, keeper: LicenceKeeper?, host: any AddOnHosting,
         onUnlocked: @escaping () -> Void = {}
     ) {
         let sheet = LicenceKeySheet(keeper: keeper, host: host)
@@ -37,7 +37,7 @@ private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
     private static let spacing: CGFloat = 12
 
     private let keeper: LicenceKeeper?
-    private let host: any NameModuleHosting
+    private let host: any AddOnHosting
     /// Called with what a key unlocked, or `nil` on Cancel.
     var finish: (String?) -> Void = { _ in }
     private let key = NSTextView()
@@ -53,7 +53,7 @@ private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
         didSet { updateAdd() }
     }
 
-    init(keeper: LicenceKeeper?, host: any NameModuleHosting) {
+    init(keeper: LicenceKeeper?, host: any AddOnHosting) {
         self.keeper = keeper
         self.host = host
         super.init(nibName: nil, bundle: nil)

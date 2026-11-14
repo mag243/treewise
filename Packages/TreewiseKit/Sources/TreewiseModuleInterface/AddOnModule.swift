@@ -1,13 +1,5 @@
 import TreewiseCore
 
-/// What an add-on does (ADR 0091).
-public enum AddOnKind: String, Hashable, Sendable, Codable {
-    /// It proposes names for files and folders (ADR 0057).
-    case names
-    /// It makes the template of a folder's structure, and the folders a template makes.
-    case folderStructure
-}
-
 /// What every add-on is, whatever it does: its description and its licence (ADR 0057,
 /// ADR 0071). It gets no way to reach a file, and on the Mac it runs in a service without
 /// access to the network or the user's files.
@@ -18,7 +10,7 @@ public protocol AddOnModule: Sendable {
     /// A stable id.
     var id: String { get }
     /// What this add-on is, for the app to show and to know without running it.
-    var description: NameModuleDescription { get }
+    var description: AddOnDescription { get }
     /// What its licence lets it do, or nil when it needs no licence (ADR 0071).
     func licenceState(licence: LicenceContext) -> ModuleLicenceState?
 }

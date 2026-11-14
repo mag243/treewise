@@ -17,9 +17,9 @@ extension NameReviewModel {
     /// the user lets add-ons read them, one of `descriptions` that may work asks, and the
     /// folder's path holds a year; nil otherwise. Without that folder no names are given.
     /// Hidden files and subfolders are left out, as they are here.
-    func readYearBefore(for descriptions: [NameModuleDescription]) async -> YearBefore? {
+    func readYearBefore(for descriptions: [AddOnDescription]) async -> YearBefore? {
         guard dependencies.addOns.readsYearBefore,
-            descriptions.contains(where: { $0.readsYearBefore && mayWork($0.id) }),
+            descriptions.contains(where: { $0.names.readsYearBefore && mayWork($0.id) }),
             let year = YearFolders.year(of: folder.id),
             let before = YearFolders.folderBefore(folder.id)
         else { return nil }
@@ -38,7 +38,7 @@ extension NameReviewModel {
 
     /// The folder's year and the names a year before, for a module that reads them and may
     /// work (ADR 0090).
-    func years(for description: NameModuleDescription) -> FolderYears? {
-        description.readsYearBefore && mayWork(description.id) ? yearBefore?.years : nil
+    func years(for description: AddOnDescription) -> FolderYears? {
+        description.names.readsYearBefore && mayWork(description.id) ? yearBefore?.years : nil
     }
 }

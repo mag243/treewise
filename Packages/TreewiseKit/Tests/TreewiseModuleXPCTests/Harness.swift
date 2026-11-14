@@ -28,15 +28,15 @@
 
     /// A module that answers from a closure, or never.
     struct StubModule: NameModule {
-        let description: NameModuleDescription
+        let description: AddOnDescription
         var answers = true
         var answer: @Sendable (NameRequest) throws -> [[String: NameTemplate.Value]] = { _ in [] }
         var signal: RequestSignal?
 
         private static func describe(
             _ id: String, neededContent: Set<ModuleContentKind> = []
-        ) -> NameModuleDescription {
-            NameModuleDescription(
+        ) -> AddOnDescription {
+            AddOnDescription(
                 id: id, contentTypes: ["public.data"], neededContent: neededContent,
                 fields: [NameTemplate.Field(name: "text", kind: .text)], defaultTemplate: "{text}")
         }
@@ -88,9 +88,10 @@
         /// A module that reads the same folder a year before (ADR 0090).
         init(readingTheYearBefore id: String) {
             let plain = Self.describe(id)
-            description = NameModuleDescription(
-                id: id, contentTypes: plain.contentTypes, neededContent: [], fields: plain.fields,
-                defaultTemplate: plain.defaultTemplate, readsYearBefore: true)
+            description = AddOnDescription(
+                id: id, contentTypes: plain.names.contentTypes, neededContent: [],
+                fields: plain.names.fields, defaultTemplate: plain.names.defaultTemplate,
+                readsYearBefore: true)
         }
 
         init(id: String, derived: String) {
@@ -130,16 +131,14 @@
     /// An add-on that makes folder structures: with the key "good" it writes each year in a
     /// name as `{year}` and fills it in again; it was never tried without one.
     struct StubStructureModule: FolderStructureModule {
-        let description: NameModuleDescription
+        let description: AddOnDescription
         /// What it returns to make, in place of the template filled in.
         var makes: FolderTree?
         /// What it returns as a template, in place of the years written as `{year}`.
         var saves: FolderTree?
 
         init(id: String) {
-            description = NameModuleDescription(
-                id: id, contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
-                kind: .folderStructure)
+            description = AddOnDescription(id: id, kind: .folderStructure)
         }
 
         static func template(of tree: FolderTree) -> FolderTree {

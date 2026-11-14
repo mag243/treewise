@@ -6,7 +6,7 @@ import TreewiseModuleInterface
 /// What a module says about its licence (ADR 0071).
 @Suite struct ModuleLicenceTests {
     private struct FreeModule: NameModule {
-        let description = NameModuleDescription(
+        let description = AddOnDescription(
             id: "free", contentTypes: ["public.item"], neededContent: [], fields: [],
             defaultTemplate: "{folder}", isFree: true)
 
@@ -22,7 +22,7 @@ import TreewiseModuleInterface
     }
 
     @Test func aModuleSaysWhereToBuyIt() {
-        let paid = NameModuleDescription(
+        let paid = AddOnDescription(
             id: "paid", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
             purchaseURL: "https://example.com/buy")
         #expect(paid.purchaseURL == "https://example.com/buy")
@@ -80,7 +80,7 @@ import TreewiseModuleInterface
 
 /// An add-on says in one line what it does, in English, Dutch and German (ADR 0088).
 @Suite struct ModuleSummaryTests {
-    private static let module = NameModuleDescription(
+    private static let module = AddOnDescription(
         id: "paid", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
         summaries: ["en": "Recognizes more patterns.", "nl": "Herkent meer patronen."])
 
@@ -94,14 +94,14 @@ import TreewiseModuleInterface
     }
 
     @Test func saysWhatItRecognizesAsWrittenInAPattern() {
-        let module = NameModuleDescription(
+        let module = AddOnDescription(
             id: "paid", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "",
             recognizes: ["{date}", "{year}", "{seq:4}"])
         #expect(module.recognizes == ["{date}", "{year}", "{seq:4}"])
     }
 
     @Test func aModuleWithoutASummarySaysNothing() {
-        let bare = NameModuleDescription(
+        let bare = AddOnDescription(
             id: "free", contentTypes: [], neededContent: [], fields: [], defaultTemplate: "")
         #expect(bare.summary(preferring: ["en"]) == nil)
     }

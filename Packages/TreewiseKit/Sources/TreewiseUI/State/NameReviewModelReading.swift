@@ -39,7 +39,7 @@ extension NameReviewModel {
     private func read(_ queue: [(item: FileItem, module: NameReviewModule)]) async {
         guard let module = queue.first?.module else { return }
         let limit =
-            module.description.neededContent.isEmpty
+            module.description.names.neededContent.isEmpty
             ? Self.nameReadersAtOnce : Self.contentReadersAtOnce
         await withTaskGroup(of: Void.self) { group in
             var next = queue.makeIterator()
@@ -60,7 +60,7 @@ extension NameReviewModel {
     private func read(_ item: FileItem, _ module: NameReviewModule) async {
         let visible = folderItems.filter { !$0.isHidden }
         var request = await dependencies.makeRequest(
-            item, visible, module.description.neededContent)
+            item, visible, module.description.names.neededContent)
         request.folderName = folder.name
         request.pattern = module.template?.text
         request.licence = licence

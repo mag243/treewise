@@ -20,8 +20,8 @@ public struct FolderPatternModule: NameModule {
     private static let edgeSeparators = CharacterSet(charactersIn: " -_")
 
     /// What this module is.
-    public let description = NameModuleDescription(
-        id: NameModuleDescription.defaultModuleID, contentTypes: ["public.item"], neededContent: [],
+    public let description = AddOnDescription(
+        id: AddOnDescription.defaultModuleID, contentTypes: ["public.item"], neededContent: [],
         fields: fields, defaultTemplate: "{date:yyyy.MM.dd} {text}", isFree: true,
         summaries: [
             "en": "Proposes names from a file's date and name, in the pattern its folder uses.",

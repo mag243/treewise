@@ -16,7 +16,7 @@ extension AddOnsSettingsTab {
         let id = module.id
         let catalog = catalog
         let settings = settings
-        let defaultID = NameModuleDescription.defaultID(among: modules)
+        let defaultID = AddOnDescription.defaultID(among: modules)
         let inNewFolders = working.filter {
             settings.addOns.isOnInNewFolders($0, defaultID: defaultID)
         }
@@ -24,9 +24,9 @@ extension AddOnsSettingsTab {
             isOnSetting: settings.addOns.isOn(id), licence: states[id],
             isLastWorking: working == [id], isLastInNewFolders: inNewFolders == [id],
             isOnlyWorking: modules.filter {
-                $0.kind == .names && states[$0.id]?.mayWork ?? true
+                $0.proposesNames && states[$0.id]?.mayWork ?? true
             }.map(\.id) == [id],
-            makesFolderStructures: module.kind == .folderStructure)
+            makesFolderStructures: module.makesFolderStructures)
         let view = AddOnCardView(
             module: module, card: card, licence: states[id], isSelected: id == selectedID,
             isOnInNewFolders: settings.addOns.isOnInNewFolders(id, defaultID: defaultID),
@@ -71,7 +71,7 @@ extension AddOnsSettingsTab {
         -> (any NSPasteboardWriting)?
     {
         // Only the order of the add-ons that propose names counts (ADR 0070, ADR 0091).
-        guard shown[row].kind == .names else { return nil }
+        guard shown[row].proposesNames else { return nil }
         let item = NSPasteboardItem()
         item.setString(shown[row].id, forType: Self.dragType)
         return item

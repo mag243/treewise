@@ -95,10 +95,10 @@ import TreewiseUI
 /// Entering a key: the modules say what it unlocks (ADR 0071).
 @MainActor
 @Suite struct LicenceKeyEntryTests {
-    private static let paid = NameModuleDescription(
+    private static let paid = AddOnDescription(
         id: "paid", contentTypes: ["public.item"], neededContent: [], fields: [],
         defaultTemplate: "{folder}")
-    private static let free = NameModuleDescription(
+    private static let free = AddOnDescription(
         id: "free", contentTypes: ["public.item"], neededContent: [], fields: [],
         defaultTemplate: "{folder}", isFree: true)
     private let settings = BrowserSettings(store: MemorySettingsStore())

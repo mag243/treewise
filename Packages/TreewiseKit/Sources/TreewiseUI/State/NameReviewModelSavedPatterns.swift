@@ -18,7 +18,7 @@ extension NameReviewModel {
     /// The saved patterns, in the user's order, each with whether this add-on can use it.
     public func savedPatternChoices(for moduleID: String) -> [SavedPatternChoice] {
         guard let module = modules.first(where: { $0.id == moduleID }) else { return [] }
-        let fields = module.description.fields + NameTemplate.Field.suppliedByTreewise
+        let fields = module.description.names.fields + NameTemplate.Field.suppliedByTreewise
         return dependencies.savedPatterns().patterns.map { pattern in
             var problem: NameTemplate.Problem?
             if case .failure(let found) = NameTemplate.parse(pattern.text, fields: fields) {
@@ -92,7 +92,7 @@ extension NameReviewModel {
     /// Ends the links to saved patterns that are gone, or that their module cannot use;
     /// each keeps its copy of the text. A newer version with the folder's own text is taken
     /// without asking.
-    func dropStaleSavedPatternLinks(_ descriptions: [NameModuleDescription]) async {
+    func dropStaleSavedPatternLinks(_ descriptions: [AddOnDescription]) async {
         guard !settings.savedPatternLinks.isEmpty else { return }
         let before = settings
         settings.dropLinks(notIn: dependencies.savedPatterns().patterns) { moduleID, text in

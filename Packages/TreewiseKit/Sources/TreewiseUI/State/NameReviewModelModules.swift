@@ -38,7 +38,8 @@ extension NameReviewModel {
         let text = written.trimmingCharacters(in: .whitespaces)
         modules[index].templateText = text
         let parsed = NameTemplate.parse(
-            text, fields: modules[index].description.fields + NameTemplate.Field.suppliedByTreewise)
+            text,
+            fields: modules[index].description.names.fields + NameTemplate.Field.suppliedByTreewise)
         switch parsed {
         case .failure(let problem):
             modules[index].templateProblem = problem
@@ -99,7 +100,7 @@ extension NameReviewModel {
             guard let contentType = facts[item.id]?.contentType else { continue }
             let handledBy = on.filter {
                 ModuleScope.handles(
-                    contentTypes: $0.description.contentTypes, contentType: contentType)
+                    contentTypes: $0.description.names.contentTypes, contentType: contentType)
             }.map(\.id)
             let plan = NameReviewRules.plan(
                 for: .init(name: item.name, kind: item.kind, handledBy: handledBy),

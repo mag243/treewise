@@ -4,8 +4,8 @@ import TreewiseCore
 import TreewiseModuleInterface
 
 /// A module host that answers from a script, for tests of what uses modules.
-public final class ScriptedModuleHost: NameModuleHosting {
-    private let modules: [NameModuleDescription]
+public final class ScriptedModuleHost: AddOnHosting {
+    private let modules: [AddOnDescription]
     private let answers: [String: Result<[[String: NameTemplate.Value]], NameModuleHostError>]
     private let received = Mutex<[NameRequest]>([])
     private let templates = Mutex<[String: [String]]>([:])
@@ -28,7 +28,7 @@ public final class ScriptedModuleHost: NameModuleHosting {
     /// Creates a host with modules and each module's answer. A module without an
     /// answer fails with `moduleFailed`.
     public init(
-        modules: [NameModuleDescription],
+        modules: [AddOnDescription],
         answers: [String: Result<[[String: NameTemplate.Value]], NameModuleHostError>]
     ) {
         self.modules = modules
@@ -84,7 +84,7 @@ public final class ScriptedModuleHost: NameModuleHosting {
     }
 
     /// The scripted modules.
-    public func availableModules() async throws -> [NameModuleDescription] { modules }
+    public func availableModules() async throws -> [AddOnDescription] { modules }
 
     /// How long answers are held at most. A caller that keeps enough requests open never
     /// meets it; one that asks one at a time then gets its answers, and fails its test

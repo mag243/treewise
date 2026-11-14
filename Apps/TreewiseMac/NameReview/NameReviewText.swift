@@ -11,13 +11,13 @@ enum NameReviewText {
     }
 
     /// The name of an add-on: its own, or the app's for it.
-    static func name(of module: NameModuleDescription) -> String {
+    static func name(of module: AddOnDescription) -> String {
         module.name ?? name(ofModule: module.id)
     }
 
     /// The name of the add-on with this id.
     static func name(ofModule id: String) -> String {
-        id == NameModuleDescription.defaultModuleID
+        id == AddOnDescription.defaultModuleID
             ? String(localized: "Folder Pattern")
             : id.components(separatedBy: ".").last ?? id
     }

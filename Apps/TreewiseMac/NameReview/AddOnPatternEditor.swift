@@ -53,7 +53,7 @@ final class AddOnPatternEditor: NSStackView {
     /// Shows what the add-on fills, and the problem of the pattern typed.
     func show(_ module: NameReviewModule) {
         var buttons: [NSView] = []
-        for field in module.description.fields + NameTemplate.Field.suppliedByTreewise {
+        for field in module.description.names.fields + NameTemplate.Field.suppliedByTreewise {
             let token = field.kind == .date ? "{\(field.name):yyyy.MM.dd}" : "{\(field.name)}"
             let button = ClosureButton(title: "{\(field.name)}") { [pattern] in
                 pattern.insert(token)
