@@ -211,6 +211,46 @@ extension LaunchTests {
         XCTAssertTrue(window.tables.staticTexts["Documents"].appeared(timeout: Self.launchTimeout))
     }
 
+    /// A template whose folder keeps name settings (ADR 0101) reads and is edited without
+    /// the add-on, and Settings shows no line of them while the add-on may not work.
+    @MainActor
+    func testATemplatesNameSettingsStayHiddenWithoutTheAddOn() throws {
+        try seedTemplateWithNameSettings()
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
+        let templates = openTemplatesTab(in: app)
+        XCTAssertTrue(
+            field("Named Year", in: templates.tables["templatesList"]).appeared(
+                timeout: Self.launchTimeout), "the template with them reads")
+        let tax = field("Tax", in: templates.outlines["templateTreeEditor"])
+        XCTAssertTrue(tax.appeared(timeout: Self.launchTimeout), "with its folders")
+        tax.click()
+        XCTAssertTrue(templates.buttons["Delete Folder"].isEnabled, "the folder is selected")
+        XCTAssertFalse(
+            templates.staticTexts["templateNameSettings"].exists,
+            "without the add-on the line stays hidden")
+        XCTAssertFalse(templates.buttons["removeTemplateNameSettings"].exists)
+    }
+
+    /// Writes an invented template with name settings on its folder Tax where the app keeps a
+    /// UI test's templates: beside its root, in the folder named after it.
+    private func seedTemplateWithNameSettings() throws {
+        let root = try XCTUnwrap(self.root)
+        let settings = root.deletingLastPathComponent().appendingPathComponent(
+            root.lastPathComponent + "-folder-settings", isDirectory: true)
+        let folder = settings.appendingPathComponent("Templates", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: settings) }
+        let template = """
+            {"format": 1, "name": "Named Year", "root": {"name": "{year}", "folders": [
+              {"name": "Tax", "names": {"enabledModules": ["me.m-domain.treewise.folder-pattern"],
+                "moduleOrder": [], "patterns": {
+                  "me.m-domain.treewise.folder-pattern": "{year} Tax {seq}"}}}]}}
+            """
+        try Data(template.utf8).write(to: folder.appendingPathComponent("named.json"))
+    }
+
     /// Opens Settings at its Templates tab.
     @MainActor
     private func openTemplatesTab(in app: XCUIApplication) -> XCUIElement {

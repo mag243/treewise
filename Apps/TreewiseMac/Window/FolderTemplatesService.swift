@@ -36,7 +36,8 @@ enum FolderTemplatesService {
         let host = NameReviewWindow.host
         let modules = (try? await host.availableModules()) ?? []
         addOnNames = Dictionary(
-            modules.map { ($0.id, $0.name ?? $0.id) }, uniquingKeysWith: { first, _ in first })
+            modules.map { ($0.id, NameReviewText.name(of: $0)) },
+            uniquingKeysWith: { first, _ in first })
         let found = modules.first(where: \.makesFolderStructures)
         addOnID = found?.id
         if let found {
