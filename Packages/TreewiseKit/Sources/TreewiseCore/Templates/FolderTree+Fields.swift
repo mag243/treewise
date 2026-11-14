@@ -36,12 +36,35 @@ extension FolderTree {
     /// Whether a name in the tree holds `{year}` or `{year:yy}`.
     public var hasYear: Bool { fields.contains(.year) }
 
-    /// The tree with each field that has a value written in, in its format; a field without
-    /// one stays as written.
+    /// The tree with each field that has a value written in, in its format, and each
+    /// repeating folder made once for each month, quarter or half (ADR 0100); a field without
+    /// a value stays as written.
     public func filling(_ values: FolderTemplateValues) -> FolderTree {
         FolderTree(
             name: (try? FolderNameFields(name))?.filled(with: values) ?? name,
-            folders: folders.map { $0.filling(values) })
+            folders: folders.flatMap { $0.made(with: values) })
+    }
+
+    /// `name` with its repeat written as the `occurrence`th month, quarter or half, counted
+    /// from 1, and its other fields from `values`; nil when it holds no repeat. An add-on that
+    /// recognizes repeats compares names with it (ADR 0100).
+    public static func name(
+        _ name: String, repeatedAs occurrence: Int, values: FolderTemplateValues
+    ) -> String? {
+        guard let read = try? FolderNameFields(name), !read.repeats.isEmpty else { return nil }
+        return read.filled(with: values, occurrence: occurrence)
+    }
+
+    /// The folders this one of a template makes: itself filled in, or one for each month,
+    /// quarter or half when it repeats.
+    private func made(with values: FolderTemplateValues) -> [FolderTree] {
+        guard let read = try? FolderNameFields(name), let repeating = read.repeats.first else {
+            return [filling(values)]
+        }
+        let below = folders.flatMap { $0.made(with: values) }
+        return (1...repeating.count).map { occurrence in
+            FolderTree(name: read.filled(with: values, occurrence: occurrence), folders: below)
+        }
     }
 
     /// The tree with its year written in, and its other fields as written.
@@ -68,6 +91,9 @@ extension FolderTree {
                     return .text(filled)
                 }
                 return .field(Self.patternField(field), format: format)
+            case .repeating(_, _, let written):
+                // The root never repeats (ADR 0100); a template that does is refused anyway.
+                return .text(written)
             }
         }
         guard hasNumber else { return nil }

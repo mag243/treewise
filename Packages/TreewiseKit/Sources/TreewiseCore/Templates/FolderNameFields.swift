@@ -1,7 +1,8 @@
 import Foundation
 
 /// A folder's name in a template, read for its fields (ADR 0096): `{year}`, `{text}`, `{seq}`
-/// and `{date}` with the formats of name patterns. Anything else is plain text, `[ ]`, `< >`,
+/// and `{date}` with the formats of name patterns, and the repeats `{month}`, `{quarter}`
+/// and `{half}` (ADR 0100). Anything else is plain text, `[ ]`, `< >`,
 /// `|` and braces that hold no such field included, so a folder named `Archive [old]` or
 /// `{draft}` stays as it is.
 struct FolderNameFields {
@@ -12,6 +13,8 @@ struct FolderNameFields {
         case field(FolderTemplateField, NameTemplate.FieldFormat?, written: String)
         /// `{seq}` with its series.
         case number(NameTemplate.Series, written: String)
+        /// A repeat with a month's format, nil for `MM`.
+        case repeating(FolderRepeat, DateTemplate?, written: String)
     }
 
     /// What a year in two digits is the rest of.
@@ -21,7 +24,8 @@ struct FolderNameFields {
     /// A template's field, its name and what follows its colon.
     private static let expression: NSRegularExpression = {
         // swiftlint:disable:next force_try - a fixed expression, tested by every read
-        try! NSRegularExpression(pattern: "\\{(year|text|seq|date)(?::([^{}]*))?\\}")
+        try! NSRegularExpression(
+            pattern: "\\{(year|text|seq|date|month|quarter|half)(?::([^{}]*))?\\}")
     }()
 
     let pieces: [Piece]
@@ -51,6 +55,9 @@ struct FolderNameFields {
     private static func piece(_ kind: String, _ format: String?, written: String) -> Piece? {
         let field: FolderTemplateField
         let patternKind: NameTemplate.Field.Kind
+        if let repeating = FolderRepeat(rawValue: kind) {
+            return Self.repeatPiece(repeating, format, written: written)
+        }
         switch kind {
         case "seq":
             guard let format else { return .number(.counting, written: written) }
@@ -65,13 +72,31 @@ struct FolderNameFields {
         }
     }
 
+    /// A repeat's piece: `{month}` takes a format that writes only the month, `{quarter}` and
+    /// `{half}` none.
+    private static func repeatPiece(_ repeating: FolderRepeat, _ format: String?, written: String)
+        -> Piece?
+    {
+        guard let format else { return .repeating(repeating, nil, written: written) }
+        guard repeating == .month, let template = DateTemplate(format), template.writesOnlyTheMonth
+        else { return nil }
+        return .repeating(repeating, template, written: written)
+    }
+
+    /// The repeats in the name, in order.
+    var repeats: [FolderRepeat] {
+        pieces.compactMap { piece in
+            if case .repeating(let repeating, _, _) = piece { repeating } else { nil }
+        }
+    }
+
     /// The fields, each once, in the order they first appear.
     var fields: [FolderTemplateField] {
         var found: [FolderTemplateField] = []
         for piece in pieces {
             let field: FolderTemplateField
             switch piece {
-            case .text: continue
+            case .text, .repeating: continue
             case .field(let kind, _, _): field = kind
             case .number: field = .number
             }
@@ -88,16 +113,29 @@ struct FolderNameFields {
         }.joined()
     }
 
-    /// The name with the fields that have a value written in.
-    func filled(with values: FolderTemplateValues) -> String {
+    /// The name with the fields that have a value written in, and its repeat as the
+    /// `occurrence`th month, quarter or half, counted from 1; without one it stays as written.
+    func filled(with values: FolderTemplateValues, occurrence: Int? = nil) -> String {
         pieces.map { piece in
             switch piece {
             case .text(let text): text
             case .number(_, let written): values.number?.written ?? written
             case .field(let field, let format, let written):
                 Self.write(field, format, values) ?? written
+            case .repeating(let repeating, let format, let written):
+                occurrence.map { Self.write(repeating, $0, format, values) } ?? written
             }
         }.joined()
+    }
+
+    private static func write(
+        _ repeating: FolderRepeat, _ occurrence: Int, _ format: DateTemplate?,
+        _ values: FolderTemplateValues
+    ) -> String {
+        guard repeating == .month else { return String(occurrence) }
+        guard let format else { return String(format: "%02d", occurrence) }
+        return format.write(
+            year: values.year ?? 0, month: occurrence, day: 1, language: values.language)
     }
 
     /// A field written with its value in its format, or nil without a value. `{seq}` is

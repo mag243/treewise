@@ -31,6 +31,10 @@ public struct FolderTree: Codable, Hashable, Sendable {
         case numberBelowTop(String)
         /// A folder would move into itself or a folder in it (ADR 0095).
         case intoItself
+        /// A template's root holds a repeat, which only a folder below it may (ADR 0100).
+        case repeatAtTop(String)
+        /// A name holds a repeat inside a repeating folder, or two repeats (ADR 0100).
+        case repeatInRepeat(String)
     }
 
     /// The folder's name.
@@ -72,8 +76,9 @@ public struct FolderTree: Codable, Hashable, Sendable {
     }
 
     /// Checks the tree of a template as `check()` does, with its fields (ADR 0096): they must
-    /// read, `{seq}` only in the root, and the text around them a name can hold, since a
-    /// `:` in a field is no path separator. Its names are checked once more when filled in.
+    /// read, `{seq}` only in the root, a repeat only below it and never in another (ADR 0100),
+    /// and the text around them a name can hold, since a `:` in a field is no path separator.
+    /// Its names are checked once more when filled in.
     public func checkTemplate() throws(Problem) {
         var count = 0
         try check(level: 1, count: &count) { name throws(Problem) in
@@ -83,6 +88,16 @@ public struct FolderTree: Codable, Hashable, Sendable {
         for folder in folders {
             try folder.checkNoNumber()
         }
+        if (try? FolderNameFields(name))?.repeats.isEmpty == false { throw .repeatAtTop(name) }
+        for folder in folders {
+            try folder.checkRepeats(inRepeat: false)
+        }
+    }
+
+    private func checkRepeats(inRepeat: Bool) throws(Problem) {
+        let repeats = (try? FolderNameFields(name))?.repeats.count ?? 0
+        guard repeats <= 1, !inRepeat || repeats == 0 else { throw .repeatInRepeat(name) }
+        for folder in folders { try folder.checkRepeats(inRepeat: inRepeat || repeats > 0) }
     }
 
     private func checkNoNumber() throws(Problem) {

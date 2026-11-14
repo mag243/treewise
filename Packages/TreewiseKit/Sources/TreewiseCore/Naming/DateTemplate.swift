@@ -72,6 +72,17 @@ struct DateTemplate: Hashable, Sendable {
         self.pieces = pieces
     }
 
+    /// Whether it writes the month only, by its number or its name, as a repeating folder's
+    /// `{month}` does (ADR 0100).
+    var writesOnlyTheMonth: Bool {
+        pieces.allSatisfy { piece in
+            switch piece {
+            case .month, .monthName, .separator: true
+            default: false
+            }
+        }
+    }
+
     /// Writes a date in this format, a month's name in the format's language, else in
     /// `language`.
     func write(

@@ -1983,6 +1983,54 @@
         }
       }
     },
+    "Each Half" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes Halbjahr"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elk halfjaar"
+          }
+        }
+      }
+    },
+    "Each Month" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeden Monat"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke maand"
+          }
+        }
+      }
+    },
+    "Each Quarter" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes Quartal"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elk kwartaal"
+          }
+        }
+      }
+    },
     "Each folder starts again with the add-ons that are on in new folders, and its pattern is recognized again. Saved patterns stay." : {
       "localizations" : {
         "de" : {
@@ -6553,6 +6601,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "‘%@’ bevat een veld met een opmaak die het niet aanneemt."
+          }
+        }
+      }
+    },
+    "“%@” repeats for each month, quarter or half, which only a folder below the top one can." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wiederholt sich für jeden Monat, jedes Quartal oder Halbjahr, und das kann nur ein Ordner unter dem obersten."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ herhaalt zich per maand, kwartaal of halfjaar, en dat kan alleen een map onder de bovenste."
+          }
+        }
+      }
+    },
+    "“%@” repeats inside a folder that repeats already; a folder can repeat once." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wiederholt sich in einem Ordner, der sich schon wiederholt; ein Ordner kann sich nur einmal wiederholen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ herhaalt zich in een map die zich al herhaalt; een map kan zich maar één keer herhalen."
           }
         }
       }

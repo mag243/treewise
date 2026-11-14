@@ -33,7 +33,11 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private static let fields: [(field: String, title: String.LocalizationValue)] = [
         ("{year}", "Year"), ("{year:yy}", "Year in Two Digits"), ("{text}", "Text"),
         ("{seq}", "Number"), ("{date:yyyy-MM-dd}", "Date"),
+        ("{month:MM MMMM}", "Each Month"), ("Q{quarter}", "Each Quarter"),
+        ("H{half}", "Each Half"),
     ]
+    /// The fields only a folder below the root may hold: a repeat (ADR 0100).
+    private static let belowRootOnly: Set<String> = ["{month:MM MMMM}", "Q{quarter}", "H{half}"]
 
     private let model: FolderTemplatesModel
     private let outline = NSOutlineView()
@@ -140,7 +144,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         insert.isEnabled = node != nil
         let belowRoot = !(node?.path.isEmpty ?? true)
         for item in insert.itemArray.dropFirst() {
-            item.isEnabled = !(belowRoot && (item.representedObject as? String) == "{seq}")
+            let field = item.representedObject as? String ?? ""
+            item.isEnabled =
+                belowRoot ? field != "{seq}" : !Self.belowRootOnly.contains(field)
         }
     }
 

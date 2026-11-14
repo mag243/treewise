@@ -22,6 +22,16 @@ enum TemplateProblemText {
                 localized:
                     "{seq} can only be in the top folder; write numbered folders as 01 Intake.")
         case .intoItself: String(localized: "A folder cannot go into itself.")
+        case .repeatAtTop(let name):
+            String(
+                localized:
+                    "“\(name)” repeats for each month, quarter or half, which only a folder below the top one can."
+            )
+        case .repeatInRepeat(let name):
+            String(
+                localized:
+                    "“\(name)” repeats inside a folder that repeats already; a folder can repeat once."
+            )
         }
     }
 

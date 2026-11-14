@@ -142,6 +142,39 @@ extension LaunchTests {
         XCTAssertTrue(field("Contract", in: tree).exists, "the template's own folders stay")
     }
 
+    /// A folder made to repeat with Insert Field ▸ Each Month makes one folder per month
+    /// (ADR 0100), without the add-on.
+    @MainActor
+    func testAFolderThatRepeatsEachMonthMakesTwelve() throws {
+        try makeClientFolder()
+        let app = try launchApp()
+        try saveClientTemplate(in: app)
+        let templates = openTemplatesTab(in: app)
+        let tree = templates.outlines["templateTreeEditor"]
+        let contract = tree.outlineRows.containing(
+            NSPredicate(format: "value == %@", "Contract")
+        ).firstMatch
+        XCTAssertTrue(contract.appeared(timeout: Self.launchTimeout))
+        contract.click()
+        templates.menuButtons["Insert Field"].click()
+        templates.menuItems["Each Month"].click()
+        XCTAssertTrue(
+            field("Contract {month:MM MMMM}", in: tree).appeared(timeout: Self.launchTimeout),
+            "the field is written in the name")
+        templates.typeKey("w", modifierFlags: .command)
+        let window = app.windows.firstMatch
+        window.tables.staticTexts["Documents"].rightClick()
+        let menu = window.tables.menus.menuItems["New Folders from Template"]
+        XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout))
+        menu.hover()
+        menu.menuItems[Self.client].click()
+        XCTAssertTrue(
+            window.sheets.firstMatch.staticTexts["Makes 14 folders."].appeared(
+                timeout: Self.launchTimeout),
+            "Client A, Invoices and a Contract folder for each month")
+        window.sheets.firstMatch.buttons["Cancel"].click()
+    }
+
     /// The editable name `name` in a list or tree of Settings, matched by its value.
     @MainActor
     private func field(_ name: String, in list: XCUIElement) -> XCUIElement {

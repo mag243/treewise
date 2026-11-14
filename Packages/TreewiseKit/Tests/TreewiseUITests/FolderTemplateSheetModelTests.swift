@@ -105,6 +105,18 @@ import TreewiseUI
         #expect(!sheet.canCreate)
     }
 
+    @Test func makesAFolderForEachMonthAndShowsTheMonthsThereInGrey() async throws {
+        try await folder("Household/2027/01 January")
+        let template = FolderTree(
+            name: "{year}", folders: [FolderTree(name: "{month:MM MMMM}")])
+        let sheet = await sheet(template, .inside("/v/Household"))
+        await sheet.setYear(2027)
+        #expect(sheet.fields == [.year], "a repeat is not asked")
+        #expect(sheet.entries.count == 13)
+        #expect(sheet.entries.filter { $0.state == .existing }.count == 2)
+        #expect(sheet.toMakeCount == 11)
+    }
+
     @Test func fillsAYearsFolderItselfWithoutAskingTheYear() async throws {
         let year = try await folder("Household/2027")
         let sheet = await sheet(Self.year, .filling(year))
