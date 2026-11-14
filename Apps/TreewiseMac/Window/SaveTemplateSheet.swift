@@ -37,7 +37,8 @@ enum SaveTemplateSheet {
         -> FolderTree?
     {
         do {
-            let tree = try await browser.fileSystem.folderTree(of: folder)
+            let tree = try await FolderTemplatesService.tree(
+                of: folder, in: browser.fileSystem)
             guard let addOn = FolderTemplatesService.addOn(licences: browser.licences) else {
                 try tree.checkTemplate()
                 return tree

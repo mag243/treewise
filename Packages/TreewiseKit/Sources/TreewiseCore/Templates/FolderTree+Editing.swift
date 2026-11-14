@@ -25,7 +25,8 @@ extension FolderTree {
             number += 1
         }
         let edited = replacing(at: path) {
-            FolderTree(name: $0.name, folders: $0.folders + [FolderTree(name: unique)])
+            FolderTree(
+                name: $0.name, folders: $0.folders + [FolderTree(name: unique)], names: $0.names)
         }
         try edited.checkTemplate()
         return (edited, path + [unique])
@@ -42,7 +43,9 @@ extension FolderTree {
         {
             throw .sameName(name)
         }
-        let edited = replacing(at: path) { FolderTree(name: name, folders: $0.folders) }
+        let edited = replacing(at: path) {
+            FolderTree(name: name, folders: $0.folders, names: $0.names)
+        }
         try edited.checkTemplate()
         return (edited, path.isEmpty ? [] : path.dropLast() + [name])
     }
@@ -66,10 +69,29 @@ extension FolderTree {
         guard Array(path.dropLast()) != target else { return (self, path) }
         guard !destination.holdsFolder(named: moved.name) else { throw .sameName(moved.name) }
         let edited = removing(path).replacing(at: target) {
-            FolderTree(name: $0.name, folders: $0.folders + [moved])
+            FolderTree(name: $0.name, folders: $0.folders + [moved], names: $0.names)
         }
         try edited.checkTemplate()
         return (edited, target + [moved.name])
+    }
+
+    /// The tree without the name settings of the folder at `path` (ADR 0101).
+    public func removingNames(at path: [String]) -> FolderTree {
+        replacing(at: path) { FolderTree(name: $0.name, folders: $0.folders) }
+    }
+
+    /// The name settings of each folder that has them, by its path from the root, the root's
+    /// name first, as the folders made are found (ADR 0101).
+    public var namesByPath: [[String]: FolderNameSettings] {
+        var found: [[String]: FolderNameSettings] = [:]
+        collectNames(above: [], into: &found)
+        return found
+    }
+
+    private func collectNames(above: [String], into found: inout [[String]: FolderNameSettings]) {
+        let path = above + [name]
+        if let names { found[path] = names }
+        for folder in folders { folder.collectNames(above: path, into: &found) }
     }
 
     private func holdsFolder(named name: String) -> Bool {
@@ -91,7 +113,7 @@ extension FolderTree {
             guard folder.name == first else { return folder }
             return rest.isEmpty ? change(folder) : folder.replacing(at: rest, with: change)
         }
-        return FolderTree(name: name, folders: changed)
+        return FolderTree(name: name, folders: changed, names: names)
     }
 
     private func folder<Path: Collection<String>>(at path: Path) -> FolderTree? {

@@ -41,22 +41,26 @@ public struct FolderTree: Codable, Hashable, Sendable {
     public let name: String
     /// The folders in it, ordered by name.
     public let folders: [FolderTree]
+    /// The name settings a folder made from it gets, in a template (ADR 0101).
+    public let names: FolderNameSettings?
 
-    /// A folder with the folders in it, which it orders by name.
-    public init(name: String, folders: [FolderTree] = []) {
+    /// A folder with the folders in it, which it orders by name, and its name settings.
+    public init(name: String, folders: [FolderTree] = [], names: FolderNameSettings? = nil) {
         self.name = name
         self.folders = folders.sorted {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
         }
+        self.names = names
     }
 
     /// A tree from a file or from an add-on, ordered as any other; a folder without
-    /// `folders` holds none.
+    /// `folders` holds none, and one without `names` has no name settings.
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             name: try container.decode(String.self, forKey: .name),
-            folders: try container.decodeIfPresent([FolderTree].self, forKey: .folders) ?? [])
+            folders: try container.decodeIfPresent([FolderTree].self, forKey: .folders) ?? [],
+            names: try container.decodeIfPresent(FolderNameSettings.self, forKey: .names))
     }
 
     /// Whether an item in a folder that is saved as a template counts as one of its folders:

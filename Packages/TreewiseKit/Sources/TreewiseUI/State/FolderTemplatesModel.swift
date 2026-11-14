@@ -116,6 +116,14 @@ public final class FolderTemplatesModel {
         }
     }
 
+    /// Removes the name settings the folder at `path` gives the folders made from it
+    /// (ADR 0101).
+    public func removeNames(at path: [String], of id: String, undoManager: UndoManager?) async {
+        await edit(id, named: "Remove Name Settings", undoManager: undoManager) { tree in
+            (tree.removingNames(at: path), path)
+        }
+    }
+
     /// Moves the folder at `path` into the one at `target`, and returns its new path.
     @discardableResult
     public func moveFolder(

@@ -576,6 +576,22 @@
         }
       }
     },
+    "Remove Name Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namenseinstellungen entfernen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder naaminstellingen"
+          }
+        }
+      }
+    },
     "Rename" : {
       "comment" : "Undoable action, shown as “Undo Rename”",
       "localizations" : {

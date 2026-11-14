@@ -24,14 +24,20 @@ enum FolderTemplatesService {
     /// Whether that add-on may work, with a licence or in its trial (ADR 0088).
     private static var mayWork = false
 
+    /// The name of each add-on the build carries, by its id, for the name settings a
+    /// template keeps (ADR 0101).
+    private(set) static var addOnNames: [String: String] = [:]
+
     /// Whether the build carries the add-on and it may work now.
     static var addOnMayWork: Bool { addOnID != nil && mayWork }
 
     /// Finds the add-on and its licence state, and reads the templates.
     static func refresh(licences: LicenceKeeper?) async {
         let host = NameReviewWindow.host
-        let found = ((try? await host.availableModules()) ?? []).first(
-            where: \.makesFolderStructures)
+        let modules = (try? await host.availableModules()) ?? []
+        addOnNames = Dictionary(
+            modules.map { ($0.id, $0.name ?? $0.id) }, uniquingKeysWith: { first, _ in first })
+        let found = modules.first(where: \.makesFolderStructures)
         addOnID = found?.id
         if let found {
             let state = try? await host.licenceState(
@@ -49,6 +55,24 @@ enum FolderTemplatesService {
         return FolderStructureAddOn(
             host: NameReviewWindow.host, moduleID: addOnID,
             licence: { licences?.context() ?? .none })
+    }
+
+    /// The tree of `folder`, each folder with its name settings while the add-on may work
+    /// (ADR 0101), for saving it, copying it or offering it in the bar.
+    static func tree(of folder: FileItem, in fileSystem: any FileSystemProviding) async throws
+        -> FolderTree
+    {
+        guard addOnMayWork else { return try await fileSystem.folderTree(of: folder) }
+        let store = NameReviewWindow.store
+        return try await fileSystem.folderTree(of: folder) { await store.names(of: $0) }
+    }
+
+    /// Gives the folders made from `tree` the name settings it keeps, while the add-on may
+    /// work (ADR 0101).
+    static func giveNames(of tree: FolderTree, to made: [[String]: FileItem.ID]) async {
+        guard addOnMayWork else { return }
+        await NameReviewWindow.store.give(
+            namesOf: tree, to: made, catalog: Set(addOnNames.keys))
     }
 
     /// The bar's state, for the folders of `browser`'s file system.

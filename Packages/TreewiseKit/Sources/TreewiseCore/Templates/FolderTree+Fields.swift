@@ -30,7 +30,7 @@ extension FolderTree {
     /// The tree with its root named `name`, for filling a folder of that name that is
     /// already there: only the folders below it are made (ADR 0095, ADR 0097).
     public func filling(folderNamed name: String) -> FolderTree {
-        FolderTree(name: name, folders: folders)
+        FolderTree(name: name, folders: folders, names: names)
     }
 
     /// Whether a name in the tree holds `{year}` or `{year:yy}`.
@@ -42,7 +42,7 @@ extension FolderTree {
     public func filling(_ values: FolderTemplateValues) -> FolderTree {
         FolderTree(
             name: (try? FolderNameFields(name))?.filled(with: values) ?? name,
-            folders: folders.flatMap { $0.made(with: values) })
+            folders: folders.flatMap { $0.made(with: values) }, names: names)
     }
 
     /// `name` with its repeat written as the `occurrence`th month, quarter or half, counted
@@ -63,7 +63,9 @@ extension FolderTree {
         }
         let below = folders.flatMap { $0.made(with: values) }
         return (1...repeating.count).map { occurrence in
-            FolderTree(name: read.filled(with: values, occurrence: occurrence), folders: below)
+            FolderTree(
+                name: read.filled(with: values, occurrence: occurrence), folders: below,
+                names: names)
         }
     }
 

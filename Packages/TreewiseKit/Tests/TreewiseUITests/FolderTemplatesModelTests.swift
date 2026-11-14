@@ -79,6 +79,22 @@ import TreewiseUI
             })
     }
 
+    @Test func removesTheNameSettingsOfAFolderAndUndoesIt() async throws {
+        let names = FolderNameSettings(enabledModules: ["free"], moduleOrder: [], patterns: [:])
+        let withNames = FolderTemplate(
+            id: "names", name: "Named",
+            root: FolderTree(name: "{year}", folders: [FolderTree(name: "Tax", names: names)]))
+        let store = MemoryFolderTemplates([withNames])
+        let model = FolderTemplatesModel(store: store)
+        await model.load()
+        await model.removeNames(at: ["Tax"], of: "names", undoManager: undoManager)
+        let saved = await store.templates().first
+        #expect(saved?.root.folder(at: ["Tax"])?.names == nil)
+        undoManager.undo()
+        #expect(
+            await eventually { model.templates.first?.root.folder(at: ["Tax"])?.names == names })
+    }
+
     @Test func refusesAnEditTheTreeCannotTakeAndSaysWhy() async {
         let model = await model()
         await model.renameFolder(["Tax"], of: "year", to: "{seq}", undoManager: undoManager)

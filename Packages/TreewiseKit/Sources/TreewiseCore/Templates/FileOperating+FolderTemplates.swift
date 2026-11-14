@@ -7,6 +7,9 @@ public struct FolderTemplateOutcome: Sendable {
     /// The folders left out because an item that is no folder has their name, by their path
     /// below the folder the tree was made in.
     public let leftOut: [[String]]
+    /// The folders made, by their path below the folder the tree was made in, the tree's
+    /// root first, for giving them their name settings (ADR 0101).
+    public let made: [[String]: FileItem.ID]
 }
 
 extension FileSystemProviding {
@@ -49,15 +52,17 @@ extension FileOperating {
         let plan = FolderTemplatePlan(making: tree, in: there)
         var ids: [[String]: FileItem.ID] = [[]: folder]
         var topmost: [FileItem] = []
+        var made: [[String]: FileItem.ID] = [:]
         for entry in plan.entries {
             let parentPath = Array(entry.path.dropLast())
             guard let parent = ids[parentPath], let name = entry.path.last else { continue }
             switch entry.state {
             case .new:
                 try Task.checkCancellation()
-                let made = try await createFolder(in: parent, named: name)
-                ids[entry.path] = made.id
-                if !plan.isNew(parentPath) { topmost.append(made) }
+                let folder = try await createFolder(in: parent, named: name)
+                ids[entry.path] = folder.id
+                made[entry.path] = folder.id
+                if !plan.isNew(parentPath) { topmost.append(folder) }
             case .existing:
                 ids[entry.path] = try await contents(of: parent).first {
                     $0.kind == .folder && $0.name == name
@@ -66,10 +71,9 @@ extension FileOperating {
                 continue
             }
         }
-        let made = plan.entries.filter { $0.state == .new }.count
         return FolderTemplateOutcome(
             result: OperationResult(items: topmost, undo: .trash(topmost.map(\.id))),
-            madeCount: made, leftOut: plan.leftOut)
+            madeCount: made.count, leftOut: plan.leftOut, made: made)
     }
 }
 

@@ -55,6 +55,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         title: String(localized: "Delete Folder"), symbol: "minus"
     ) { [weak self] in self?.removeFolder() }
     private let insert = NSPopUpButton(frame: .zero, pullsDown: true)
+    private let namesLine = TemplateNamesLine()
 
     init(model: FolderTemplatesModel) {
         self.model = model
@@ -91,7 +92,8 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         let buttons = NSStackView()
         buttons.setViews([add, remove], in: .leading)
         buttons.setViews([insert], in: .trailing)
-        let stack = NSStackView(views: [scroll, buttons])
+        namesLine.onRemove = { [weak self] in self?.removeNames() }
+        let stack = NSStackView(views: [scroll, buttons, namesLine.view])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = Self.spacing
@@ -142,6 +144,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         add.isEnabled = node != nil
         remove.isEnabled = !(node?.path.isEmpty ?? true)
         insert.isEnabled = node != nil
+        namesLine.show(node?.tree.names)
         let belowRoot = !(node?.path.isEmpty ?? true)
         for item in insert.itemArray.dropFirst() {
             let field = item.representedObject as? String ?? ""
@@ -170,6 +173,11 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private func removeFolder() {
         guard let id = templateID, let node = selectedNode, !node.path.isEmpty else { return }
         Task { await model.removeFolder(node.path, of: id, undoManager: undoManager) }
+    }
+
+    private func removeNames() {
+        guard let id = templateID, let node = selectedNode else { return }
+        Task { await model.removeNames(at: node.path, of: id, undoManager: undoManager) }
     }
 
     @objc private func renameSelected() {

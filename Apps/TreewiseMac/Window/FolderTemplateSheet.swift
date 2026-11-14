@@ -61,6 +61,7 @@ enum FolderTemplateSheet {
             let outcome = await browser.createFolders(
                 making: made.tree, in: made.folder, undoManager: undoManager)
         else { return }
+        await FolderTemplatesService.giveNames(of: made.tree, to: outcome.made)
         if let templateID = made.offering {
             await FolderTemplatesService.bar(for: browser.fileSystem).offer(
                 templateID, in: made.folder)

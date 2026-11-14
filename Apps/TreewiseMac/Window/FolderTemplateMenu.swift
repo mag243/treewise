@@ -58,7 +58,8 @@ enum FolderTemplateMenu {
             let window = NSApp.keyWindow
             Task {
                 do {
-                    let tree = try await browser.fileSystem.folderTree(of: folder)
+                    let tree = try await FolderTemplatesService.tree(
+                        of: folder, in: browser.fileSystem)
                     FolderTemplatesService.copiedStructure = tree
                 } catch {
                     guard let window else { return }

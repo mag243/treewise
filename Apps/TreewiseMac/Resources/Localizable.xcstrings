@@ -3455,6 +3455,22 @@
         }
       }
     },
+    "Names: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen: %@"
+          }
+        }
+      }
+    },
     "Needs a licence" : {
       "localizations" : {
         "de" : {

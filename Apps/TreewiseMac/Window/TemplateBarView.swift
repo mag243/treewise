@@ -102,7 +102,8 @@ final class TemplateBarView: NSStackView {
         case .yearBefore(let id):
             guard let addOn = FolderTemplatesService.addOn(licences: browser.licences),
                 let folder = try? await browser.fileSystem.item(at: id),
-                let tree = try? await browser.fileSystem.folderTree(of: folder)
+                let tree = try? await FolderTemplatesService.tree(
+                    of: folder, in: browser.fileSystem)
             else { return nil }
             return try? await addOn.host.template(
                 moduleID: addOn.moduleID, from: tree, yearAbove: YearFolders.year(of: id),
