@@ -43,6 +43,7 @@
         /// A folder's tree, for its template.
         struct TreeOfFolder: Codable {
             let tree: FolderTree
+            let yearAbove: Int?
             let licence: LicenceContext
         }
 

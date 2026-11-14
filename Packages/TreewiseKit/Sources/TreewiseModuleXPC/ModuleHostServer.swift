@@ -85,7 +85,8 @@
                 reply(nil)
                 return
             }
-            let template = module.template(from: decoded.tree, licence: decoded.licence)
+            let template = module.template(
+                from: decoded.tree, yearAbove: decoded.yearAbove, licence: decoded.licence)
             reply(try? ModuleWire.encode([template].compactMap(\.self)))
         }
 

@@ -25,7 +25,7 @@
             let harness = Harness(modules: [], structures: [StubStructureModule(id: "t")])
             defer { withExtendedLifetime(harness) {} }
             let template = try await harness.host().template(
-                moduleID: "t", from: Self.year2026, licence: Self.licensed)
+                moduleID: "t", from: Self.year2026, yearAbove: nil, licence: Self.licensed)
             #expect(template == StubStructureModule.template(of: Self.year2026))
         }
 
@@ -44,7 +44,8 @@
             defer { withExtendedLifetime(harness) {} }
             let host = harness.host()
             #expect(
-                try await host.template(moduleID: "t", from: Self.year2026, licence: .none) == nil)
+                try await host.template(
+                    moduleID: "t", from: Self.year2026, yearAbove: nil, licence: .none) == nil)
             #expect(
                 try await host.foldersToMake(
                     moduleID: "t", template: Self.year2026, values: FolderTemplateValues(),
@@ -83,7 +84,7 @@
             let harness = Harness(modules: [], structures: [stub])
             defer { withExtendedLifetime(harness) {} }
             let template = try await harness.host().template(
-                moduleID: "t", from: Self.year2026, licence: Self.licensed)
+                moduleID: "t", from: Self.year2026, yearAbove: nil, licence: Self.licensed)
             #expect(template == stub.saves)
         }
 
@@ -108,7 +109,7 @@
             defer { withExtendedLifetime(harness) {} }
             await #expect(throws: NameModuleHostError.moduleFailed) {
                 try await harness.host().template(
-                    moduleID: "m", from: Self.year2026, licence: Self.licensed)
+                    moduleID: "m", from: Self.year2026, yearAbove: nil, licence: Self.licensed)
             }
         }
     }

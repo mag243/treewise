@@ -151,7 +151,9 @@
             licence.keys.contains("good") ? .licensed(licensee: "Ada") : .notTried
         }
 
-        func template(from tree: FolderTree, licence: LicenceContext) -> FolderTree? {
+        func template(from tree: FolderTree, yearAbove: Int?, licence: LicenceContext)
+            -> FolderTree?
+        {
             licence.keys.contains("good") ? saves ?? Self.template(of: tree) : nil
         }
 

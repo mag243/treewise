@@ -32,9 +32,11 @@ public protocol AddOnHosting: Sendable {
     /// Asks a module what its licence lets it do; nil when it needs no licence (ADR 0071).
     func licenceState(moduleID: String, licence: LicenceContext) async throws
         -> ModuleLicenceState?
-    /// Asks an add-on that makes folder structures for the template of a folder's tree, or
-    /// nil while it may not work (ADR 0091).
-    func template(moduleID: String, from tree: FolderTree, licence: LicenceContext)
+    /// Asks an add-on that makes folder structures for the template of a folder's tree, with
+    /// the year in the path above it, or nil while it may not work (ADR 0091).
+    func template(
+        moduleID: String, from tree: FolderTree, yearAbove: Int?, licence: LicenceContext
+    )
         async throws -> FolderTree?
     /// Asks an add-on that makes folder structures for the folders a template makes with its
     /// fields filled in from `values`, or nil while it may not work. What comes back has
@@ -47,7 +49,9 @@ public protocol AddOnHosting: Sendable {
 
 extension AddOnHosting {
     /// A host without add-ons that make folder structures has none to ask.
-    public func template(moduleID: String, from tree: FolderTree, licence: LicenceContext)
+    public func template(
+        moduleID: String, from tree: FolderTree, yearAbove: Int?, licence: LicenceContext
+    )
         async throws -> FolderTree?
     {
         throw NameModuleHostError.moduleFailed

@@ -80,11 +80,13 @@
         }
 
         /// Asks an add-on for the template of a folder's tree, checked as any tree.
-        public func template(moduleID: String, from tree: FolderTree, licence: LicenceContext)
+        public func template(
+            moduleID: String, from tree: FolderTree, yearAbove: Int?, licence: LicenceContext
+        )
             async throws -> FolderTree?
         {
             let encoded = try ModuleWire.encode(
-                ModuleWire.TreeOfFolder(tree: tree, licence: licence))
+                ModuleWire.TreeOfFolder(tree: tree, yearAbove: yearAbove, licence: licence))
             let data = try await ask { service, reply in
                 service.folderTemplate(moduleID: moduleID, question: encoded, reply: reply)
             }

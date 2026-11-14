@@ -30,8 +30,9 @@ extension AddOnModule {
 /// between questions.
 public protocol FolderStructureModule: AddOnModule {
     /// The template of a folder's tree, as saving it as a template keeps it, or nil while its
-    /// licence lets it do nothing.
-    func template(from tree: FolderTree, licence: LicenceContext) -> FolderTree?
+    /// licence lets it do nothing. `yearAbove` is the year in the path above the tree, as
+    /// `2026` for `…/2026/Tax`, which the names in the tree may hold too (ADR 0090).
+    func template(from tree: FolderTree, yearAbove: Int?, licence: LicenceContext) -> FolderTree?
     /// The folders `template` makes with its fields filled in from `values` (ADR 0096), or
     /// nil while its licence lets it do nothing or a field has no value.
     func folders(

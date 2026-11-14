@@ -90,14 +90,17 @@ public final class ScriptedModuleHost: AddOnHosting {
     /// The values each question for folders to make carried, in order.
     public var valuesAskedAbout: [FolderTemplateValues] { valuesAsked.withLock { $0 } }
 
-    /// As Folder Structure Templates does: a root named as a year becomes `{year}`, and that
-    /// year in the names below it. Only for an add-on that makes folder structures.
-    public func template(moduleID: String, from tree: FolderTree, licence: LicenceContext)
+    /// As Folder Structure Templates does: the year above, or a root named as a year, becomes
+    /// `{year}` in the names. Only for an add-on that makes folder structures.
+    public func template(
+        moduleID: String, from tree: FolderTree, yearAbove: Int?, licence: LicenceContext
+    )
         async throws -> FolderTree?
     {
         guard modules.contains(where: { $0.id == moduleID && $0.makesFolderStructures }) else {
             throw NameModuleHostError.moduleFailed
         }
+        if let yearAbove { return Self.writing(String(yearAbove), asYearIn: tree) }
         guard tree.name.count == 4, tree.name.allSatisfy(\.isNumber) else { return tree }
         return Self.writing(tree.name, asYearIn: tree)
     }
