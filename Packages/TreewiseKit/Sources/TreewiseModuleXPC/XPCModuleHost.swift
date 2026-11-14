@@ -95,25 +95,7 @@
             }
         }
 
-        /// Asks an add-on for the folders a template makes with its fields filled in, checked
-        /// before anything is made of them (ADR 0091, ADR 0096).
-        public func foldersToMake(
-            moduleID: String, template: FolderTree, values: FolderTemplateValues,
-            licence: LicenceContext
-        ) async throws -> FolderTree? {
-            let encoded = try ModuleWire.encode(
-                ModuleWire.TemplateToMake(template: template, values: values, licence: licence))
-            let data = try await ask { service, reply in
-                service.foldersToMake(moduleID: moduleID, question: encoded, reply: reply)
-            }
-            return try checked(decode([FolderTree].self, from: data).first) { tree in
-                try tree.check()
-                guard tree.fields.isEmpty else { throw FolderTree.Problem.invalidName(tree.name) }
-            }
-        }
-
-        /// A tree from closed code is taken only when it passes `check`: a template as a
-        /// template, folders to make when each can be made and no field is left.
+        /// A tree from closed code is taken only when it passes `check`, as a template.
         private func checked(
             _ tree: FolderTree?, by check: (FolderTree) throws -> Void
         ) throws -> FolderTree? {

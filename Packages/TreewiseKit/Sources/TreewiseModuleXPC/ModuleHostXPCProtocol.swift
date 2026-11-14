@@ -23,10 +23,6 @@
         /// when the add-on is not known or makes no folder structures (ADR 0091).
         func folderTemplate(
             moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void)
-        /// Replies with an encoded list of at most one tree of folders to make, or nil when the
-        /// add-on is not known or makes no folder structures (ADR 0091).
-        func foldersToMake(
-            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void)
     }
 
     /// How requests and answers are written for the trip. A binary property list
@@ -44,13 +40,6 @@
         struct TreeOfFolder: Codable {
             let tree: FolderTree
             let yearAbove: Int?
-            let licence: LicenceContext
-        }
-
-        /// A template and the values of its fields.
-        struct TemplateToMake: Codable {
-            let template: FolderTree
-            let values: FolderTemplateValues
             let licence: LicenceContext
         }
 

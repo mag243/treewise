@@ -25,17 +25,13 @@ extension AddOnModule {
     }
 }
 
-/// An add-on that makes folder structures (ADR 0091). It sees folder names only and makes
-/// nothing itself: Treewise checks what it returns and makes the folders. It keeps no state
-/// between questions.
+/// An add-on that makes folder structures (ADR 0091, ADR 0099): it recognizes the fields in a
+/// folder's tree as it is saved as a template. It sees folder names only and makes nothing
+/// itself: Treewise checks what it returns, fills in the fields and makes the folders. It
+/// keeps no state between questions.
 public protocol FolderStructureModule: AddOnModule {
     /// The template of a folder's tree, as saving it as a template keeps it, or nil while its
     /// licence lets it do nothing. `yearAbove` is the year in the path above the tree, as
     /// `2026` for `…/2026/Tax`, which the names in the tree may hold too (ADR 0090).
     func template(from tree: FolderTree, yearAbove: Int?, licence: LicenceContext) -> FolderTree?
-    /// The folders `template` makes with its fields filled in from `values` (ADR 0096), or
-    /// nil while its licence lets it do nothing or a field has no value.
-    func folders(
-        making template: FolderTree, values: FolderTemplateValues, licence: LicenceContext
-    ) -> FolderTree?
 }

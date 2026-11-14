@@ -90,21 +90,6 @@
             reply(try? ModuleWire.encode([template].compactMap(\.self)))
         }
 
-        /// Replies with the folders an add-on makes of a template, as a list of at most one.
-        public func foldersToMake(
-            moduleID: String, question: Data, reply: @escaping @Sendable (Data?) -> Void
-        ) {
-            guard let module = structureModule(moduleID),
-                let decoded = try? ModuleWire.decode(ModuleWire.TemplateToMake.self, from: question)
-            else {
-                reply(nil)
-                return
-            }
-            let folders = module.folders(
-                making: decoded.template, values: decoded.values, licence: decoded.licence)
-            reply(try? ModuleWire.encode([folders].compactMap(\.self)))
-        }
-
         /// Runs a module and replies with its sets of values, or nil when it fails.
         public func fieldValues(
             moduleID: String, request: Data, reply: @escaping @Sendable (Data?) -> Void

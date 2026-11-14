@@ -129,11 +129,9 @@
     }
 
     /// An add-on that makes folder structures: with the key "good" it writes each year in a
-    /// name as `{year}` and fills it in again; it was never tried without one.
+    /// name as `{year}`; it was never tried without one.
     struct StubStructureModule: FolderStructureModule {
         let description: AddOnDescription
-        /// What it returns to make, in place of the template filled in.
-        var makes: FolderTree?
         /// What it returns as a template, in place of the years written as `{year}`.
         var saves: FolderTree?
 
@@ -155,13 +153,6 @@
             -> FolderTree?
         {
             licence.keys.contains("good") ? saves ?? Self.template(of: tree) : nil
-        }
-
-        func folders(
-            making template: FolderTree, values: FolderTemplateValues, licence: LicenceContext
-        ) -> FolderTree? {
-            guard licence.keys.contains("good") else { return nil }
-            return makes ?? template.filling(values)
         }
     }
 

@@ -14,7 +14,6 @@ public final class ScriptedModuleHost: AddOnHosting {
     private let askedNames = Mutex<[[String]]>([])
     private let askedYears = Mutex<[(moduleID: String, years: FolderYears?)]>([])
     private let gate = Mutex(Gate())
-    private let valuesAsked = Mutex<[FolderTemplateValues]>([])
 
     /// The requests being answered, and those held back until enough are open.
     private struct Gate {
@@ -87,9 +86,6 @@ public final class ScriptedModuleHost: AddOnHosting {
     /// The scripted modules.
     public func availableModules() async throws -> [AddOnDescription] { modules }
 
-    /// The values each question for folders to make carried, in order.
-    public var valuesAskedAbout: [FolderTemplateValues] { valuesAsked.withLock { $0 } }
-
     /// As Folder Structure Templates does: the year above, or a root named as a year, becomes
     /// `{year}` in the names. Only for an add-on that makes folder structures.
     public func template(
@@ -109,19 +105,6 @@ public final class ScriptedModuleHost: AddOnHosting {
         FolderTree(
             name: tree.name.replacingOccurrences(of: year, with: FolderTree.yearField),
             folders: tree.folders.map { writing(year, asYearIn: $0) })
-    }
-
-    /// The template filled in with `values`, or nil while a field has none.
-    public func foldersToMake(
-        moduleID: String, template: FolderTree, values: FolderTemplateValues,
-        licence: LicenceContext
-    ) async throws -> FolderTree? {
-        guard modules.contains(where: { $0.id == moduleID && $0.makesFolderStructures }) else {
-            throw NameModuleHostError.moduleFailed
-        }
-        valuesAsked.withLock { $0.append(values) }
-        let folders = template.filling(values)
-        return folders.fields.isEmpty ? folders : nil
     }
 
     /// How long answers are held at most. A caller that keeps enough requests open never

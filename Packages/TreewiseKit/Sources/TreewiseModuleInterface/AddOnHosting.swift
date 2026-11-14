@@ -38,13 +38,6 @@ public protocol AddOnHosting: Sendable {
         moduleID: String, from tree: FolderTree, yearAbove: Int?, licence: LicenceContext
     )
         async throws -> FolderTree?
-    /// Asks an add-on that makes folder structures for the folders a template makes with its
-    /// fields filled in from `values`, or nil while it may not work. What comes back has
-    /// passed `FolderTree.check()` and holds no field.
-    func foldersToMake(
-        moduleID: String, template: FolderTree, values: FolderTemplateValues,
-        licence: LicenceContext
-    ) async throws -> FolderTree?
 }
 
 extension AddOnHosting {
@@ -54,14 +47,6 @@ extension AddOnHosting {
     )
         async throws -> FolderTree?
     {
-        throw NameModuleHostError.moduleFailed
-    }
-
-    /// A host without add-ons that make folder structures has none to ask.
-    public func foldersToMake(
-        moduleID: String, template: FolderTree, values: FolderTemplateValues,
-        licence: LicenceContext
-    ) async throws -> FolderTree? {
         throw NameModuleHostError.moduleFailed
     }
 

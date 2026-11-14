@@ -9,8 +9,8 @@ public struct AddOnDescription: Hashable, Sendable, Codable {
     public enum Kind: Hashable, Sendable, Codable {
         /// It proposes names for files and folders (ADR 0057).
         case names(NameCapabilities)
-        /// It makes the template of a folder's structure, and the folders a template makes
-        /// (ADR 0091).
+        /// It recognizes the fields of a folder's structure saved as a template (ADR 0091,
+        /// ADR 0099).
         case folderStructure
     }
 
