@@ -20,9 +20,9 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     private let table = NSTableView()
     private let treeTitle = NSTextField(labelWithString: "")
     private let problem = NSTextField(wrappingLabelWithString: "")
-    private lazy var remove = NSButton(
-        image: NSImage(named: NSImage.removeTemplateName) ?? NSImage(), target: self,
-        action: #selector(deleteTemplate))
+    private lazy var remove = ActionButton(
+        title: String(localized: "Delete Template"), symbol: "minus"
+    ) { [weak self] in self?.deleteTemplate() }
     private static let importTitle = String(localized: "Import…")
     private static let exportTitle = String(localized: "Export…")
     private lazy var importButton = ClosureButton(title: Self.importTitle) { [weak self] in
@@ -101,11 +101,10 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     }
 
     private func footer() -> NSView {
-        remove.bezelStyle = .smallSquare
-        remove.setAccessibilityLabel(String(localized: "Delete Template"))
-        let spacer = NSView()
-        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        return NSStackView(views: [remove, spacer, importButton, exportButton])
+        let row = NSStackView()
+        row.setViews([remove], in: .leading)
+        row.setViews([importButton, exportButton], in: .trailing)
+        return row
     }
 
     private var selected: FolderTemplate? {
@@ -137,7 +136,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
 
     // MARK: Actions
 
-    @objc private func deleteTemplate() {
+    private func deleteTemplate() {
         guard let template = selected else { return }
         let undo = view.window?.undoManager
         Task { await model.delete(template.id, undoManager: undo) }

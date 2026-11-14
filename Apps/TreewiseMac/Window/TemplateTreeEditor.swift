@@ -27,6 +27,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         "me.m-domain.treewise.template-folder")
     private static let pathSeparator = "\u{1F}"
     private static let height: CGFloat = 230
+    private static let iconSize: CGFloat = 16
+    /// The space between the tree and its buttons, as in Settings' Names tab.
+    private static let spacing: CGFloat = 8
     private static let fields: [(field: String, title: String.LocalizationValue)] = [
         ("{year}", "Year"), ("{year:yy}", "Year in Two Digits"), ("{text}", "Text"),
         ("{seq}", "Number"), ("{date:yyyy-MM-dd}", "Date"),
@@ -41,12 +44,12 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private var shown: FolderTemplate?
     /// The folder to select once the tree shows it, and whether to start renaming it.
     private var pending: (path: [String], rename: Bool)?
-    private lazy var add = NSButton(
-        image: NSImage(named: NSImage.addTemplateName) ?? NSImage(), target: self,
-        action: #selector(addFolder))
-    private lazy var remove = NSButton(
-        image: NSImage(named: NSImage.removeTemplateName) ?? NSImage(), target: self,
-        action: #selector(removeFolder))
+    private lazy var add = ActionButton(
+        title: String(localized: "Add Folder"), symbol: "plus"
+    ) { [weak self] in self?.addFolder() }
+    private lazy var remove = ActionButton(
+        title: String(localized: "Delete Folder"), symbol: "minus"
+    ) { [weak self] in self?.removeFolder() }
     private let insert = NSPopUpButton(frame: .zero, pullsDown: true)
 
     init(model: FolderTemplatesModel) {
@@ -71,9 +74,6 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         scroll.hasVerticalScroller = true
         scroll.borderType = .bezelBorder
         scroll.heightAnchor.constraint(equalToConstant: Self.height).isActive = true
-        for button in [add, remove] { button.bezelStyle = .smallSquare }
-        add.setAccessibilityLabel(String(localized: "Add Folder"))
-        remove.setAccessibilityLabel(String(localized: "Delete Folder"))
         insert.addItem(withTitle: String(localized: "Insert Field"))
         for (field, title) in Self.fields {
             let item = NSMenuItem(
@@ -83,15 +83,14 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
             item.target = self
             insert.menu?.addItem(item)
         }
-        insert.controlSize = .small
         insert.autoenablesItems = false
-        let spacer = NSView()
-        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        let buttons = NSStackView(views: [add, remove, spacer, insert])
+        let buttons = NSStackView()
+        buttons.setViews([add, remove], in: .leading)
+        buttons.setViews([insert], in: .trailing)
         let stack = NSStackView(views: [scroll, buttons])
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = 0
+        stack.spacing = Self.spacing
         for view in stack.arrangedSubviews {
             view.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         }
@@ -149,7 +148,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
 
     private var undoManager: UndoManager? { outline.window?.undoManager }
 
-    @objc private func addFolder() {
+    private func addFolder() {
         guard let id = templateID, let node = selectedNode else { return }
         let name = String(localized: "untitled folder")
         Task {
@@ -162,7 +161,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         }
     }
 
-    @objc private func removeFolder() {
+    private func removeFolder() {
         guard let id = templateID, let node = selectedNode, !node.path.isEmpty else { return }
         Task { await model.removeFolder(node.path, of: id, undoManager: undoManager) }
     }
@@ -251,6 +250,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         guard let node = item as? Node else { return nil }
         let cell = NSTableCellView()
         let icon = NSImageView(image: NSImage(named: NSImage.folderName) ?? NSImage())
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        icon.widthAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
+        icon.heightAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
         let name = NSTextField(string: node.tree.name)
         name.isBordered = false
         name.drawsBackground = false

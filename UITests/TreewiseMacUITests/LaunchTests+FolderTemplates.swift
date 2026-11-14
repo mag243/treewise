@@ -7,6 +7,10 @@ import XCTest
 /// the Trash.
 extension LaunchTests {
     private static let client = "Client A"
+    /// The largest a folder's icon in Settings' tree may be, in points.
+    private static let iconHeight: CGFloat = 18
+    /// The least room between the tree and the buttons below it, in points.
+    private static let belowTree: CGFloat = 4
 
     @MainActor
     func testSavingAFoldersStructureListsItInSettings() throws {
@@ -22,6 +26,17 @@ extension LaunchTests {
         XCTAssertTrue(field("Invoices", in: tree).exists)
         XCTAssertGreaterThan(
             tree.frame.width, templates.frame.width * 0.8, "the tree takes the tab's width")
+        let icon = tree.outlineRows.firstMatch.images.firstMatch
+        XCTAssertLessThanOrEqual(icon.frame.height, Self.iconHeight, "a folder's icon is small")
+        let below = [
+            "Add Folder": templates.buttons["Add Folder"],
+            "Insert Field": templates.menuButtons["Insert Field"],
+        ]
+        for (name, control) in below {
+            XCTAssertGreaterThanOrEqual(
+                control.frame.minY - tree.frame.maxY, Self.belowTree,
+                "\(name) has room below the tree")
+        }
     }
 
     @MainActor
@@ -38,7 +53,9 @@ extension LaunchTests {
         let sheet = window.sheets.firstMatch
         let create = sheet.buttons["Create Folders"]
         XCTAssertTrue(create.appeared(timeout: Self.launchTimeout), "the sheet shows")
-        XCTAssertTrue(sheet.staticTexts["Makes 3 folders."].exists, "it says what it makes")
+        XCTAssertTrue(
+            sheet.staticTexts["Makes 3 folders."].appeared(timeout: Self.launchTimeout),
+            "it says what it makes")
         create.click()
         XCTAssertTrue(
             window.staticTexts["Made 3 folders."].appeared(timeout: Self.launchTimeout),
