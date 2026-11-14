@@ -1,0 +1,91 @@
+import Foundation
+
+/// A tree of folder names: a folder and the folders in it, at every depth, without files
+/// (ADR 0091). A template's tree may hold `{year}` in its names; a tree to make has it filled in.
+///
+/// Invariant: `folders` are ordered by name as Finder orders them.
+public struct FolderTree: Codable, Hashable, Sendable {
+    /// The most folders a tree may hold, its root included, so a template cannot flood a disk.
+    public static let mostFolders = 1000
+    /// The most levels a tree may have, its root the first.
+    public static let mostLevels = 32
+    /// The placeholder for the year, as in a name pattern (ADR 0090).
+    public static let yearField = "{year}"
+
+    /// Why a tree cannot be made.
+    public enum Problem: Error, Hashable, Sendable {
+        /// A name no folder can have: empty, `.`, `..`, or with `/` or `:`.
+        case invalidName(String)
+        /// A name that starts with a dot, which Finder hides.
+        case hiddenName(String)
+        /// Two folders in one folder whose names the file system treats as the same.
+        case sameName(String)
+        /// More than `mostFolders` folders.
+        case tooManyFolders
+        /// More than `mostLevels` levels.
+        case tooDeep
+    }
+
+    /// The folder's name.
+    public let name: String
+    /// The folders in it, ordered by name.
+    public let folders: [FolderTree]
+
+    /// A folder with the folders in it, which it orders by name.
+    public init(name: String, folders: [FolderTree] = []) {
+        self.name = name
+        self.folders = folders.sorted {
+            $0.name.localizedStandardCompare($1.name) == .orderedAscending
+        }
+    }
+
+    /// A tree from a file or from an add-on, ordered as any other; a folder without
+    /// `folders` holds none.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            name: try container.decode(String.self, forKey: .name),
+            folders: try container.decodeIfPresent([FolderTree].self, forKey: .folders) ?? [])
+    }
+
+    /// Whether an item in a folder that is saved as a template counts as one of its folders:
+    /// a plain folder that is not hidden. Files, packages and aliases are left out.
+    public static func keeps(_ item: FileItem) -> Bool {
+        item.kind == .folder && !item.isHidden
+    }
+
+    /// Whether a name in the tree holds `{year}`.
+    public var hasYear: Bool {
+        name.contains(Self.yearField) || folders.contains(where: \.hasYear)
+    }
+
+    /// The tree with `{year}` in each name written as `year`.
+    public func filling(year: Int) -> FolderTree {
+        FolderTree(
+            name: name.replacingOccurrences(of: Self.yearField, with: String(year)),
+            folders: folders.map { $0.filling(year: year) })
+    }
+
+    /// Checks that every folder of the tree can be made where it is placed: names only,
+    /// relative to the folder the tree is made in, none hidden or twice in one folder, and
+    /// within `mostFolders` and `mostLevels`.
+    public func check() throws(Problem) {
+        var count = 0
+        try check(level: 1, count: &count)
+    }
+
+    private func check(level: Int, count: inout Int) throws(Problem) {
+        guard level <= Self.mostLevels else { throw .tooDeep }
+        count += 1
+        guard count <= Self.mostFolders else { throw .tooManyFolders }
+        guard FolderNaming.isValidName(name) else { throw .invalidName(name) }
+        guard !name.hasPrefix(".") else { throw .hiddenName(name) }
+        var seen = Set<String>()
+        for folder in folders {
+            guard seen.insert(ConflictResolver.comparisonKey(folder.name)).inserted else {
+                throw .sameName(folder.name)
+            }
+            try folder.check(level: level + 1, count: &count)
+        }
+    }
+}
