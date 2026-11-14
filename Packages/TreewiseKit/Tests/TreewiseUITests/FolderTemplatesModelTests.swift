@@ -35,6 +35,19 @@ import TreewiseUI
         #expect(await eventually { model.templates.map(\.name) == ["Client", "Household Year"] })
     }
 
+    @Test func undoesTwoChangesInTurnAndRedoesTheLast() async {
+        let model = await model()
+        await model.rename("year", to: "Year", undoManager: undoManager)
+        await model.rename("year", to: "Year 2", undoManager: undoManager)
+        undoManager.undo()
+        #expect(await eventually { model.templates.map(\.name) == ["Client", "Year"] })
+        undoManager.undo()
+        #expect(await eventually { model.templates.map(\.name) == ["Client", "Household Year"] })
+        #expect(undoManager.canRedo)
+        undoManager.redo()
+        #expect(await eventually { model.templates.map(\.name) == ["Client", "Year"] })
+    }
+
     @Test func refusesAnEmptyNameOrOneAnotherTemplateHas() async {
         let model = await model()
         await model.rename("year", to: "  ", undoManager: undoManager)

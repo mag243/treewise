@@ -154,16 +154,22 @@ public final class FolderTemplatesModel {
     ) async {
         guard let inverse = await perform(change) else { return }
         problem = nil
-        register(inverse, named: String(localized: name, bundle: .module), undoManager)
+        register(Task { inverse }, named: String(localized: name, bundle: .module), undoManager)
     }
 
-    private func register(_ inverse: Change, named name: String, _ undoManager: UndoManager?) {
+    /// Registers the change that undoes the last one. It registers its own inverse at once,
+    /// while Undo runs, so that it lands on the redo stack, and performs it as the task
+    /// before it ends (as `BrowserState` does).
+    private func register(
+        _ inverse: Task<Change?, Never>, named name: String, _ undoManager: UndoManager?
+    ) {
         guard let undoManager else { return }
         undoManager.registerUndo(withTarget: self) { model in
-            Task { @MainActor in
-                guard let redo = await model.perform(inverse) else { return }
-                model.register(redo, named: name, undoManager)
+            let redo = Task { @MainActor () -> Change? in
+                guard let change = await inverse.value else { return nil }
+                return await model.perform(change)
             }
+            model.register(redo, named: name, undoManager)
         }
         undoManager.setActionName(name)
     }

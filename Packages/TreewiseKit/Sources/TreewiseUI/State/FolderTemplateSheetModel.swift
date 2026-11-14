@@ -11,7 +11,7 @@ import TreewiseModuleInterface
 public final class FolderTemplateSheetModel {
     /// Where the tree goes.
     public enum Place: Hashable, Sendable {
-        /// The root is made inside this folder, which holds `contents`.
+        /// The root is made inside this folder.
         case inside(FileItem.ID)
         /// This folder, already there, is filled under its own name: only the folders below
         /// the root are made, as for a year's folder or the bar (ADR 0095, ADR 0097).
@@ -60,44 +60,68 @@ public final class FolderTemplateSheetModel {
     /// The tree to make, once it can be.
     public private(set) var tree: FolderTree?
 
-    private let contents: FolderContents
+    /// The years a folder's own name counts as one (ADR 0090).
+    private static let years = 1900...2099
+    private let fileSystem: any FileSystemProviding
     private let asking: Asking
+    private let currentYear: Int
+    /// The names of the folders in the folder the root goes into, for the number.
+    private var besideRoot: [String] = []
     private var generation = 0
 
-    /// A sheet for `template` placed at `place`, whose folder holds `contents`. The year and
-    /// number are proposed from them, the date is `today` and, for a folder filled, the text
-    /// its name.
+    /// A sheet for `template` placed at `place`, whose folders it reads from `fileSystem`.
+    /// `start()` proposes the year and the number from them; the date is `today` and, for a
+    /// folder filled, the text its name and the year that of its path.
     public init(
-        template: FolderTree, place: Place, contents: FolderContents, asking: Asking,
-        currentYear: Int, today: FolderTemplateValues.Day, language: MonthNames.Language = .app
+        template: FolderTree, place: Place, fileSystem: any FileSystemProviding,
+        asking: Asking, currentYear: Int, today: FolderTemplateValues.Day,
+        language: MonthNames.Language = .app
     ) {
         self.template = template
         self.place = place
-        self.contents = contents
+        self.fileSystem = fileSystem
         self.asking = asking
-        var values = FolderTemplateValues(date: today, language: language)
+        self.currentYear = currentYear
+        var values = FolderTemplateValues(year: currentYear, date: today, language: language)
         switch place {
         case .inside:
             fields = template.fields
-            values.year = template.proposedYear(in: contents, currentYear: currentYear)
         case .filling(let folder):
-            // A year's folder gives its own year, which the sheet then does not ask.
-            let ownYear = YearFolders.year(of: folder.id).flatMap {
-                String($0) == folder.name ? $0 : nil
-            }
-            fields = template.fieldsBelowRoot.filter { $0 != .year || ownYear == nil }
-            values.year = ownYear ?? currentYear
+            // A folder with a year in its path gives that year, which is then not asked.
+            let pathYear = YearFolders.year(of: folder.id)
+            fields = template.fieldsBelowRoot.filter { $0 != .year || pathYear == nil }
+            values.year = pathYear ?? currentYear
             values.text = folder.name
         }
         self.values = values
-        values.number = proposedNumber()
-        self.values = values
+    }
+
+    /// Reads the folder, proposes the year and the number, and shows the tree for them.
+    public func start() async {
+        if case .inside(let folder) = place {
+            let shallow = (try? await fileSystem.contents(of: folder)) ?? []
+            besideRoot = shallow.filter { $0.kind == .folder }.map(\.name)
+            if fields.contains(.year) {
+                let years = besideRoot.compactMap(Int.init).filter(Self.years.contains)
+                let highest = years.max() ?? currentYear
+                let deep = await read(template.filling(year: highest), in: folder)
+                values.year = template.proposedYear(in: deep, currentYear: currentYear)
+            }
+            values.number = proposedNumber()
+        }
+        await refresh()
+    }
+
+    /// What `folder` holds along `tree`, as deep as the tree goes.
+    private func read(_ tree: FolderTree, in folder: FileItem.ID) async -> FolderContents {
+        let wrapper = FolderTree(name: "", folders: [tree])
+        return (try? await fileSystem.folderContents(for: wrapper, in: folder)) ?? FolderContents()
     }
 
     /// The number the root proposes beside the folders there, for the year chosen.
     private func proposedNumber() -> FolderTemplateValues.Number? {
         guard case .inside = place else { return nil }
-        return template.proposedNumber(beside: contents.folderNames, values: values)
+        return template.proposedNumber(beside: besideRoot, values: values)
     }
 
     /// Sets the year; the number follows it, as it counts within the year (ADR 0096).
@@ -140,7 +164,7 @@ public final class FolderTemplateSheetModel {
         if fields.contains(.text),
             values.text?.trimmingCharacters(in: .whitespaces).isEmpty != false
         {
-            return show(nil, .textNeeded, asked)
+            return await show(nil, .textNeeded, asked)
         }
         // A folder filled keeps its name, so the root's own fields are not asked.
         let question: FolderTree
@@ -152,35 +176,28 @@ public final class FolderTemplateSheetModel {
         let made = try? await asking.host.foldersToMake(
             moduleID: asking.moduleID, template: question, values: values,
             licence: asking.licence())
-        guard let made = made ?? nil else { return show(nil, .addOnGaveNothing, asked) }
+        guard let made = made ?? nil else { return await show(nil, .addOnGaveNothing, asked) }
         do {
             try made.check()
-            show(made, nil, asked)
+            await show(made, nil, asked)
         } catch {
-            show(nil, .tree(error), asked)
+            await show(nil, .tree(error), asked)
         }
     }
 
-    private func show(_ made: FolderTree?, _ found: Problem?, _ asked: Int) {
+    private func show(_ made: FolderTree?, _ found: Problem?, _ asked: Int) async {
         guard asked == generation else { return }
-        problem = found
-        guard let made else {
+        guard let made, let folder = folderMadeIn else {
+            problem = found
             tree = nil
             entries = []
             return
         }
-        switch place {
-        case .inside:
-            tree = made
-            entries = FolderTemplatePlan(making: made, in: contents).entries
-        case .filling(let folder):
-            let filled = made.filling(folderNamed: folder.name)
-            tree = filled
-            entries =
-                FolderTemplatePlan(
-                    making: filled, in: FolderContents(folders: [folder.name: contents])
-                ).entries
-        }
+        let there = await read(made, in: folder)
+        guard asked == generation else { return }
+        problem = found
+        tree = made
+        entries = FolderTemplatePlan(making: made, in: there).entries
     }
 
     /// The folder Create Folders makes the tree in: the one chosen, or the one above the
