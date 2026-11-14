@@ -133,6 +133,8 @@
         let description: NameModuleDescription
         /// What it returns to make, in place of the template filled in.
         var makes: FolderTree?
+        /// What it returns as a template, in place of the years written as `{year}`.
+        var saves: FolderTree?
 
         init(id: String) {
             description = NameModuleDescription(
@@ -151,14 +153,14 @@
         }
 
         func template(from tree: FolderTree, licence: LicenceContext) -> FolderTree? {
-            licence.keys.contains("good") ? Self.template(of: tree) : nil
+            licence.keys.contains("good") ? saves ?? Self.template(of: tree) : nil
         }
 
-        func folders(making template: FolderTree, year: Int?, licence: LicenceContext)
-            -> FolderTree?
-        {
+        func folders(
+            making template: FolderTree, values: FolderTemplateValues, licence: LicenceContext
+        ) -> FolderTree? {
             guard licence.keys.contains("good") else { return nil }
-            return makes ?? year.map(template.filling(year:)) ?? template
+            return makes ?? template.filling(values)
         }
     }
 

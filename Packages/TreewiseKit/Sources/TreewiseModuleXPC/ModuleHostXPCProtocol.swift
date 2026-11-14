@@ -46,10 +46,10 @@
             let licence: LicenceContext
         }
 
-        /// A template and the year to make it in.
+        /// A template and the values of its fields.
         struct TemplateToMake: Codable {
             let template: FolderTree
-            let year: Int?
+            let values: FolderTemplateValues
             let licence: LicenceContext
         }
 

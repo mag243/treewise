@@ -88,27 +88,36 @@
             let data = try await ask { service, reply in
                 service.folderTemplate(moduleID: moduleID, question: encoded, reply: reply)
             }
-            return try checked(decode([FolderTree].self, from: data).first)
+            return try checked(decode([FolderTree].self, from: data).first) { tree in
+                try tree.checkTemplate()
+            }
         }
 
-        /// Asks an add-on for the folders a template makes in a year, checked before anything
-        /// is made of them (ADR 0091).
+        /// Asks an add-on for the folders a template makes with its fields filled in, checked
+        /// before anything is made of them (ADR 0091, ADR 0096).
         public func foldersToMake(
-            moduleID: String, template: FolderTree, year: Int?, licence: LicenceContext
+            moduleID: String, template: FolderTree, values: FolderTemplateValues,
+            licence: LicenceContext
         ) async throws -> FolderTree? {
             let encoded = try ModuleWire.encode(
-                ModuleWire.TemplateToMake(template: template, year: year, licence: licence))
+                ModuleWire.TemplateToMake(template: template, values: values, licence: licence))
             let data = try await ask { service, reply in
                 service.foldersToMake(moduleID: moduleID, question: encoded, reply: reply)
             }
-            return try checked(decode([FolderTree].self, from: data).first)
+            return try checked(decode([FolderTree].self, from: data).first) { tree in
+                try tree.check()
+                guard tree.fields.isEmpty else { throw FolderTree.Problem.invalidName(tree.name) }
+            }
         }
 
-        /// A tree from closed code is taken only when every folder of it can be made.
-        private func checked(_ tree: FolderTree?) throws -> FolderTree? {
+        /// A tree from closed code is taken only when it passes `check`: a template as a
+        /// template, folders to make when each can be made and no field is left.
+        private func checked(
+            _ tree: FolderTree?, by check: (FolderTree) throws -> Void
+        ) throws -> FolderTree? {
             guard let tree else { return nil }
             do {
-                try tree.check()
+                try check(tree)
             } catch {
                 throw NameModuleHostError.invalidResponse
             }

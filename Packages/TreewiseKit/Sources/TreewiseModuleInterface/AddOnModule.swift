@@ -40,8 +40,9 @@ public protocol FolderStructureModule: AddOnModule {
     /// The template of a folder's tree, as saving it as a template keeps it, or nil while its
     /// licence lets it do nothing.
     func template(from tree: FolderTree, licence: LicenceContext) -> FolderTree?
-    /// The folders `template` makes in `year`, or in no year for a template without one, or
-    /// nil while its licence lets it do nothing.
-    func folders(making template: FolderTree, year: Int?, licence: LicenceContext)
-        -> FolderTree?
+    /// The folders `template` makes with its fields filled in from `values` (ADR 0096), or
+    /// nil while its licence lets it do nothing or a field has no value.
+    func folders(
+        making template: FolderTree, values: FolderTemplateValues, licence: LicenceContext
+    ) -> FolderTree?
 }

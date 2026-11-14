@@ -34,7 +34,8 @@
             defer { withExtendedLifetime(harness) {} }
             let template = StubStructureModule.template(of: Self.year2026)
             let folders = try await harness.host().foldersToMake(
-                moduleID: "t", template: template, year: 2027, licence: Self.licensed)
+                moduleID: "t", template: template, values: FolderTemplateValues(year: 2027),
+                licence: Self.licensed)
             #expect(folders == template.filling(year: 2027))
         }
 
@@ -46,7 +47,8 @@
                 try await host.template(moduleID: "t", from: Self.year2026, licence: .none) == nil)
             #expect(
                 try await host.foldersToMake(
-                    moduleID: "t", template: Self.year2026, year: nil, licence: .none) == nil)
+                    moduleID: "t", template: Self.year2026, values: FolderTemplateValues(),
+                    licence: .none) == nil)
         }
 
         @Test func refusesFoldersThatCannotBeMade() async throws {
@@ -56,8 +58,33 @@
             defer { withExtendedLifetime(harness) {} }
             await #expect(throws: NameModuleHostError.invalidResponse) {
                 try await harness.host().foldersToMake(
-                    moduleID: "t", template: Self.year2026, year: 2027, licence: Self.licensed)
+                    moduleID: "t", template: Self.year2026,
+                    values: FolderTemplateValues(year: 2027),
+                    licence: Self.licensed)
             }
+        }
+
+        @Test func refusesFoldersWithAFieldLeftUnfilled() async throws {
+            var stub = StubStructureModule(id: "t")
+            stub.makes = FolderTree(name: "2027", folders: [FolderTree(name: "Summary {text}")])
+            let harness = Harness(modules: [], structures: [stub])
+            defer { withExtendedLifetime(harness) {} }
+            await #expect(throws: NameModuleHostError.invalidResponse) {
+                try await harness.host().foldersToMake(
+                    moduleID: "t", template: Self.year2026,
+                    values: FolderTemplateValues(year: 2027),
+                    licence: Self.licensed)
+            }
+        }
+
+        @Test func takesATemplateWhoseFieldsHoldAColon() async throws {
+            var stub = StubStructureModule(id: "t")
+            stub.saves = FolderTree(name: "{date:yyyy-MM-dd} Shoot")
+            let harness = Harness(modules: [], structures: [stub])
+            defer { withExtendedLifetime(harness) {} }
+            let template = try await harness.host().template(
+                moduleID: "t", from: Self.year2026, licence: Self.licensed)
+            #expect(template == stub.saves)
         }
 
         @Test func saysWhatItsLicenceLetsItDo() async throws {

@@ -100,7 +100,7 @@
                 return
             }
             let folders = module.folders(
-                making: decoded.template, year: decoded.year, licence: decoded.licence)
+                making: decoded.template, values: decoded.values, licence: decoded.licence)
             reply(try? ModuleWire.encode([folders].compactMap(\.self)))
         }
 
