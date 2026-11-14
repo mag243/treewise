@@ -172,6 +172,23 @@ extension BrowserState {
         return result?.items.first
     }
 
+    /// Makes the folders of a template's tree in `folder`, as one step for Undo (ADR 0091),
+    /// and says what it made and left out.
+    @discardableResult
+    public func createFolders(
+        making tree: FolderTree, in folder: FileItem.ID, undoManager: UndoManager?
+    ) async -> FolderTemplateOutcome? {
+        var outcome: FolderTemplateOutcome?
+        _ = await perform(
+            name: Self.actionName("New Folders from Template"), undoManager: undoManager
+        ) {
+            let made = try await $0.createFolders(making: tree, in: folder)
+            outcome = made
+            return made.result
+        }
+        return outcome
+    }
+
     /// Renames an item, unless it is one that keeps its name (ADR 0049).
     public func rename(_ item: FileItem, to name: String, undoManager: UndoManager?) async {
         guard name != item.name, item.canBeRenamedOrTrashed else { return }

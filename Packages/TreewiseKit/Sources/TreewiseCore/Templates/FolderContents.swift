@@ -17,7 +17,7 @@ public struct FolderContents: Sendable {
     }
 
     /// The names of its folders, as the disk writes them.
-    var folderNames: [String] { folders.values.map(\.name) }
+    public var folderNames: [String] { folders.values.map(\.name) }
 
     /// The folder the file system would take for `name`, with the name it has, or nil.
     func folder(named name: String) -> (name: String, contents: FolderContents)? {
