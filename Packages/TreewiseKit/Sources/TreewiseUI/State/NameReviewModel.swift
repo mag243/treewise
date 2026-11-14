@@ -268,7 +268,8 @@ public final class NameReviewModel {
         let offered = AddOnDescription.offered(all.filter(mayWork))
         var addOns = dependencies.addOns
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
-        isFirstReview = saved == nil
+        // A folder kept only for what it says of templates has not been reviewed.
+        isFirstReview = saved?.isReviewed != true
         settings = saved ?? FolderSettings(enabledModules: [], templates: [:])
         for module in all where !mayWork(module) {
             for replaced in module.names.replaces {
@@ -288,7 +289,7 @@ public final class NameReviewModel {
                 catalog: offered.map(\.id),
                 defaultID: AddOnDescription.defaultID(among: offered)
             ).enabledModules
-        if saved == nil { settings = FolderSettings(enabledModules: freshEnabled, templates: [:]) }
+        if isFirstReview { settings = FolderSettings(enabledModules: freshEnabled, templates: [:]) }
         let locked = all.filter { !mayWork($0) && addOns.isOn($0.id) }
         return (offered.filter { working.contains($0.id) } + locked, working + locked.map(\.id))
     }

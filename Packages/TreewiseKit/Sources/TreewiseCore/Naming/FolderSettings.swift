@@ -7,8 +7,19 @@ public protocol FolderSettingsStoring: Sendable {
 }
 
 /// What the user chose for a folder: which modules are on and each module's template
-/// (ADR 0057). Treewise keeps this in its own folder; the folder holds only a random id.
+/// (ADR 0057), and what is offered of folder templates (ADR 0094, ADR 0097). Treewise keeps
+/// this in its own folder; the folder holds only a random id.
 public struct FolderSettings: Hashable, Sendable, Codable {
+    /// What the empty folders made in a folder are offered (ADR 0097).
+    public enum NewFolders: Hashable, Sendable, Codable {
+        /// The folder a year before, or the one template rooted at `{year}` (ADR 0094).
+        case automatic
+        /// The template with this id.
+        case template(id: String)
+        /// Nothing.
+        case none
+    }
+
     /// How an id found on a folder relates to what Treewise recorded.
     public enum Place: Hashable, Sendable {
         /// The folder has no id.
@@ -34,6 +45,14 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     public var moduleOrder: [String] = []
     /// The saved pattern each module's template was picked from, by module id (ADR 0068).
     public var savedPatternLinks: [String: SavedPatternLink] = [:]
+    /// What the empty folders in this folder are offered (ADR 0097).
+    public var newFolders = NewFolders.automatic
+    /// Whether the bar offering a template's folders was closed for this folder (ADR 0094).
+    public var templateBarClosed = false
+
+    /// Whether the folder was ever reviewed: then a module is on, which a folder kept only
+    /// for what it says of templates has not.
+    public var isReviewed: Bool { !enabledModules.isEmpty }
 
     /// The settings of a folder reviewed for the first time.
     public static func new(defaultModuleID: String) -> FolderSettings {
@@ -105,6 +124,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
 
     private enum CodingKeys: String, CodingKey {
         case enabledModules, templates, alwaysSkipped, moduleOrder, savedPatternLinks
+        case newFolders, templateBarClosed
     }
 
     /// Reads settings; those stored before a field existed get its default.
@@ -118,6 +138,10 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         savedPatternLinks =
             try container.decodeIfPresent(
                 [String: SavedPatternLink].self, forKey: .savedPatternLinks) ?? [:]
+        newFolders =
+            try container.decodeIfPresent(NewFolders.self, forKey: .newFolders) ?? .automatic
+        templateBarClosed =
+            try container.decodeIfPresent(Bool.self, forKey: .templateBarClosed) ?? false
     }
 
     /// Decides how a folder relates to the record of the id on it.

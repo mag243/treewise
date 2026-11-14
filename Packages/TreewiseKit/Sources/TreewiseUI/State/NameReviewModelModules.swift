@@ -159,7 +159,14 @@ extension NameReviewModel {
         conflicts = Dictionary(found.map { ($0.item, $0.kind) }) { first, _ in first }
     }
 
+    /// Saves what the review chose, keeping what the folder's settings say of templates as
+    /// they are now, since those change outside the review (ADR 0097).
     func saveSettings() async {
-        await dependencies.store.save(settings, forFolderAt: folder.id.rawValue)
+        var toSave = settings
+        if let stored = await dependencies.store.settings(forFolderAt: folder.id.rawValue) {
+            toSave.newFolders = stored.newFolders
+            toSave.templateBarClosed = stored.templateBarClosed
+        }
+        await dependencies.store.save(toSave, forFolderAt: folder.id.rawValue)
     }
 }

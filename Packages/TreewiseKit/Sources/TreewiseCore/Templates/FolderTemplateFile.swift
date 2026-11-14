@@ -36,8 +36,9 @@ public enum FolderTemplateFile {
             Envelope(format: format, name: template.name, root: template.root))
     }
 
-    /// The template in a file, checked as a template (ADR 0096).
-    public static func template(from data: Data) throws(Problem) -> FolderTemplate {
+    /// The template in a file, checked as a template (ADR 0096), with the id it is kept
+    /// under, which the file does not hold.
+    public static func template(from data: Data, id: String) throws(Problem) -> FolderTemplate {
         let decoder = JSONDecoder()
         guard let version = try? decoder.decode(Version.self, from: data) else {
             throw .unreadable
@@ -51,6 +52,6 @@ public enum FolderTemplateFile {
         } catch {
             throw .folders(error)
         }
-        return FolderTemplate(name: envelope.name, root: envelope.root)
+        return FolderTemplate(id: id, name: envelope.name, root: envelope.root)
     }
 }

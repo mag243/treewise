@@ -110,6 +110,20 @@ import TreewiseUI
         #expect(model.isFirstReview)
     }
 
+    @Test func aFolderKeptOnlyForTemplatesIsReviewedAsNewAndKeepsThem() async {
+        _ = addFile("a.txt")
+        var kept = FolderSettings(enabledModules: [], templates: [:])
+        kept.newFolders = .template(id: "client")
+        await store.save(kept, forFolderAt: "review")
+        let model = await model(host())
+        #expect(model.isFirstReview)
+        #expect(model.modules.map(\.isOn) == [true])
+        await model.alwaysSkip(FileItem.ID("review/a.txt"))
+        let saved = await store.settings(forFolderAt: "review")
+        #expect(saved?.newFolders == .template(id: "client"))
+        #expect(saved?.enabledModules == [Self.free])
+    }
+
     @Test func aLaterReviewRemembersTheModules() async {
         _ = addFile("scan.pdf")
         await store.save(

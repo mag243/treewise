@@ -85,6 +85,21 @@ import Testing
         }
     }
 
+    @Test func fillsAFolderThatIsThereUnderItsOwnName() {
+        let filled = Self.client.filling(folderNamed: "Acme")
+        #expect(filled.name == "Acme")
+        #expect(filled.folders.map(\.name) == ["Contract", "Summary {year}"])
+        #expect(Self.client.fieldsBelowRoot == [.year])
+    }
+
+    @Test func aTemplateRootedAtTheYearFillsAYearsFolderItself() {
+        let year = FolderTemplate(name: "Year", root: FolderTree(name: "{year}"))
+        #expect(year.yearOfFolderItFills(named: "2027") == 2027)
+        #expect(year.yearOfFolderItFills(named: "Tax") == nil)
+        let client = FolderTemplate(name: "Client", root: Self.client)
+        #expect(client.yearOfFolderItFills(named: "2027") == nil)
+    }
+
     @Test func checksATemplateAsATreeOtherwise() {
         let tree = FolderTree(name: "{year}", folders: [FolderTree(name: ".hidden")])
         #expect(throws: FolderTree.Problem.hiddenName(".hidden")) { try tree.checkTemplate() }

@@ -21,6 +21,18 @@ extension FolderTree {
         for folder in folders { folder.collectFields(into: &found) }
     }
 
+    /// The fields below the root, for a template that fills a folder already there, whose
+    /// name stays as it is (ADR 0095, ADR 0097).
+    public var fieldsBelowRoot: [FolderTemplateField] {
+        FolderTree(name: "", folders: folders).fields
+    }
+
+    /// The tree with its root named `name`, for filling a folder of that name that is
+    /// already there: only the folders below it are made (ADR 0095, ADR 0097).
+    public func filling(folderNamed name: String) -> FolderTree {
+        FolderTree(name: name, folders: folders)
+    }
+
     /// Whether a name in the tree holds `{year}` or `{year:yy}`.
     public var hasYear: Bool { fields.contains(.year) }
 
