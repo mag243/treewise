@@ -296,6 +296,38 @@
         }
       }
     },
+    "Delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder"
+          }
+        }
+      }
+    },
+    "Delete Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlage löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder sjabloon"
+          }
+        }
+      }
+    },
     "Extract" : {
       "localizations" : {
         "de" : {
@@ -451,6 +483,22 @@
         }
       }
     },
+    "New Folders from Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Ordner aus Vorlage"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe mappen uit sjabloon"
+          }
+        }
+      }
+    },
     "No results for “%@”" : {
       "comment" : "Shown in a list when searching for %@ found nothing",
       "localizations" : {
@@ -541,6 +589,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wijzig naam"
+          }
+        }
+      }
+    },
+    "Rename Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlage umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam van sjabloon"
+          }
+        }
+      }
+    },
+    "Save Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlage sichern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar sjabloon"
           }
         }
       }

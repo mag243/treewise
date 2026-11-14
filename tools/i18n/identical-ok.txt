@@ -20,11 +20,13 @@ Open
 Open in Terminal
 Stop
 Text
+Text:
 Volume
 
 # The app's own term for its extensions, kept in Dutch and German as in other apps.
 Add-ons
 Add-ons: %@
+Add-ons…
 
 # The app's name.
 Treewise

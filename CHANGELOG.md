@@ -6,6 +6,15 @@ All notable changes to Treewise are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Folder Structure Templates, a paid add-on with its own 14-day trial: save a folder's structure as a template, its folders without their files, and make it in another folder in one step. A year's folder and that year in the names below it become `{year}`, so a template makes any year's folders. Names can also hold `{year:yy}`, `{text}`, `{seq}` and `{date}`, written as in name patterns, which the sheet asks for with the next number and today's date proposed.
+- New Folders from Template in the context menu, the File menu and the command bar's New menu opens a sheet with the tree of folders it makes, those already there in grey and those a file stops struck through. Folders already there are kept and filled; one Undo removes all the folders made.
+- Save Folder Structure as Template… on a folder, and Settings > Templates to rename, delete, import and export templates and to edit a template's folders.
+- An empty year's folder offers the folders of the same folder a year before in a bar above its list, and a folder can offer one template for every new folder in it, or nothing.
+
+### Changed
+- Add-ons are described the same way whatever they do, so a second kind of add-on fits beside those that propose names.
+
 ## [0.8.5] - 2026-11-13
 
 ### Added
