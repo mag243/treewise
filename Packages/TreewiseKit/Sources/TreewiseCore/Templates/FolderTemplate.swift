@@ -36,6 +36,18 @@ public struct FolderTemplate: Codable, Hashable, Sendable, Identifiable {
         return year
     }
 
+    /// `name`, or `name 2`, `name 3`, … when one of `taken` has it, for a template that comes
+    /// in beside others.
+    public static func uniqueName(_ name: String, among taken: Set<String>) -> String {
+        var unique = name
+        var number = 2
+        while taken.contains(unique) {
+            unique = "\(name) \(number)"
+            number += 1
+        }
+        return unique
+    }
+
     private static let yearDigits = 4
     private static let years = 1900...2099
 }

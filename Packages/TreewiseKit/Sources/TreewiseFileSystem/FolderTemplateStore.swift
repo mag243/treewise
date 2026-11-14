@@ -5,7 +5,7 @@ import os
 /// Keeps folder structure templates in Treewise's own folder, one JSON file each, named by
 /// the template's id (ADR 0091, ADR 0097). A deleted template's file goes to the Trash, as
 /// any deleted file does in Treewise (ADR 0004), so it can still be imported from there.
-public actor FolderTemplateStore {
+public actor FolderTemplateStore: FolderTemplateStoring {
     private static let logger = Logger(
         subsystem: "me.m-domain.treewise", category: "FolderTemplateStore")
 
@@ -67,13 +67,7 @@ public actor FolderTemplateStore {
         -> FolderTemplate
     {
         let read = try FolderTemplateFile.template(from: data, id: UUID().uuidString)
-        let names = Set(templates().map(\.name))
-        var name = read.name
-        var number = 2
-        while names.contains(name) {
-            name = "\(read.name) \(number)"
-            number += 1
-        }
+        let name = FolderTemplate.uniqueName(read.name, among: Set(templates().map(\.name)))
         let template = FolderTemplate(id: read.id, name: name, root: read.root)
         do {
             try save(template)
