@@ -29,11 +29,7 @@ enum TemplateProblemText {
         switch problem {
         case .textNeeded: String(localized: "Type the text for the folders’ names.")
         case .tree(let found): text(for: found)
-        case .addOnGaveNothing:
-            String(
-                localized:
-                    "Folder Structure Templates gave no folders. Its trial or licence may have ended."
-            )
+        case .fieldWithoutValue: String(localized: "A field of the template has no value.")
         }
     }
 

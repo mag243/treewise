@@ -2,8 +2,8 @@ import AppKit
 import TreewiseCore
 import TreewiseUI
 
-/// Save Folder Structure as Template… (ADR 0091, ADR 0095): reads the folder's tree, lets
-/// the add-on write its years as `{year}`, and asks for a name in a sheet that shows what is
+/// Save Folder Structure as Template… (ADR 0091, ADR 0095, ADR 0099): reads the folder's
+/// tree, lets the add-on, while it may work, write its years as `{year}`, and asks for a name in a sheet that shows what is
 /// saved. A name another template has asks to replace it.
 @MainActor
 enum SaveTemplateSheet {
@@ -30,19 +30,26 @@ enum SaveTemplateSheet {
         window.beginSheet(sheetWindow)
     }
 
-    /// The folder's tree as a template, or nil after saying why there is none.
+    /// The folder's tree as a template, or nil after saying why there is none. Saved as it
+    /// is, its names as written; while the add-on may work, with the fields it recognizes,
+    /// as a year written as `{year}` (ADR 0099).
     private static func read(_ folder: FileItem, browser: BrowserState, window: NSWindow) async
         -> FolderTree?
     {
-        guard let asking = FolderTemplatesService.asking(licences: browser.licences) else {
-            return nil
-        }
         do {
             let tree = try await browser.fileSystem.folderTree(of: folder)
-            let template = try await asking.host.template(
-                moduleID: asking.moduleID, from: tree, yearAbove: YearFolders.year(of: folder.id),
-                licence: browser.licences?.context() ?? .none)
-            if let template { return template }
+            guard let addOn = FolderTemplatesService.addOn(licences: browser.licences) else {
+                try tree.checkTemplate()
+                return tree
+            }
+            let template = try? await addOn.host.template(
+                moduleID: addOn.moduleID, from: tree, yearAbove: YearFolders.year(of: folder.id),
+                licence: addOn.licence())
+            guard let template = template ?? nil else {
+                try tree.checkTemplate()
+                return tree
+            }
+            return template
         } catch let problem as FolderTree.Problem {
             tell(TemplateProblemText.text(for: problem), on: window)
             return nil

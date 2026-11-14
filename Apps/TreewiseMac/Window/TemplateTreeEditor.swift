@@ -36,7 +36,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private let outline = NSOutlineView()
     private var root: Node?
     private var templateID: String?
-    private var isLocked = false
+    /// The template shown, so a change elsewhere in the model leaves its tree, and a name
+    /// being edited in it, alone.
+    private var shown: FolderTemplate?
     /// The folder to select once the tree shows it, and whether to start renaming it.
     private var pending: (path: [String], rename: Bool)?
     private lazy var add = NSButton(
@@ -96,11 +98,12 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         return stack
     }
 
-    /// Shows the template's tree, or none; a locked tree cannot be changed.
-    func show(_ template: FolderTemplate?, locked: Bool) {
+    /// Shows the template's tree, or none.
+    func show(_ template: FolderTemplate?) {
+        guard template != shown else { return }
+        shown = template
         let selected = selectedNode?.path
         templateID = template?.id
-        isLocked = locked
         root = template.map { Node(path: [], tree: $0.root) }
         outline.reloadData()
         outline.expandItem(nil, expandChildren: true)
@@ -133,9 +136,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
 
     private func updateButtons() {
         let node = selectedNode
-        add.isEnabled = !isLocked && node != nil
-        remove.isEnabled = !isLocked && !(node?.path.isEmpty ?? true)
-        insert.isEnabled = !isLocked && node != nil
+        add.isEnabled = node != nil
+        remove.isEnabled = !(node?.path.isEmpty ?? true)
+        insert.isEnabled = node != nil
         let belowRoot = !(node?.path.isEmpty ?? true)
         for item in insert.itemArray.dropFirst() {
             item.isEnabled = !(belowRoot && (item.representedObject as? String) == "{seq}")
@@ -165,7 +168,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     }
 
     @objc private func renameSelected() {
-        guard !isLocked, outline.selectedRow >= 0 else { return }
+        guard outline.selectedRow >= 0 else { return }
         outline.editColumn(0, row: outline.selectedRow, with: nil, select: true)
     }
 
@@ -205,7 +208,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     func outlineView(_ outlineView: NSOutlineView, pasteboardWriterForItem item: Any)
         -> (any NSPasteboardWriting)?
     {
-        guard !isLocked, let node = item as? Node, !node.path.isEmpty else { return nil }
+        guard let node = item as? Node, !node.path.isEmpty else { return nil }
         let pasteboardItem = NSPasteboardItem()
         pasteboardItem.setString(
             node.path.joined(separator: Self.pathSeparator), forType: Self.dragType)
@@ -251,7 +254,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         let name = NSTextField(string: node.tree.name)
         name.isBordered = false
         name.drawsBackground = false
-        name.isEditable = !isLocked
+        name.isEditable = true
         name.delegate = self
         name.lineBreakMode = .byTruncatingTail
         cell.textField = name

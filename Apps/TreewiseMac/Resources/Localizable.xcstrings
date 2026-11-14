@@ -95,6 +95,24 @@
     },
     "%lld folders" : {
       "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Ordner"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Ordner"
+                }
+              }
+            }
+          }
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -130,29 +148,29 @@
               }
             }
           }
-        },
+        }
+      }
+    },
+    "%lld folders · {year}" : {
+      "localizations" : {
         "de" : {
           "variations" : {
             "plural" : {
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Ordner"
+                  "value" : "%lld Ordner · {year}"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Ordner"
+                  "value" : "%lld Ordner · {year}"
                 }
               }
             }
           }
-        }
-      }
-    },
-    "%lld folders · {year}" : {
-      "localizations" : {
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -188,29 +206,29 @@
               }
             }
           }
-        },
+        }
+      }
+    },
+    "%lld folders." : {
+      "localizations" : {
         "de" : {
           "variations" : {
             "plural" : {
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Ordner · {year}"
+                  "value" : "%lld Ordner."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Ordner · {year}"
+                  "value" : "%lld Ordner."
                 }
               }
             }
           }
-        }
-      }
-    },
-    "%lld folders." : {
-      "localizations" : {
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -246,29 +264,29 @@
               }
             }
           }
-        },
+        }
+      }
+    },
+    "%lld folders. {year} stands for the year, so the template makes any year’s folders." : {
+      "localizations" : {
         "de" : {
           "variations" : {
             "plural" : {
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Ordner."
+                  "value" : "%lld Ordner. {year} steht für das Jahr, so legt die Vorlage die Ordner jedes Jahres an."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Ordner."
+                  "value" : "%lld Ordner. {year} steht für das Jahr, so legt die Vorlage die Ordner jedes Jahres an."
                 }
               }
             }
           }
-        }
-      }
-    },
-    "%lld folders. {year} stands for the year, so the template makes any year’s folders." : {
-      "localizations" : {
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -300,24 +318,6 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld mappen. {year} staat voor het jaar, dus het sjabloon maakt de mappen van elk jaar."
-                }
-              }
-            }
-          }
-        },
-        "de" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld Ordner. {year} steht für das Jahr, so legt die Vorlage die Ordner jedes Jahres an."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld Ordner. {year} steht für das Jahr, so legt die Vorlage die Ordner jedes Jahres an."
                 }
               }
             }
@@ -429,6 +429,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Een keuze tussen < en > heeft een leeg deel"
+          }
+        }
+      }
+    },
+    "A field of the template has no value." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Feld der Vorlage hat keinen Wert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een veld van het sjabloon heeft geen waarde."
           }
         }
       }
@@ -803,6 +819,7 @@
       }
     },
     "Add-ons…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2307,6 +2324,7 @@
       }
     },
     "Folder Structure Templates gave no folders. Its trial or licence may have ended." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2323,6 +2341,7 @@
       }
     },
     "Folder Structure Templates needs a licence or its trial." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2983,6 +3002,24 @@
     },
     "Made %lld folders." : {
       "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Ordner angelegt."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Ordner angelegt."
+                }
+              }
+            }
+          }
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -3014,24 +3051,6 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld mappen gemaakt."
-                }
-              }
-            }
-          }
-        },
-        "de" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld Ordner angelegt."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld Ordner angelegt."
                 }
               }
             }
@@ -3073,6 +3092,24 @@
     },
     "Makes %lld folders." : {
       "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Legt %lld Ordner an."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Legt %lld Ordner an."
+                }
+              }
+            }
+          }
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -3104,24 +3141,6 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Maakt %lld mappen."
-                }
-              }
-            }
-          }
-        },
-        "de" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Legt %lld Ordner an."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Legt %lld Ordner an."
                 }
               }
             }

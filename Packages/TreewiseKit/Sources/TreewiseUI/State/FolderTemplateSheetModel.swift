@@ -1,11 +1,11 @@
 import Foundation
 import Observation
 import TreewiseCore
-import TreewiseModuleInterface
 
 /// The sheet of New Folders from Template (ADR 0091, ADR 0095 to ADR 0097): the template's
-/// fields with what they propose, the tree the add-on returns for them, planned against the
-/// folder, and whether Create Folders can make it.
+/// fields with what they propose, the tree they make, planned against the folder, and whether
+/// Create Folders can make it. Treewise fills in the fields itself, so the sheet works without
+/// an add-on (ADR 0099).
 @MainActor
 @Observable
 public final class FolderTemplateSheetModel {
@@ -18,34 +18,14 @@ public final class FolderTemplateSheetModel {
         case filling(FileItem)
     }
 
-    /// What the sheet asks the add-on with.
-    public struct Asking: Sendable {
-        /// The host that runs the add-on.
-        public let host: any AddOnHosting
-        /// The add-on's id.
-        public let moduleID: String
-        /// The licence it is asked with.
-        public let licence: @MainActor @Sendable () -> LicenceContext
-
-        /// Asks `host`'s add-on `moduleID` with the licence `licence` gives.
-        public init(
-            host: any AddOnHosting, moduleID: String,
-            licence: @escaping @MainActor @Sendable () -> LicenceContext
-        ) {
-            self.host = host
-            self.moduleID = moduleID
-            self.licence = licence
-        }
-    }
-
     /// Why Create Folders cannot make the tree.
     public enum Problem: Hashable, Sendable {
         /// The text a name needs is not typed yet.
         case textNeeded
         /// A name the fields make cannot be a folder's.
         case tree(FolderTree.Problem)
-        /// The add-on gave nothing: it may not work, or failed.
-        case addOnGaveNothing
+        /// A field of the template has no value to write in.
+        case fieldWithoutValue
     }
 
     /// The template's tree, with its fields.
@@ -59,14 +39,13 @@ public final class FolderTemplateSheetModel {
     /// The folders of the tree, with what becomes of each, as planned now.
     public private(set) var entries: [FolderTemplatePlan.Entry] = []
     /// Why the tree cannot be made, or nil when it can.
-    public private(set) var problem: Problem? = .addOnGaveNothing
+    public private(set) var problem: Problem?
     /// The tree to make, once it can be.
     public private(set) var tree: FolderTree?
 
     /// The years a folder's own name counts as one (ADR 0090).
     private static let years = 1900...2099
     private let fileSystem: any FileSystemProviding
-    private let asking: Asking
     private let currentYear: Int
     /// The names of the folders in the folder the root goes into, for the number.
     private var besideRoot: [String] = []
@@ -77,13 +56,12 @@ public final class FolderTemplateSheetModel {
     /// folder filled, the text its name and the year that of its path.
     public init(
         template: FolderTree, place: Place, fileSystem: any FileSystemProviding,
-        asking: Asking, currentYear: Int, today: FolderTemplateValues.Day,
+        currentYear: Int, today: FolderTemplateValues.Day,
         language: MonthNames.Language = .app
     ) {
         self.template = template
         self.place = place
         self.fileSystem = fileSystem
-        self.asking = asking
         self.currentYear = currentYear
         var values = FolderTemplateValues(year: currentYear, date: today, language: language)
         switch place {
@@ -162,8 +140,8 @@ public final class FolderTemplateSheetModel {
     /// Whether Create Folders can make the tree now.
     public var canCreate: Bool { problem == nil && toMakeCount > 0 }
 
-    /// Asks the add-on for the tree the values make, checks it and plans it against the
-    /// folder. A reply to values typed over since is dropped.
+    /// Fills in the template with the values, checks the tree and plans it against the
+    /// folder. A plan for values typed over since is dropped.
     public func refresh() async {
         generation += 1
         let asked = generation
@@ -179,10 +157,8 @@ public final class FolderTemplateSheetModel {
         } else {
             question = template
         }
-        let made = try? await asking.host.foldersToMake(
-            moduleID: asking.moduleID, template: question, values: values,
-            licence: asking.licence())
-        guard let made = made ?? nil else { return await show(nil, .addOnGaveNothing, asked) }
+        let made = question.filling(values)
+        guard made.fields.isEmpty else { return await show(nil, .fieldWithoutValue, asked) }
         do {
             try made.check()
             await show(made, nil, asked)

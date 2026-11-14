@@ -26,10 +26,9 @@ enum FolderTemplateSheet {
     static func present(
         _ making: Making, browser: BrowserState, on window: NSWindow, undoManager: UndoManager?
     ) {
-        guard let asking = FolderTemplatesService.asking(licences: browser.licences) else { return }
         let model = FolderTemplateSheetModel(
             template: making.tree, place: making.place, fileSystem: browser.fileSystem,
-            asking: asking, currentYear: Calendar.current.component(.year, from: .now),
+            currentYear: Calendar.current.component(.year, from: .now),
             today: today())
         let sheet = FolderTemplateSheetController(model: model, making: making)
         let sheetWindow = NSWindow(contentViewController: sheet)
@@ -196,7 +195,10 @@ private final class FolderTemplateSheetController: NSViewController, NSTextField
     }
 
     private func offerRow() -> NSView {
-        if making.templateID != nil, case .inside(let folder) = making.place {
+        // Offering a template in a folder is the add-on's (ADR 0099).
+        if making.templateID != nil, FolderTemplatesService.addOnMayWork,
+            case .inside(let folder) = making.place
+        {
             let name = folder.rawValue.split(separator: "/").last.map(String.init) ?? ""
             offer.title = String(localized: "Offer for new folders in \(name)")
         } else {

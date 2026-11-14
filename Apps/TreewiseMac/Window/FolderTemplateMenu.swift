@@ -3,8 +3,8 @@ import TreewiseCore
 import TreewiseUI
 
 /// The menu items of folder structure templates (ADR 0091, ADR 0094, ADR 0095): New Folders
-/// from Template ▸ with the saved templates, and Save Folder Structure as Template…. Neither
-/// shows in a build without the add-on, nor while it may not work.
+/// from Template ▸ with the saved templates, and Save Folder Structure as Template…. Both are
+/// Treewise's own and show in every build (ADR 0099).
 @MainActor
 enum FolderTemplateMenu {
     /// New Folders from Template ▸, for making a template in `folder`.
@@ -12,7 +12,6 @@ enum FolderTemplateMenu {
         in folder: FileItem.ID, browser: BrowserState, undoManager: UndoManager?,
         enabled: Bool = true
     ) -> NSMenuItem? {
-        guard FolderTemplatesService.isOffered else { return nil }
         let item = NSMenuItem(
             title: String(localized: "New Folders from Template"), action: nil, keyEquivalent: "")
         item.image = NSImage(
@@ -39,7 +38,7 @@ enum FolderTemplateMenu {
 
     /// Save Folder Structure as Template…, for `folder`.
     static func saveItem(for folder: FileItem, browser: BrowserState) -> NSMenuItem? {
-        guard FolderTemplatesService.isOffered, folder.kind == .folder else { return nil }
+        guard folder.kind == .folder else { return nil }
         return ClosureMenuItem(
             String(localized: "Save Folder Structure as Template…"), symbol: "square.and.arrow.down"
         ) {

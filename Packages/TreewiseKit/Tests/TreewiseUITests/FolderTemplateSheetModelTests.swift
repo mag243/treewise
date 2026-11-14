@@ -1,21 +1,19 @@
 import Foundation
 import Testing
 import TreewiseCore
-import TreewiseModuleInterface
 import TreewiseTestSupport
 import TreewiseUI
 
-/// The sheet of New Folders from Template (ADR 0091, ADR 0095 to ADR 0097).
+/// The sheet of New Folders from Template (ADR 0091, ADR 0095 to ADR 0097), which fills in
+/// the fields itself, without an add-on (ADR 0099).
 @MainActor
 @Suite struct FolderTemplateSheetModelTests {
-    private static let addOn = AddOnDescription(id: "templates", kind: .folderStructure)
     private static let year = FolderTree(
         name: "{year}", folders: [FolderTree(name: "Summary {year}"), FolderTree(name: "Tax")])
     private static let client = FolderTree(
         name: "P-{seq:0001-} {text}", folders: [FolderTree(name: "Contract")])
     private static let today = FolderTemplateValues.Day(year: 2026, month: 11, day: 14)
 
-    private let host = ScriptedModuleHost(modules: [addOn], answers: [:])
     private let fileSystem = ChangingFileSystem()
 
     /// A folder whose id is its path, as on disk, so the year in it counts.
@@ -43,9 +41,8 @@ import TreewiseUI
         -> FolderTemplateSheetModel
     {
         let sheet = FolderTemplateSheetModel(
-            template: template, place: place, fileSystem: fileSystem,
-            asking: .init(host: host, moduleID: Self.addOn.id, licence: { .none }),
-            currentYear: 2026, today: Self.today, language: .english)
+            template: template, place: place, fileSystem: fileSystem, currentYear: 2026,
+            today: Self.today, language: .english)
         await sheet.start()
         return sheet
     }
@@ -132,18 +129,6 @@ import TreewiseUI
         #expect(sheet.fields.isEmpty)
         #expect(sheet.tree?.name == "Acme")
         #expect(sheet.toMakeCount == 1)
-    }
-
-    @Test func showsNothingToMakeWhileTheAddOnGivesNothing() async throws {
-        try await folder("Household")
-        let other = ScriptedModuleHost(modules: [], answers: [:])
-        let sheet = FolderTemplateSheetModel(
-            template: Self.year, place: .inside("/v/Household"), fileSystem: fileSystem,
-            asking: .init(host: other, moduleID: "templates", licence: { .none }),
-            currentYear: 2026, today: Self.today)
-        await sheet.start()
-        #expect(sheet.problem == .addOnGaveNothing)
-        #expect(!sheet.canCreate)
     }
 }
 

@@ -3,10 +3,9 @@ import TreewiseCore
 import TreewiseUI
 import UniformTypeIdentifiers
 
-/// Settings' Templates tab (ADR 0091, ADR 0095): the saved templates, renamed in the list and
-/// deleted with −, Import… and Export…, and the tree of the one selected below, edited in
-/// place. While the add-on may not work, all of it is greyed but Export…, with a line that
-/// leads to Add-ons.
+/// Settings' Templates tab (ADR 0091, ADR 0095, ADR 0099): the saved templates, renamed in the
+/// list and deleted with −, Import… and Export…, and the tree of the one selected below,
+/// edited in place. It is Treewise's own, so it works without the add-on.
 @MainActor
 final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTableViewDelegate,
     NSTextFieldDelegate
@@ -17,12 +16,10 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     private static let countWidth: CGFloat = 130
 
     private let model: FolderTemplatesModel
-    private let openAddOns: () -> Void
     private let editor: TemplateTreeEditor
     private let table = NSTableView()
     private let treeTitle = NSTextField(labelWithString: "")
     private let problem = NSTextField(wrappingLabelWithString: "")
-    private let locked = NSStackView()
     private lazy var remove = NSButton(
         image: NSImage(named: NSImage.removeTemplateName) ?? NSImage(), target: self,
         action: #selector(deleteTemplate))
@@ -35,17 +32,14 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         self?.exportTemplate()
     }
 
-    init(model: FolderTemplatesModel, openAddOns: @escaping () -> Void) {
+    init(model: FolderTemplatesModel) {
         self.model = model
-        self.openAddOns = openAddOns
         editor = TemplateTreeEditor(model: model)
         super.init(nibName: nil, bundle: nil)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
-
-    private var isLocked: Bool { !FolderTemplatesService.mayWork }
 
     override func loadView() {
         let hint = NSTextField(
@@ -57,35 +51,33 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         treeTitle.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
         problem.textColor = .systemOrange
         let stack = NSStackView(views: [
-            lockedLine(), hint, list(), footer(), treeTitle, editor.makeView(), problem,
+            hint, list(), footer(), treeTitle, editor.makeView(), problem,
         ])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = Self.spacing
-        stack.edgeInsets = NSEdgeInsets(
-            top: Self.padding, left: Self.padding, bottom: Self.padding, right: Self.padding)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        // As the other panes, the tab has the window's size, and its contents its width.
+        let size = SettingsWindow.paneSize
+        let pane = NSView(frame: NSRect(origin: .zero, size: size))
+        pane.addSubview(stack)
+        NSLayoutConstraint.activate([
+            pane.widthAnchor.constraint(equalToConstant: size.width),
+            pane.heightAnchor.constraint(equalToConstant: size.height),
+            stack.topAnchor.constraint(equalTo: pane.topAnchor, constant: Self.padding),
+            stack.leadingAnchor.constraint(equalTo: pane.leadingAnchor, constant: Self.padding),
+            stack.trailingAnchor.constraint(equalTo: pane.trailingAnchor, constant: -Self.padding),
+        ])
         for view in stack.arrangedSubviews {
-            view.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -2 * Self.padding)
-                .isActive = true
+            view.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         }
-        view = stack
+        view = pane
         Observing.follow(self) { $0.update() }
     }
 
     override func viewWillAppear() {
         super.viewWillAppear()
         Task { await model.load() }
-    }
-
-    private func lockedLine() -> NSView {
-        let text = NSTextField(
-            wrappingLabelWithString: String(
-                localized: "Folder Structure Templates needs a licence or its trial."))
-        let button = ClosureButton(title: String(localized: "Add-ons…")) { [weak self] in
-            self?.openAddOns()
-        }
-        locked.setViews([text, button], in: .leading)
-        return locked
     }
 
     private func list() -> NSView {
@@ -131,9 +123,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         }
         showSelected()
         problem.stringValue = model.problem.map(TemplateProblemText.text(for:)) ?? ""
-        locked.isHidden = !isLocked
-        remove.isEnabled = !isLocked && selected != nil
-        importButton.isEnabled = !isLocked
+        remove.isEnabled = selected != nil
         exportButton.isEnabled = selected != nil
     }
 
@@ -142,7 +132,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         treeTitle.stringValue =
             template.map { String(localized: "Folders of “\($0.name)”") }
             ?? String(localized: "No Templates")
-        editor.show(template, locked: isLocked)
+        editor.show(template)
     }
 
     // MARK: Actions
@@ -154,7 +144,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     }
 
     @objc private func renameSelected() {
-        guard !isLocked, table.clickedRow >= 0 else { return }
+        guard table.clickedRow >= 0 else { return }
         table.editColumn(0, row: table.clickedRow, with: nil, select: true)
     }
 
@@ -205,14 +195,14 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         let name = NSTextField(string: template.name)
         name.isBordered = false
         name.drawsBackground = false
-        name.isEditable = !isLocked
+        name.isEditable = true
         name.delegate = self
         return name
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {
         showSelected()
-        remove.isEnabled = !isLocked && selected != nil
+        remove.isEnabled = selected != nil
         exportButton.isEnabled = selected != nil
     }
 

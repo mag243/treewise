@@ -131,7 +131,7 @@ extension LaunchTests {
             "Settings opens at General")
         let size = settings.frame.size
         XCTAssertGreaterThanOrEqual(size.width, 600, "room for long names")
-        for tab in ["Names", "Add-ons", "General"] {
+        for tab in ["Names", "Templates", "Add-ons", "General"] {
             settings.toolbars.buttons[tab].click()
             XCTAssertEqual(settings.frame.size, size, "\(tab) keeps the window's size")
         }
@@ -147,7 +147,7 @@ extension LaunchTests {
         XCTAssertTrue(
             settings.checkBoxes["Show hidden files"].appeared(timeout: Self.launchTimeout))
         XCTAssertEqual(settings.title, "General", "Settings opens at General")
-        for tab in ["Names", "Add-ons", "General"] {
+        for tab in ["Names", "Templates", "Add-ons", "General"] {
             settings.toolbars.buttons[tab].click()
             XCTAssertTrue(app.eventually { settings.title == tab }, "the window is titled \(tab)")
         }
