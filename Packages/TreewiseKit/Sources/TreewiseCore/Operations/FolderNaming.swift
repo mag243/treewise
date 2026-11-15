@@ -6,7 +6,8 @@ public enum FolderNaming {
     private static let firstNumber = 2
 
     /// Returns "untitled folder", or "untitled folder 2", 3, … when taken, in
-    /// the language of `locale`. Names compare as on APFS: case-insensitively.
+    /// the language of `locale`. Names compare as on APFS, as `ConflictResolver`
+    /// compares them: case-insensitively and Unicode-normalised.
     ///
     /// Postcondition: the result matches none of `existing`.
     public static func newFolderName(among existing: some Sequence<String>, locale: Locale)
@@ -16,10 +17,10 @@ public enum FolderNaming {
             localized: "untitled folder", bundle: .module.localizationBundle(for: locale),
             locale: locale,
             comment: "Name of a new folder")
-        let taken = Set(existing.map { $0.folding(options: .caseInsensitive, locale: nil) })
+        let taken = Set(existing.map(ConflictResolver.comparisonKey))
         var candidate = base
         var number = firstNumber
-        while taken.contains(candidate.folding(options: .caseInsensitive, locale: nil)) {
+        while taken.contains(ConflictResolver.comparisonKey(candidate)) {
             candidate = "\(base) \(number)"
             number += 1
         }

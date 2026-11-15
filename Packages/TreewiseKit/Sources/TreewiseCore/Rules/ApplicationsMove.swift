@@ -36,15 +36,15 @@ public enum ApplicationsMove {
         systemIsWritable ? folders.system : folders.user
     }
 
-    /// The path's components with `.` and `..` resolved, lowercased and
-    /// normalised, so equal paths compare equal.
+    /// The path's components with `.` and `..` resolved, each as names compare
+    /// (`ConflictResolver.comparisonKey`), so equal paths compare equal.
     private static func components(of path: String) -> [String] {
         var result: [String] = []
         for part in path.split(separator: "/") {
             switch part {
             case ".": continue
             case "..": _ = result.popLast()
-            default: result.append(part.precomposedStringWithCanonicalMapping.lowercased())
+            default: result.append(ConflictResolver.comparisonKey(String(part)))
             }
         }
         return result
