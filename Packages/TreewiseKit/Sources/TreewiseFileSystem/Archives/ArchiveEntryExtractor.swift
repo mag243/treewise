@@ -41,8 +41,6 @@
         private static let isoExtension = "iso"
         private static let outputName = "output"
         private static let namesFile = "names"
-        /// What `tar` would read as a pattern in a list of names.
-
         /// Extracts `selection` into `output`, which exists, keeping its path.
         /// `onEntry` hears each entry's name. `temporaryFolder` also holds the
         /// list of names.

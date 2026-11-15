@@ -15,7 +15,6 @@ final class FileGridItem: NSCollectionViewItem {
     private static let labelRadius: CGFloat = 5
     private static let fontSize: CGFloat = 12
     private static let nameLines = 2
-    /// The alpha of a cut item's tile (PLAN.md §4.3).
 
     /// The item the tile shows, so a late thumbnail lands on the right tile.
     private(set) var itemID: FileItem.ID?

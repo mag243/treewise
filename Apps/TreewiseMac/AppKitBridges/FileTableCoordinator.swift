@@ -7,10 +7,6 @@ import TreewiseUI
 final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDelegate {
     /// Space between a cell's edges and its contents.
     private static let cellPadding: CGFloat = 2
-    /// Space between the icon and the name.
-
-    /// The alpha of a cut item's row (PLAN.md §4.3).
-
     weak var table: PaneTableView?
     var items: [FileItem] = []
     var actions: FileTableActions?
