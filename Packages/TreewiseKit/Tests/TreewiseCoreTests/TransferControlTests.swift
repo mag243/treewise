@@ -40,4 +40,31 @@ import os
         #expect(!result.withLock { $0 })
         #expect(control.isStopped)
     }
+
+    @Test func goesOnAtOnceWhenNotPausedWithoutBlocking() async {
+        #expect(await TransferControl().untilResumed())
+    }
+
+    @Test func waitsWithoutBlockingUntilResumed() async {
+        let control = TransferControl()
+        control.pause()
+        let waiting = Task { await control.untilResumed() }
+        control.resume()
+        #expect(await waiting.value)
+    }
+
+    @Test func stopsAWaitThatDoesNotBlock() async {
+        let control = TransferControl()
+        control.pause()
+        let waiting = Task { await control.untilResumed() }
+        control.stop()
+        #expect(!(await waiting.value))
+    }
+
+    @Test func endsAtOnceOnceStopped() async {
+        let control = TransferControl()
+        control.pause()
+        control.stop()
+        #expect(!(await control.untilResumed()))
+    }
 }

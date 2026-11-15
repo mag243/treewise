@@ -10,6 +10,8 @@ public final class TransferControl: @unchecked Sendable {
     private let condition = NSCondition()
     private var paused = false
     private var stopped = false
+    /// The tasks in `untilResumed()`, resumed once the transfer is resumed or stopped.
+    private var waiters: [CheckedContinuation<Void, Never>] = []
 
     /// Creates a control for a transfer that runs.
     public init() {}
@@ -31,18 +33,28 @@ public final class TransferControl: @unchecked Sendable {
 
     /// Lets a paused transfer go on.
     public func resume() {
-        condition.withLock {
+        let waiting = condition.withLock {
             paused = false
             condition.broadcast()
+            return takeWaiters()
         }
+        for waiter in waiting { waiter.resume() }
     }
 
     /// Stops the transfer, also while it is paused.
     public func stop() {
-        condition.withLock {
+        let waiting = condition.withLock {
             stopped = true
             condition.broadcast()
+            return takeWaiters()
         }
+        for waiter in waiting { waiter.resume() }
+    }
+
+    /// Hands out the waiting tasks and empties the list. Precondition: `condition` is locked.
+    private func takeWaiters() -> [CheckedContinuation<Void, Never>] {
+        defer { waiters = [] }
+        return waiters
     }
 
     /// Blocks the calling thread while the transfer is paused.
@@ -56,11 +68,19 @@ public final class TransferControl: @unchecked Sendable {
     }
 
     /// Waits without blocking a thread while the transfer is paused, for
-    /// providers that do not copy on a thread of their own.
+    /// providers that do not copy on a thread of their own; the task is suspended
+    /// until `resume()` or `stop()`, not woken again and again.
     ///
     /// - Returns: `false` when the transfer is stopped.
     public func untilResumed() async -> Bool {
-        while isPaused && !isStopped { await Task.yield() }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let goesOn = condition.withLock {
+                guard paused && !stopped else { return true }
+                waiters.append(continuation)
+                return false
+            }
+            if goesOn { continuation.resume() }
+        }
         return !isStopped
     }
 }
