@@ -64,7 +64,8 @@ final class NameReviewPanel: NSObject {
         var views: [NSView] = [preview]
         views += messages(for: entry)
         views += source(of: entry)
-        views.append(neighbours())
+        // Without a name to place there are no names around it, and no heading over none.
+        if !model.neighbours.isEmpty { views.append(neighbours()) }
         stack.setViews(views, in: .leading)
     }
 
