@@ -113,4 +113,19 @@ import TreewiseCore
             try JSONDecoder().decode(SavedPatterns.self, from: json)
         }
     }
+
+    @Test func duplicatesAPatternBesideItUnderTheNextFreeName() throws {
+        var list = SavedPatterns.examples(locale: Locale(identifier: "en"))
+        let first = list.patterns[0]
+        let duplicated = list.duplicate(first.id)
+        let copy = try #require(duplicated)
+        #expect(list.patterns[1].id == copy)
+        #expect(list.patterns[1].name == "\(first.name) 2")
+        #expect(list.patterns[1].text == first.text)
+        #expect(list.patterns[1].version == 1)
+        #expect(list.defaultPattern.id == first.id, "the copy is not the default")
+        let duplicatedAgain = list.duplicate(first.id)
+        let again = try #require(duplicatedAgain)
+        #expect(list.patterns.first { $0.id == again }?.name == "\(first.name) 3")
+    }
 }

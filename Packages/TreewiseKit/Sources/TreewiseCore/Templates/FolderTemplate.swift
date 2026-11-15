@@ -37,10 +37,12 @@ public struct FolderTemplate: Codable, Hashable, Sendable, Identifiable {
     }
 
     /// `name`, or `name 2`, `name 3`, … when one of `taken` has it, for a template that comes
-    /// in beside others.
-    public static func uniqueName(_ name: String, among taken: Set<String>) -> String {
-        var unique = name
-        var number = 2
+    /// in beside others; with `from`, numbered from it even when `name` is free, as a copy.
+    public static func uniqueName(_ name: String, among taken: Set<String>, from first: Int? = nil)
+        -> String
+    {
+        var number = first ?? 2
+        var unique = first.map { "\(name) \($0)" } ?? name
         while taken.contains(unique) {
             unique = "\(name) \(number)"
             number += 1

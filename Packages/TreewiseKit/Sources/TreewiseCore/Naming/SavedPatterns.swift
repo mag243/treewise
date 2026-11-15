@@ -124,6 +124,19 @@ public struct SavedPatterns: Hashable, Sendable, Codable {
         return .success(pattern.id)
     }
 
+    /// Puts a copy of a pattern right after it, named `name 2`, `name 3`, … at its first
+    /// version and not the default (ADR 0105); returns its id, or nil without the pattern.
+    @discardableResult
+    public mutating func duplicate(_ id: SavedPattern.ID) -> SavedPattern.ID? {
+        guard let index = patterns.firstIndex(where: { $0.id == id }) else { return nil }
+        let original = patterns[index]
+        let name = FolderTemplate.uniqueName(
+            original.name, among: Set(patterns.map(\.name)), from: 2)
+        let copy = SavedPattern(id: UUID().uuidString, name: name, text: original.text)
+        patterns.insert(copy, at: index + 1)
+        return copy.id
+    }
+
     /// Gives a pattern another name; returns why not, or nil when it did.
     @discardableResult
     public mutating func rename(_ id: SavedPattern.ID, to name: String) -> Problem? {

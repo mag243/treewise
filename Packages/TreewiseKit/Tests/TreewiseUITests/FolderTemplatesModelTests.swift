@@ -114,6 +114,17 @@ import TreewiseUI
         #expect(await eventually { model.templates.first { $0.id == "year" } == Self.year })
     }
 
+    @Test func duplicatesATemplateUnderTheNextFreeNameAndUndoesIt() async throws {
+        let model = await model()
+        let copy = try #require(await model.duplicate("year", undoManager: undoManager))
+        let made = try #require(model.templates.first { $0.id == copy })
+        #expect(made.name == "Household Year 2")
+        #expect(made.root == Self.year.root)
+        #expect(copy != "year", "the copy has an id of its own")
+        undoManager.undo()
+        #expect(await eventually { !model.templates.contains { $0.id == copy } })
+    }
+
     @Test func refusesAnEditTheTreeCannotTakeAndSaysWhy() async {
         let model = await model()
         await model.renameFolder(["Tax"], of: "year", to: "{seq}", undoManager: undoManager)

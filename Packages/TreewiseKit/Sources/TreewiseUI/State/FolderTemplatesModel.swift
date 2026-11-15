@@ -62,6 +62,19 @@ public final class FolderTemplatesModel {
         await apply(.save(template), named: "Rename Template", undoManager: undoManager)
     }
 
+    /// Puts a copy of a template beside it, named `name 2`, `name 3`, …, with an id of its
+    /// own (ADR 0105); Undo takes it back. Returns the copy's id.
+    @discardableResult
+    public func duplicate(_ id: String, undoManager: UndoManager?) async -> String? {
+        guard let original = templates.first(where: { $0.id == id }) else { return nil }
+        let copy = FolderTemplate(
+            name: FolderTemplate.uniqueName(
+                original.name, among: Set(templates.map(\.name)), from: 2),
+            root: original.root)
+        await apply(.save(copy), named: "Duplicate", undoManager: undoManager)
+        return copy.id
+    }
+
     /// Deletes a template at once; Undo brings it back.
     public func delete(_ id: String, undoManager: UndoManager?) async {
         await apply(.delete(id: id), named: "Delete Template", undoManager: undoManager)
