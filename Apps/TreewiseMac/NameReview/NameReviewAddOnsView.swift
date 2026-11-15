@@ -12,8 +12,6 @@ final class NameReviewAddOnsView: NSObject {
     private static let verticalPadding: CGFloat = 8
     private static let spacing: CGFloat = 6
     private static let blockSpacing: CGFloat = 5
-    /// Whether the header was open when the user last left it, kept between reviews.
-    private static let openKey = "nameReviewAddOnsOpen"
 
     private let model: NameReviewModel
     /// The app's licences, for Enter Licence Key… (ADR 0071).
@@ -42,7 +40,7 @@ final class NameReviewAddOnsView: NSObject {
     }
 
     private static var storedOpen: Bool {
-        UserDefaults.standard.object(forKey: openKey) as? Bool ?? true
+        AppServices.settings.showsNameReviewAddOns
     }
 
     func makeView() -> NSView {
@@ -151,7 +149,7 @@ final class NameReviewAddOnsView: NSObject {
         let open = !isOpen
         wasToggled = true
         isOpenNow = open
-        UserDefaults.standard.set(open, forKey: Self.openKey)
+        AppServices.settings.showsNameReviewAddOns = open
         if !open { editing = nil }
         update()
     }

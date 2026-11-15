@@ -72,6 +72,8 @@ public final class BrowserSettings {
         static let oldLicenceTrialStart = "licenceTrialStart"
         static let personalDataInNames = "personalDataInNames"
         static let offersMissingFolders = "offersMissingFolders"
+        static let showsNameReviewPanel = "nameReviewShowsPanel"
+        static let showsNameReviewAddOns = "nameReviewAddOnsOpen"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
     }
@@ -180,6 +182,15 @@ public final class BrowserSettings {
         didSet { store.setSetting(personalDataInNames.rawValue, for: Key.personalDataInNames) }
     }
 
+    /// Whether the name review shows its panel beside the list.
+    public var showsNameReviewPanel: Bool {
+        didSet { store.setSetting(String(showsNameReviewPanel), for: Key.showsNameReviewPanel) }
+    }
+    /// Whether the name review shows its add-ons open, after the first review of a folder.
+    public var showsNameReviewAddOns: Bool {
+        didSet { store.setSetting(String(showsNameReviewAddOns), for: Key.showsNameReviewAddOns) }
+    }
+
     /// Whether a year's folder offers, in its bar, the folders of the year before it lacks
     /// (ADR 0102); off, Add Missing Folders… still offers them.
     public var offersMissingFolders: Bool {
@@ -233,6 +244,8 @@ public final class BrowserSettings {
         doubleClickOpensIn =
             store.setting(Key.doubleClickOpensIn) == "otherPane" ? .otherPane : .samePane
         showsDetails = store.setting(Key.showsDetails) == "true"
+        showsNameReviewPanel = Self.isOn(store.setting(Key.showsNameReviewPanel))
+        showsNameReviewAddOns = Self.isOn(store.setting(Key.showsNameReviewAddOns))
         terminalApp = store.setting(Key.terminalApp)
         checksSpellingWhileTyping = store.setting(Key.checksSpellingWhileTyping) == "true"
         savedPatterns =
@@ -262,6 +275,11 @@ public final class BrowserSettings {
             .map { FileItem.ID($0) }
         sidebarWidth = store.setting(Key.sidebarWidth).flatMap(Double.init)
         offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
+    }
+
+    /// A setting that is on unless turned off, kept as `false`, or as `0` by a boolean.
+    private static func isOn(_ text: String?) -> Bool {
+        text != "false" && text != "0"
     }
 
     private func decoded<Value: Decodable>(_ type: Value.Type, at key: String) -> Value? {

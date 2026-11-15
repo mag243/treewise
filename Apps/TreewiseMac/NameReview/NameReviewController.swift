@@ -9,8 +9,6 @@ final class NameReviewController: NSViewController {
     private static let panelWidth: CGFloat = 300
     /// The room around the footer's buttons, as around a window's content elsewhere.
     private static let footerPadding: CGFloat = 20
-    /// Whether the panel beside the list shows, kept between reviews.
-    private static let panelKey = "nameReviewShowsPanel"
 
     private let model: NameReviewModel
     private let browser: BrowserState
@@ -45,8 +43,8 @@ final class NameReviewController: NSViewController {
     required init?(coder: NSCoder) { nil }
 
     private var showsPanel: Bool {
-        get { UserDefaults.standard.object(forKey: Self.panelKey) as? Bool ?? true }
-        set { UserDefaults.standard.set(newValue, forKey: Self.panelKey) }
+        get { AppServices.settings.showsNameReviewPanel }
+        set { AppServices.settings.showsNameReviewPanel = newValue }
     }
 
     override func loadView() {

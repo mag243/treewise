@@ -19,6 +19,27 @@ import TreewiseUI
         #expect(settings.terminalApp == nil)
     }
 
+    @Test func showsTheNameReviewsPanelsUntilClosed() {
+        let store = MemorySettingsStore()
+        let settings = BrowserSettings(store: store)
+        #expect(settings.showsNameReviewPanel)
+        #expect(settings.showsNameReviewAddOns)
+        settings.showsNameReviewPanel = false
+        settings.showsNameReviewAddOns = false
+        #expect(!BrowserSettings(store: store).showsNameReviewPanel)
+        #expect(!BrowserSettings(store: store).showsNameReviewAddOns)
+    }
+
+    /// The panels' choices were kept as booleans, which a store reads as `0` and `1`.
+    @Test func readsAPanelClosedAsZeroAsClosed() {
+        let store = MemorySettingsStore()
+        store.setSetting("0", for: "nameReviewShowsPanel")
+        store.setSetting("1", for: "nameReviewAddOnsOpen")
+        let settings = BrowserSettings(store: store)
+        #expect(!settings.showsNameReviewPanel)
+        #expect(settings.showsNameReviewAddOns)
+    }
+
     @Test func checksSpellingInNamesOnlyWhenAsked() {
         let store = MemorySettingsStore()
         #expect(!BrowserSettings(store: store).checksSpellingWhileTyping)
