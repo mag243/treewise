@@ -125,6 +125,19 @@ public final class ScriptedModuleHost: AddOnHosting {
         }
     }
 
+    /// Holds every answer back until `releaseAnswers()`, however many requests are open.
+    public func holdAllAnswers() {
+        gate.withLock {
+            $0.threshold = .max
+            $0.total = .max
+        }
+    }
+
+    /// Lets every held answer go, and answers later requests at once.
+    public func releaseAnswers() {
+        releaseAll()
+    }
+
     private func releaseAll() {
         let held = gate.withLock { gate -> [CheckedContinuation<Void, Never>] in
             gate.threshold = nil

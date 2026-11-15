@@ -64,7 +64,7 @@ import TreewiseUI
         selection: [FileItem] = [], suggestedDate: SuggestedDate? = nil,
         personalDataInNames: PersonalDataInNames = .leaveOutOfApproveAll,
         addOns: AddOnPreferences = AddOnPreferences(),
-        licence: LicenceContext = .none
+        licence: LicenceContext = .none, waitingUntilRead: Bool = true
     ) async -> NameReviewModel {
         let patterns = savedPatterns
         let model = NameReviewModel(
@@ -87,7 +87,7 @@ import TreewiseUI
                             ? ModuleContent(text: "contents") : ModuleContent())
                 }))
         await model.start()
-        await model.waitUntilRead()
+        if waitingUntilRead { await model.waitUntilRead() }
         return model
     }
 

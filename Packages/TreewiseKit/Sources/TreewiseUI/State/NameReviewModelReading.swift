@@ -13,6 +13,8 @@ extension NameReviewModel {
     /// Asks each module about its files, the modules at the same time and each within its
     /// limit, the selected file first (ADR 0073). A round starts when the one before it is
     /// done, so an older answer never replaces a newer one; one that fails leaves the rest.
+    /// Cancelling a round cancels the rounds it waits for too, and every request a
+    /// cancelled round does not send leaves `readingCount`.
     func ask(_ pending: [(item: FileItem, module: NameReviewModule)]) {
         guard !pending.isEmpty else { return }
         let previous = reading
@@ -28,7 +30,15 @@ extension NameReviewModel {
             }
         }
         reading = Task {
-            await previous?.value
+            await withTaskCancellationHandler {
+                await previous?.value
+            } onCancel: {
+                previous?.cancel()
+            }
+            guard !Task.isCancelled else {
+                readingCount -= pending.count
+                return
+            }
             await withTaskGroup(of: Void.self) { group in
                 for queue in queues { group.addTask { await self.read(queue) } }
             }
@@ -41,10 +51,12 @@ extension NameReviewModel {
         let limit =
             module.description.names.neededContent.isEmpty
             ? Self.nameReadersAtOnce : Self.contentReadersAtOnce
-        await withTaskGroup(of: Void.self) { group in
+        let sent = await withTaskGroup(of: Void.self) { group in
             var next = queue.makeIterator()
+            var sent = 0
             func addNext() {
                 guard !Task.isCancelled, let request = next.next() else { return }
+                sent += 1
                 group.addTask {
                     await self.read(request.item, request.module)
                     await self.finishReading()
@@ -52,7 +64,10 @@ extension NameReviewModel {
             }
             for _ in 0..<limit { addNext() }
             while await group.next() != nil { addNext() }
+            return sent
         }
+        // What a cancelled round did not send is not read either.
+        readingCount -= queue.count - sent
     }
 
     private func finishReading() { readingCount -= 1 }
