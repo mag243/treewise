@@ -1,20 +1,6 @@
 import Foundation
 import TreewiseCore
 
-/// How a window shows folders: as a list or as icons (ADR 0025).
-public enum ViewMode: String, Codable, Sendable {
-    case list, icons
-}
-
-/// A window as `WindowSnapshot.restored` gives it back.
-public struct RestoredWindow {
-    public var layout: PaneLayout
-    public var sort: ItemSort
-    public var viewMode: ViewMode
-    /// The sidebar's width in points, when the window kept one (ADR 0093).
-    public var sidebarWidth: Double?
-}
-
 /// What a restart brings back of a window: its panes with the folders of their
 /// tabs, the focused pane, the sort order and the view (ADR 0024). History is
 /// not kept.
@@ -43,7 +29,7 @@ public struct WindowSnapshot: Codable, Equatable, Sendable {
                 activeTab: pane.tabs.firstIndex { $0.id == pane.activeTabID } ?? 0)
         }
         focusedPane = layout.focusedPaneIndex
-        sortColumn = "\(sort.column)"
+        sortColumn = sort.column.rawValue
         ascending = sort.ascending
         self.viewMode = viewMode
     }
@@ -63,7 +49,7 @@ public struct WindowSnapshot: Codable, Equatable, Sendable {
             models.append(PaneModel(tabs: tabs, active: active))
         }
         guard !models.isEmpty else { return nil }
-        let column = SortColumn.allCases.first { "\($0)" == sortColumn } ?? .name
+        let column = SortColumn(rawValue: sortColumn) ?? .name
         return RestoredWindow(
             layout: PaneLayout(panes: models, focused: focused),
             sort: ItemSort(column: column, ascending: ascending), viewMode: viewMode ?? .list,

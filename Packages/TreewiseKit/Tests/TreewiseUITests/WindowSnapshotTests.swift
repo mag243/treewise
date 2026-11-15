@@ -54,4 +54,16 @@ import TreewiseUI
         let snapshot = try JSONDecoder().decode(WindowSnapshot.self, from: Data(json.utf8))
         #expect(snapshot.restored { _ in true }?.viewMode == .list)
     }
+
+    @Test(arguments: [
+        ("name", SortColumn.name), ("dateModified", .dateModified), ("size", .size),
+        ("kind", .kind),
+    ])
+    func readsTheSortColumnAsSnapshotsHaveKeptIt(_ text: String, _ column: SortColumn) throws {
+        let json =
+            #"{"panes":[{"folders":["documents"],"activeTab":0}],"focusedPane":0,"#
+            + #""sortColumn":"\#(text)","ascending":true}"#
+        let snapshot = try JSONDecoder().decode(WindowSnapshot.self, from: Data(json.utf8))
+        #expect(snapshot.restored { _ in true }?.sort.column == column)
+    }
 }

@@ -2,47 +2,6 @@ import Foundation
 import Observation
 import TreewiseCore
 
-/// Where settings are kept: `UserDefaults`, or memory for tests and UI tests
-/// (ADR 0023). Values are kept as text.
-public protocol SettingsStoring: AnyObject {
-    /// The value kept under `key`, if any.
-    func setting(_ key: String) -> String?
-    /// Keeps `value` under `key`; `nil` removes it.
-    func setSetting(_ value: String?, for key: String)
-}
-
-extension UserDefaults: SettingsStoring {
-    public func setting(_ key: String) -> String? {
-        string(forKey: key)
-    }
-
-    public func setSetting(_ value: String?, for key: String) {
-        set(value, forKey: key)
-    }
-}
-
-/// Settings kept in memory only: a UI test starts from the defaults and
-/// leaves nothing behind.
-public final class MemorySettingsStore: SettingsStoring {
-    private var values: [String: String] = [:]
-
-    /// Creates an empty store.
-    public init() {}
-
-    public func setting(_ key: String) -> String? {
-        values[key]
-    }
-
-    public func setSetting(_ value: String?, for key: String) {
-        values[key] = value
-    }
-}
-
-/// How tall the list's rows are.
-public enum RowDensity: String, CaseIterable, Sendable {
-    case small, medium, large
-}
-
 /// The settings of the browser windows (ADR 0022, ADR 0023). Every change is
 /// kept in the store at once.
 @MainActor

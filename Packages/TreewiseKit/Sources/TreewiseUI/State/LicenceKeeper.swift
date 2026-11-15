@@ -2,31 +2,6 @@ import Foundation
 import TreewiseCore
 import TreewiseModuleInterface
 
-/// A secure store in memory, for tests, UI tests and screenshots.
-public final class MemorySecureStore: SecureValueStoring {
-    private var values: [String: String] = [:]
-
-    /// Creates an empty store.
-    public init() {}
-
-    public func value(for key: String) -> String? { values[key] }
-
-    public func setValue(_ value: String?, for key: String) { values[key] = value }
-}
-
-/// What entering a licence key came to (ADR 0071).
-public enum LicenceKeyOutcome: Hashable, Sendable {
-    /// The text is no licence key at all.
-    case notAKey
-    /// No add-on the app has takes it: it is for another, withdrawn or not genuine.
-    case unlocksNothing
-    /// An add-on could not check it, as their process could not be reached, and none
-    /// unlocked it.
-    case notChecked
-    /// It unlocks these modules, for this licensee, and is kept.
-    case unlocked(modules: [String], licensee: String)
-}
-
 /// What the app keeps of licences (ADR 0071, ADR 0088): the keys the user entered, with
 /// the app's settings, the start of each add-on's trial in those settings and in the secure
 /// store, and the latest day seen in the secure store. It reads no key: the closed modules

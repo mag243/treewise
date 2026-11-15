@@ -1,7 +1,7 @@
 import Foundation
 
 /// A column of the list that items can be sorted by.
-public enum SortColumn: Sendable, Hashable, CaseIterable {
+public enum SortColumn: String, Sendable, Hashable, CaseIterable {
     /// The item's name.
     case name
     /// When the item last changed.
