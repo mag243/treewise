@@ -19,6 +19,10 @@ public struct LocalFileSystem: FileSystemProviding {
         .contentModificationDateKey, .fileSizeKey, .isHiddenKey,
     ]
 
+    /// The resource values read for each item of a cloud folder: also whether it is kept
+    /// only online (ADR 0051).
+    static let cloudListingKeys = listingKeys.union([.ubiquitousItemDownloadingStatusKey])
+
     /// The names Treewise gives its own temporary items: partial copies
     /// (ADR 0018) and inboxes of promised files (ADR 0020). They are never listed.
     static let temporaryPrefixes = [FileCopier.partialPrefix, PromiseInbox.prefix]
@@ -38,6 +42,11 @@ public struct LocalFileSystem: FileSystemProviding {
     private let homeFolder: FileItem.ID
     /// The folder holding iCloud Drive's files, which goes by a name of its own.
     private let iCloudDrive: FileItem.ID
+    /// The paths of the folders the user added, read once: listing a folder asks for
+    /// each of its items whether it is one.
+    private let addedFolderPaths: Set<String>
+    /// The paths of the boundary's folders, read once, or nil without a boundary.
+    private let boundaryPaths: Set<String>?
 
     /// Creates a provider for the local disk. Folders list their hidden items
     /// too, marked `isHidden`; whether they show is the window's setting (ADR 0023).
@@ -48,6 +57,8 @@ public struct LocalFileSystem: FileSystemProviding {
         fixedCloudFolders = Set(
             ([locations.iCloudDrive] + locations.syncFolders).map(Self.identity))
         cloudStorage = Self.identity(of: locations.cloudStorage)
+        addedFolderPaths = Set(locations.addedFolders.map(\.standardizedFileURL.path))
+        boundaryPaths = locations.boundary.map { Set($0.map(\.standardizedFileURL.path)) }
     }
 
     /// The identities of the folders containing a path, nearest first, derived
@@ -65,10 +76,9 @@ public struct LocalFileSystem: FileSystemProviding {
 
     /// Whether an item is inside the boundary: at or below one of its folders.
     public func isInsideBoundary(_ id: FileItem.ID) -> Bool {
-        guard id != .computer, let boundary = locations.boundary else { return true }
-        return boundary.contains { root in
-            let rootPath = root.standardizedFileURL.path
-            return id.rawValue == rootPath || id.rawValue.hasPrefix(rootPath + "/")
+        guard id != .computer, let boundaryPaths else { return true }
+        return boundaryPaths.contains { rootPath in
+            id.rawValue == rootPath || id.rawValue.hasPrefix(rootPath + "/")
         }
     }
 
@@ -82,15 +92,18 @@ public struct LocalFileSystem: FileSystemProviding {
         try checkBoundary(folder)
         if let place = ArchivePath(folder) { return try await archiveContents(of: place) }
         let urls: [URL]
+        let asksCloudStatus = isInCloudFolder(folder)
+        // In a cloud folder whether a file is only online is read with the listing, not
+        // once more for each file.
+        let keys = asksCloudStatus ? Self.cloudListingKeys : Self.listingKeys
         do {
             urls = try FileManager.default.contentsOfDirectory(
-                at: url(of: folder), includingPropertiesForKeys: Array(Self.listingKeys))
+                at: url(of: folder), includingPropertiesForKeys: Array(keys))
         } catch {
             throw FileSystemError.mapping(error, for: folder)
         }
         let volume = try? url(of: folder).resourceValues(forKeys: [.volumeURLKey]).volume
         var kindTexts = KindTextCache()
-        let asksCloudStatus = isInCloudFolder(folder)
         // An entry that disappears between listing and reading is left out.
         return urls.compactMap { child -> FileItem? in
             let fileName = child.lastPathComponent
@@ -250,12 +263,12 @@ public struct LocalFileSystem: FileSystemProviding {
     /// Whether an item is one of the boundary's folders, which have no
     /// enclosing folder the app may show.
     private func isBoundaryRoot(_ id: FileItem.ID) -> Bool {
-        locations.boundary?.contains { $0.standardizedFileURL.path == id.rawValue } ?? false
+        boundaryPaths?.contains(id.rawValue) ?? false
     }
 
     /// Whether an item is one of the folders the user added (ADR 0045).
     private func isAddedFolder(_ id: FileItem.ID) -> Bool {
-        locations.addedFolders.contains { $0.standardizedFileURL.path == id.rawValue }
+        addedFolderPaths.contains(id.rawValue)
     }
 
     private func lastComponent(of id: FileItem.ID) -> String {
