@@ -7,6 +7,10 @@ import TreewiseUI
 /// the folder's new folders, and Cancel and Create Folders.
 @MainActor
 enum FolderTemplateSheet {
+    /// Posted once Create Folders made folders, so the template bar of each pane looks again
+    /// at what its folder lacks (ADR 0102).
+    static let foldersMade = Notification.Name("TreewiseFolderTemplateFoldersMade")
+
     /// How long the status bar says how many folders were made.
     private static let messageDuration: Duration = .seconds(4)
 
@@ -62,6 +66,7 @@ enum FolderTemplateSheet {
                 making: made.tree, in: made.folder, undoManager: undoManager)
         else { return }
         await FolderTemplatesService.giveNames(of: made.tree, to: outcome.made)
+        NotificationCenter.default.post(name: foldersMade, object: nil)
         if let templateID = made.offering {
             await FolderTemplatesService.bar(for: browser).offer(
                 templateID, in: made.folder)

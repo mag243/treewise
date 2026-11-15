@@ -2532,7 +2532,6 @@
       }
     },
     "Folder Structure Templates gave no folders. Its trial or licence may have ended." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5721,6 +5720,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De mappen erin, op elke diepte. Bestanden worden niet bewaard."
+          }
+        }
+      }
+    },
+    "The folders of %@ could not be read" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Ordner von %@ konnten nicht gelesen werden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De mappen van %@ konden niet worden gelezen"
           }
         }
       }

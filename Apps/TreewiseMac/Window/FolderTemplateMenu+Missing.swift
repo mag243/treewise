@@ -45,6 +45,14 @@ extension FolderTemplateMenu {
             alert.messageText = String(localized: "There is no folder \(name)")
             alert.informativeText = String(
                 localized: "Missing folders come from the same folder a year before.")
+        } else if await FolderTemplatesService.recognized(
+            before, in: fileSystem, licences: browser.licences) == nil
+        {
+            alert.messageText = String(localized: "The folders of \(name) could not be read")
+            alert.informativeText = String(
+                localized:
+                    "Folder Structure Templates gave no folders. Its trial or licence may have ended."
+            )
         } else {
             alert.messageText = String(localized: "No folders are missing")
             alert.informativeText = String(

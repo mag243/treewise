@@ -20,9 +20,11 @@ final class TemplateBarView: NSStackView {
         case missing(TemplateBarModel.MissingOffer)
     }
 
-    /// What the bar last looked at: the folder, and the names of what it holds.
+    /// What the bar last looked at: the folder, whether it is empty, and for a year's own
+    /// folder, whose missing folders change with them, the names of what it holds.
     private struct LookedAt: Equatable {
         let folder: FileItem.ID?
+        let isEmpty: Bool
         let names: Set<String>
     }
 
@@ -70,6 +72,14 @@ final class TemplateBarView: NSStackView {
         layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(Self.tint).cgColor
         setAccessibilityIdentifier("templateBar")
         isHidden = true
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(foldersMade), name: FolderTemplateSheet.foldersMade,
+            object: nil)
+    }
+
+    /// Folders made anywhere, at any depth, may be those the bar offers.
+    @objc private func foldersMade() {
+        lookAgain()
     }
 
     @available(*, unavailable)
@@ -77,7 +87,10 @@ final class TemplateBarView: NSStackView {
 
     /// Looks again what `folder` is offered, when it or what it holds changed.
     func follow(folder: FileItem?, items: [FileItem]) {
-        let now = LookedAt(folder: folder?.id, names: Set(items.map(\.name)))
+        let isYears = folder.flatMap { YearFolders.ownYear(of: $0.id) } != nil
+        let now = LookedAt(
+            folder: folder?.id, isEmpty: items.isEmpty,
+            names: isYears ? Set(items.map(\.name)) : [])
         guard now != lookedAt else { return }
         lookedAt = now
         followed = (folder, items)
