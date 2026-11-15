@@ -53,6 +53,22 @@ import TreewiseUI
             isOn: false, canSwitch: false),
     ]
 
+    @Test(arguments: [
+        (ModuleLicenceState.notTried, false), (.unlicensed, false), (.trial(daysLeft: 3), true),
+        (licensed, true),
+    ])
+    func showsASwitchOnlyWhileTheAddOnMayWork(licence: ModuleLicenceState, shows: Bool) {
+        let card = AddOnCard(isOnSetting: false, licence: licence, isLastWorking: false)
+        #expect(card.showsSwitch == shows)
+    }
+
+    @Test func showsTheSwitchOfAFreeAddOnBesideAnother() {
+        #expect(AddOnCard(isOnSetting: true, licence: nil, isLastWorking: false).showsSwitch)
+        #expect(
+            !AddOnCard(isOnSetting: true, licence: nil, isLastWorking: true, isOnlyWorking: true)
+                .showsSwitch, "the only add-on that may work has no choices")
+    }
+
     @Test(arguments: cases)
     func switchesOnlyAnAddOnThatMayWork(_ expected: Case) {
         let card = AddOnCard(

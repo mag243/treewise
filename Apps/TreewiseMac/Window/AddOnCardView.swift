@@ -95,7 +95,7 @@ final class AddOnCardView: NSView {
         titles.setContentHuggingPriority(.defaultLow, for: .horizontal)
         var views: [NSView] = [Self.icon(), titles]
         if let badge = badge() { views.append(badge) }
-        let toggle = card.hasChoices ? control() : nil
+        let toggle = card.showsSwitch ? control() : nil
         // The name at the leading edge, the badge and the switch at the trailing one.
         let header = NSStackView()
         header.setViews(Array(views.prefix(2)), in: .leading)

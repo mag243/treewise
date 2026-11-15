@@ -21,6 +21,8 @@ extension AddOnsSettingsTab {
         card.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             card.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: Self.listInset),
+            card.trailingAnchor.constraint(
+                equalTo: cell.trailingAnchor, constant: -Self.listInset),
             card.topAnchor.constraint(equalTo: cell.topAnchor),
             card.bottomAnchor.constraint(equalTo: cell.bottomAnchor),
         ])
@@ -31,7 +33,7 @@ extension AddOnsSettingsTab {
     /// table measures by themselves keep the height a card had before it folded.
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         let card = card(for: row)
-        let width = card.widthAnchor.constraint(equalToConstant: Self.cardWidth)
+        let width = card.widthAnchor.constraint(equalToConstant: cardWidth)
         width.isActive = true
         card.layoutSubtreeIfNeeded()
         let height = card.fittingSize.height
@@ -59,7 +61,7 @@ extension AddOnsSettingsTab {
         let view = AddOnCardView(
             module: module, card: card, licence: states[id], isSelected: id == selectedID,
             isOnInNewFolders: settings.addOns.isOnInNewFolders(id, defaultID: defaultID),
-            width: Self.cardWidth,
+            width: cardWidth,
             actions: .init(
                 turnOn: { settings.addOns.setOn(id, on: $0, catalog: catalog) },
                 turnOnInNewFolders: {

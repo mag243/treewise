@@ -23,6 +23,10 @@ public struct AddOnCard: Equatable, Sendable {
     /// nor for an add-on that makes folder structures, which is on while it may work
     /// (ADR 0091).
     public let hasChoices: Bool
+    /// Whether the card shows its on/off switch: where it has choices and the add-on may
+    /// work. One not tried, or without its licence, shows how to try or buy it instead of a
+    /// switch that cannot move.
+    public let showsSwitch: Bool
 
     /// The card of an add-on chosen on or off (`isOnSetting`), with its licence when it is
     /// paid, `isLastWorking` when it is the last add-on on that may work, and
@@ -39,6 +43,7 @@ public struct AddOnCard: Equatable, Sendable {
         canSwitch = !isLocked && !(isOn && isLastWorking)
         newFoldersCanSwitch = isOn && !isLastInNewFolders
         hasChoices = !isOnlyWorking && !makesFolderStructures
+        showsSwitch = hasChoices && !isLocked
         tone =
             switch licence {
             case nil: .free
