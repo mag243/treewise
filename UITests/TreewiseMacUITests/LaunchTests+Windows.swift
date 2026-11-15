@@ -3,8 +3,9 @@ import XCTest
 
 /// Two windows side by side (ADR 0037).
 extension LaunchTests {
-    /// The narrowest window, `WindowWidths.windowMinimum` in the app.
-    private static let windowMinimum: CGFloat = 620
+    /// The narrowest window, `WindowWidths.windowMinimum` in the app: the sidebar's
+    /// least width plus the folder side's (`SidebarWidth.narrowestWindow`).
+    private static let windowMinimum: CGFloat = 540
 
     @MainActor
     func testWindowBesidePutsTwoWindowsSideBySide() throws {
