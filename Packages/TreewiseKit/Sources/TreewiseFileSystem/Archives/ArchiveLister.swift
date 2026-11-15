@@ -5,7 +5,7 @@
 
     /// Reads what an archive holds with the system's `tar` (ADR 0076).
     enum ArchiveLister {
-        private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "archives")
+        private static let logger = Logger(subsystem: LogSubsystem.name, category: "archives")
 
         /// Lists `archive`. A listing that ends in an error is discarded as a whole.
         ///

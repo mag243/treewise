@@ -12,7 +12,7 @@ public final class KeychainStore: SecureValueStoring {
     /// The service of the app's own values.
     public static let appService = "me.m-domain.treewise.licence"
 
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "Keychain")
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "Keychain")
 
     private let service: String
 

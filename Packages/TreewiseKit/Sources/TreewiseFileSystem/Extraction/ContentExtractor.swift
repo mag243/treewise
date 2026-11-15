@@ -1,4 +1,5 @@
 import Foundation
+import TreewiseCore
 import TreewiseModuleInterface
 import UniformTypeIdentifiers
 import os
@@ -21,7 +22,7 @@ public struct ContentExtractor: Sendable {
     private static let maximumPlainTextBytes = maximumTextLength * 4
 
     private static let logger = Logger(
-        subsystem: "me.m-domain.treewise", category: "ContentExtractor")
+        subsystem: LogSubsystem.name, category: "ContentExtractor")
 
     /// Creates an extractor.
     public init() {}

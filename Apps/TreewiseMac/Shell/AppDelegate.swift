@@ -1,5 +1,6 @@
 import AppKit
 import OSLog
+import TreewiseCore
 import TreewiseFileSystem
 
 /// Builds the menu bar, has AppKit restore the windows of the launch before
@@ -60,7 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// itself, also while it shows a sheet, when it takes no tab.
     @MainActor @objc func newWindowForTab(_ sender: Any?) {
         guard NSApp.mainWindow.flatMap(WindowTabs.shared.browser(of:)) == nil else { return }
-        Logger(subsystem: "me.m-domain.treewise", category: "tabs").info("New tab")
+        Logger(subsystem: LogSubsystem.name, category: "tabs").info("New tab")
         WindowTabs.shared.openWindow()
     }
 

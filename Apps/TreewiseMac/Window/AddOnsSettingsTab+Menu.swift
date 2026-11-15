@@ -50,7 +50,7 @@ extension AddOnsSettingsTab {
             }
             items.append(
                 ClosureMenuItem(
-                    String(localized: "Try for 14 Days"), symbol: "clock", handler: startTrial))
+                    TrialText.tryIt, symbol: "clock", handler: startTrial))
         }
         let isLicensed = if case .licensed = licence { true } else { false }
         if !isLicensed, module.purchaseURL != nil {

@@ -1,5 +1,6 @@
 import CoreGraphics
 import Foundation
+import TreewiseCore
 import TreewiseModuleInterface
 import Vision
 import os
@@ -9,7 +10,7 @@ enum TextRecognition {
     /// The languages recognized, the app's own three (ADR 0017).
     private static let languages = ["en-US", "nl-NL", "de-DE"]
     private static let logger = Logger(
-        subsystem: "me.m-domain.treewise", category: "TextRecognition")
+        subsystem: LogSubsystem.name, category: "TextRecognition")
 
     /// The lines found in an image, positioned from its top left; empty when
     /// recognition fails.

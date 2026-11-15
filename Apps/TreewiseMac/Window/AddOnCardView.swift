@@ -237,7 +237,7 @@ final class AddOnCardView: NSView {
         var buttons: [NSView] = []
         if licence == .notTried {
             buttons.append(
-                ClosureButton(title: String(localized: "Try for 14 Days"), run: startTrial))
+                ClosureButton(title: TrialText.tryIt, run: startTrial))
         }
         let isLicensed = if case .licensed = licence { true } else { false }
         if !isLicensed, module.purchaseURL != nil {

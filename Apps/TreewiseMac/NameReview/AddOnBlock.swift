@@ -169,7 +169,7 @@ final class AddOnBlock: NSStackView {
         text.textColor = .secondaryLabelColor
         return [
             text,
-            LinkButton(String(localized: "Try for 14 Days")) { [actions] in
+            LinkButton(TrialText.tryIt) { [actions] in
                 actions.startTrial(id)
             },
             LinkButton(String(localized: "Enter Licence Key…")) { [actions] in

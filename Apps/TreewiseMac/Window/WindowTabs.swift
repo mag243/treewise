@@ -31,7 +31,7 @@ struct TabRequest {
 @MainActor
 final class WindowTabs {
     static let shared = WindowTabs()
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "tabs")
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "tabs")
 
     /// The open browser windows, kept until they close.
     private var controllers: [BrowserWindowController] = []

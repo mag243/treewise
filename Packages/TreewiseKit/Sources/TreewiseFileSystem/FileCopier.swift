@@ -11,7 +11,7 @@ enum FileCopier {
     /// The start of a partial copy's name; a leading dot keeps it out of other apps' lists.
     static let partialPrefix = ".treewise-partial-"
 
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "FileCopier")
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "FileCopier")
 
     private static let queue = DispatchQueue(
         label: "me.m-domain.treewise.copy", qos: .userInitiated)

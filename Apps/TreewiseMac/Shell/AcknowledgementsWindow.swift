@@ -1,4 +1,5 @@
 import AppKit
+import TreewiseCore
 import os
 
 /// Help > Acknowledgements: the licences of the parts Treewise uses, such as Sparkle's,
@@ -11,7 +12,7 @@ final class AcknowledgementsWindow: NSObject {
     private static let size = NSSize(width: 560, height: 520)
     private static let inset = NSSize(width: 16, height: 16)
     private static let logger = Logger(
-        subsystem: "me.m-domain.treewise", category: "Acknowledgements")
+        subsystem: LogSubsystem.name, category: "Acknowledgements")
 
     private var window: NSWindow?
 

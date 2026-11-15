@@ -1,10 +1,11 @@
 import Foundation
+import TreewiseCore
 import os
 
 /// Keeps bookmarks as JSON in a file of the app's own container, such as
 /// Application Support, so they survive a relaunch (ADR 0045).
 public struct FileBookmarkStorage: BookmarkStorage {
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "bookmarks")
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "bookmarks")
 
     /// The file the bookmarks are kept in; its folder is made when missing.
     public let file: URL

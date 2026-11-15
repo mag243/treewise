@@ -7,7 +7,7 @@ import os
 /// any deleted file does in Treewise (ADR 0004), so it can still be imported from there.
 public actor FolderTemplateStore: FolderTemplateStoring {
     private static let logger = Logger(
-        subsystem: "me.m-domain.treewise", category: "FolderTemplateStore")
+        subsystem: LogSubsystem.name, category: "FolderTemplateStore")
 
     private let directory: URL
 

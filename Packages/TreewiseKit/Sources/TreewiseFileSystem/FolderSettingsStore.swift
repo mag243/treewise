@@ -13,7 +13,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     public static let fileName = "folder-settings.json"
     private static let attributeName = "me.m-domain.treewise.folder-id"
     private static let logger = Logger(
-        subsystem: "me.m-domain.treewise", category: "FolderSettingsStore")
+        subsystem: LogSubsystem.name, category: "FolderSettingsStore")
 
     private struct Record: Codable {
         var path: String

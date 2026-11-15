@@ -10,7 +10,7 @@ import os
 enum ApplicationsMover {
     /// The defaults key that records "Don't ask again".
     private static let declinedKey = "declinedMoveToApplications"
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "install")
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "install")
 
     private static var folders: ApplicationsMove.Folders {
         let user = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(

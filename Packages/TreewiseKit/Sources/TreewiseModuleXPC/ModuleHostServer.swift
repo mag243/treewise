@@ -3,13 +3,14 @@
     import TreewiseModuleInterface
     import os
 
+    import TreewiseCore
     /// The service's side of the XPC connection: runs the add-ons it was given, of either kind
     /// (ADR 0057, ADR 0091).
     public final class ModuleHostServer: NSObject, NSXPCListenerDelegate, ModuleHostXPCProtocol,
         Sendable
     {
         private static let logger = Logger(
-            subsystem: "me.m-domain.treewise", category: "ModuleHostServer")
+            subsystem: LogSubsystem.name, category: "ModuleHostServer")
 
         private let modules: [any AddOnModule]
 

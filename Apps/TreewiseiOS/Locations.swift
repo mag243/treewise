@@ -12,7 +12,7 @@ import os
 @MainActor
 @Observable
 final class Locations {
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "locations")
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "locations")
     /// The file in Application Support that keeps the bookmarks.
     private static let bookmarksFile = "Treewise/Locations.json"
 

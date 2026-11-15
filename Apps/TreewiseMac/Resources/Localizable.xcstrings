@@ -6495,18 +6495,18 @@
         }
       }
     },
-    "Try for 14 Days" : {
+    "Try for %lld Days" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "14 Tage testen"
+            "value" : "%lld Tage testen"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Probeer 14 dagen"
+            "value" : "Probeer %lld dagen"
           }
         }
       }

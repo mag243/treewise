@@ -12,7 +12,7 @@ import os
 enum PromisedDrop {
     /// Used from the queue the promised files arrive on, too.
     private nonisolated static let logger = Logger(
-        subsystem: "me.m-domain.treewise", category: "drop")
+        subsystem: LogSubsystem.name, category: "drop")
 
     /// The pasteboard types of a file promise, for AppKit drop targets.
     static let pasteboardTypes = NSFilePromiseReceiver.readableDraggedTypes.map {

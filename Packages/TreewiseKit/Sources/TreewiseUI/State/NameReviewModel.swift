@@ -114,7 +114,7 @@ public struct NameReviewModule: Identifiable, Hashable, Sendable {
 @MainActor
 @Observable
 public final class NameReviewModel {
-    static let logger = Logger(subsystem: "me.m-domain.treewise", category: "NameReview")
+    static let logger = Logger(subsystem: LogSubsystem.name, category: "NameReview")
 
     /// The folder under review.
     public let folder: FileItem
