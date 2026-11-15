@@ -42,7 +42,9 @@ extension UIReviewChecks {
             guard row.elementType == .tableRow || row.elementType == .outlineRow else {
                 return nil
             }
-            let texts = leaves(in: row, of: [.staticText, .textField])
+            // Only a row's own texts are in the list's font; a group in a row, as a card,
+            // has fonts of its own.
+            let texts = rowTexts(in: row)
             return texts.lazy.compactMap { text -> UIReviewFinding? in
                 guard let words = text.value as? String, !words.isEmpty else { return nil }
                 let needs = (words as NSString).size(withAttributes: [.font: listFont]).width
@@ -56,6 +58,16 @@ extension UIReviewChecks {
                     "needs \(Int(needs)) in \(Int(text.frame.width)), with \(Int(room)) free after it"
                 )
             }.first
+        }
+    }
+
+    /// The texts of a row, leaving out those in a group inside it.
+    static func rowTexts(in snapshot: any XCUIElementSnapshot) -> [any XCUIElementSnapshot] {
+        snapshot.children.flatMap { child -> [any XCUIElementSnapshot] in
+            if child.elementType == .group { return [] }
+            let own =
+                [.staticText, .textField].contains(child.elementType) && !child.frame.isEmpty
+            return (own ? [child] : []) + rowTexts(in: child)
         }
     }
 }
