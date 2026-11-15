@@ -33,24 +33,16 @@ import TreewiseUI
 
     /// A folder whose id is its path, as on disk, so the year in it counts.
     @discardableResult
-    private func folder(_ name: String, in parent: FileItem.ID) async throws -> FileItem {
-        let above = try await fileSystem.item(at: parent)
-        let folder = FileItem(
-            id: FileItem.ID("\(parent.rawValue)/\(name)"), name: name, kind: .folder,
-            parentID: parent, volume: above.volume)
-        fileSystem.add(folder)
-        return folder
-    }
 
     /// `Household/2026` with Tax/Appeals and Receipts, and `Household/2027` with Receipts.
     private func years() async throws -> (before: FileItem, year: FileItem) {
-        let household = try await folder("Household", in: "documents")
-        let before = try await folder("2026", in: household.id)
-        let tax = try await folder("Tax", in: before.id)
-        try await folder("Appeals", in: tax.id)
-        try await folder("Receipts", in: before.id)
-        let year = try await folder("2027", in: household.id)
-        try await folder("Receipts", in: year.id)
+        let household = try await fileSystem.addFolder("Household", in: "documents")
+        let before = try await fileSystem.addFolder("2026", in: household.id)
+        let tax = try await fileSystem.addFolder("Tax", in: before.id)
+        try await fileSystem.addFolder("Appeals", in: tax.id)
+        try await fileSystem.addFolder("Receipts", in: before.id)
+        let year = try await fileSystem.addFolder("2027", in: household.id)
+        try await fileSystem.addFolder("Receipts", in: year.id)
         return (before, year)
     }
 
@@ -64,8 +56,8 @@ import TreewiseUI
 
     @Test func offersNothingWhenEveryFolderIsThere() async throws {
         let (_, year) = try await years()
-        let tax = try await folder("Tax", in: year.id)
-        try await folder("Appeals", in: tax.id)
+        let tax = try await fileSystem.addFolder("Tax", in: year.id)
+        try await fileSystem.addFolder("Appeals", in: tax.id)
         #expect(await model().missing(in: year) == nil)
         #expect(await model().missing(in: year, all: true) == nil)
     }
@@ -83,10 +75,10 @@ import TreewiseUI
     }
 
     @Test func theBarLeavesAnEmptyYearToItsOwnBarAndTheMenuDoesNot() async throws {
-        let household = try await folder("Household", in: "documents")
-        let before = try await folder("2026", in: household.id)
-        try await folder("Tax", in: before.id)
-        let year = try await folder("2027", in: household.id)
+        let household = try await fileSystem.addFolder("Household", in: "documents")
+        let before = try await fileSystem.addFolder("2026", in: household.id)
+        try await fileSystem.addFolder("Tax", in: before.id)
+        let year = try await fileSystem.addFolder("2027", in: household.id)
         #expect(await model().missing(in: year) == nil)
         #expect(await model().missing(in: year, all: true)?.missing.paths == [["Tax"]])
     }
@@ -104,7 +96,7 @@ import TreewiseUI
         let offer = try #require(await model.missing(in: year))
         await model.closeMissing(offer)
         #expect(await model.missing(in: year) == nil)
-        try await folder("Budget", in: before.id)
+        try await fileSystem.addFolder("Budget", in: before.id)
         #expect(await model.missing(in: year)?.missing.paths == [["Budget"]])
         #expect(await model.missing(in: year, all: true)?.missing.paths == [["Budget"], ["Tax"]])
     }
@@ -113,7 +105,7 @@ import TreewiseUI
         let (before, year) = try await years()
         let model = model()
         await model.offerNoMissing(in: year.id)
-        try await folder("Budget", in: before.id)
+        try await fileSystem.addFolder("Budget", in: before.id)
         #expect(await model.missing(in: year) == nil)
         #expect(await model.missing(in: year, all: true) != nil)
     }

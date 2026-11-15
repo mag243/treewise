@@ -23,46 +23,38 @@ import TreewiseUI
     }
 
     /// A folder whose id is its path, as on disk, so the year in it counts.
-    private func folder(_ name: String, in parent: FileItem.ID) async throws -> FileItem {
-        let above = try await fileSystem.item(at: parent)
-        let folder = FileItem(
-            id: FileItem.ID("\(parent.rawValue)/\(name)"), name: name, kind: .folder,
-            parentID: parent, volume: above.volume)
-        fileSystem.add(folder)
-        return folder
-    }
 
     @Test func offersTheOneYearTemplateInAnEmptyYearsFolder() async throws {
-        let household = try await folder("Household", in: "documents")
-        let year = try await folder("2027", in: household.id)
+        let household = try await fileSystem.addFolder("Household", in: "documents")
+        let year = try await fileSystem.addFolder("2027", in: household.id)
         let offer = await model().offer(in: year)
         #expect(offer?.source == .template(Self.year))
     }
 
     @Test func offersNothingWhileTheAddOnMayNotWork() async throws {
-        let household = try await folder("Household", in: "documents")
-        let year = try await folder("2027", in: household.id)
+        let household = try await fileSystem.addFolder("Household", in: "documents")
+        let year = try await fileSystem.addFolder("2027", in: household.id)
         #expect(await model(mayWork: false).offer(in: year) == nil)
     }
 
     @Test func offersNothingOnceTheFolderHoldsSomething() async throws {
-        let household = try await folder("Household", in: "documents")
-        let year = try await folder("2027", in: household.id)
-        _ = try await folder("Tax", in: year.id)
+        let household = try await fileSystem.addFolder("Household", in: "documents")
+        let year = try await fileSystem.addFolder("2027", in: household.id)
+        _ = try await fileSystem.addFolder("Tax", in: year.id)
         #expect(await model().offer(in: year) == nil)
     }
 
     @Test func closingTheBarKeepsItClosedForThatFolder() async throws {
-        let household = try await folder("Household", in: "documents")
-        let year = try await folder("2027", in: household.id)
+        let household = try await fileSystem.addFolder("Household", in: "documents")
+        let year = try await fileSystem.addFolder("2027", in: household.id)
         let model = model()
         await model.close(in: year.id)
         #expect(await model.offer(in: year) == nil)
     }
 
     @Test func theCheckboxOffersItsTemplateInEachNewFolderAndNoneStopsIt() async throws {
-        let clients = try await folder("Clients", in: "documents")
-        let acme = try await folder("Acme", in: clients.id)
+        let clients = try await fileSystem.addFolder("Clients", in: "documents")
+        let acme = try await fileSystem.addFolder("Acme", in: clients.id)
         let model = model()
         #expect(await model.offer(in: acme) == nil)
         await model.offer("client", in: clients.id)

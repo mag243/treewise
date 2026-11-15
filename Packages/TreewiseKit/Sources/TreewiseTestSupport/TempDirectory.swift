@@ -58,6 +58,14 @@ public final class TempDirectory {
         return folder
     }
 
+    /// Moves the folder at `path` to `name` in this directory, and gives its new path.
+    @discardableResult
+    public func moveFolder(atPath path: String, to name: String) throws -> String {
+        let target = url(name).path
+        try FileManager.default.moveItem(atPath: path, toPath: target)
+        return target
+    }
+
     /// Writes a file with some contents at a relative path.
     @discardableResult
     public func makeFile(_ relativePath: String, contents: String = "") throws -> URL {

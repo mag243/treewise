@@ -10,19 +10,13 @@ import TreewiseTestSupport
     /// How long a presenter may take to hear of an access.
     private static let deadline = Duration.seconds(2)
 
-    private func runner(_ directory: TempDirectory) -> FileOperationRunner {
-        FileOperationRunner(
-            locations: .init(
-                home: directory.url("home"), applications: directory.url("Applications")))
-    }
-
     @Test func aCopyReadsTheSourceCoordinated() async throws {
         let directory = try TempDirectory()
         try directory.makeFolder("to")
         let source = try directory.makeFile("Notes.md", contents: "hello")
         let presenter = Presenter(source)
         defer { presenter.stop() }
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: FileItem.ID(source.path))
         _ = try await runner.transfer(
@@ -38,7 +32,7 @@ import TreewiseTestSupport
         let source = try directory.makeFile("Notes.md")
         let presenter = Presenter(source)
         defer { presenter.stop() }
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: FileItem.ID(source.path))
         _ = try await runner.transfer(
@@ -53,7 +47,7 @@ import TreewiseTestSupport
         let source = try directory.makeFile("Notes.md")
         let presenter = Presenter(source)
         defer { presenter.stop() }
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: FileItem.ID(source.path))
         _ = try await runner.rename(notes, to: "Ideas.md")
@@ -67,7 +61,7 @@ import TreewiseTestSupport
         let source = try directory.makeFile("Notes.md")
         let presenter = Presenter(source)
         defer { presenter.stop() }
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let trashed = try await runner.trash(FileItem.ID(source.path))
         defer { try? TrashService().restore(trashed) }
@@ -81,7 +75,7 @@ import TreewiseTestSupport
         let presenter = Presenter(parent.appendingPathComponent("New"))
         defer { presenter.stop() }
 
-        _ = try await runner(directory).createFolder(
+        _ = try await directory.runner.createFolder(
             in: FileItem.ID(parent.path), named: "New")
 
         #expect(await presenter.hears("write", within: Self.deadline))

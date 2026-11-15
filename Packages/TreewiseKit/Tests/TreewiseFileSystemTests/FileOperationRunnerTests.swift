@@ -7,12 +7,6 @@ import TreewiseTestSupport
 
 /// Changing files on disk (PLAN.md §9.3, ADR 0018), always inside a TempDirectory.
 @Suite struct FileOperationRunnerTests {
-    private func runner(_ directory: TempDirectory) -> FileOperationRunner {
-        FileOperationRunner(
-            locations: .init(
-                home: directory.url("home"), applications: directory.url("Applications")))
-    }
-
     private func id(_ directory: TempDirectory, _ relativePath: String) -> FileItem.ID {
         FileItem.ID(directory.path + "/" + relativePath)
     }
@@ -29,7 +23,7 @@ import TreewiseTestSupport
         try directory.makeFolder("from")
         try directory.makeFolder("to")
         try directory.makeFile("from/Notes.md", contents: "hello")
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: id(directory, "from/Notes.md"))
         let result = try await runner.transfer(
@@ -63,7 +57,7 @@ import TreewiseTestSupport
         try directory.makeFile("from/Project/Sources/main.swift", contents: "x")
         try directory.makeSymlink("from/Project/Link", to: "from/Project/Sources")
         try directory.makeFolder("to")
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let project = try await runner.item(at: id(directory, "from/Project"))
         try await runner.transfer(
@@ -82,7 +76,7 @@ import TreewiseTestSupport
         let directory = try TempDirectory()
         try directory.makeFolder("to")
         try directory.makeFile("Notes.md", contents: "x")
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: id(directory, "Notes.md"))
         try await runner.transfer(
@@ -97,7 +91,7 @@ import TreewiseTestSupport
         try directory.makeFolder("to")
         try directory.makeFile("Notes.md", contents: "new")
         try directory.makeFile("to/Notes.md", contents: "old")
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: id(directory, "Notes.md"))
         try await runner.transfer(
@@ -110,7 +104,7 @@ import TreewiseTestSupport
     @Test func renamesAndUndoesTheRename() async throws {
         let directory = try TempDirectory()
         try directory.makeFile("notes.md")
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: id(directory, "notes.md"))
         let renamed = try await runner.rename(notes, to: "Notes.md")
@@ -124,7 +118,7 @@ import TreewiseTestSupport
         let directory = try TempDirectory()
         try directory.makeFolder("to")
         try directory.makeFile("Notes.md")
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let notes = try await runner.item(at: id(directory, "Notes.md"))
         let moved = try await runner.transfer(
@@ -137,7 +131,7 @@ import TreewiseTestSupport
     @Test func createsAnUntitledFolder() async throws {
         let directory = try TempDirectory()
         try directory.makeFolder("untitled folder")
-        let created = try await runner(directory).createUntitledFolder(
+        let created = try await directory.runner.createUntitledFolder(
             in: FileItem.ID(directory.path), locale: Locale(identifier: "en"))
         #expect(created.items.map(\.name) == ["untitled folder 2"])
         #expect(created.items.first?.kind == .folder)
@@ -148,7 +142,7 @@ import TreewiseTestSupport
         try directory.makeFolder("Clips")
         try directory.makeFile("Clips/a.mov", contents: "12345")
         try directory.makeFile("Clips/b.mov", contents: "123")
-        let runner = runner(directory)
+        let runner = directory.runner
         let clips = try await runner.item(at: id(directory, "Clips"))
         #expect(try await runner.byteCount(of: clips) == 8)
     }
@@ -159,7 +153,7 @@ import TreewiseTestSupport
         try directory.makeFile("Clips/a.mov", contents: "12345")
         try directory.makeFile("Clips/b.mov", contents: "123")
         try directory.makeFolder("to")
-        let runner = runner(directory)
+        let runner = directory.runner
         let clips = try await runner.item(at: id(directory, "Clips"))
         let seen = Mutex<[String: Int64]>([:])
 
@@ -177,7 +171,7 @@ import TreewiseTestSupport
         let directory = try TempDirectory()
         try directory.makeFolder("to")
         for index in 1...5 { try directory.makeFile("file \(index).txt", contents: "x") }
-        let runner = runner(directory)
+        let runner = directory.runner
         var items: [FileItem] = []
         for index in 1...5 {
             items.append(try await runner.item(at: id(directory, "file \(index).txt")))
@@ -209,7 +203,7 @@ import TreewiseTestSupport
             try? FileManager.default.setAttributes(
                 [.posixPermissions: 0o644], ofItemAtPath: locked.path)
         }
-        let runner = runner(directory)
+        let runner = directory.runner
 
         let item = try await runner.item(at: id(directory, "Locked.txt"))
         await #expect(throws: (any Error).self) {

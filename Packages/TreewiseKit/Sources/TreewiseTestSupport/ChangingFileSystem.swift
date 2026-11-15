@@ -67,6 +67,17 @@ public final class ChangingFileSystem: FileOperating {
         state.withLock { $0.tree = $0.tree.adding(item) }
     }
 
+    /// Adds a folder named `name` in `parent`, on its volume, and gives it.
+    @discardableResult
+    public func addFolder(_ name: String, in parent: FileItem.ID) async throws -> FileItem {
+        let above = try await item(at: parent)
+        let folder = FileItem(
+            id: FileItem.ID("\(parent.rawValue)/\(name)"), name: name, kind: .folder,
+            parentID: parent, volume: above.volume)
+        add(folder)
+        return folder
+    }
+
     /// Makes every later change throw `error`, as a full disk or a vanished
     /// volume would; `nil` lets changes succeed again.
     public func failChanges(with error: (any Error)?) {

@@ -6,17 +6,11 @@ import TreewiseTestSupport
 
 /// Reading a folder (PLAN.md §9.3, ADR 0016), always inside a TempDirectory.
 @Suite struct LocalFileSystemContentsTests {
-    private func fileSystem(in directory: TempDirectory) -> LocalFileSystem {
-        LocalFileSystem(
-            locations: .init(
-                home: directory.url("home"), applications: directory.url("Applications")))
-    }
-
     @Test func listsTheItemsOfAFolder() async throws {
         let directory = try TempDirectory()
         try directory.makeFolder("Projects")
         try directory.makeFile("Notes.md", contents: "x")
-        let names = try await fileSystem(in: directory).contents(of: FileItem.ID(directory.path))
+        let names = try await directory.fileSystem.contents(of: FileItem.ID(directory.path))
             .map(\.name).sorted()
         #expect(names == ["Notes.md", "Projects"])
     }
@@ -30,7 +24,7 @@ import TreewiseTestSupport
         try flagged.setResourceValues(values)
         try directory.makeFile("visible.txt")
 
-        let items = try await fileSystem(in: directory).contents(of: FileItem.ID(directory.path))
+        let items = try await directory.fileSystem.contents(of: FileItem.ID(directory.path))
         let hidden = Dictionary(uniqueKeysWithValues: items.map { ($0.name, $0.isHidden) })
         #expect(hidden == [".hidden": true, "Flagged.txt": true, "visible.txt": false])
     }
@@ -40,7 +34,7 @@ import TreewiseTestSupport
         try directory.makeFolder(".treewise-partial-1234")
         try directory.makeFolder(".treewise-inbox-5678")
         try directory.makeFile("visible.txt")
-        let names = try await fileSystem(in: directory).contents(of: FileItem.ID(directory.path))
+        let names = try await directory.fileSystem.contents(of: FileItem.ID(directory.path))
             .map(\.name)
         #expect(names == ["visible.txt"])
     }
@@ -49,7 +43,7 @@ import TreewiseTestSupport
         let directory = try TempDirectory()
         try directory.makeFile("Notes.md")
         let folder = FileItem.ID(directory.path)
-        let notes = try #require(try await fileSystem(in: directory).contents(of: folder).first)
+        let notes = try #require(try await directory.fileSystem.contents(of: folder).first)
         #expect(notes.id == FileItem.ID(directory.path + "/Notes.md"))
         #expect(notes.parentID == folder)
     }
@@ -58,7 +52,7 @@ import TreewiseTestSupport
         let directory = try TempDirectory()
         let missing = FileItem.ID(directory.path + "/missing")
         await #expect(throws: FileSystemError.notFound(missing)) {
-            try await fileSystem(in: directory).contents(of: missing)
+            try await directory.fileSystem.contents(of: missing)
         }
     }
 
@@ -72,7 +66,7 @@ import TreewiseTestSupport
         }
         let id = FileItem.ID(locked.path)
         await #expect(throws: FileSystemError.notReadable(id)) {
-            try await fileSystem(in: directory).contents(of: id)
+            try await directory.fileSystem.contents(of: id)
         }
     }
 
@@ -82,7 +76,7 @@ import TreewiseTestSupport
         try directory.makeFile("a.md")
         try directory.makeFile("b.md")
         try directory.makeSymlink("Shortcut", to: "Projects")
-        let items = try await fileSystem(in: directory).contents(of: FileItem.ID(directory.path))
+        let items = try await directory.fileSystem.contents(of: FileItem.ID(directory.path))
         let texts = Dictionary(uniqueKeysWithValues: items.map { ($0.name, $0.kindDescription) })
 
         for item in items {

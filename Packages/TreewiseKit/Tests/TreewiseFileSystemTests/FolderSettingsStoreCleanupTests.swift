@@ -19,49 +19,39 @@ import TreewiseTestSupport
         store = FolderSettingsStore(directory: root.url("private"), now: { Self.today })
     }
 
-    private func folder(_ name: String) throws -> String {
-        try root.makeFolder(name).path
-    }
-
-    private func moveFolder(_ from: String, to name: String) throws -> String {
-        let target = root.url(name).path
-        try FileManager.default.moveItem(atPath: from, toPath: target)
-        return target
-    }
-
     private func days(_ count: Double) -> Date {
         Self.today.addingTimeInterval(count * Self.day)
     }
 
     @Test func dropsTheSettingsOfAFolderUnseenForMoreThanThirtyDays() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
-        let moved = try moveFolder(path, to: "Moved")
+        let moved = try root.moveFolder(atPath: path, to: "Moved")
         await store.dropSettingsOfUnseenFolders(now: days(31))
         #expect(await store.settings(forFolderAt: moved) == nil)
     }
 
     @Test func keepsTheSettingsOfAFolderUnseenForLess() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
-        let moved = try moveFolder(path, to: "Moved")
+        let moved = try root.moveFolder(atPath: path, to: "Moved")
         await store.dropSettingsOfUnseenFolders(now: days(29))
         #expect(await store.settings(forFolderAt: moved) == settings)
     }
 
     @Test func aFolderFoundAtItsPathCountsAsSeen() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         await store.dropSettingsOfUnseenFolders(now: days(20))
-        let moved = try moveFolder(path, to: "Moved")
+        let moved = try root.moveFolder(atPath: path, to: "Moved")
         await store.dropSettingsOfUnseenFolders(now: days(40))
         #expect(await store.settings(forFolderAt: moved) == settings)
     }
 
     @Test func anotherFolderAtThePathDoesNotCountAsSeen() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
-        let moved = try moveFolder(path, to: "Moved")
+        let moved = try root.moveFolder(atPath: path, to: "Moved")
         try root.makeFolder("A")
         await store.dropSettingsOfUnseenFolders(now: days(31))
         #expect(await store.settings(forFolderAt: moved) == nil)
@@ -96,7 +86,7 @@ import TreewiseTestSupport
     }
 
     @Test func clearsTheSettingsOfEveryFolder() async throws {
-        let first = try folder("A")
+        let first = try root.makeFolder("A").path
         let second = root.url("gone").path
         await store.save(settings, forFolderAt: first)
         await store.save(settings, forFolderAt: second)
@@ -108,7 +98,7 @@ import TreewiseTestSupport
     }
 
     @Test func aClearedFolderGetsNewSettingsWhenSaved() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         await store.clearAll()
         let changed = FolderSettings(enabledModules: ["b"], templates: [:])

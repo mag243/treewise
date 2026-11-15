@@ -17,36 +17,25 @@ import TreewiseTestSupport
         store = FolderSettingsStore(directory: root.url("private"))
     }
 
-    private func folder(_ name: String) throws -> String {
-        try root.makeFolder(name)
-        return root.url(name).path
-    }
-
-    private func moveFolder(_ from: String, to name: String) throws -> String {
-        let target = root.url(name).path
-        try FileManager.default.moveItem(atPath: from, toPath: target)
-        return target
-    }
-
     @Test func aNewFolderHasNoSettings() async throws {
-        #expect(await store.settings(forFolderAt: try folder("A")) == nil)
+        #expect(await store.settings(forFolderAt: try root.makeFolder("A").path) == nil)
     }
 
     @Test func givesBackWhatWasSaved() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         #expect(await store.settings(forFolderAt: path) == settings)
     }
 
     @Test func keepsSettingsOverARestart() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         let restarted = FolderSettingsStore(directory: root.url("private"))
         #expect(await restarted.settings(forFolderAt: path) == settings)
     }
 
     @Test func putsNothingButARandomIDOnTheFolder() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         let id = try #require(FolderSettingsStore.id(onFolderAt: path))
         #expect(UUID(uuidString: id) != nil)
@@ -54,8 +43,8 @@ import TreewiseTestSupport
     }
 
     @Test func givesTwoFoldersDifferentIDs() async throws {
-        let first = try folder("A")
-        let second = try folder("B")
+        let first = try root.makeFolder("A").path
+        let second = try root.makeFolder("B").path
         await store.save(settings, forFolderAt: first)
         await store.save(settings, forFolderAt: second)
         #expect(
@@ -63,15 +52,15 @@ import TreewiseTestSupport
     }
 
     @Test func followsAMovedFolder() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
-        let moved = try moveFolder(path, to: "Moved")
+        let moved = try root.moveFolder(atPath: path, to: "Moved")
         #expect(await store.settings(forFolderAt: moved) == settings)
         #expect(await store.settings(forFolderAt: path) == nil)
     }
 
     @Test func givesACopyItsOwnSettings() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         let copy = root.url("Copy").path
         try FileManager.default.copyItem(atPath: path, toPath: copy)
@@ -88,7 +77,7 @@ import TreewiseTestSupport
     }
 
     @Test func ignoresAnIDFromAnotherTreewise() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         try root.makeFolder("elsewhere")
         let stranger = FolderSettingsStore(directory: root.url("elsewhere"))
@@ -96,7 +85,7 @@ import TreewiseTestSupport
     }
 
     @Test func givesAStrangersFolderANewIDWhenSaving() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         let theirs = FolderSettingsStore.id(onFolderAt: path)
         try root.makeFolder("elsewhere")
@@ -106,7 +95,7 @@ import TreewiseTestSupport
     }
 
     @Test func keepsThePatternOutOfTheFoldersAttributes() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         let names = listxattr(path, nil, 0, 0)
         var buffer = [CChar](repeating: 0, count: max(names, 1))
@@ -117,7 +106,7 @@ import TreewiseTestSupport
     }
 
     @Test func survivesADamagedFile() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         try Data("not json".utf8).write(
             to: root.url("private").appendingPathComponent(FolderSettingsStore.fileName))
         #expect(await store.settings(forFolderAt: path) == nil)
@@ -134,9 +123,9 @@ import TreewiseTestSupport
     }
 
     @Test func aNewFolderAtAnOldPathGetsNoSettings() async throws {
-        let path = try folder("A")
+        let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
-        _ = try moveFolder(path, to: "Moved")
+        _ = try root.moveFolder(atPath: path, to: "Moved")
         try root.makeFolder("A")
         #expect(await store.settings(forFolderAt: path) == nil)
     }
