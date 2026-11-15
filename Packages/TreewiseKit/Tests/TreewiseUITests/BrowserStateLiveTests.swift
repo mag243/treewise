@@ -14,6 +14,16 @@ import TreewiseUI
             await eventually { watcher.watchedFolders == [.computer, "documents", "downloads"] })
     }
 
+    @Test func stopsWatchingOnceStopped() async {
+        let watcher = ManualFolderWatcher()
+        let browser = await makeBrowser(watcher: watcher)
+        #expect(await eventually { watcher.watchedFolders == [.computer, "documents"] })
+
+        browser.stop()
+
+        #expect(await eventually { watcher.watchedFolders.isEmpty })
+    }
+
     @Test func reloadsAFolderWhenItChanges() async {
         let fileSystem = ChangingFileSystem()
         let watcher = ManualFolderWatcher()

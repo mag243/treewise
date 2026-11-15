@@ -225,6 +225,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        browser.stop()
         WindowTabs.shared.closed(self)
     }
 }

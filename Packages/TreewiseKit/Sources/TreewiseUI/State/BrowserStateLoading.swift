@@ -64,7 +64,8 @@ extension BrowserState {
             let changes = watcher.changes(of: folder)
             let task = Task { [weak self] in
                 for await _ in changes {
-                    await self?.load(tab)
+                    guard let self else { return }
+                    await load(tab)
                 }
             }
             watches[tab] = Watch(folder: folder, task: task)
@@ -96,6 +97,15 @@ extension BrowserState {
 }
 
 extension BrowserState {
+    /// Stops watching the folders the panes show and This Mac, as a window does once it
+    /// closes. A transfer that runs goes on: closing a window does not stop a copy.
+    public func stop() {
+        for watch in watches.values { watch.task.cancel() }
+        watches = [:]
+        locationsWatch?.cancel()
+        locationsWatch = nil
+    }
+
     /// Reads the Locations again whenever a volume is mounted or ejected,
     /// which the watcher reports as a change of This Mac (ADR 0044).
     func watchLocations() {
