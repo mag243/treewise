@@ -157,6 +157,22 @@ import TreewiseUI
         #expect(await eventually { !browser.focusedNames.contains("Notes.md") })
     }
 
+    @Test func reportsAnUndoThatFailsWithAnotherKindOfError() async throws {
+        let browser = await browser()
+        let undoManager = UndoManager()
+        let notes = try await fileSystem.item(at: "doc2")
+        let projects = try await fileSystem.item(at: "projects")
+        await browser.drop(
+            [notes], onto: projects, modifiers: [], resolver: ScriptedResolver(),
+            undoManager: undoManager)
+        let failure = CocoaError(.fileWriteUnknown)
+        fileSystem.failChanges(with: failure)
+
+        undoManager.undo()
+
+        #expect(await eventually { browser.failure == .unexpected(failure.localizedDescription) })
+    }
+
     @Test func asksTheListToRenameANewFolder() async throws {
         let browser = await browser()
         let created = try #require(

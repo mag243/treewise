@@ -36,3 +36,11 @@ public enum FileSystemError: Error, Hashable, Sendable {
     /// A failure without a case of its own, with the system's description of it.
     case unexpected(String)
 }
+
+extension FileSystemError {
+    /// `error` itself when it is a `FileSystemError`, else `.unexpected` with its
+    /// description, so that every failure has something the window can show.
+    public init(_ error: any Error) {
+        self = error as? FileSystemError ?? .unexpected(error.localizedDescription)
+    }
+}

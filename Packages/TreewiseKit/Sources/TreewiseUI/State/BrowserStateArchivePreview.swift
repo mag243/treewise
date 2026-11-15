@@ -16,7 +16,7 @@ extension BrowserState {
             do {
                 if let copy = try await archives?.cachedCopy(of: item) { urls.append(copy) }
             } catch {
-                failure = error as? FileSystemError ?? .unexpected(error.localizedDescription)
+                failure = FileSystemError(error)
             }
         }
         return urls
@@ -36,7 +36,7 @@ extension BrowserState {
                 guard let archives else { throw FileSystemError.notReadable(entry.id) }
                 try await archives.writeEntry(entry, toPromisedFile: url)
             } catch {
-                let failure = error as? FileSystemError ?? .unexpected(error.localizedDescription)
+                let failure = FileSystemError(error)
                 Task { @MainActor in self?.failure = failure }
             }
         }

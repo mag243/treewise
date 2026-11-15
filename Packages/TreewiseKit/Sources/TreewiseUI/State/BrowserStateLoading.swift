@@ -74,7 +74,7 @@ extension BrowserState {
     }
 
     private func recover(_ tab: TabModel.ID, folder: FileItem.ID, from error: any Error) async {
-        let failure = error as? FileSystemError
+        let failure = FileSystemError(error)
         let ancestry = content(of: tab).ancestry
         if case .notFound = failure, let index = await firstExisting(in: ancestry) {
             let removed = Set([folder] + ancestry[..<index])

@@ -32,7 +32,7 @@ extension BrowserState {
             await reloadShownFolders()
             return result.undo
         } catch {
-            failure = error as? FileSystemError
+            failure = FileSystemError(error)
             await reloadShownFolders()
             return .none
         }

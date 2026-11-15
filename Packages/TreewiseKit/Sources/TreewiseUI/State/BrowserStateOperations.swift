@@ -322,7 +322,7 @@ extension BrowserState {
             await reloadShownFolders()
             return result
         } catch {
-            failure = error as? FileSystemError ?? .unexpected(error.localizedDescription)
+            failure = FileSystemError(error)
             await reloadShownFolders()
             return nil
         }

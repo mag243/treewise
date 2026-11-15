@@ -47,7 +47,7 @@ extension FileOperating {
             } catch {
                 let failure = BatchRenameOutcome.Failure(
                     item: step.item,
-                    error: error as? FileSystemError ?? .unexpected(error.localizedDescription),
+                    error: FileSystemError(error),
                     leftUnderTemporaryName: renamed.first {
                         $0.item.name.hasPrefix(BatchRenamePlanner.temporaryPrefix)
                     }?.item.name)
