@@ -10,10 +10,20 @@ enum FileNameParts {
         let pattern: String
         /// Which group holds the year, the month and the day.
         let order: [Int]
+        /// The date at the start of a name and what follows it, compiled once.
+        private let expression: NSRegularExpression
+
+        init(template: String, pattern: String, order: [Int]) {
+            self.template = template
+            self.pattern = pattern
+            self.order = order
+            // swiftlint:disable:next force_try - fixed text; a bad pattern is a programmer error
+            expression = try! NSRegularExpression(pattern: "^\(pattern)(?: +(.*))?$")
+        }
 
         /// What follows the date at the start of a name, or nil when it starts with none.
         func rest(afterDateIn stem: String) -> String? {
-            guard let expression = try? NSRegularExpression(pattern: "^\(pattern)(?: +(.*))?$"),
+            guard
                 let match = expression.firstMatch(
                     in: stem, range: NSRange(stem.startIndex..., in: stem)),
                 let date = date(in: match, of: stem), date.isValidDate

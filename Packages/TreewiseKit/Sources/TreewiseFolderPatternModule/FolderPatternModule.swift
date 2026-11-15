@@ -15,8 +15,11 @@ public struct FolderPatternModule: NameModule {
     /// A name that says nothing: a device's or a program's word with at most a number or a date.
     private static let saysNothing =
         #"^(scan|img|image|dsc|document|doc|file|untitled|naamloos|unbenannt|page|foto|photo|screenshot|invoice|factuur|rechnung)?[ _-]*\(?[0-9 .-]*\)?$"#
-    /// What separates the parts of a name: a dash or an underscore, with or without spaces.
-    private static let partSeparator = " *[-_] *"
+    // swiftlint:disable force_try - fixed text; a bad pattern is a programmer error
+    /// What separates the parts of a name: a dash or an underscore, with or without spaces;
+    /// compiled once.
+    private static let partSeparator = try! NSRegularExpression(pattern: " *[-_] *")
+    // swiftlint:enable force_try
     private static let edgeSeparators = CharacterSet(charactersIn: " -_")
 
     /// What this module is.
@@ -71,9 +74,8 @@ public struct FolderPatternModule: NameModule {
     /// The text without the parts that are the folder's name, or nearly are, with the
     /// separators between the other parts as they were. Only whole parts fall away.
     private static func withoutFolderName(_ text: String, _ folderName: String) -> String {
-        guard !folderName.isEmpty,
-            let expression = try? NSRegularExpression(pattern: partSeparator)
-        else { return text }
+        guard !folderName.isEmpty else { return text }
+        let expression = partSeparator
         var parts: [String] = []
         var separators: [String] = []
         var start = text.startIndex

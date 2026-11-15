@@ -4,7 +4,10 @@ import TreewiseCore
 /// Recognizes the pattern a folder's names follow (ADR 0057). It reads only names.
 public enum TemplateDeriver {
     private static let separator = " - "
-    private static let wordAndNumber = #"^(.*\S)\s+([0-9]+)$"#
+    // swiftlint:disable force_try - fixed text; a bad pattern is a programmer error
+    /// Words, then a number at the end, compiled once.
+    private static let wordAndNumber = try! NSRegularExpression(pattern: #"^(.*\S)\s+([0-9]+)$"#)
+    // swiftlint:enable force_try
 
     /// The template the names follow, or nil when they follow none. A word or a first part
     /// that is the folder's name becomes `{folder}` (ADR 0067).
@@ -57,7 +60,7 @@ public enum TemplateDeriver {
     private static func wordAndNumberTemplate(
         _ stems: [String], folderName: String
     ) -> String? {
-        guard let expression = try? NSRegularExpression(pattern: wordAndNumber) else { return nil }
+        let expression = wordAndNumber
         let words = stems.compactMap { stem -> String? in
             let whole = NSRange(stem.startIndex..., in: stem)
             guard let match = expression.firstMatch(in: stem, range: whole),
