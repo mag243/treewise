@@ -1,7 +1,8 @@
 import AppKit
 
 /// The Help menu: the download page (ADR 0053), in place of a Help book
-/// Treewise does not have. AppKit adds its search field.
+/// Treewise does not have, and the licences of the parts it uses. AppKit adds its search
+/// field.
 @MainActor
 enum HelpMenu {
     private nonisolated static let website = URL(string: "https://treewise.m-domain.me/")
@@ -12,7 +13,11 @@ enum HelpMenu {
             "Help",
             [
                 MenuItem.make(
-                    "Treewise Website", #selector(WebsiteOpener.openWebsite(_:)), target: opener)
+                    "Treewise Website", #selector(WebsiteOpener.openWebsite(_:)), target: opener),
+                MenuItem.make(
+                    "Acknowledgements",
+                    #selector(AcknowledgementsWindow.showAcknowledgements(_:)),
+                    target: AcknowledgementsWindow.shared),
             ])
     }
 

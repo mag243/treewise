@@ -14,8 +14,8 @@ enum AppMenu {
             "Treewise",
             [
                 MenuItem.make(
-                    "About Treewise",
-                    #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+                    "About Treewise", #selector(AboutPanel.showAboutPanel(_:)),
+                    target: AboutPanel.shared),
                 MenuItem.make(
                     "Check for Updates…", #selector(AppUpdater.checkForUpdates(_:)),
                     target: AppServices.updater),

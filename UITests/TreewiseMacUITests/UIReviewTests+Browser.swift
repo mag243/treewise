@@ -1,8 +1,8 @@
 import XCTest
 
 /// The UI review's walk through the browser window (ADR 0103): `tools/build.sh uireview
-/// browser`. The list, the command bar's menus, the details pane, the icon view and a second
-/// tab.
+/// browser`. The list, the command bar's menus, the details pane, the icon view, a second
+/// tab and About Treewise.
 extension UIReviewTests {
     @MainActor
     func testBrowser() throws {
@@ -32,6 +32,7 @@ extension UIReviewTests {
         app.typeKey("t", modifierFlags: .command)
         settleScreen()
         review(app.windows.firstMatch, as: "browser-tabs", appearance: appearance)
+        reviewAbout(in: app, appearance: appearance)
     }
 
     /// The width a new window's sidebar starts at, `SidebarWidth.ideal` (ADR 0093), which the

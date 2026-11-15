@@ -10,6 +10,8 @@ Help
 Zoom
 
 # The word is the same in the language.
+Privacy
+Website
 Computer
 Details
 Document
@@ -33,3 +35,6 @@ Treewise
 
 # A field of a pattern, which is never translated.
 {%@}
+
+# A name, not a word.
+GitHub

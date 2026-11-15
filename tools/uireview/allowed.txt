@@ -8,3 +8,6 @@ browser-icons | outsideParent | *  # the item's frame leaves out its name, which
 # The overview's drag handles sit a point past their list's side, which does not show.
 names-overview | listMargin | image "drag"  # a point, not visible
 names-add-ons | listMargin | image "drag"  # a point, not visible
+# AppKit's About panel sets its copyright line in a field just wide enough for it; the
+# panel is AppKit's own, not Treewise's layout.
+about | listMargin | text "_NS:111"  # AppKit's copyright field, drawn as AppKit lays it out

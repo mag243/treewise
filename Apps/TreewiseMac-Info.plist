@@ -6,6 +6,8 @@
      has none of (ADR 0085). -->
 <plist version="1.0">
 <dict>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 Maarten Ghijsen</string>
 	<key>SUFeedURL</key>
 	<string>https://treewise.m-domain.me/appcast.xml</string>
 	<key>SUPublicEDKey</key>

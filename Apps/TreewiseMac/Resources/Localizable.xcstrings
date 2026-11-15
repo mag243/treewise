@@ -561,6 +561,22 @@
         }
       }
     },
+    "A file manager that works like Windows Explorer, made for the Mac." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Dateimanager, der wie der Windows Explorer funktioniert, gemacht für den Mac."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een bestandsbeheerder die werkt als Windows Verkenner, gemaakt voor de Mac."
+          }
+        }
+      }
+    },
     "A folder cannot go into itself." : {
       "localizations" : {
         "de" : {
@@ -765,6 +781,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Over Treewise"
+          }
+        }
+      }
+    },
+    "Acknowledgements" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danksagungen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dankbetuigingen"
           }
         }
       }
@@ -2822,6 +2854,22 @@
         }
       }
     },
+    "Free and open source under the %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kostenlos und Open Source unter der %@."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratis en open source onder de %@."
+          }
+        }
+      }
+    },
     "From: %@" : {
       "localizations" : {
         "de" : {
@@ -2850,6 +2898,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Algemeen"
+          }
+        }
+      }
+    },
+    "GitHub" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub"
           }
         }
       }
@@ -4458,6 +4522,22 @@
         }
       }
     },
+    "Privacy" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutz"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        }
+      }
+    },
     "Quit Treewise" : {
       "localizations" : {
         "de" : {
@@ -5932,6 +6012,22 @@
         }
       }
     },
+    "The licences of the parts it uses are in %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Lizenzen der verwendeten Bestandteile stehen unter %@."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De licenties van de onderdelen die het gebruikt, staan in %@."
+          }
+        }
+      }
+    },
     "The other pane" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6641,6 +6737,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Waarschuwing"
+          }
+        }
+      }
+    },
+    "Website" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
           }
         }
       }
