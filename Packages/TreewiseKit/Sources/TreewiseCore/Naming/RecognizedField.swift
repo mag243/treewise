@@ -21,6 +21,8 @@ public struct RecognizedField: Equatable, Sendable {
     public let example: String
 
     private static let seriesPrefix = "{seq"
+    /// The fields of a part of the year, which a repeating folder writes (ADR 0100).
+    private static let periodPrefixes = ["{month", "{quarter", "{half"]
     /// How many numbers a series without an end shows before `…`.
     private static let openSeriesShown = 3
 
@@ -40,6 +42,10 @@ public struct RecognizedField: Equatable, Sendable {
         } else if token.hasPrefix("{year") {
             kind = .date
             example = String(year)
+        } else if Self.periodPrefixes.contains(where: token.hasPrefix) {
+            // A month, a quarter or a half is a part of the year, so a date (ADR 0100).
+            kind = .date
+            example = ""
         } else if token.hasPrefix(Self.seriesPrefix) {
             kind = .series
             example = Self.series(token).map(Self.example) ?? ""

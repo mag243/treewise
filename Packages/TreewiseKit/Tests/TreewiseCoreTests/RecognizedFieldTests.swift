@@ -18,6 +18,11 @@ import Testing
             token, today: today, calendar: calendar, locale: Locale(identifier: "en"))
     }
 
+    @Test(arguments: ["{month}", "{month:MM MMMM}", "{quarter}", "{half}"])
+    func aMonthQuarterOrHalfIsADate(_ token: String) {
+        #expect(Self.field(token).kind == .date)
+    }
+
     @Test func theKindsOfFieldsAreThoseUsedInTheLegendsOrder() {
         let fields = ["{month}", "{year}", "{text}", "{quarter}"].map(Self.field)
         #expect(RecognizedField.kinds(of: fields) == [.date, .text])
