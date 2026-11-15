@@ -97,6 +97,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
   .body { padding-left: 6px; }
 }
 @media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+.footer { margin: 0 0 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--soft); font-size: 15px; }
 </style>
 </head>
 <body>
@@ -191,6 +192,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
         <p>Treewise checks for a new version once a day and asks before it installs one. You can turn this off in Settings. The check only reads a list of versions from this site and sends nothing about you or your Mac.</p>
         <p>Every update is signed twice, by Apple’s Developer ID and by Treewise’s own update key, and installs only when both check out.</p>
         <p>Name suggestions come from add-ons, which run in a separate service without internet access and see only the files they handle, by name and only what they need from them. Nothing leaves your Mac.</p>
+        <p><a href="privacy.html">The privacy statement</a></p>
       </div>
     </details></li>
 
@@ -211,6 +213,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
   </ul>
 
   <p class="beta">Treewise is in beta. It always deletes through the Trash, but keep a backup of anything you cannot lose.</p>
+  <p class="footer">Treewise is open source under the <a href="https://github.com/mag243/treewise/blob/main/LICENSE">Mozilla Public License 2.0</a>. <a href="privacy.html">Privacy</a></p>
 </div>
 </body>
 </html>

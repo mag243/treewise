@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy: Treewise</title>
+<meta name="description" content="Treewise collects nothing about you or your files. What its update check and this site do.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="images/icon.png">
+<style>
+:root {
+  --paper: #fbfaf7; --ink: #262017; --soft: #6c6251; --bark: #a9782d; --honey: #f6cd63;
+  --honey-ink: #3b2807; --row: #f3ecdb; --line: #e4dac3;
+  --code: #f1ebdd;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1e1a15; --ink: #f2ecdf; --soft: #b0a590; --bark: #c79a4d; --honey: #f6cd63;
+    --honey-ink: #3b2807; --row: #2c261d; --line: #40372a;
+    --code: #2c261d;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+}
+a { color: inherit; text-underline-offset: .18em; text-decoration-color: var(--bark); }
+:focus-visible { outline: 3px solid var(--bark); outline-offset: 3px; border-radius: 4px; }
+.page { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+.brand { display: flex; align-items: center; gap: 10px; padding: 24px 0 0; font-weight: 600; }
+.brand img { width: 32px; height: 32px; }
+
+.hero h1 {
+  margin: 56px 0 0; max-width: 15em;
+  font: 700 clamp(38px, 6.4vw, 68px)/1.04 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  letter-spacing: -.028em;
+}
+.hero p { margin: 22px 0 0; max-width: 34em; font-size: 20px; line-height: 1.42; color: var(--soft); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 30px; }
+.download {
+  display: inline-block; padding: 12px 22px; border-radius: 10px;
+  background: var(--honey); color: var(--honey-ink); font-weight: 600; text-decoration: none;
+}
+.download:hover { background: #f2c244; }
+.needs { color: var(--soft); font-size: 15px; }
+code, kbd { font: .92em ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+kbd { padding: 0 .3em; border-radius: 4px; background: var(--code); white-space: nowrap; font-family: inherit; }
+.brew { display: block; overflow-x: auto; margin-top: 8px; padding: 10px 14px; border-radius: 8px; background: var(--code); white-space: nowrap; }
+
+.shot { display: block; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 1px 2px #0003, 0 22px 50px -18px #3b280759; }
+.hero .shot { margin-top: 48px; }
+
+/* The page's own folder tree: every part of it is a row that opens and closes. */
+.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
+.tree { margin-top: 72px; padding-bottom: 72px; }
+.tree > li { position: relative; padding-left: 30px; }
+.tree > li::before, .tree > li::after { content: ""; position: absolute; left: 8px; background: var(--bark); }
+.tree > li::before { top: 0; bottom: 0; width: 2px; }
+.tree > li::after { top: 25px; width: 16px; height: 2px; }
+.tree > li:last-child::before { bottom: auto; height: 26px; }
+
+summary {
+  display: flex; align-items: center; gap: 10px; min-height: 50px; margin-left: -6px; padding: 4px 8px;
+  border-radius: 8px; cursor: pointer; list-style: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary:hover { background: var(--row); }
+summary h2 { margin: 0; font-size: 25px; line-height: 1.2; font-weight: 650; letter-spacing: -.012em; }
+.chevron { flex: none; width: 10px; height: 10px; border: solid var(--soft); border-width: 0 2px 2px 0; transform: rotate(-45deg); transition: transform .12s ease-out; }
+details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
+.folder { flex: none; width: 26px; height: 21px; }
+
+.body { padding: 4px 0 30px 14px; }
+.rows { max-width: 44em; }
+.rows li { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.rows li:last-child { border-bottom: 0; }
+.rows b { font-weight: 600; }
+.body > p { margin: 0 0 14px; max-width: 40em; }
+.body .shot { margin: 18px 0 8px; max-width: 860px; }
+.steps { padding-left: 1.3em; max-width: 40em; }
+.steps li { padding: 3px 0; }
+
+.beta { margin: 0; color: var(--soft); font-size: 15px; max-width: 44em; padding: 0 0 56px; }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .page { padding: 0 16px; }
+  .hero h1 { margin-top: 36px; }
+  .hero p { font-size: 18px; }
+  .tree { margin-top: 48px; }
+  .tree > li { padding-left: 24px; }
+  .tree > li::after { width: 12px; }
+  summary h2 { font-size: 21px; }
+  .body { padding-left: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+
+/* The table of Explorer's ways and Treewise's. */
+.intro { margin: 22px 0 0; max-width: 36em; font-size: 20px; line-height: 1.42; color: var(--soft); }
+h2.section { margin: 56px 0 12px; font-size: 25px; line-height: 1.2; font-weight: 650; letter-spacing: -.012em; }
+.map { width: 100%; max-width: 860px; border-collapse: collapse; }
+.map th, .map td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.map th { font-size: 15px; font-weight: 600; color: var(--soft); }
+.map td:first-child { width: 42%; }
+.map tr:last-child td { border-bottom: 0; }
+.note { max-width: 40em; color: var(--soft); }
+.back { display: inline-block; margin: 48px 0 72px; }
+@media (max-width: 560px) {
+  .map th, .map td { padding-right: 8px; }
+  .intro { font-size: 18px; }
+}
+.legal { max-width: 40em; }
+.legal h2.section { margin-top: 40px; }
+.legal p, .legal li { max-width: 40em; }
+.footer { margin: 0 0 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--soft); font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="brand"><a href="index.html"><img src="images/icon.png" alt="" width="32" height="32"></a><a href="index.html" style="text-decoration:none">Treewise</a></header>
+
+  <section class="hero">
+    <h1>Privacy</h1>
+    <p class="intro">Treewise collects nothing about you or your files. It has no account, no analytics and no tracking. This page says what does leave your Mac, and when.</p>
+  </section>
+
+  <div class="legal">
+    <h2 class="section">The app</h2>
+    <p>Treewise works on the files on your Mac and on the disks and cloud folders you connect. It sends nothing about them anywhere. What you choose in Settings stays on your Mac.</p>
+
+    <h2 class="section">Checking for updates</h2>
+    <p>Once a day Treewise reads the list of versions, <code>appcast.xml</code>, from this site. Like any request on the internet, that request carries your IP address and the name and version of the app; it sends nothing else about you or your Mac. When there is a new version, Treewise asks before it downloads it from GitHub. You can turn the check off in Settings.</p>
+
+    <h2 class="section">Name suggestions</h2>
+    <p>Suggest Names gets its proposals from add-ons. They run in a separate service on your Mac that has no access to the internet, and see only the files they handle: their names, and only what they need from them. Nothing leaves your Mac.</p>
+
+    <h2 class="section">This site</h2>
+    <p>This site has no cookies, no analytics and no tracking. It is served by GitHub Pages, and the downloads come from GitHub, which sees your IP address as any web host does; see <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub’s privacy statement</a>. Installing with Homebrew goes through Homebrew, which has <a href="https://docs.brew.sh/Analytics">its own analytics</a> that you can turn off.</p>
+
+    <h2 class="section">Feedback</h2>
+    <p>An issue you open on GitHub is public, with your GitHub name. Leave out anything you do not want to share.</p>
+
+    <h2 class="section">Changes</h2>
+    <p>When this changes, the new version is on this page. Last changed on 15 November 2026.</p>
+  </div>
+
+  <p class="footer">Treewise is open source under the <a href="https://github.com/mag243/treewise/blob/main/LICENSE">Mozilla Public License 2.0</a>. <a href="privacy.html">Privacy</a></p>
+</div>
+</body>
+</html>
