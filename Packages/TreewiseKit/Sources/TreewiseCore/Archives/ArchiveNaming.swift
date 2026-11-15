@@ -14,7 +14,7 @@ public enum ArchiveNaming {
 
     /// Whether an archive with this name can be changed (ADR 0078).
     public static func canChange(name: String) -> Bool {
-        let (_, pathExtension) = ConflictResolver.split(name, kind: .file)
+        let (_, pathExtension) = FileName.split(name, kind: .file)
         return changeableExtensions.contains(pathExtension.dropFirst().lowercased())
     }
 
@@ -23,7 +23,7 @@ public enum ArchiveNaming {
     /// package with such a name is not an archive.
     public static func isArchive(name: String, kind: ItemKind) -> Bool {
         guard kind == .file else { return false }
-        let (_, pathExtension) = ConflictResolver.split(name, kind: kind)
+        let (_, pathExtension) = FileName.split(name, kind: kind)
         return archiveExtensions.contains(pathExtension.dropFirst().lowercased())
     }
 
@@ -35,7 +35,7 @@ public enum ArchiveNaming {
     public static func extractionFolderName(
         for archiveName: String, among existing: some Sequence<String>
     ) -> String {
-        let (base, _) = ConflictResolver.split(archiveName, kind: .file)
+        let (base, _) = FileName.split(archiveName, kind: .file)
         return ConflictResolver.availableName(for: base, kind: .folder, among: existing)
     }
 
@@ -48,7 +48,7 @@ public enum ArchiveNaming {
         after itemName: String, kind: ItemKind, format: ArchiveFormat,
         among existing: some Sequence<String>
     ) -> String {
-        let (base, _) = ConflictResolver.split(itemName, kind: kind)
+        let (base, _) = FileName.split(itemName, kind: kind)
         return ConflictResolver.availableName(
             for: "\(base).\(format.pathExtension)", kind: .file, among: existing)
     }

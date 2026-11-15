@@ -18,11 +18,9 @@ extension FileTableCoordinator: NameFieldEditing {
         field.delegate = self
         field.stringValue = items[row].name
         table.window?.makeFirstResponder(field)
-        let name = items[row].name as NSString
-        let base =
-            items[row].kind == .folder
-            ? name.length : (name.deletingPathExtension as NSString).length
-        field.currentEditor()?.selectedRange = NSRange(location: 0, length: base)
+        // The stem is selected, so typing keeps the extension (ADR 0109).
+        let stem = FileName.stem(of: items[row].name, kind: items[row].kind) as NSString
+        field.currentEditor()?.selectedRange = NSRange(location: 0, length: stem.length)
         NameSpelling.check(field, actions?.checksSpelling() ?? false)
         if suggests { actions?.suggestName(items[row], field) }
     }

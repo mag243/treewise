@@ -19,7 +19,7 @@ public enum ProposedName {
         let trimmed = proposal.name.trimmingCharacters(in: .whitespacesAndNewlines)
         if let problem = problem(inEdit: trimmed) { return .failure(problem) }
         if trimmed.hasPrefix(".") { return .failure(.startsWithDot) }
-        let (_, pathExtension) = ConflictResolver.split(original, kind: kind)
+        let (_, pathExtension) = FileName.split(original, kind: kind)
         let hasExtension = trimmed.lowercased().hasSuffix(pathExtension.lowercased())
         let name = hasExtension ? trimmed : trimmed + pathExtension
         if name.utf8.count > maximumByteCount { return .failure(.tooLong) }
@@ -28,7 +28,7 @@ public enum ProposedName {
 
     /// A file's name without its extension.
     public static func stem(of name: String) -> String {
-        ConflictResolver.split(name, kind: .file).0
+        FileName.stem(of: name, kind: .file)
     }
 
     /// A name as it goes on disk, from how it is shown.
@@ -44,7 +44,7 @@ public enum ProposedName {
     /// The name without double spaces or spaces around it, keeping its extension, or
     /// nil when it has none of those.
     public static func repairingSpaces(in name: String) -> String? {
-        let (stem, pathExtension) = ConflictResolver.split(name, kind: .file)
+        let (stem, pathExtension) = FileName.split(name, kind: .file)
         let clean =
             stem.replacingOccurrences(of: " {2,}", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespaces)

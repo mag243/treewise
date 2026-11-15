@@ -86,7 +86,7 @@ public enum NameReviewRules {
         let handling = modules.filter { item.handledBy.contains($0.id) }
         let fixed = NameTemplate.folderValues([folder.name] + folder.foldersAbove)
         let fits = { (candidate: String, module: Module) in
-            module.template.matches(ConflictResolver.split(candidate, kind: kind).0, fixed: fixed)
+            module.template.matches(FileName.split(candidate, kind: kind).0, fixed: fixed)
         }
         let fitting = handling.filter { fits(shown, $0) }.map(\.id)
         let repair = ProposedName.repairingSpaces(in: shown).flatMap { repaired in

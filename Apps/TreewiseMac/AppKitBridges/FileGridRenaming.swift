@@ -29,10 +29,9 @@ extension FileGridCoordinator: NameFieldEditing {
         field.delegate = self
         field.stringValue = item.name
         grid.window?.makeFirstResponder(field)
-        let name = item.name as NSString
-        let base =
-            item.kind == .folder ? name.length : (name.deletingPathExtension as NSString).length
-        field.currentEditor()?.selectedRange = NSRange(location: 0, length: base)
+        // The stem is selected, so typing keeps the extension (ADR 0109).
+        let stem = FileName.stem(of: item.name, kind: item.kind) as NSString
+        field.currentEditor()?.selectedRange = NSRange(location: 0, length: stem.length)
         NameSpelling.check(field, actions?.checksSpelling() ?? false)
         if suggests { actions?.suggestName(item, field) }
     }
