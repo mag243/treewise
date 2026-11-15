@@ -1,7 +1,7 @@
 import XCTest
 
 /// Settings' Templates tab deletes a template with −, which Undo brings back, and Export…
-/// asks where to save it (ADR 0091, ADR 0095).
+/// saves it where the user chooses (ADR 0091, ADR 0095).
 extension LaunchTests {
     @MainActor
     func testDeletingATemplateRemovesItAndUndoBringsItBack() throws {
@@ -24,8 +24,9 @@ extension LaunchTests {
     }
 
     @MainActor
-    func testExportAsksWhereToSaveTheTemplate() throws {
+    func testExportSavesTheTemplateWhereTheUserChooses() throws {
         try seedTwoTemplates()
+        let root = try XCTUnwrap(self.root)
         let app = try launchApp()
         XCTAssertTrue(
             app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
@@ -36,8 +37,18 @@ extension LaunchTests {
         settings.buttons["Export…"].click()
         let panel = settings.sheets.firstMatch
         XCTAssertTrue(panel.appeared(timeout: Self.launchTimeout), "Export… asks where to save")
-        app.typeKey(.escape, modifierFlags: [])
-        XCTAssertTrue(panel.disappeared(timeout: Self.launchTimeout))
+        // Go to the test's own folder, then save under the name proposed.
+        app.typeKey("g", modifierFlags: [.command, .shift])
+        app.typeText(root.appendingPathComponent("Documents").path + "\r")
+        panel.buttons["Save"].click()
+        XCTAssertTrue(panel.disappeared(timeout: Self.launchTimeout), "Save closes the panel")
+        let saved = root.appendingPathComponent("Documents/Client.json")
+        let written = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in FileManager.default.fileExists(atPath: saved.path) },
+            object: nil)
+        XCTAssertEqual(
+            XCTWaiter.wait(for: [written], timeout: Self.launchTimeout), .completed,
+            "the template is in the file chosen")
     }
 
     @MainActor

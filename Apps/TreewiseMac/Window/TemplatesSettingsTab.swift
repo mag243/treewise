@@ -189,10 +189,16 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         panel.allowedContentTypes = [.json]
         panel.nameFieldStringValue = template.name + "." + FolderTemplateFile.pathExtension
         panel.beginSheetModal(for: window) { response in
-            guard response == .OK, let url = panel.url,
-                let data = try? FolderTemplateFile.data(of: template)
-            else { return }
-            try? data.write(to: url, options: .atomic)
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                try FolderTemplateFile.data(of: template).write(to: url, options: .atomic)
+            } catch {
+                // A file that cannot be written says why, as a failed import does.
+                let alert = NSAlert()
+                alert.messageText = String(localized: "The template could not be exported")
+                alert.informativeText = error.localizedDescription
+                alert.beginSheetModal(for: window) { _ in }
+            }
         }
     }
 

@@ -5886,6 +5886,22 @@
         }
       }
     },
+    "The template could not be exported" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Vorlage konnte nicht exportiert werden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het sjabloon kon niet worden geëxporteerd"
+          }
+        }
+      }
+    },
     "The template could not be saved." : {
       "localizations" : {
         "de" : {
