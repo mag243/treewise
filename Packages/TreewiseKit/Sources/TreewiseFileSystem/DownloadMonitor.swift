@@ -36,7 +36,9 @@
         /// each one's fraction done; a download that ends leaves the report.
         /// Postcondition: following stops when the stream is dropped or cancelled.
         public func downloads(of files: [FileItem.ID]) -> AsyncStream<[FileItem.ID: Double]> {
-            AsyncStream { continuation in
+            // Each report holds every download, so a reader that falls behind needs only the
+            // newest.
+            AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
                 let downloads = Downloads(continuation: continuation)
                 // Only handed back to `removeSubscriber`, which any thread may call.
                 nonisolated(unsafe) let subscribers = files.prefix(Self.maximumFiles).map { file in
