@@ -51,9 +51,14 @@ enum TerminalOpener {
                     [folder], withApplicationAt: app,
                     configuration: NSWorkspace.OpenConfiguration())
             } catch {
+                // On the window it was asked from, as Treewise's other alerts are.
                 let alert = NSAlert(error: error)
                 alert.alertStyle = .warning
-                alert.runModal()
+                if let window = NSApp.keyWindow {
+                    alert.beginSheetModal(for: window) { _ in }
+                } else {
+                    alert.runModal()
+                }
             }
         }
     }

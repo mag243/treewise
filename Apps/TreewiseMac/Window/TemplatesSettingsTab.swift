@@ -170,7 +170,9 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url, let self else { return }
             Task {
-                let data = (try? Data(contentsOf: url)) ?? Data()
+                // Read off the main actor; a file that cannot be read is no template, as
+                // the import says.
+                let data = await Task.detached { (try? Data(contentsOf: url)) ?? Data() }.value
                 await self.model.importTemplate(from: data)
             }
         }

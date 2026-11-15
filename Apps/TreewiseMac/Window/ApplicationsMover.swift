@@ -40,17 +40,25 @@ enum ApplicationsMover {
             UserDefaults.standard.set(true, forKey: declinedKey)
         }
         guard answer == .alertFirstButtonReturn else { return }
-        do {
-            try relaunch(from: copyIntoApplications())
-        } catch {
-            logger.error("Moving to Applications failed: \(error.localizedDescription)")
-            NSAlert(error: error).runModal()
+        // Copying the app can take a while from a slow disk image; it runs off the main
+        // actor, so the app keeps answering meanwhile.
+        let paths = folders
+        Task {
+            do {
+                let copy = try await Task.detached { try copyIntoApplications(paths) }.value
+                try relaunch(from: copy)
+            } catch {
+                logger.error("Moving to Applications failed: \(error.localizedDescription)")
+                NSAlert(error: error).runModal()
+            }
         }
     }
 
     /// Copies the running app into Applications, moving a Treewise already
     /// there to the Trash first.
-    private static func copyIntoApplications() throws -> URL {
+    private nonisolated static func copyIntoApplications(_ folders: ApplicationsMove.Folders)
+        throws -> URL
+    {
         let manager = FileManager.default
         let folder = URL(
             fileURLWithPath: ApplicationsMove.destinationFolder(
