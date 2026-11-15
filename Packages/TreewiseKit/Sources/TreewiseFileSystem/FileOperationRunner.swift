@@ -208,7 +208,7 @@ public actor FileOperationRunner: FileOperating {
         do {
             return try body()
         } catch {
-            throw TrashService.error(error, for: id)
+            throw FileSystemError.mapping(error, for: id)
         }
     }
 }

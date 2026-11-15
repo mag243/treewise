@@ -86,7 +86,7 @@ public struct LocalFileSystem: FileSystemProviding {
             urls = try FileManager.default.contentsOfDirectory(
                 at: url(of: folder), includingPropertiesForKeys: Array(Self.listingKeys))
         } catch {
-            throw Self.fileSystemError(error, for: folder)
+            throw FileSystemError.mapping(error, for: folder)
         }
         let volume = try? url(of: folder).resourceValues(forKeys: [.volumeURLKey]).volume
         var kindTexts = KindTextCache()
@@ -132,7 +132,7 @@ public struct LocalFileSystem: FileSystemProviding {
         do {
             return try makeItem(id: id)
         } catch {
-            throw Self.fileSystemError(error, for: id)
+            throw FileSystemError.mapping(error, for: id)
         }
     }
 
@@ -145,7 +145,7 @@ public struct LocalFileSystem: FileSystemProviding {
                 .volumeAvailableCapacityForImportantUsageKey, .volumeAvailableCapacityKey,
             ])
         } catch {
-            throw Self.fileSystemError(error, for: folder)
+            throw FileSystemError.mapping(error, for: folder)
         }
         return values.volumeAvailableCapacityForImportantUsage
             ?? values.volumeAvailableCapacity.map(Int64.init)
@@ -250,14 +250,5 @@ public struct LocalFileSystem: FileSystemProviding {
 
     private func lastComponent(of id: FileItem.ID) -> String {
         id.rawValue.split(separator: "/").last.map(String.init) ?? "/"
-    }
-
-    private static func fileSystemError(_ error: any Error, for id: FileItem.ID) -> any Error {
-        guard let cocoa = error as? CocoaError else { return error }
-        switch cocoa.code {
-        case .fileReadNoSuchFile, .fileNoSuchFile: return FileSystemError.notFound(id)
-        case .fileReadNoPermission: return FileSystemError.notReadable(id)
-        default: return error
-        }
     }
 }

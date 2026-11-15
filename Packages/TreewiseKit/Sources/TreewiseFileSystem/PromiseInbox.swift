@@ -17,7 +17,7 @@ public enum PromiseInbox {
         do {
             try FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: false)
         } catch {
-            throw TrashService.error(error, for: FileItem.ID(folder.standardizedFileURL.path))
+            throw FileSystemError.mapping(error, for: FileItem.ID(folder.standardizedFileURL.path))
         }
         return inbox
     }
@@ -33,7 +33,7 @@ public enum PromiseInbox {
         do {
             try FileManager.default.removeItem(at: inbox)
         } catch {
-            throw TrashService.error(error, for: FileItem.ID(inbox.standardizedFileURL.path))
+            throw FileSystemError.mapping(error, for: FileItem.ID(inbox.standardizedFileURL.path))
         }
     }
 }

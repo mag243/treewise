@@ -109,7 +109,7 @@
                     _ = try FileManager.default.replaceItemAt($0, withItemAt: candidate)
                 }
             } catch {
-                throw TrashService.error(error, for: id)
+                throw FileSystemError.mapping(error, for: id)
             }
         }
     }

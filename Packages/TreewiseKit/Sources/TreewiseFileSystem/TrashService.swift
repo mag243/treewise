@@ -23,7 +23,7 @@ public struct TrashService: Sendable {
             try FileManager.default.trashItem(
                 at: URL(fileURLWithPath: id.rawValue), resultingItemURL: &trashURL)
         } catch {
-            throw Self.error(error, for: id)
+            throw FileSystemError.mapping(error, for: id)
         }
         guard let path = trashURL?.path else { throw FileSystemError.trashUnavailable(id) }
         return TrashedItem(trashID: FileItem.ID(path), originalID: id)
@@ -39,33 +39,7 @@ public struct TrashService: Sendable {
                 at: URL(fileURLWithPath: trashed.trashID.rawValue),
                 to: URL(fileURLWithPath: trashed.originalID.rawValue))
         } catch {
-            throw Self.error(error, for: trashed.originalID)
-        }
-    }
-
-    static func error(_ error: any Error, for id: FileItem.ID) -> any Error {
-        if let posix = error as? POSIXError { return Self.error(posix, for: id) }
-        guard let cocoa = error as? CocoaError else { return error }
-        switch cocoa.code {
-        case .fileNoSuchFile, .fileReadNoSuchFile: return FileSystemError.notFound(id)
-        case .fileWriteFileExists: return FileSystemError.alreadyExists(id)
-        case .fileWriteNoPermission, .fileWriteVolumeReadOnly:
-            return FileSystemError.notWritable(id)
-        case .featureUnsupported: return FileSystemError.trashUnavailable(id)
-        case .fileWriteOutOfSpace: return FileSystemError.notEnoughSpace(id)
-        default: return error
-        }
-    }
-
-    /// The errors `copyfile(3)` meets, as `FileSystemError`s (ADR 0026).
-    private static func error(_ error: POSIXError, for id: FileItem.ID) -> any Error {
-        switch error.code {
-        case .ENOENT: FileSystemError.notFound(id)
-        case .EEXIST: FileSystemError.alreadyExists(id)
-        case .EACCES, .EPERM, .EROFS: FileSystemError.notWritable(id)
-        case .ENOSPC: FileSystemError.notEnoughSpace(id)
-        case .ECANCELED: FileSystemError.cancelled
-        default: error
+            throw FileSystemError.mapping(error, for: trashed.originalID)
         }
     }
 }

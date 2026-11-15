@@ -56,7 +56,7 @@
             do {
                 try FileManager.default.moveItem(at: archive, to: destination)
             } catch {
-                throw TrashService.error(error, for: FileItem.ID(destination.path))
+                throw FileSystemError.mapping(error, for: FileItem.ID(destination.path))
             }
         }
 

@@ -77,7 +77,7 @@ enum FileCopier {
         } catch {
             removePartial(partial)
             throw error is FileSystemError
-                ? error : TrashService.error(error, for: FileItem.ID(source.path))
+                ? error : FileSystemError.mapping(error, for: FileItem.ID(source.path))
         }
     }
 

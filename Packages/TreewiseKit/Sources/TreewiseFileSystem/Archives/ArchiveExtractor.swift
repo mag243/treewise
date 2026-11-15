@@ -47,7 +47,7 @@
             do {
                 try FileManager.default.moveItem(at: output, to: destination)
             } catch {
-                throw TrashService.error(error, for: FileItem.ID(destination.path))
+                throw FileSystemError.mapping(error, for: FileItem.ID(destination.path))
             }
         }
 
@@ -73,7 +73,7 @@
             do {
                 try FileManager.default.createDirectory(at: url, withIntermediateDirectories: false)
             } catch {
-                throw TrashService.error(error, for: FileItem.ID(folder.path))
+                throw FileSystemError.mapping(error, for: FileItem.ID(folder.path))
             }
         }
 

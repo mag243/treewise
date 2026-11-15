@@ -17,7 +17,7 @@
             do {
                 try FileManager.default.createDirectory(at: url, withIntermediateDirectories: false)
             } catch {
-                throw TrashService.error(error, for: FileItem.ID(folder.path))
+                throw FileSystemError.mapping(error, for: FileItem.ID(folder.path))
             }
         }
 

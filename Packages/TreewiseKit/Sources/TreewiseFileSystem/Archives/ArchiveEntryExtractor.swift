@@ -102,7 +102,7 @@
             } catch let error as FileSystemError {
                 throw error
             } catch {
-                throw TrashService.error(error, for: FileItem.ID(folder.path))
+                throw FileSystemError.mapping(error, for: FileItem.ID(folder.path))
             }
         }
 
