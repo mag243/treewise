@@ -5,12 +5,21 @@ import AppKit
 final class SidebarCell: NSTableCellView {
     private static let iconSpacing: CGFloat = 6
     private static let ejectSize: CGFloat = 16
+    /// The room a name keeps from the sidebar's edge before it is cut short, as Finder's.
+    private static let edgeMargin: CGFloat = 8
 
     private let ejectButton = NSButton()
+    /// The name stops before the eject button while there is one, else near the edge.
+    private var beforeEject: NSLayoutConstraint?
+    private var beforeEdge: NSLayoutConstraint?
 
     /// What the eject button does; `nil` hides it.
     var eject: (() -> Void)? {
-        didSet { ejectButton.isHidden = eject == nil }
+        didSet {
+            ejectButton.isHidden = eject == nil
+            beforeEject?.isActive = eject != nil
+            beforeEdge?.isActive = eject == nil
+        }
     }
 
     init(identifier: NSUserInterfaceItemIdentifier, withIcon: Bool, iconSize: NSSize) {
@@ -22,11 +31,14 @@ final class SidebarCell: NSTableCellView {
         addSubview(text)
         textField = text
         setUpEjectButton()
+        beforeEject = text.trailingAnchor.constraint(
+            lessThanOrEqualTo: ejectButton.leadingAnchor, constant: -Self.iconSpacing)
+        beforeEdge = text.trailingAnchor.constraint(
+            lessThanOrEqualTo: trailingAnchor, constant: -Self.edgeMargin)
         var constraints = [
             text.centerYAnchor.constraint(equalTo: centerYAnchor),
-            text.trailingAnchor.constraint(
-                lessThanOrEqualTo: ejectButton.leadingAnchor, constant: -Self.iconSpacing),
-        ]
+            beforeEdge,
+        ].compactMap(\.self)
         if withIcon {
             let icon = NSImageView()
             icon.translatesAutoresizingMaskIntoConstraints = false

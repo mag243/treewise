@@ -19,6 +19,7 @@ All notable changes to Treewise are recorded here. The format follows
 - Add-ons are described the same way whatever they do, so a second kind of add-on fits beside those that propose names.
 
 ### Fixed
+- A folder's name in the sidebar runs to near its edge before it is cut short, and shows whole while the pointer rests on it.
 - A narrow list, as beside the details pane, makes the names narrower first and then scrolls sideways, as Finder does, instead of cutting off the columns at its right.
 - Export… in Settings > Templates proposes a name that says it is a folder template, with its .json extension shown, and says why a template could not be saved.
 - Settings > Add-ons: choosing another add-on's card left the card before as tall as when it was open and cut off the one chosen.

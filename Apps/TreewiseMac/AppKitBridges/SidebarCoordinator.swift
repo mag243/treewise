@@ -38,6 +38,8 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         outline.headerView = nil
         outline.style = .sourceList
         outline.floatsGroupRows = false
+        // A name cut short shows whole while the pointer rests on it, as in Finder.
+        outline.allowsExpansionToolTips = true
         outline.registerForDraggedTypes(DropRouting.pasteboardTypes + [Self.favoriteDragType])
         outline.setDraggingSourceOperationMask([.copy, .move, .generic], forLocal: true)
         outline.setDraggingSourceOperationMask([.copy, .move, .generic], forLocal: false)

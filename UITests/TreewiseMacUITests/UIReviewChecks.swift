@@ -1,3 +1,4 @@
+import AppKit
 import XCTest
 
 /// What the UI review found wrong on one screen (ADR 0103).
@@ -30,7 +31,15 @@ enum UIReviewChecks {
     /// What a list may hold beyond its height without a scroller, as its insets.
     private static let scrollSlack: CGFloat = 4
     /// How far a line of text may sit from the middle of its row.
-    private static let centreSlack: CGFloat = 3
+    static let centreSlack: CGFloat = 3
+    /// The font of a list's rows, to measure what a text needs.
+    static let listFont = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+    /// How much wider than its frame a text must need to count as cut short; a heading in
+    /// a smaller font than the list's needs less than it is measured at.
+    static let cutSlack: CGFloat = 6
+    /// The room after a text cut short that it could have used: more than the gap a list
+    /// keeps before its next column.
+    static let roomLeft: CGFloat = 24
     /// The margin a Settings pane keeps on either side, as `SettingsForm.margin`.
     static let settingsMargin: CGFloat = 20
 
@@ -46,7 +55,7 @@ enum UIReviewChecks {
     ]
 
     /// An element on screen, with what holds it.
-    private struct Placed {
+    struct Placed {
         let snapshot: any XCUIElementSnapshot
         /// The list it is in, if any.
         let list: CGRect?
@@ -73,6 +82,7 @@ enum UIReviewChecks {
         found += tooClose(leaves, window: window.frame, windowToo: isSettingsPane)
         found += emptyRows(placed)
         found += offCentre(placed)
+        found += cutShortWithRoom(placed)
         found += withoutScroller(lists)
         if isSettingsPane { found += notSpanning(lists, window: window.frame) }
         return found
@@ -200,36 +210,6 @@ enum UIReviewChecks {
         }
     }
 
-    /// A row far taller than what it shows: room left from a card that was taller.
-    private static func emptyRows(_ placed: [Placed]) -> [UIReviewFinding] {
-        placed.compactMap { item in
-            let row = item.snapshot
-            guard row.elementType == .tableRow || row.elementType == .cell else { return nil }
-            let shown = leafFrames(in: row).reduce(CGRect.null) { $0.union($1) }
-            guard !shown.isNull, row.frame.height - shown.height > emptyInRow else { return nil }
-            return finding(
-                "emptyRow", row, "\(row.frame.height) tall for \(shown.height) of content")
-        }
-    }
-
-    /// A row of one line whose text sits above or below its middle.
-    private static func offCentre(_ placed: [Placed]) -> [UIReviewFinding] {
-        placed.compactMap { item in
-            let row = item.snapshot
-            guard row.elementType == .tableRow || row.elementType == .outlineRow else {
-                return nil
-            }
-            let texts = leafFrames(in: row, of: [.staticText, .textField])
-            let shown = texts.reduce(CGRect.null) { $0.union($1) }
-            // Only a row of one line: a card or a row of several lines has its own layout.
-            guard !shown.isNull, texts.allSatisfy({ abs($0.midY - shown.midY) < centreSlack })
-            else { return nil }
-            let off = shown.midY - row.frame.midY
-            guard abs(off) > centreSlack else { return nil }
-            return finding("offCentre", row, "text \(off) from the middle of its row")
-        }
-    }
-
     /// A list that holds more than shows, without a scroller.
     private static func withoutScroller(_ lists: [any XCUIElementSnapshot]) -> [UIReviewFinding] {
         lists.compactMap { list in
@@ -262,7 +242,14 @@ enum UIReviewChecks {
         }
     }
 
-    private static func leafFrames(
+    static func leaves(
+        in snapshot: any XCUIElementSnapshot, of types: Set<XCUIElement.ElementType>
+    ) -> [any XCUIElementSnapshot] {
+        let own = types.contains(snapshot.elementType) && !snapshot.frame.isEmpty
+        return (own ? [snapshot] : []) + snapshot.children.flatMap { leaves(in: $0, of: types) }
+    }
+
+    static func leafFrames(
         in snapshot: any XCUIElementSnapshot, of types: Set<XCUIElement.ElementType>
     ) -> [CGRect] {
         let own = types.contains(snapshot.elementType) && !snapshot.frame.isEmpty
@@ -270,7 +257,7 @@ enum UIReviewChecks {
             + snapshot.children.flatMap { leafFrames(in: $0, of: types) }
     }
 
-    private static func leafFrames(in snapshot: any XCUIElementSnapshot) -> [CGRect] {
+    static func leafFrames(in snapshot: any XCUIElementSnapshot) -> [CGRect] {
         let own = leafTypes.contains(snapshot.elementType) && !snapshot.frame.isEmpty
         return (own ? [snapshot.frame] : []) + snapshot.children.flatMap(leafFrames(in:))
     }
@@ -279,7 +266,7 @@ enum UIReviewChecks {
         outer.insetBy(dx: -tolerance, dy: -tolerance).contains(inner)
     }
 
-    private static func finding(
+    static func finding(
         _ check: String, _ snapshot: any XCUIElementSnapshot, _ detail: String
     ) -> UIReviewFinding {
         UIReviewFinding(check: check, element: describe(snapshot), detail: detail)
