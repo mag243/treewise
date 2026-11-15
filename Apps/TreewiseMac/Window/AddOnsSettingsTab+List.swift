@@ -3,13 +3,15 @@ import TreewiseModuleInterface
 import TreewiseUI
 
 /// The list of cards: a card per add-on, the selected one open (ADR 0092), dragged or
-/// moved by accessibility actions to set the order (ADR 0070).
+/// moved by accessibility actions to set the order (ADR 0070), the add-ons that make folders
+/// apart under a heading of their own (ADR 0106).
 extension AddOnsSettingsTab {
     func numberOfRows(in tableView: NSTableView) -> Int {
         shown.count
     }
 
-    /// The card, with room on either side inside the list's border.
+    /// The card, with room on either side inside the list's border, under its heading when
+    /// it starts a kind of add-on (ADR 0106).
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int)
         -> NSView?
     {
@@ -19,18 +21,32 @@ extension AddOnsSettingsTab {
         cell.autoresizingMask = [.width, .height]
         cell.addSubview(card)
         card.translatesAutoresizingMaskIntoConstraints = false
+        var top = card.topAnchor.constraint(equalTo: cell.topAnchor)
+        if let title = heading(for: row) {
+            let label = Self.headingLabel(title)
+            cell.addSubview(label)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                label.leadingAnchor.constraint(
+                    equalTo: cell.leadingAnchor, constant: Self.listInset),
+                label.topAnchor.constraint(equalTo: cell.topAnchor),
+            ])
+            top = card.topAnchor.constraint(
+                equalTo: label.bottomAnchor, constant: Self.headingSpacing)
+        }
         NSLayoutConstraint.activate([
             card.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: Self.listInset),
             card.trailingAnchor.constraint(
                 equalTo: cell.trailingAnchor, constant: -Self.listInset),
-            card.topAnchor.constraint(equalTo: cell.topAnchor),
+            top,
             card.bottomAnchor.constraint(equalTo: cell.bottomAnchor),
         ])
         return cell
     }
 
-    /// A card's height, open or folded, measured at the width it has in the list: rows the
-    /// table measures by themselves keep the height a card had before it folded.
+    /// A card's height, open or folded, measured at the width it has in the list, with its
+    /// heading: rows the table measures by themselves keep the height a card had before it
+    /// folded.
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         let card = card(for: row)
         let width = card.widthAnchor.constraint(equalToConstant: cardWidth)
@@ -38,7 +54,25 @@ extension AddOnsSettingsTab {
         card.layoutSubtreeIfNeeded()
         let height = card.fittingSize.height
         width.isActive = false
-        return height
+        guard let title = heading(for: row) else { return height }
+        return Self.headingLabel(title).fittingSize.height + Self.headingSpacing + height
+    }
+
+    /// Names over the add-ons that propose names and Folders over those that make folder
+    /// structures, when the list holds both; nil for a card that starts neither.
+    func heading(for row: Int) -> String? {
+        let names = shown.filter(\.proposesNames).count
+        guard names > 0, names < shown.count else { return nil }
+        if row == 0 { return String(localized: "Names") }
+        return row == names ? String(localized: "Folders") : nil
+    }
+
+    /// A heading as the tab's others, as Reading.
+    static func headingLabel(_ title: String) -> NSTextField {
+        let label = NSTextField(labelWithString: title)
+        label.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
+        label.textColor = .secondaryLabelColor
+        return label
     }
 
     /// What the card of the add-on in `row` offers: on, switchable, trial or licence.

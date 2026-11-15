@@ -83,6 +83,7 @@ enum UIReviewChecks {
         found += emptyRows(placed)
         found += offCentre(placed)
         found += cutShortWithRoom(placed)
+        found += offTitleLine(placed)
         found += withoutScroller(lists)
         if isSettingsPane { found += notSpanning(lists, window: window.frame) }
         return found

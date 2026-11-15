@@ -45,6 +45,7 @@ extension UIReviewTests {
                 window, as: "settings-\(slug(tab))", appearance: appearance, isSettingsPane: true)
         }
         try reviewCards(in: window, appearance: appearance, startingTrials: false)
+        hoverFirstCard(in: window, appearance: appearance)
         try reviewCards(in: window, appearance: appearance, startingTrials: true)
         checkCardMenu(in: window)
         open("Templates", in: window)
@@ -128,5 +129,16 @@ extension UIReviewTests {
         XCTAssertTrue(menu.menuItems["Move Up"].exists, "the card's menu offers its order")
         XCTAssertFalse(menu.menuItems["Turn Off"].exists, "nor a switch it cannot use")
         window.typeKey(.escape, modifierFlags: [])
+    }
+
+    /// The pointer on the first card, whose icon then shows the grip (ADR 0106).
+    @MainActor
+    private func hoverFirstCard(in window: XCUIElement, appearance: String?) {
+        let list = window.tables.firstMatch
+        guard let card = cardNames(in: list).first else { return }
+        list.groups[card].staticTexts[card].hover()
+        settleScreen()
+        review(
+            window, as: "settings-add-ons-hover", appearance: appearance, isSettingsPane: true)
     }
 }

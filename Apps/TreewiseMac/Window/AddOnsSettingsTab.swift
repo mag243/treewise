@@ -18,6 +18,8 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     static let width = SettingsList.width
     /// The room between the list's border and its cards.
     static let listInset: CGFloat = 8
+    /// The room between a heading in the list and the card under it.
+    static let headingSpacing: CGFloat = 4
 
     /// The width of a card: the width the list shows, less the same room on either side as
     /// above and below; a scroller takes its room only while there is something to scroll.

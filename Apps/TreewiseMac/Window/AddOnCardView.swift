@@ -26,6 +26,14 @@ final class AddOnCardView: NSView {
     private static let selectedEdge: CGFloat = 2
     /// The body starts under the name, past the icon.
     private static var bodyIndent: CGFloat { iconSize + headerSpacing }
+    private static let addOnSymbol = "puzzlepiece.extension.fill"
+    /// The grip the icon turns into on a card that can be dragged, as the overview's
+    /// (ADR 0065, ADR 0106).
+    private static let gripSymbol = "line.3.horizontal"
+
+    /// The icon's symbol, which shows the grip while the pointer is on a card that can be
+    /// dragged.
+    private let symbol = NSImageView()
 
     private let module: AddOnDescription
     private let card: AddOnCard
@@ -64,23 +72,48 @@ final class AddOnCardView: NSView {
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
         setAccessibilityLabel(NameReviewText.name(of: module))
+        if module.proposesNames {
+            addTrackingArea(
+                NSTrackingArea(
+                    rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+                    owner: self))
+        }
+    }
+
+    // MARK: Dragging (ADR 0106)
+
+    override func mouseEntered(with event: NSEvent) {
+        show(Self.gripSymbol)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        show(Self.addOnSymbol)
+    }
+
+    override func resetCursorRects() {
+        if module.proposesNames { addCursorRect(bounds, cursor: .openHand) }
+    }
+
+    private func show(_ name: String) {
+        symbol.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
 
     /// The add-on symbol on a tile of the accent colour: an add-on has no icon of its own.
-    private static func icon() -> NSView {
+    /// On a card that can be dragged, it says so as a tooltip and as a grip on hover.
+    private func icon() -> NSView {
         let icon = AddOnCardStyle.group(
-            fill: .controlAccentColor, border: .clear, radius: iconRadius)
-        let symbol = NSImageView(
-            image: NSImage(
-                systemSymbolName: "puzzlepiece.extension.fill", accessibilityDescription: nil)
-                ?? NSImage())
+            fill: .controlAccentColor, border: .clear, radius: Self.iconRadius)
+        show(Self.addOnSymbol)
         symbol.contentTintColor = .white
-        fill(icon.contentView, with: symbol, inset: iconInset)
-        icon.widthAnchor.constraint(equalToConstant: iconSize).isActive = true
-        icon.heightAnchor.constraint(equalToConstant: iconSize).isActive = true
+        Self.fill(icon.contentView, with: symbol, inset: Self.iconInset)
+        icon.widthAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
+        icon.heightAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
+        if module.proposesNames {
+            icon.toolTip = String(localized: "Drag to change the order of the add-ons")
+        }
         return icon
     }
 
@@ -93,7 +126,7 @@ final class AddOnCardView: NSView {
         titles.alignment = .leading
         titles.spacing = 1
         titles.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        var views: [NSView] = [Self.icon(), titles]
+        var views: [NSView] = [icon(), titles]
         if let badge = badge() { views.append(badge) }
         let toggle = card.showsSwitch ? control() : nil
         // The name at the leading edge, the badge and the switch at the trailing one.

@@ -70,4 +70,29 @@ extension UIReviewChecks {
             return (own ? [child] : []) + rowTexts(in: child)
         }
     }
+
+    /// The most a text of several lines may sit beside its card's title without counting as
+    /// meant to stand elsewhere.
+    static let offTitleMost: CGFloat = 40
+    /// The least it must sit beside it to count as off the title's line.
+    static let offTitleLeast: CGFloat = 2
+
+    /// A text of several lines in a card that starts just beside the card's title instead of
+    /// under it, as a body pushed aside by something before the title.
+    static func offTitleLine(_ placed: [Placed]) -> [UIReviewFinding] {
+        placed.compactMap { item in
+            let group = item.snapshot
+            guard group.elementType == .group else { return nil }
+            let texts = group.children.flatMap { leaves(in: $0, of: [.staticText]) }
+            guard let title = texts.first else { return nil }
+            let lines = texts.dropFirst().filter { $0.frame.height > 2 * title.frame.height }
+            return lines.lazy.compactMap { text -> UIReviewFinding? in
+                let off = abs(text.frame.minX - title.frame.minX)
+                guard off > offTitleLeast, off < offTitleMost else { return nil }
+                return finding(
+                    "offTitleLine", text,
+                    "starts \(Int(off)) beside its title \(describe(title)) instead of under it")
+            }.first
+        }
+    }
 }
