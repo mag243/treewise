@@ -169,7 +169,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     @objc private func renameSelected() {
         guard table.clickedRow >= 0,
             let cell = table.view(atColumn: 0, row: table.clickedRow, makeIfNecessary: false),
-            let name = cell.subviews.first as? NSTextField
+            let name = Self.nameField(in: cell)
         else { return }
         view.window?.makeFirstResponder(name)
     }

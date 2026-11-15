@@ -30,7 +30,8 @@ extension TemplatesSettingsTab {
         view.window?.makeFirstResponder(name)
     }
 
-    private static func nameField(in view: NSView) -> NSTextField? {
+    /// The editable name field somewhere inside a row's cell.
+    static func nameField(in view: NSView) -> NSTextField? {
         if let field = view as? NSTextField, field.isEditable { return field }
         return view.subviews.lazy.compactMap(nameField(in:)).first
     }

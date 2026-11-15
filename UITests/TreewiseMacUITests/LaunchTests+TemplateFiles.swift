@@ -58,6 +58,27 @@ extension LaunchTests {
             "the template is in the file chosen")
     }
 
+    /// A double click on a template's row, beside its name, starts renaming it.
+    @MainActor
+    func testDoubleClickingATemplateRenamesIt() throws {
+        try seedTwoTemplates()
+        let app = try launchApp()
+        XCTAssertTrue(
+            app.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
+        let settings = openTemplatesTab(in: app)
+        let list = settings.tables["templatesList"]
+        let client = templateName("Client", in: list)
+        XCTAssertTrue(client.appeared(timeout: Self.launchTimeout), "the templates are listed")
+        // The count beside the name in the first row, Client's, so the click lands on the
+        // row and not in the name's field.
+        list.tableRows.element(boundBy: 0).staticTexts.firstMatch.doubleClick()
+        app.typeKey("a", modifierFlags: .command)
+        app.typeText("Customer\r")
+        XCTAssertTrue(
+            templateName("Customer", in: list).appeared(timeout: Self.launchTimeout),
+            "the template has the name typed")
+    }
+
     @MainActor
     func templateName(_ name: String, in list: XCUIElement) -> XCUIElement {
         list.textFields.matching(NSPredicate(format: "value == %@", name)).firstMatch
