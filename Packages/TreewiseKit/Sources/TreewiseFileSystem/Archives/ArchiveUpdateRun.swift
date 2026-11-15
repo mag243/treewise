@@ -7,11 +7,7 @@
     struct ArchiveUpdateRun {
         private static let zipExecutable = "/usr/bin/zip"
         private static let zipExtension = "zip"
-        private static let leftovers: Set<String> = [".DS_Store", "__MACOSX"]
-        private static let leftoverPrefix = "._"
-        private static let cleanOptions = ["--no-mac-metadata", "--no-xattrs", "--no-fflags"]
-        /// What `tar` and `zip` would read as a pattern in a name.
-        private static let patternCharacters: Set<Character> = ["\\", "[", "]", "*", "?"]
+        private static let cleanOptions = MacMetadata.tarOptions
         /// What a regular expression of `-s` would read as more than itself.
         private static let regexCharacters: Set<Character> = [
             "\\", ".", "[", "]", "*", "^", "$",
@@ -84,16 +80,11 @@
         func updateWithTar(_ candidate: URL, onProgress: ArchiveProgressHandler) throws {
             let arguments = try tarArguments(for: candidate)
             let total = expected.count
-            var completed = 0
+            var counter = TarProcess.EntryCounter(total: total)
             let outcome = try TarProcess.run(
                 arguments, temporaryFolder: workspace.url, control: control
             ) { line in
-                guard TarProcess.isEntry(line), !TarProcess.isFailure(line) else { return }
-                completed += 1
-                onProgress(
-                    ArchiveProgress(
-                        completedEntries: completed, totalEntries: total,
-                        currentName: TarProcess.entryName(line)))
+                if let progress = counter.read(line) { onProgress(progress) }
             }
             guard outcome.succeeded else {
                 throw TarFailure.extractionError(
@@ -172,7 +163,8 @@
         private func relocationRule(from source: String, to target: String) -> String? {
             guard let prefix = storedPrefix(of: source) else { return nil }
             let delimiter = Self.ruleDelimiter
-            let pattern = "^" + Self.escaped(prefix, Self.regexCharacters) + "\\(/.*\\)\\{0,1\\}$"
+            let literal = TarProcess.escaped(prefix, Self.regexCharacters)
+            let pattern = "^" + literal + "\\(/.*\\)\\{0,1\\}$"
             // The replacement is literal to tar, but for a backslash and a digit.
             return delimiter + pattern + delimiter + target + "\\1" + delimiter + "HS"
         }
@@ -216,7 +208,7 @@
                 at: staging, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey])
             while let entry = entries?.nextObject() as? URL {
                 let name = entry.lastPathComponent
-                if leftovers.contains(name) || name.hasPrefix(leftoverPrefix) {
+                if MacMetadata.isLeftover(name) {
                     entries?.skipDescendants()
                     continue
                 }
@@ -282,11 +274,7 @@
         }
 
         private static func literalPattern(_ name: String) -> String {
-            escaped(name, patternCharacters)
-        }
-
-        private static func escaped(_ text: String, _ characters: Set<Character>) -> String {
-            String(text.flatMap { characters.contains($0) ? ["\\", $0] : [$0] })
+            TarProcess.literalPattern(name)
         }
     }
 #endif

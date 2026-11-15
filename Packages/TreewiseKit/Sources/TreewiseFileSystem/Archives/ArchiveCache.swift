@@ -116,17 +116,8 @@
         {
             let control = TransferControl()
             let output = folder.appendingPathComponent(UUID().uuidString)
-            return try await withTaskCancellationHandler {
-                try await withCheckedThrowingContinuation { continuation in
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        continuation.resume(
-                            with: Result {
-                                try run(selection, into: output, in: folder, control: control)
-                            })
-                    }
-                }
-            } onCancel: {
-                control.stop()
+            return try await TarProcess.offThePool(control: control) {
+                try run(selection, into: output, in: folder, control: control)
             }
         }
 

@@ -113,19 +113,8 @@
         private static func list(_ archive: FileItem.ID) async throws -> ArchiveTree {
             let control = TransferControl()
             let url = URL(fileURLWithPath: archive.rawValue)
-            return try await withTaskCancellationHandler {
-                try await withCheckedThrowingContinuation { continuation in
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        continuation.resume(
-                            with: Result {
-                                try FileCoordination.read(url) {
-                                    try ArchiveLister.tree(of: $0, control: control)
-                                }
-                            })
-                    }
-                }
-            } onCancel: {
-                control.stop()
+            return try await TarProcess.offThePool(control: control) {
+                try FileCoordination.read(url) { try ArchiveLister.tree(of: $0, control: control) }
             }
         }
     }

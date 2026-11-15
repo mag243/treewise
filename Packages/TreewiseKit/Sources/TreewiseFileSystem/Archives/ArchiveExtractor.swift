@@ -28,17 +28,12 @@
             let output = workspace.url.appendingPathComponent(outputName)
             try createFolder(output, in: folder)
             let total = try countEntries(of: archive, in: workspace, control: control)
-            var completed = 0
+            var counter = TarProcess.EntryCounter(total: total)
             let outcome = try TarProcess.run(
                 ["--passphrase", placeholderPassphrase, "-xvf", archive.path, "-C", output.path],
                 temporaryFolder: workspace.url, control: control
             ) { line in
-                guard TarProcess.isEntry(line), !TarProcess.isFailure(line) else { return }
-                completed += 1
-                onProgress(
-                    ArchiveProgress(
-                        completedEntries: completed, totalEntries: total,
-                        currentName: TarProcess.entryName(line)))
+                if let progress = counter.read(line) { onProgress(progress) }
             }
             guard outcome.succeeded else { throw error(outcome, archive: archive, folder: folder) }
             if archive.pathExtension.lowercased() == isoExtension {

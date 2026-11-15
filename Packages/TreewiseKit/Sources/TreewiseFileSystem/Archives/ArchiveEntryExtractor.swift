@@ -42,7 +42,6 @@
         private static let outputName = "output"
         private static let namesFile = "names"
         /// What `tar` would read as a pattern in a list of names.
-        private static let patternCharacters: Set<Character> = ["\\", "[", "]", "*", "?"]
 
         /// Extracts `selection` into `output`, which exists, keeping its path.
         /// `onEntry` hears each entry's name. `temporaryFolder` also holds the
@@ -108,7 +107,7 @@
 
         /// A name as `tar` matches it literally. Names in a list are patterns.
         private static func pattern(for name: String) -> String {
-            String(name.flatMap { patternCharacters.contains($0) ? ["\\", $0] : [$0] })
+            TarProcess.literalPattern(name)
         }
     }
 #endif
