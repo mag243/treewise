@@ -1,6 +1,7 @@
 #if os(macOS)
     import CoreServices
     import Foundation
+    import Synchronization
 
     /// An FSEvents stream that reports the files directly in a folder changing,
     /// which a `DispatchSource` on the folder does not hear (ADR 0051).
@@ -47,7 +48,14 @@
                 FSEventStreamRelease(stream)
                 return nil
             }
+            // Stopping twice would release the stream twice; only the first stop counts.
+            let stopped = Mutex(false)
             return {
+                let isFirst = stopped.withLock { wasStopped in
+                    defer { wasStopped = true }
+                    return !wasStopped
+                }
+                guard isFirst else { return }
                 queue.async {
                     FSEventStreamStop(stream)
                     FSEventStreamInvalidate(stream)

@@ -10,11 +10,13 @@ import TreewiseTestSupport
     private let store: FolderSettingsStore
     private let settings = FolderSettings(enabledModules: ["a"], templates: ["a": "Scan {seq}"])
     private static let day: TimeInterval = 24 * 60 * 60
+    /// The store's time, fixed, so the days below count from it alone.
+    private static let today = Date(timeIntervalSinceReferenceDate: 800_000_000)
 
     init() throws {
         root = try TempDirectory()
         try root.makeFolder("private")
-        store = FolderSettingsStore(directory: root.url("private"))
+        store = FolderSettingsStore(directory: root.url("private"), now: { Self.today })
     }
 
     private func folder(_ name: String) throws -> String {
@@ -28,7 +30,7 @@ import TreewiseTestSupport
     }
 
     private func days(_ count: Double) -> Date {
-        Date().addingTimeInterval(count * Self.day)
+        Self.today.addingTimeInterval(count * Self.day)
     }
 
     @Test func dropsTheSettingsOfAFolderUnseenForMoreThanThirtyDays() async throws {

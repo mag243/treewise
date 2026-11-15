@@ -17,8 +17,30 @@ public final class TempDirectory {
     }
 
     deinit {
+        Self.grantOwnerWrite(under: url)
         try? FileManager.default.removeItem(at: url)
     }
+
+    /// Lets the owner write in every folder below `folder`, as one extracted from a disk
+    /// image is read-only and its items could not be removed otherwise. Symbolic links
+    /// are left alone, as a permission set through one would change what it points to.
+    private static func grantOwnerWrite(under folder: URL) {
+        let manager = FileManager.default
+        let below = (try? manager.subpathsOfDirectory(atPath: folder.path)) ?? []
+        let folders = [folder] + below.map { folder.appendingPathComponent($0) }
+        for candidate in folders {
+            guard
+                let attributes = try? manager.attributesOfItem(atPath: candidate.path),
+                attributes[.type] as? FileAttributeType == .typeDirectory,
+                let permissions = attributes[.posixPermissions] as? Int
+            else { continue }
+            try? manager.setAttributes(
+                [.posixPermissions: permissions | ownerAll], ofItemAtPath: candidate.path)
+        }
+    }
+
+    /// Read, write and search for the owner.
+    private static let ownerAll = 0o700
 
     /// The folder's path, as `LocalFileSystem` uses it for identities.
     public var path: String { url.path }

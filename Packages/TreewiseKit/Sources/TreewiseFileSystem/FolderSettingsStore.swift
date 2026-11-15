@@ -36,16 +36,27 @@ public actor FolderSettingsStore: FolderSettingsStoring {
             path = try container.decode(String.self, forKey: .path)
             isOnFolder = try container.decode(Bool.self, forKey: .isOnFolder)
             settings = try container.decode(FolderSettings.self, forKey: .settings)
-            lastSeen = try container.decodeIfPresent(Date.self, forKey: .lastSeen) ?? Date()
+            lastSeen =
+                try container.decodeIfPresent(Date.self, forKey: .lastSeen)
+                ?? decoder.userInfo[Record.readingTime] as? Date ?? Date()
         }
+
+        // swiftlint:disable force_unwrapping - a fixed key, which is always valid
+        /// The store's time when it reads its file, for a record saved without a date.
+        static let readingTime = CodingUserInfoKey(rawValue: "readingTime")!
+        // swiftlint:enable force_unwrapping
     }
 
     private let file: URL
     private var records: [String: Record]?
 
-    /// Creates a store that keeps its file in `directory`.
-    public init(directory: URL) {
+    /// When a folder is seen, as its settings are read or saved.
+    private let now: @Sendable () -> Date
+
+    /// Creates a store that keeps its file in `directory`, telling the time by `now`.
+    public init(directory: URL, now: @escaping @Sendable () -> Date = Date.init) {
         file = directory.appendingPathComponent(Self.fileName)
+        self.now = now
     }
 
     /// The folder Treewise keeps these settings in by default.
@@ -74,12 +85,12 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         loadIfNeeded()
         if let id = settledID(forFolderAt: path) {
             records?[id]?.settings = settings
-            records?[id]?.lastSeen = Date()
+            records?[id]?.lastSeen = now()
         } else {
             let id = UUID().uuidString
             let isOnFolder = Self.write(id, toFolderAt: path)
             records?[id] = Record(
-                path: path, isOnFolder: isOnFolder, settings: settings, lastSeen: Date())
+                path: path, isOnFolder: isOnFolder, settings: settings, lastSeen: now())
         }
         persist()
     }
@@ -138,7 +149,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         case .moved:
             guard let id else { return nil }
             records?[id]?.path = path
-            records?[id]?.lastSeen = Date()
+            records?[id]?.lastSeen = now()
             persist()
             return id
         case .copy:
@@ -151,7 +162,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         let new = UUID().uuidString
         guard Self.write(new, toFolderAt: path) else { return nil }
         records?[new] = Record(
-            path: path, isOnFolder: true, settings: record.settings, lastSeen: Date())
+            path: path, isOnFolder: true, settings: record.settings, lastSeen: now())
         persist()
         return new
     }
@@ -168,7 +179,9 @@ public actor FolderSettingsStore: FolderSettingsStoring {
             return
         }
         do {
-            records = try JSONDecoder().decode([String: Record].self, from: data)
+            let decoder = JSONDecoder()
+            decoder.userInfo[Record.readingTime] = now()
+            records = try decoder.decode([String: Record].self, from: data)
         } catch {
             // Patterns can be recognized again, so a damaged file does not stop anything.
             Self.logger.error("Folder settings unreadable: \(error.localizedDescription)")

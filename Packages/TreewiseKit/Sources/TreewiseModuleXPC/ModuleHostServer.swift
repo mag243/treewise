@@ -1,9 +1,9 @@
 #if os(macOS)
     import Foundation
+    import TreewiseCore
     import TreewiseModuleInterface
     import os
 
-    import TreewiseCore
     /// The service's side of the XPC connection: runs the add-ons it was given, of either kind
     /// (ADR 0057, ADR 0091).
     public final class ModuleHostServer: NSObject, NSXPCListenerDelegate, ModuleHostXPCProtocol,
@@ -98,12 +98,23 @@
                 reply(nil)
                 return
             }
+            let work = Task { try await module.fieldValues(for: decoded) }
+            // The app stops waiting after its timeout; the module is stopped then too, so it
+            // does not run on for no one.
+            let deadline = Task {
+                try await Task.sleep(for: XPCModuleHost.defaultTimeout)
+                work.cancel()
+            }
             Task {
+                defer { deadline.cancel() }
                 do {
-                    reply(try ModuleWire.encode(try await module.fieldValues(for: decoded)))
+                    reply(try ModuleWire.encode(try await work.value))
                 } catch {
-                    // The error comes from closed code, so only its type is logged.
-                    Self.logger.error("Module \(moduleID) failed: \(type(of: error))")
+                    // The error comes from closed code, so only its type is logged; neither
+                    // the add-on's id nor the type says anything about the user.
+                    let kind = String(describing: type(of: error))
+                    Self.logger.error(
+                        "Module \(moduleID, privacy: .public) failed: \(kind, privacy: .public)")
                     reply(nil)
                 }
             }

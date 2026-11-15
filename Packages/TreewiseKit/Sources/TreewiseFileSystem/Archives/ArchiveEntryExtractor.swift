@@ -60,7 +60,8 @@
             let outcome = try TarProcess.run(
                 arguments, temporaryFolder: temporaryFolder, control: control
             ) { line in
-                guard TarProcess.isEntry(line), !TarProcess.isFailure(line) else { return }
+                // A name can hold ": "; whether the run failed is tar's exit status.
+                guard TarProcess.isEntry(line) else { return }
                 onEntry(TarProcess.entryName(line))
             }
             guard outcome.succeeded else {

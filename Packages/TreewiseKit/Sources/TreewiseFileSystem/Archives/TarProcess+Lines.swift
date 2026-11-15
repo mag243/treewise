@@ -33,7 +33,9 @@
             }
         }
 
-        /// Counts the entries `tar` reports done, of `total`, failures left out.
+        /// Counts the entries `tar` reports done, of `total`. An entry it complains about is
+        /// done too, and a name can hold ": ", which reads as a complaint; whether the run
+        /// failed is tar's exit status, so every entry line counts.
         struct EntryCounter {
             let total: Int
             private var completed = 0
@@ -44,7 +46,7 @@
 
             /// The progress after `line`, when it reports an entry done.
             mutating func read(_ line: String) -> ArchiveProgress? {
-                guard TarProcess.isEntry(line), !TarProcess.isFailure(line) else { return nil }
+                guard TarProcess.isEntry(line) else { return nil }
                 completed += 1
                 return ArchiveProgress(
                     completedEntries: completed, totalEntries: total,
