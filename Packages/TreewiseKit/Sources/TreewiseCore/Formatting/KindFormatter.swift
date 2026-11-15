@@ -4,41 +4,25 @@ import Foundation
 /// one (`PDF document`), otherwise a generic one for the item's `ItemKind`
 /// (ADR 0015).
 public struct KindFormatter: Sendable {
-    private let locale: Locale
+    /// The generic text of each kind, looked up once: sorting by kind asks for it
+    /// twice for every comparison.
+    private let generic: [ItemKind: String]
 
     /// Creates a formatter for a locale.
     public init(locale: Locale) {
-        self.locale = locale
+        let bundle = Bundle.module.localizationBundle(for: locale)
+        func text(_ key: String.LocalizationValue) -> String {
+            String(localized: key, bundle: bundle, locale: locale)
+        }
+        let folder = text("Folder")
+        generic = [
+            .folder: folder, .home: folder, .file: text("Document"), .package: text("Application"),
+            .volume: text("Volume"), .cloud: text("Cloud storage"), .computer: text("Computer"),
+        ]
     }
 
     /// Returns the text for the kind of `item`.
     public func string(for item: FileItem) -> String {
-        if let description = item.kindDescription { return description }
-        return switch item.kind {
-        case .folder, .home:
-            String(
-                localized: "Folder", bundle: .module.localizationBundle(for: locale), locale: locale
-            )
-        case .file:
-            String(
-                localized: "Document", bundle: .module.localizationBundle(for: locale),
-                locale: locale)
-        case .package:
-            String(
-                localized: "Application", bundle: .module.localizationBundle(for: locale),
-                locale: locale)
-        case .volume:
-            String(
-                localized: "Volume", bundle: .module.localizationBundle(for: locale), locale: locale
-            )
-        case .cloud:
-            String(
-                localized: "Cloud storage", bundle: .module.localizationBundle(for: locale),
-                locale: locale)
-        case .computer:
-            String(
-                localized: "Computer", bundle: .module.localizationBundle(for: locale),
-                locale: locale)
-        }
+        item.kindDescription ?? generic[item.kind] ?? ""
     }
 }
