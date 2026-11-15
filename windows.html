@@ -113,11 +113,18 @@ h2.section { margin: 56px 0 12px; font-size: 25px; line-height: 1.2; font-weight
   .intro { font-size: 18px; }
 }
 .footer { margin: 0 0 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--soft); font-size: 15px; }
+.brand { flex-wrap: wrap; }
+.brand .home { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand nav { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-left: auto; font-weight: 400; font-size: 15px; }
+.brand nav a { color: var(--soft); text-decoration: none; }
+.brand nav a:hover { color: var(--ink); text-decoration: underline; }
+.brand nav a[aria-current] { color: var(--ink); }
+@media (max-width: 560px) { .brand nav { width: 100%; margin-left: 0; } }
 </style>
 </head>
 <body>
 <div class="page">
-  <header class="brand"><a href="index.html"><img src="images/icon.png" alt="" width="32" height="32"></a><a href="index.html" style="text-decoration:none">Treewise</a></header>
+  <header class="brand"><a class="home" href="index.html"><img src="images/icon.png" alt="" width="32" height="32">Treewise</a><nav aria-label="Pages"><a href="windows.html" aria-current="page">From Windows</a><a href="privacy.html">Privacy</a><a href="https://github.com/mag243/treewise">GitHub</a></nav></header>
 
   <section class="hero">
     <h1>From Windows Explorer to the Mac.</h1>
