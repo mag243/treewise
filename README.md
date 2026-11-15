@@ -2,7 +2,12 @@
 
 A file manager for macOS, and later iPadOS and iOS, that works like Windows Explorer and looks like a native Mac app: a real folder tree, macOS's window tabs, two windows side by side, drag to move or copy with a visible indication of which, and cut/paste for files.
 
-Download it from <https://treewise.m-domain.me/>, or with Homebrew: `brew install --cask mag243/tap/treewise`. It needs macOS 15 or later. The iPadOS and iOS versions are in development.
+<picture>
+  <source srcset="https://treewise.m-domain.me/images/01-main-dark.webp" media="(prefers-color-scheme: dark)">
+  <img src="https://treewise.m-domain.me/images/01-main-light.webp" alt="Treewise with the folder tree, the address bar, the command bar, a list of files and the details pane." width="800">
+</picture>
+
+Download it from <https://treewise.m-domain.me/>, or with Homebrew: `brew install --cask mag243/tap/treewise`. It needs macOS 15 or later. The iPadOS and iOS versions are in development. Coming from Windows? [Explorer's ways in Treewise](https://treewise.m-domain.me/windows.html).
 
 ## Keyboard shortcuts
 

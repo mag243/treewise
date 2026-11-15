@@ -86,8 +86,12 @@ git clone --quiet --depth 1 "https://github.com/$TAP_REPOSITORY.git" "$WORK/tap"
 
 update_appcast "$zip" "$tag" "$WORK/notes.md" "$WORK/site"
 ok "Appcast has $APP_NAME $version"
-update_download_link "$WORK/site/index.html" \
-  "https://github.com/$RELEASES_REPOSITORY/releases/download/$tag/$(basename "$dmg")"
+# Every page of the site with a download button, such as the one for Windows users.
+for page in "$WORK"/site/*.html; do
+  grep -q "data-download" "$page" || continue
+  update_download_link "$page" \
+    "https://github.com/$RELEASES_REPOSITORY/releases/download/$tag/$(basename "$dmg")"
+done
 
 # The Release comes before the appcast, so the zip exists when Sparkle reads of it.
 # --verify-tag: without the tag on GitHub, gh would make one at the newest commit of main.
