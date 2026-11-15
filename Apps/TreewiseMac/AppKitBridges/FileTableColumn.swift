@@ -38,6 +38,17 @@ enum FileTableColumn: String, CaseIterable {
         }
     }
 
+    /// The narrowest the column gets when the list narrows: the name gives way first, as
+    /// in Finder, then the list scrolls sideways.
+    var minimumWidth: CGFloat {
+        switch self {
+        case .name: 120
+        case .dateModified: 110
+        case .size: 60
+        case .kind: 80
+        }
+    }
+
     init(_ column: SortColumn) {
         self =
             switch column {
@@ -54,6 +65,10 @@ enum FileTableColumn: String, CaseIterable {
         let column = NSTableColumn(identifier: identifier)
         column.title = title
         column.width = initialWidth
+        column.minWidth = minimumWidth
+        // Only the name follows the list's width; the others keep theirs until dragged.
+        column.resizingMask =
+            self == .name ? [.autoresizingMask, .userResizingMask] : .userResizingMask
         column.sortDescriptorPrototype = NSSortDescriptor(key: rawValue, ascending: true)
         if self == .size { column.headerCell.alignment = .right }
         return column

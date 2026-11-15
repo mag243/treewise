@@ -141,10 +141,10 @@ enum UIReviewChecks {
     /// Two texts or controls over each other.
     private static func overlapping(_ leaves: [Placed]) -> [UIReviewFinding] {
         var found: [UIReviewFinding] = []
-        let shown = leaves.filter { !$0.snapshot.frame.isEmpty }
+        let shown = leaves.filter { !visible($0).isEmpty }
         for (index, one) in shown.enumerated() {
             for other in shown[(index + 1)...] {
-                let (first, second) = (one.snapshot.frame, other.snapshot.frame)
+                let (first, second) = (visible(one), visible(other))
                 // One inside the other, as the glass in a search field, is not over it.
                 guard !first.contains(second), !second.contains(first) else { continue }
                 let both = first.intersection(second)
@@ -161,6 +161,13 @@ enum UIReviewChecks {
         return found
     }
 
+    /// The part of an element that shows: inside its list, which clips what it scrolls.
+    private static func visible(_ placed: Placed) -> CGRect {
+        guard let list = placed.list else { return placed.snapshot.frame }
+        let inside = placed.snapshot.frame.intersection(list)
+        return inside.isNull ? .zero : inside
+    }
+
     /// A text or control against the side of its list or window.
     private static func tooClose(_ leaves: [Placed], window: CGRect, windowToo: Bool)
         -> [UIReviewFinding]
@@ -171,7 +178,9 @@ enum UIReviewChecks {
             guard !frame.isEmpty, !leaf.snapshot.identifier.hasPrefix("_XCUI") else { return nil }
             // A column's header meets the list's sides by design; texts and fields do not.
             let isText = [.staticText, .textField].contains(leaf.snapshot.elementType)
-            if let list = leaf.list, isText,
+            // What runs past a list that scrolls sideways is scrolled to, not cramped.
+            let runsPast = leaf.list.map { !contains($0, frame) } ?? false
+            if let list = leaf.list, isText, !(leaf.listScrolls && runsPast),
                 frame.minX - list.minX < listMargin - tolerance
                     || list.maxX - frame.maxX < listMargin - tolerance
             {

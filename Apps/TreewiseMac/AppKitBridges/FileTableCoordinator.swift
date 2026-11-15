@@ -43,6 +43,9 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         table.usesAlternatingRowBackgroundColors = true
         table.allowsMultipleSelection = true
         table.style = .fullWidth
+        // A narrower list, as beside the details pane, makes the name narrower first and
+        // scrolls sideways only once it is at its narrowest, as Finder does.
+        table.columnAutoresizingStyle = .firstColumnOnlyAutoresizingStyle
         table.dataSource = self
         table.delegate = self
         table.target = self

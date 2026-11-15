@@ -69,6 +69,7 @@ extension FileTableCoordinator {
             self?.actions?.focus()
         }
         scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = true
         scrollView.autohidesScrollers = true
         return scrollView
     }
