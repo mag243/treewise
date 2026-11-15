@@ -103,12 +103,13 @@ extension BrowserState {
             @escaping @Sendable (@escaping ArchiveProgressHandler, TransferControl) async throws
             -> OperationResult
     ) async -> OperationResult? {
-        // A window runs one transfer at a time; a second one waits for the first.
-        if let running = runningTransfer { _ = await running.value }
         let control = TransferControl()
         let reporter = archiveReporter(kind)
-        let task = Task {
-            await perform(name: name, undoManager: undoManager) { _ in
+        return await runInTurn(
+            control: control,
+            progress: OperationProgress(completedBytes: 0, totalBytes: 0, kind: kind)
+        ) {
+            await self.perform(name: name, undoManager: undoManager) { _ in
                 do {
                     return try await work(reporter, control)
                 } catch FileSystemError.cancelled {
@@ -116,15 +117,6 @@ extension BrowserState {
                 }
             }
         }
-        runningTransfer = task
-        runningControl = control
-        progress = OperationProgress(completedBytes: 0, totalBytes: 0, kind: kind)
-        let result = await task.value
-        runningTransfer = nil
-        runningControl = nil
-        progress = nil
-        isPaused = false
-        return result
     }
 
     /// Passes an archive operation's progress on while it runs; what arrives

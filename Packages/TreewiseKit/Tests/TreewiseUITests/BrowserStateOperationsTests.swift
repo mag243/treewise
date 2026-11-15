@@ -245,6 +245,30 @@ import TreewiseUI
         #expect(!(await browser.subfolders(of: "documents")).contains { $0.name == ".cache" })
     }
 
+    @Test func runsOneTransferAtATimeWithThreeWaiting() async throws {
+        let browser = await browser(at: "projects")
+        fileSystem.holdChanges()
+        var pastes: [Task<Void, Never>] = []
+        for id: FileItem.ID in ["doc1", "doc2", "doc3"] {
+            let item = try await fileSystem.item(at: id)
+            pastes.append(
+                Task {
+                    await browser.pasteItems([item], resolver: ScriptedResolver(), undoManager: nil)
+                })
+        }
+        #expect(await eventually { fileSystem.changesStarted == 1 })
+
+        fileSystem.letOneChangePass()
+        _ = await eventually { fileSystem.changesStarted >= 2 }
+        _ = await eventually { fileSystem.changesStarted >= 3 }
+        #expect(fileSystem.changesStarted == 2, "the third waits for the second")
+
+        fileSystem.releaseChanges()
+        for paste in pastes { await paste.value }
+        #expect(fileSystem.changesStarted == 3)
+        #expect(browser.progress == nil)
+    }
+
     @Test func pausesAndResumesATransfer() async throws {
         let browser = await browser(at: "projects")
         let notes = try await fileSystem.item(at: "doc2")

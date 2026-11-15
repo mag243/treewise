@@ -258,23 +258,14 @@ extension BrowserState {
             return false
         }
         let name = Self.actionName(mode == .move ? "Move" : "Copy")
-        // A window runs one transfer at a time; a second one waits for the first.
-        if let running = runningTransfer { _ = await running.value }
         let control = TransferControl()
-        let task = Task {
-            await perform(name: name, undoManager: undoManager) { operations in
+        let result = await runInTurn(control: control, progress: nil) {
+            await self.perform(name: name, undoManager: undoManager) { operations in
                 try await operations.transfer(
-                    items, to: folder, mode: mode, resolver: resolver, progress: reporter(),
-                    control: control)
+                    items, to: folder, mode: mode, resolver: resolver,
+                    progress: self.reporter(), control: control)
             }
         }
-        runningTransfer = task
-        runningControl = control
-        let result = await task.value
-        runningTransfer = nil
-        runningControl = nil
-        progress = nil
-        isPaused = false
         if mode == .move, let result {
             clipboard = clipboard?.removing(
                 Set(items.map(\.id)).subtracting(result.items.map(\.id)))
@@ -285,6 +276,35 @@ extension BrowserState {
         }
         if layout.focusedPane.activeTab.folder == folder { selectInFocusedTab(result?.items ?? []) }
         return result != nil
+    }
+
+    /// Runs `work` as the window's transfer, after every transfer queued before it: a
+    /// window runs one at a time, however many wait. While it runs, `control` pauses and
+    /// stops it and `progress` starts at `initial`; once it ends both are cleared, before
+    /// the next one starts.
+    func runInTurn(
+        control: TransferControl, progress initial: OperationProgress?,
+        _ work: @escaping @MainActor () async -> OperationResult?
+    ) async -> OperationResult? {
+        let previous = queuedTransfer
+        let turn = Task { @MainActor [weak self] () -> OperationResult? in
+            _ = await previous?.value
+            guard let self else { return nil }
+            let task = Task { @MainActor in await work() }
+            runningTransfer = task
+            runningControl = control
+            progress = initial
+            let result = await task.value
+            runningTransfer = nil
+            runningControl = nil
+            progress = nil
+            isPaused = false
+            return result
+        }
+        queuedTransfer = turn
+        let result = await turn.value
+        if queuedTransfer == turn { queuedTransfer = nil }
+        return result
     }
 
     /// Runs an operation, registers its undo, reloads what the panes show and

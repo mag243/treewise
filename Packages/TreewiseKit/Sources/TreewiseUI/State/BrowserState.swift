@@ -70,6 +70,8 @@ public final class BrowserState {
     @ObservationIgnored var locationsWatch: Task<Void, Never>?
     /// The transfer that runs, which `cancelOperation()` stops.
     @ObservationIgnored var runningTransfer: Task<OperationResult?, Never>?
+    /// The last transfer that waits its turn, or runs; the next one waits for it.
+    @ObservationIgnored var queuedTransfer: Task<OperationResult?, Never>?
     /// Pauses, resumes and stops the running transfer (ADR 0026).
     @ObservationIgnored var runningControl: TransferControl?
 

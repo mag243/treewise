@@ -13,6 +13,8 @@ public final class ChangingFileSystem: FileOperating {
         var nextNumber = 1
         var failure: (any Error)?
         var isHeld = false
+        var passes = 0
+        var changesStarted = 0
         var released: [FileItem.ID] = []
         var edits: [ArchiveEdit] = []
         var listingsToHold = 0
@@ -83,6 +85,16 @@ public final class ChangingFileSystem: FileOperating {
         state.withLock { $0.isHeld = false }
     }
 
+    /// Lets one held change go on while the others stay held.
+    public func letOneChangePass() {
+        state.withLock { $0.passes += 1 }
+    }
+
+    /// How many copies, moves and archive changes have started, held or not.
+    public var changesStarted: Int {
+        state.withLock { $0.changesStarted }
+    }
+
     /// The files of an item, itself included when it is one.
     private func files(of item: FileItem) -> [FileItem] {
         state.withLock { $0.tree.subtree(item.id) }.filter { !$0.isContainer }
@@ -98,7 +110,17 @@ public final class ChangingFileSystem: FileOperating {
     }
 
     func waitWhileHeld() async throws {
-        while state.withLock({ $0.isHeld }) { await Task.yield() }
+        state.withLock { $0.changesStarted += 1 }
+        while state.withLock({ state in
+            guard state.isHeld else { return false }
+            guard state.passes == 0 else {
+                state.passes -= 1
+                return false
+            }
+            return true
+        }) {
+            await Task.yield()
+        }
         if Task.isCancelled { throw FileSystemError.cancelled }
     }
 
