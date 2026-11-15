@@ -14,21 +14,31 @@ public final class TemplateBarModel {
         public let source: TemplateBarRule.Source
     }
 
-    private let fileSystem: any FileSystemProviding
-    private let settings: any FolderSettingsStoring
-    private let templates: any FolderTemplateStoring
-    private let addOnMayWork: @MainActor () async -> Bool
+    let fileSystem: any FileSystemProviding
+    let settings: any FolderSettingsStoring
+    let templates: any FolderTemplateStoring
+    let addOnMayWork: @MainActor () async -> Bool
+    /// The folder at an id read as a template, as the add-on recognizes it (ADR 0102).
+    let yearBefore: @MainActor (FileItem.ID) async -> FolderTree?
+    /// Whether the bar offers missing folders, as Settings says (ADR 0102).
+    let offersMissingFolders: @MainActor () -> Bool
 
     /// A model that reads folders from `fileSystem`, their settings from `settings` and the
-    /// templates from `templates`; the bar shows only while `addOnMayWork` says so.
+    /// templates from `templates`; the bar shows only while `addOnMayWork` says so. Missing
+    /// folders come from `yearBefore`, and the bar offers them while `offersMissingFolders`
+    /// says so (ADR 0102).
     public init(
         fileSystem: any FileSystemProviding, settings: any FolderSettingsStoring,
-        templates: any FolderTemplateStoring, addOnMayWork: @escaping @MainActor () async -> Bool
+        templates: any FolderTemplateStoring, addOnMayWork: @escaping @MainActor () async -> Bool,
+        yearBefore: @escaping @MainActor (FileItem.ID) async -> FolderTree? = { _ in nil },
+        offersMissingFolders: @escaping @MainActor () -> Bool = { true }
     ) {
         self.fileSystem = fileSystem
         self.settings = settings
         self.templates = templates
         self.addOnMayWork = addOnMayWork
+        self.yearBefore = yearBefore
+        self.offersMissingFolders = offersMissingFolders
     }
 
     /// What the bar offers in `folder`, or nil when it shows none.
@@ -73,7 +83,7 @@ public final class TemplateBarModel {
         await change(folder) { $0.newFolders = .template(id: templateID) }
     }
 
-    private func change(_ folder: FileItem.ID, _ edit: (inout FolderSettings) -> Void) async {
+    func change(_ folder: FileItem.ID, _ edit: (inout FolderSettings) -> Void) async {
         var kept =
             await settings.settings(forFolderAt: folder.rawValue)
             ?? FolderSettings(enabledModules: [], templates: [:])

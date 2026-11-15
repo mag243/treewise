@@ -26,6 +26,13 @@ import TreewiseUI
         #expect(BrowserSettings(store: store).checksSpellingWhileTyping)
     }
 
+    @Test func offersMissingFoldersUntilTurnedOff() {
+        let store = MemorySettingsStore()
+        #expect(BrowserSettings(store: store).offersMissingFolders)
+        BrowserSettings(store: store).offersMissingFolders = false
+        #expect(!BrowserSettings(store: store).offersMissingFolders)
+    }
+
     @Test func keepsTheTerminalApp() {
         let store = MemorySettingsStore()
         BrowserSettings(store: store).terminalApp = "com.example.terminal"

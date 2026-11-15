@@ -98,7 +98,7 @@ extension FolderTree {
         folders.contains { Self.isSame($0.name, name) }
     }
 
-    private static func isSame(_ one: String, _ other: String) -> Bool {
+    static func isSame(_ one: String, _ other: String) -> Bool {
         ConflictResolver.comparisonKey(one) == ConflictResolver.comparisonKey(other)
     }
 

@@ -71,6 +71,7 @@ public final class BrowserSettings {
         /// The one trial start of ADR 0071, forgotten since ADR 0088.
         static let oldLicenceTrialStart = "licenceTrialStart"
         static let personalDataInNames = "personalDataInNames"
+        static let offersMissingFolders = "offersMissingFolders"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
     }
@@ -179,6 +180,14 @@ public final class BrowserSettings {
         didSet { store.setSetting(personalDataInNames.rawValue, for: Key.personalDataInNames) }
     }
 
+    /// Whether a year's folder offers, in its bar, the folders of the year before it lacks
+    /// (ADR 0102); off, Add Missing Folders… still offers them.
+    public var offersMissingFolders: Bool {
+        didSet {
+            store.setSetting(String(offersMissingFolders), for: Key.offersMissingFolders)
+        }
+    }
+
     /// The Favorites the user chose, as JSON (ADR 0050); `nil` until the first
     /// change, while the provider's built-in favorites show.
     public var favoriteFolders: [FileItem.ID]? {
@@ -252,6 +261,7 @@ public final class BrowserSettings {
             .flatMap { try? JSONDecoder().decode([String].self, from: Data($0.utf8)) }?
             .map { FileItem.ID($0) }
         sidebarWidth = store.setting(Key.sidebarWidth).flatMap(Double.init)
+        offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
     }
 
     private func decoded<Value: Decodable>(_ type: Value.Type, at key: String) -> Value? {

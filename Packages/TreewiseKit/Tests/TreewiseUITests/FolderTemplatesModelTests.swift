@@ -95,6 +95,25 @@ import TreewiseUI
             await eventually { model.templates.first?.root.folder(at: ["Tax"])?.names == names })
     }
 
+    @Test func addsTheMissingFoldersToATemplateAndUndoesIt() async throws {
+        let model = await model()
+        let made = FolderTree(
+            name: "2027",
+            folders: [FolderTree(name: "Tax"), FolderTree(name: "Receipts")])
+        let recognized = FolderTree(
+            name: "{year}",
+            folders: [FolderTree(name: "Tax"), FolderTree(name: "Receipts")])
+        let missing = MissingFolders(
+            of: made, in: FolderContents(folders: ["Tax": FolderContents()]))
+        await model.addMissing(
+            missing, from: recognized, year: 2027, to: "year", undoManager: undoManager)
+        let saved = await store.templates().first { $0.id == "year" }
+        #expect(saved?.root.folders.map(\.name) == ["Receipts", "Tax"])
+        #expect(undoManager.undoActionName == "Add to Template")
+        undoManager.undo()
+        #expect(await eventually { model.templates.first { $0.id == "year" } == Self.year })
+    }
+
     @Test func refusesAnEditTheTreeCannotTakeAndSaysWhy() async {
         let model = await model()
         await model.renameFolder(["Tax"], of: "year", to: "{seq}", undoManager: undoManager)

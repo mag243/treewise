@@ -11,6 +11,14 @@ public enum YearFolders {
         yearComponent(of: folder)?.year
     }
 
+    /// The year of a year's own folder, one whose name is the year, as `…/2026`; nil for any
+    /// other folder, also one below it (ADR 0094, ADR 0102).
+    public static func ownYear(of folder: FileItem.ID) -> Int? {
+        guard let (index, year) = yearComponent(of: folder) else { return nil }
+        let parts = folder.rawValue.split(separator: "/", omittingEmptySubsequences: false)
+        return index == parts.count - 1 ? year : nil
+    }
+
     /// The folder at the same path with its nearest year one lower, as `…/2025/Tax` for
     /// `…/2026/Tax`, or nil when its path holds no year. Whether it exists is not checked.
     public static func folderBefore(_ folder: FileItem.ID) -> FileItem.ID? {

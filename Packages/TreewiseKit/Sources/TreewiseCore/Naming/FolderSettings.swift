@@ -49,6 +49,20 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     public var newFolders = NewFolders.automatic
     /// Whether the bar offering a template's folders was closed for this folder (ADR 0094).
     public var templateBarClosed = false
+    /// The folders of the year before that the bar leaves out in this year’s folder,
+    /// by their path below it, as they were missing when it was closed (ADR 0102).
+    public var missingFoldersClosed: Set<[String]> = []
+    /// Whether the bar offers this year's folder no missing folders at all (ADR 0102).
+    public var offersNoMissingFolders = false
+
+    /// Takes what `other` says of templates (ADR 0094, ADR 0097, ADR 0102), which changes
+    /// outside the review, keeping the rest of these settings.
+    public mutating func keepTemplates(of other: FolderSettings) {
+        newFolders = other.newFolders
+        templateBarClosed = other.templateBarClosed
+        missingFoldersClosed = other.missingFoldersClosed
+        offersNoMissingFolders = other.offersNoMissingFolders
+    }
 
     /// Whether the folder was ever reviewed: then a module is on, which a folder kept only
     /// for what it says of templates has not.
@@ -124,7 +138,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
 
     private enum CodingKeys: String, CodingKey {
         case enabledModules, templates, alwaysSkipped, moduleOrder, savedPatternLinks
-        case newFolders, templateBarClosed
+        case newFolders, templateBarClosed, missingFoldersClosed, offersNoMissingFolders
     }
 
     /// Reads settings; those stored before a field existed get its default.
@@ -142,6 +156,10 @@ public struct FolderSettings: Hashable, Sendable, Codable {
             try container.decodeIfPresent(NewFolders.self, forKey: .newFolders) ?? .automatic
         templateBarClosed =
             try container.decodeIfPresent(Bool.self, forKey: .templateBarClosed) ?? false
+        missingFoldersClosed =
+            try container.decodeIfPresent(Set<[String]>.self, forKey: .missingFoldersClosed) ?? []
+        offersNoMissingFolders =
+            try container.decodeIfPresent(Bool.self, forKey: .offersNoMissingFolders) ?? false
     }
 
     /// Decides how a folder relates to the record of the id on it.

@@ -57,7 +57,7 @@ extension FolderTree {
 
     /// The folders this one of a template makes: itself filled in, or one for each month,
     /// quarter or half when it repeats.
-    private func made(with values: FolderTemplateValues) -> [FolderTree] {
+    func made(with values: FolderTemplateValues) -> [FolderTree] {
         guard let read = try? FolderNameFields(name), let repeating = read.repeats.first else {
             return [filling(values)]
         }

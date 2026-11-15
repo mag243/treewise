@@ -65,10 +65,7 @@ public enum TemplateBarRule {
     ) -> Source? {
         guard let before = YearFolders.folderBefore(folder) else { return nil }
         if yearBeforeHasFolders { return .yearBefore(before) }
-        let ownName = folder.rawValue.split(separator: "/").last.map(String.init)
-        guard let year = YearFolders.year(of: folder), ownName == String(year) else {
-            return nil
-        }
+        guard YearFolders.ownYear(of: folder) != nil else { return nil }
         let rooted = templates.filter(\.isRootedAtYear)
         return rooted.count == 1 ? rooted.first.map(Source.template) : nil
     }

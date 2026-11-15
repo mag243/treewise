@@ -22,4 +22,13 @@ import TreewiseCore
     func findsNoneWithoutAYearOfItsOwnInThePath(_ path: String) {
         #expect(YearFolders.folderBefore(FileItem.ID(path)) == nil)
     }
+
+    @Test(arguments: [
+        ("/Users/ada/Administration/2026", 2026 as Int?),
+        ("/Users/ada/Administration/2026/Tax", nil),
+        ("/Users/ada/Tax 2026", nil),
+    ])
+    func aYearsOwnFolderIsTheOneNamedAsTheYear(_ path: String, _ year: Int?) {
+        #expect(YearFolders.ownYear(of: FileItem.ID(path)) == year)
+    }
 }

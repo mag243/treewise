@@ -160,12 +160,11 @@ extension NameReviewModel {
     }
 
     /// Saves what the review chose, keeping what the folder's settings say of templates as
-    /// they are now, since those change outside the review (ADR 0097).
+    /// they are now, since those change outside the review (ADR 0097, ADR 0102).
     func saveSettings() async {
         var toSave = settings
         if let stored = await dependencies.store.settings(forFolderAt: folder.id.rawValue) {
-            toSave.newFolders = stored.newFolders
-            toSave.templateBarClosed = stored.templateBarClosed
+            toSave.keepTemplates(of: stored)
         }
         await dependencies.store.save(toSave, forFolderAt: folder.id.rawValue)
     }

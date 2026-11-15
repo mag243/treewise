@@ -124,6 +124,22 @@ public final class FolderTemplatesModel {
         }
     }
 
+    /// Adds to the template `id` the folders of `missing` it lacks, as `recognized`, the
+    /// folder a year before read as a template, holds them for `year` (ADR 0102).
+    public func addMissing(
+        _ missing: MissingFolders, from recognized: FolderTree, year: Int, to id: String,
+        undoManager: UndoManager?
+    ) async {
+        let values = FolderTemplateValues(year: year)
+        await edit(id, named: "Add to Template", undoManager: undoManager) { tree in
+            guard let added = tree.adding(missing, from: recognized, values: values) else {
+                return (tree, [])
+            }
+            try added.checkTemplate()
+            return (added, [])
+        }
+    }
+
     /// Moves the folder at `path` into the one at `target`, and returns its new path.
     @discardableResult
     public func moveFolder(
