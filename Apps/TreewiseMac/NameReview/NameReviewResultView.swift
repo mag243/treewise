@@ -5,8 +5,6 @@ import TreewiseUI
 /// What applying the overview did, and the way back.
 @MainActor
 final class NameReviewResultView: NSView, NSTableViewDataSource, NSTableViewDelegate {
-    private static let padding: CGFloat = 20
-    private static let spacing: CGFloat = 10
 
     private let names: [String]
 
@@ -25,16 +23,14 @@ final class NameReviewResultView: NSView, NSTableViewDataSource, NSTableViewDele
         views.append(list())
         let undoButton = ClosureButton(title: String(localized: "Undo Rename"), run: undo)
         let doneButton = ClosureButton(title: String(localized: "Done"), run: done)
-        doneButton.keyEquivalent = "\r"
-        let buttons = NSStackView()
-        buttons.setViews([undoButton, doneButton], in: .trailing)
+        let buttons = SheetLayout.buttonRow(cancel: nil, confirm: doneButton)
+        buttons.insertView(undoButton, at: 0, in: .trailing)
         views.append(buttons)
         let stack = NSStackView(views: views)
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = Self.spacing
-        stack.edgeInsets = NSEdgeInsets(
-            top: Self.padding, left: Self.padding, bottom: Self.padding, right: Self.padding)
+        stack.spacing = SheetLayout.spacing
+        stack.edgeInsets = SheetLayout.insets
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
         NSLayoutConstraint.activate([
@@ -45,7 +41,7 @@ final class NameReviewResultView: NSView, NSTableViewDataSource, NSTableViewDele
         ])
         for view in views {
             view.widthAnchor.constraint(
-                equalTo: stack.widthAnchor, constant: -Self.padding * 2
+                equalTo: stack.widthAnchor, constant: -SheetLayout.margin * 2
             ).isActive = true
         }
     }

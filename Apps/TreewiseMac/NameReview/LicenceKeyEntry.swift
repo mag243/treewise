@@ -33,8 +33,6 @@ enum LicenceKeyEntry {
 private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
     private static let width: CGFloat = 520
     private static let fieldHeight: CGFloat = 110
-    private static let padding: CGFloat = 20
-    private static let spacing: CGFloat = 12
 
     private let keeper: LicenceKeeper?
     private let host: any AddOnHosting
@@ -72,9 +70,8 @@ private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
         let stack = NSStackView(views: [title, explanation, keyField(), buttons()])
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = Self.spacing
-        stack.edgeInsets = NSEdgeInsets(
-            top: Self.padding, left: Self.padding, bottom: Self.padding, right: Self.padding)
+        stack.spacing = SheetLayout.spacing
+        stack.edgeInsets = SheetLayout.insets
         stack.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
         view = stack
         updateAdd()
@@ -92,7 +89,7 @@ private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
         scroll.borderType = .bezelBorder
         NSLayoutConstraint.activate([
             scroll.heightAnchor.constraint(equalToConstant: Self.fieldHeight),
-            scroll.widthAnchor.constraint(equalToConstant: Self.width - Self.padding * 2),
+            scroll.widthAnchor.constraint(equalToConstant: Self.width - SheetLayout.margin * 2),
         ])
         return scroll
     }
@@ -111,12 +108,10 @@ private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
         let cancel = ClosureButton(title: String(localized: "Cancel")) { [weak self] in
             self?.finish(nil)
         }
-        cancel.keyEquivalent = "\u{1b}"
-        add.keyEquivalent = "\r"
-        let row = NSStackView()
-        row.setViews([paste, problemIcon, problem], in: .leading)
-        row.setViews([cancel, add], in: .trailing)
-        row.widthAnchor.constraint(equalToConstant: Self.width - Self.padding * 2).isActive = true
+        let row = SheetLayout.buttonRow(
+            leading: [paste, problemIcon, problem], cancel: cancel, confirm: add)
+        row.widthAnchor.constraint(equalToConstant: Self.width - SheetLayout.margin * 2).isActive =
+            true
         return row
     }
 

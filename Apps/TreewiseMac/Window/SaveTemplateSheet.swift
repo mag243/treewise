@@ -97,8 +97,6 @@ enum SaveTemplateSheet {
 private final class SaveTemplateSheetController: NSViewController, NSTextFieldDelegate {
     private static let width: CGFloat = 470
     private static let treeHeight: CGFloat = 220
-    private static let padding: CGFloat = 20
-    private static let spacing: CGFloat = 12
 
     private let tree: FolderTree
     private let name = NSTextField()
@@ -143,15 +141,14 @@ private final class SaveTemplateSheetController: NSViewController, NSTextFieldDe
                 )
                 : String(localized: "\(count) folders."))
         summary.textColor = .secondaryLabelColor
-        summary.preferredMaxLayoutWidth = Self.width - 2 * Self.padding
+        summary.preferredMaxLayoutWidth = Self.width - 2 * SheetLayout.margin
         let stack = NSStackView(views: [title, explanation, nameRow, list, summary, buttons()])
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = Self.spacing
-        stack.edgeInsets = NSEdgeInsets(
-            top: Self.padding, left: Self.padding, bottom: Self.padding, right: Self.padding)
+        stack.spacing = SheetLayout.spacing
+        stack.edgeInsets = SheetLayout.insets
         stack.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
-        list.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -2 * Self.padding)
+        list.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -2 * SheetLayout.margin)
             .isActive = true
         view = stack
         updateSave()
@@ -161,12 +158,9 @@ private final class SaveTemplateSheetController: NSViewController, NSTextFieldDe
         let cancel = ClosureButton(title: String(localized: "Cancel")) { [weak self] in
             self?.finish(nil)
         }
-        cancel.keyEquivalent = "\u{1b}"
-        save.keyEquivalent = "\r"
-        let spacer = NSView()
-        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        let row = NSStackView(views: [spacer, cancel, save])
-        row.widthAnchor.constraint(equalToConstant: Self.width - 2 * Self.padding).isActive = true
+        let row = SheetLayout.buttonRow(cancel: cancel, confirm: save)
+        row.widthAnchor.constraint(equalToConstant: Self.width - 2 * SheetLayout.margin).isActive =
+            true
         return row
     }
 

@@ -7,8 +7,6 @@ import TreewiseUI
 @MainActor
 final class NameReviewPanel: NSObject {
     private static let previewHeight: CGFloat = 200
-    private static let padding: CGFloat = 20
-    private static let spacing: CGFloat = 10
     private static let neighbourSpacing: CGFloat = 3
     private static let neighbourRadius: CGFloat = 3
     private static let newOpacity: CGFloat = 0.2
@@ -26,12 +24,11 @@ final class NameReviewPanel: NSObject {
 
     /// The panel in a scroll view of `width`.
     func makeView(width: CGFloat) -> NSView {
-        textWidth = width - Self.padding * 2
+        textWidth = width - SheetLayout.margin * 2
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = Self.spacing
-        stack.edgeInsets = NSEdgeInsets(
-            top: Self.padding, left: Self.padding, bottom: Self.padding, right: Self.padding)
+        stack.spacing = SheetLayout.spacing
+        stack.edgeInsets = SheetLayout.insets
         stack.translatesAutoresizingMaskIntoConstraints = false
         let document = FlippedView()
         document.addSubview(stack)
