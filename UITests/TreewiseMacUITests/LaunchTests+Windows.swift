@@ -28,12 +28,17 @@ extension LaunchTests {
         } else {
             // Two windows of the minimum width overlap on a narrow screen,
             // such as a CI runner's: each goes against its own edge.
+            let againstTheEdges = app.eventually {
+                let frames = [first.frame, second.frame].sorted { $0.minX < $1.minX }
+                return frames[0].minX == screen.minX && frames[1].maxX == screen.maxX
+                    && frames.allSatisfy { $0.width >= Self.windowMinimum }
+            }
+            // The frames go into the message, as the runner's narrow screen is the only
+            // place this branch runs.
             XCTAssertTrue(
-                app.eventually {
-                    let frames = [first.frame, second.frame].sorted { $0.minX < $1.minX }
-                    return frames[0].minX == screen.minX && frames[1].maxX == screen.maxX
-                        && frames.allSatisfy { $0.width >= Self.windowMinimum }
-                }, "on a narrow screen the windows go against the left and right edges")
+                againstTheEdges,
+                "on a narrow screen the windows go against the left and right edges: "
+                    + "\(first.frame) and \(second.frame) on \(screen)")
         }
         XCTAssertEqual(
             app.windows(titled: try rootName).count, 2,
