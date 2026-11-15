@@ -65,9 +65,11 @@ final class AddOnCardView: NSView {
         let stack = NSStackView(views: rows)
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = Self.bodySpacing
+        // An open card's body stands apart from its header, with a line between them.
+        stack.spacing = isSelected ? 2 * Self.bodySpacing + 1 : Self.bodySpacing
         Self.fill(box.contentView, with: stack)
         Self.fill(self, with: box)
+        if isSelected { addSeparator(below: header) }
         Self.prefer(widthAnchor.constraint(equalToConstant: width))
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
@@ -78,6 +80,20 @@ final class AddOnCardView: NSView {
                     rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
                     owner: self))
         }
+    }
+
+    /// The line between an open card's header and its body, from edge to edge of the card,
+    /// as in the prototype.
+    private func addSeparator(below header: NSView) {
+        let line = NSBox()
+        line.boxType = .separator
+        line.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(line)
+        NSLayoutConstraint.activate([
+            line.leadingAnchor.constraint(equalTo: leadingAnchor),
+            line.trailingAnchor.constraint(equalTo: trailingAnchor),
+            line.topAnchor.constraint(equalTo: header.bottomAnchor, constant: Self.bodySpacing),
+        ])
     }
 
     // MARK: Dragging (ADR 0106)
