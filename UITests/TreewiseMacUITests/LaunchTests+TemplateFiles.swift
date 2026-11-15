@@ -43,7 +43,11 @@ extension LaunchTests {
         // Go to the test's own folder, then save under the name proposed.
         app.typeKey("g", modifierFlags: [.command, .shift])
         app.typeText(root.appendingPathComponent("Documents").path + "\r")
-        panel.buttons["Save"].click()
+        // On a slow runner the panel may still be taking the path when typing returns,
+        // and the Go to Folder field then lies over Save.
+        let save = panel.buttons["Save"]
+        XCTAssertTrue(app.eventually { save.isHittable }, "Go to Folder closes")
+        save.click()
         XCTAssertTrue(panel.disappeared(timeout: Self.launchTimeout), "Save closes the panel")
         let saved = root.appendingPathComponent("Documents/Client Folder Template.json")
         let written = XCTNSPredicateExpectation(
