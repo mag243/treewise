@@ -68,7 +68,7 @@ final class UIReviewTests: XCTestCase {
     func open(_ tab: String, in window: XCUIElement) {
         let button = window.toolbars.buttons[tab]
         XCTAssertTrue(button.waitForExistence(timeout: Self.timeout), "Settings has \(tab)")
-        button.click()
+        press(button)
         settleScreen()
     }
 
@@ -101,6 +101,60 @@ final class UIReviewTests: XCTestCase {
         findings.name = "uireview-\(full).findings"
         findings.lifetime = .keepAlways
         add(findings)
+    }
+
+    // MARK: - Pressing
+
+    /// What a press does to an element.
+    enum Press {
+        case click, rightClick, hover
+    }
+
+    /// How far one turn of the scroll wheel moves a list, and how many turns are tried.
+    private static let scrollStep: CGFloat = 40
+    private static let mostScrollSteps = 30
+
+    /// Presses `element` as a person would: in `list`, scrolled into view first, and only
+    /// when the pointer can reach it where it shows. One out of view, or under an edge or
+    /// another window, fails the walk rather than be pressed elsewhere.
+    @MainActor
+    func press(_ element: XCUIElement, in list: XCUIElement? = nil, _ how: Press = .click) {
+        if let list { scroll(element, intoViewOf: list) }
+        guard element.isHittable else {
+            XCTFail("\(element) cannot be reached where it shows, so it is not pressed")
+            return
+        }
+        switch how {
+        case .click: element.click()
+        case .rightClick: element.rightClick()
+        case .hover: element.hover()
+        }
+    }
+
+    /// Turns the scroll wheel over `list` until `element` shows whole in it.
+    @MainActor
+    private func scroll(_ element: XCUIElement, intoViewOf list: XCUIElement) {
+        let shown = visibleFrame(of: list)
+        var step = element.frame.midY > shown.midY ? -Self.scrollStep : Self.scrollStep
+        for _ in 0..<Self.mostScrollSteps {
+            guard !shown.contains(element.frame) else { return }
+            let before = abs(element.frame.midY - shown.midY)
+            list.scroll(byDeltaX: 0, deltaY: step)
+            // The wheel's direction follows the system's setting; turn the other way when
+            // the element went further off.
+            if abs(element.frame.midY - shown.midY) > before { step = -step }
+        }
+    }
+
+    /// What shows of `list`: a table's frame holds all its rows, so the scroll view around
+    /// it, which starts where it starts, is what shows.
+    @MainActor
+    private func visibleFrame(of list: XCUIElement) -> CGRect {
+        let frame = list.frame
+        let around = XCUIApplication().scrollViews.allElementsBoundByIndex.map(\.frame).first {
+            abs($0.minX - frame.minX) <= 2 && $0.intersects(frame) && $0.height <= frame.height
+        }
+        return around ?? frame
     }
 
     // MARK: - Setting up

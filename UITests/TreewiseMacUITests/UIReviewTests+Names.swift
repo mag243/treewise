@@ -15,8 +15,8 @@ extension UIReviewTests {
         XCTAssertTrue(
             app.tables.staticTexts["Payment reminder.pdf"].waitForExistence(timeout: Self.timeout))
         let file = app.menuBarItems["File"]
-        file.click()
-        file.menuItems["Suggest Names…"].click()
+        press(file)
+        press(file.menuItems["Suggest Names…"])
         let overview = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
         XCTAssertTrue(overview.waitForExistence(timeout: Self.timeout), "the overview opens")
@@ -27,7 +27,7 @@ extension UIReviewTests {
         let header = overview.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Add-ons:'"))
             .firstMatch
         if header.waitForExistence(timeout: Self.timeout) {
-            header.click()
+            press(header)
             settleScreen()
             review(overview, as: "names-add-ons", appearance: appearance)
         }

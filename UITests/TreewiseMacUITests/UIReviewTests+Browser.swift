@@ -18,7 +18,7 @@ extension UIReviewTests {
         app.go(to: "Documents/Taxes", timeout: Self.timeout)
         let file = window.tables.staticTexts["Payment reminder.pdf"]
         XCTAssertTrue(file.waitForExistence(timeout: Self.timeout), "the folder's files show")
-        file.click()
+        press(file)
         app.typeKey("p", modifierFlags: [.command, .shift])
         settleScreen()
         review(window, as: "browser-details", appearance: appearance)

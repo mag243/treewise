@@ -18,12 +18,12 @@ extension UIReviewTests {
         let bar = window.buttons["templateBarCreate"]
         XCTAssertTrue(bar.waitForExistence(timeout: Self.timeout), "an empty year offers a bar")
         review(window, as: "templates-bar-empty", appearance: appearance)
-        bar.click()
+        press(bar)
         reviewSheet(of: window, as: "templates-sheet-year", appearance: appearance)
         app.go(to: "../2027", timeout: Self.timeout)
         XCTAssertTrue(bar.waitForExistence(timeout: Self.timeout), "a year lacking folders too")
         review(window, as: "templates-bar-missing", appearance: appearance)
-        bar.click()
+        press(bar)
         reviewSheet(of: window, as: "templates-sheet-missing", appearance: appearance)
         app.typeKey(.upArrow, modifierFlags: .command)
         XCTAssertTrue(
@@ -31,8 +31,8 @@ extension UIReviewTests {
                 timeout: Self.timeout), "the window shows Administration")
         let year = window.tables.staticTexts["2026"]
         XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
-        year.rightClick()
-        window.tables.menus.menuItems["Save Folder Structure as Template…"].click()
+        press(year, in: window.scrollViews.firstMatch, .rightClick)
+        press(window.tables.menus.menuItems["Save Folder Structure as Template…"])
         reviewSheet(of: window, as: "templates-sheet-save", appearance: appearance)
     }
 
@@ -43,7 +43,7 @@ extension UIReviewTests {
         XCTAssertTrue(sheet.waitForExistence(timeout: Self.timeout), "the sheet opens")
         settleScreen()
         review(window, as: name, appearance: appearance)
-        sheet.buttons["Cancel"].click()
+        press(sheet.buttons["Cancel"])
         XCTAssertTrue(sheet.waitForNonExistence(timeout: Self.timeout), "Cancel closes it")
     }
 }

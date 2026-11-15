@@ -15,11 +15,11 @@ extension UIReviewTests {
         let settings = app.windows[Self.settingsWindow]
         XCTAssertTrue(settings.waitForExistence(timeout: Self.timeout), "Settings opens")
         open("Names", in: settings)
-        settings.buttons["Clear Folder Settings…"].click()
+        press(settings.buttons["Clear Folder Settings…"])
         reviewAsked(
             on: settings, in: app, as: "dialogs-clear-folder-settings", appearance: appearance)
         open("Add-ons", in: settings)
-        settings.buttons["Enter Licence Key…"].click()
+        press(settings.buttons["Enter Licence Key…"])
         reviewAsked(on: settings, in: app, as: "dialogs-licence-key", appearance: appearance)
     }
 

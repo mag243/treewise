@@ -20,7 +20,7 @@ extension UIReviewTests {
             choose(card, in: list)
             let tryIt = window.buttons["Try for 14 Days"]
             if tryIt.exists {
-                tryIt.click()
+                press(tryIt, in: window.scrollViews.firstMatch)
                 settleScreen()
             }
         }
@@ -56,11 +56,11 @@ extension UIReviewTests {
         let year = list.textFields.matching(NSPredicate(format: "value == %@", "Household Year"))
             .firstMatch
         XCTAssertTrue(year.waitForExistence(timeout: Self.timeout), "the templates are listed")
-        year.click()
+        press(year, in: list)
         let tree = window.outlines["templateTreeEditor"]
         let tax = tree.textFields.matching(NSPredicate(format: "value == %@", "Tax")).firstMatch
         XCTAssertTrue(tax.waitForExistence(timeout: Self.timeout), "its tree shows")
-        tax.click()
+        press(tax, in: tree)
         settleScreen()
         review(
             window, as: "settings-templates-trial", appearance: appearance, isSettingsPane: true)
@@ -83,7 +83,7 @@ extension UIReviewTests {
             choose(card, in: list)
             let tryIt = window.buttons["Try for 14 Days"]
             if startingTrials, tryIt.exists {
-                tryIt.click()
+                press(tryIt, in: window.scrollViews.firstMatch)
                 settleScreen()
             }
             review(
@@ -116,7 +116,7 @@ extension UIReviewTests {
         // The first, so a card shown twice is left to the checks to find, not the walk.
         let title = list.groups[card].firstMatch.staticTexts[card].firstMatch
         XCTAssertTrue(title.waitForExistence(timeout: Self.timeout), "\(card) shows")
-        title.click()
+        press(title, in: list)
         settleScreen()
     }
 
@@ -128,7 +128,7 @@ extension UIReviewTests {
         guard let card = cardNames(in: list).first(where: { $0.hasPrefix("Advanced") }) else {
             return
         }
-        list.groups[card].firstMatch.staticTexts[card].firstMatch.rightClick()
+        press(list.groups[card].firstMatch.staticTexts[card].firstMatch, in: list, .rightClick)
         let menu = list.menus.firstMatch
         XCTAssertTrue(menu.waitForExistence(timeout: Self.timeout), "the card has a menu")
         // The only add-on that proposes names stays on, so it offers no Turn Off.
@@ -142,7 +142,7 @@ extension UIReviewTests {
     private func hoverFirstCard(in window: XCUIElement, appearance: String?) {
         let list = window.tables.firstMatch
         guard let card = cardNames(in: list).first else { return }
-        list.groups[card].firstMatch.staticTexts[card].firstMatch.hover()
+        press(list.groups[card].firstMatch.staticTexts[card].firstMatch, in: list, .hover)
         settleScreen()
         review(
             window, as: "settings-add-ons-hover", appearance: appearance, isSettingsPane: true)
