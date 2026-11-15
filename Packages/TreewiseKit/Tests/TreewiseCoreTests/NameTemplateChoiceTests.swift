@@ -57,11 +57,6 @@ import TreewiseCore
         #expect(try !template("{date:yyyy.MM.dd|number} Scan").matches("Holiday Scan"))
     }
 
-    @Test func findsTheDateInAChoice() throws {
-        let date = try template("{date:yyyy.MM.dd|number} Scan").date(in: "2026.11.02 Scan")
-        #expect(date == .date(year: 2026, month: 11, day: 2))
-    }
-
     @Test func refusesAnEmptyAlternative() {
         #expect(problem("{number|}") == .unbalancedBraces)
         #expect(problem("{|number}") == .unbalancedBraces)

@@ -2,7 +2,8 @@ import Foundation
 import TreewiseCore
 
 /// Finds what is general in a document's text, for modules to build on: dates and
-/// amounts. What they mean in a document is for a module to decide (ADR 0057).
+/// amounts. What they mean in a document is for a module to decide (ADR 0057). It is
+/// part of the interface for modules that read contents; no module uses it yet.
 public enum TextScanner {
     private static let months: [String: Int] = [
         "jan": 1, "januari": 1, "january": 1, "januar": 1,

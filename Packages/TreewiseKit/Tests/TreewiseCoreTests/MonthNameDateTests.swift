@@ -39,25 +39,6 @@ import Testing
                 == "3 March 2026 Report")
     }
 
-    @Test(arguments: [
-        "14 March 2026 Report", "14 maart 2026 Report", "14 März 2026 Report",
-        "14 MAART 2026 Report", "14 march 2026 Report",
-    ])
-    func readsAMonthsNameInAnyOfTheThreeLanguagesIgnoringCase(name: String) throws {
-        let date = try template("{date:d MMMM yyyy@nl} {text}").date(in: name)
-        #expect(date == .date(year: 2026, month: 3, day: 14))
-    }
-
-    @Test func readsAShortMonthsName() throws {
-        let date = try template("{date:d MMM yyyy@en} {text}").date(in: "3 Okt 2026 Report")
-        #expect(date == .date(year: 2026, month: 10, day: 3))
-    }
-
-    @Test func readsADateWithoutADayAsTheFirstOfTheMonth() throws {
-        let date = try template("{date:MMMM yyyy@en} {text}").date(in: "maart 2026 Report")
-        #expect(date == .date(year: 2026, month: 3, day: 1))
-    }
-
     @Test func aWordThatIsNoMonthDoesNotFit() throws {
         #expect(try !template("{date:d MMMM yyyy@en} {text}").matches("14 Marsh 2026 Report"))
     }

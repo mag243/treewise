@@ -21,9 +21,6 @@ public struct ClipboardModel: Sendable, Equatable {
         self.mode = mode
     }
 
-    /// What pasting does with the items.
-    public var transferMode: TransferMode { mode == .cut ? .move : .copy }
-
     /// Whether an item is shown dimmed, because it is cut.
     public func isCut(_ id: FileItem.ID) -> Bool {
         mode == .cut && items.contains { $0.id == id }

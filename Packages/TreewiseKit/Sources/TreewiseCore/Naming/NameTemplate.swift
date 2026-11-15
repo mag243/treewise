@@ -188,18 +188,6 @@ public struct NameTemplate: Hashable, Sendable {
         return variants.contains { Self.match(name, $0.parts, fixed: fixed) != nil }
     }
 
-    /// The date in a name that fits this template, or nil when there is none.
-    public func date(in name: String) -> Value? {
-        for variant in variants {
-            guard let match = Self.match(name, variant.parts, fixed: [:]) else { continue }
-            guard let format = Self.firstDateFormat(in: variant.parts),
-                let range = Range(match.range(withName: Self.dateGroup), in: name)
-            else { return nil }
-            return format.read(String(name[range]))
-        }
-        return nil
-    }
-
     private func make(
         _ parts: [Part], from values: [String: Value], context: Context, fixed: [String: String]
     ) -> MadeName? {

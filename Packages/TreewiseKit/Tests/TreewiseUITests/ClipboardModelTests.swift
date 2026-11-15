@@ -18,11 +18,6 @@ import TreewiseUI
         #expect(!ClipboardModel(items: [notes], mode: .copy).isCut(notes.id))
     }
 
-    @Test func movesWhenCutAndCopiesWhenCopied() {
-        #expect(ClipboardModel(items: [notes], mode: .cut).transferMode == .move)
-        #expect(ClipboardModel(items: [notes], mode: .copy).transferMode == .copy)
-    }
-
     @Test func forgetsItemsThatWereRemoved() throws {
         let clipboard = ClipboardModel(items: [notes, budget], mode: .copy)
         let pruned = try #require(clipboard.removing([notes.id]))

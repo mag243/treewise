@@ -26,10 +26,7 @@ struct DateTemplate: Hashable, Sendable {
         ("MMM", .monthName(short: true)), ("MM", .month), ("dd", .day), ("d", .shortDay),
     ]
     private static let languageMark: Character = "@"
-    /// The most digits of a day written without a leading zero.
-    private static let shortDayDigits = 2
     private static let shortYearDivisor = 100
-    private static let shortYearBase = 2000
 
     private let pieces: [Piece]
     /// The language of a month's name; nil for the app's language.
@@ -100,38 +97,6 @@ struct DateTemplate: Hashable, Sendable {
             case .separator(let character): String(character)
             }
         }.joined()
-    }
-
-    /// Reads a date written in this format, a month's name in any of the three languages;
-    /// nil when the text is not. A format without a day reads as the first of the month.
-    func read(_ text: String) -> NameTemplate.Value? {
-        var rest = Substring(text)
-        var year = 0
-        var month = 0
-        var day = 1
-        for piece in pieces {
-            switch piece {
-            case .separator: rest = rest.dropFirst()
-            case .longYear: year = Self.take(4, from: &rest)
-            case .shortYear: year = Self.shortYearBase + Self.take(2, from: &rest)
-            case .month: month = Self.take(2, from: &rest)
-            case .monthName:
-                guard let found = MonthNames.month(atStartOf: rest) else { return nil }
-                month = found.month
-                rest = rest.dropFirst(found.length)
-            case .day: day = Self.take(2, from: &rest)
-            case .shortDay:
-                day = Self.take(
-                    rest.prefix(Self.shortDayDigits).prefix(while: \.isNumber).count, from: &rest)
-            }
-        }
-        return .date(year: year, month: month, day: day)
-    }
-
-    private static func take(_ count: Int, from rest: inout Substring) -> Int {
-        let digits = rest.prefix(count)
-        rest = rest.dropFirst(count)
-        return Int(digits) ?? 0
     }
 
     /// A regular expression that recognizes a date in this format.

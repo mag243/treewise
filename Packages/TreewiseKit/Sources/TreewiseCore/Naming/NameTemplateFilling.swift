@@ -82,22 +82,6 @@ extension NameTemplate {
         }
     }
 
-    static func firstDateFormat(in parts: [Part]) -> DateTemplate? {
-        for part in parts {
-            switch part {
-            case .field(let field, let format) where field.kind == .date:
-                return format?.dateTemplate ?? .standard
-            case .optional(let inner), .choice(let inner):
-                if let format = firstDateFormat(in: inner) { return format }
-            case .alternatives(let all):
-                if let format = all.lazy.compactMap(firstDateFormat(in:)).first { return format }
-            default:
-                continue
-            }
-        }
-        return nil
-    }
-
     /// The parts written with these values. An optional part without a field is written only
     /// when `current`, the item's name, holds its text (ADR 0064).
     static func fill(

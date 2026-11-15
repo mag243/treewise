@@ -95,19 +95,3 @@ public struct SystemBookmarkResolver: BookmarkResolving {
         return (url, isStale)
     }
 }
-
-/// Keeps bookmarks only in memory, so nothing is written to disk (M2).
-public final class InMemoryBookmarkStorage: BookmarkStorage {
-    private let bookmarks = Mutex<[Bookmark]>([])
-
-    /// Creates empty storage.
-    public init() {}
-
-    public func load() -> [Bookmark] {
-        bookmarks.withLock { $0 }
-    }
-
-    public func save(_ bookmarks: [Bookmark]) {
-        self.bookmarks.withLock { $0 = bookmarks }
-    }
-}
