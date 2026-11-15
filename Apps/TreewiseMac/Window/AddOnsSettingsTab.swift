@@ -12,7 +12,6 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.add-on")
     private static let spacing: CGFloat = 8
     private static let cardSpacing: CGFloat = 8
-    private static let footSpacing: CGFloat = 6
     private static let groupPadding = NSSize(width: 12, height: 9)
     /// The width of the list and the foot, as every list in Settings.
     static let width = SettingsList.width
