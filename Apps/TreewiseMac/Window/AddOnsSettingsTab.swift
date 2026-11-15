@@ -74,28 +74,15 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     }
 
     override func loadView() {
-        let header = NSTextField(labelWithString: String(localized: "Add-ons"))
-        header.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
+        let header = SettingsList.heading(String(localized: "Add-ons"))
         enterKey.isHidden = true
         let list = list()
         let stack = NSStackView(views: [header, list] + foot())
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = Self.spacing
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        let size = SettingsWindow.paneSize
-        let view = NSView(frame: NSRect(origin: .zero, size: size))
-        view.addSubview(stack)
-        NSLayoutConstraint.activate([
-            view.widthAnchor.constraint(equalToConstant: size.width),
-            view.heightAnchor.constraint(equalToConstant: size.height),
-            stack.topAnchor.constraint(equalTo: view.topAnchor, constant: SettingsForm.margin),
-            stack.bottomAnchor.constraint(
-                equalTo: view.bottomAnchor, constant: -SettingsForm.margin),
-            stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            stack.widthAnchor.constraint(equalToConstant: Self.width),
-        ])
-        self.view = view
+        stack.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
+        view = SettingsList.pane(stack, fillsHeight: true)
         Observing.follow(self) { $0.update() }
         load()
     }
@@ -135,9 +122,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
 
     /// Reading, with the year before, then the note and Enter Licence Key…, in place.
     private func foot() -> [NSView] {
-        let heading = NSTextField(labelWithString: String(localized: "Reading"))
-        heading.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
-        heading.textColor = .secondaryLabelColor
+        let heading = SettingsList.subheading(String(localized: "Reading"))
         reading = [heading, readingGroup()]
         return reading + [bottomRow()]
     }
@@ -146,7 +131,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private func readingGroup() -> NSView {
         let title = NSTextField(
             labelWithString: String(localized: "Also read names in the same folder a year before"))
-        let note = Self.note(
+        let note = SettingsList.note(
             String(
                 localized:
                     "For an add-on that learns from last year, as in Administration/2025/Tax beside Administration/2026/Tax. Only names are read."
@@ -182,7 +167,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private func bottomRow() -> NSView {
         enterKey.setContentCompressionResistancePriority(.required, for: .horizontal)
         enterKey.setContentHuggingPriority(.required, for: .horizontal)
-        let note = Self.note(
+        let note = SettingsList.note(
             String(
                 localized:
                     "An add-on that is off is offered in no folder. Drag to set the order for folders without their own."
@@ -192,15 +177,6 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         bottom.spacing = Self.spacing
         bottom.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
         return bottom
-    }
-
-    private static func note(_ text: String, width: CGFloat) -> NSTextField {
-        let note = NSTextField(wrappingLabelWithString: text)
-        note.font = .preferredFont(forTextStyle: .caption1)
-        note.textColor = .secondaryLabelColor
-        note.preferredMaxLayoutWidth = width
-        note.setContentCompressionResistancePriority(.required, for: .vertical)
-        return note
     }
 
     private func update() {

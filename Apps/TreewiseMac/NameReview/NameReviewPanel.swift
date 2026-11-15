@@ -136,9 +136,9 @@ final class NameReviewPanel: NSObject {
             image: NSImage(
                 systemSymbolName: "exclamationmark.triangle", accessibilityDescription: nil)
                 ?? NSImage())
-        icon.contentTintColor = .systemOrange
+        icon.contentTintColor = Tint.problem
         let label = caption(text)
-        label.textColor = .systemOrange
+        label.textColor = Tint.problem
         let line = NSStackView(views: [icon, label])
         line.alignment = .firstBaseline
         return line

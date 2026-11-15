@@ -16,7 +16,6 @@ final class FileGridItem: NSCollectionViewItem {
     private static let fontSize: CGFloat = 12
     private static let nameLines = 2
     /// The alpha of a cut item's tile (PLAN.md §4.3).
-    private static let cutAlpha: CGFloat = 0.5
 
     /// The item the tile shows, so a late thumbnail lands on the right tile.
     private(set) var itemID: FileItem.ID?
@@ -64,7 +63,7 @@ final class FileGridItem: NSCollectionViewItem {
         textField?.stringValue = name
         imageView?.image = icon
         imageView?.setAccessibilityElement(false)
-        view.alphaValue = isCut ? Self.cutAlpha : 1
+        view.alphaValue = isCut ? Tint.cut : 1
     }
 
     /// Shows the file's cloud status; see `CloudStatusView`.

@@ -47,10 +47,7 @@ final class SettingsForm {
 
     /// Adds a note under the controls.
     func note(_ text: String.LocalizationValue, width: CGFloat) {
-        let note = NSTextField(wrappingLabelWithString: String(localized: text))
-        note.font = .preferredFont(forTextStyle: .footnote)
-        note.textColor = .secondaryLabelColor
-        note.preferredMaxLayoutWidth = width
+        let note = SettingsList.note(String(localized: text), width: width)
         grid.addRow(with: [NSGridCell.emptyContentView, note])
     }
 

@@ -31,7 +31,6 @@ final class ClosureSwitch: NSSwitch {
 enum AddOnCardStyle {
     static let cardRadius: CGFloat = 10
     static let pillRadius: CGFloat = 6
-    private static let tint: CGFloat = 0.14
     private static let lightFill: CGFloat = 0.75
     private static let darkFill: CGFloat = 0.06
     private static let pillMargins = NSSize(width: 7, height: 2)
@@ -60,7 +59,7 @@ enum AddOnCardStyle {
     /// `label` on a light fill of `color`, as a badge.
     static func pill(_ label: NSTextField, color: NSColor) -> NSBox {
         let box = group(
-            fill: color.withAlphaComponent(tint),
+            fill: color.withAlphaComponent(Tint.accentFill),
             border: .clear, radius: pillRadius)
         box.contentViewMargins = pillMargins
         box.contentView?.addSubview(label)

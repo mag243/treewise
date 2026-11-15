@@ -143,10 +143,10 @@ final class AddOnBlock: NSStackView {
             let lock = NSImageView(
                 image: NSImage(systemSymbolName: "lock.fill", accessibilityDescription: nil)
                     ?? NSImage())
-            lock.contentTintColor = .systemOrange
+            lock.contentTintColor = Tint.problem
             let text = NSTextField(labelWithString: LicenceText.state(.unlicensed))
             text.font = .preferredFont(forTextStyle: .caption1)
-            text.textColor = .systemOrange
+            text.textColor = Tint.problem
             var views: [NSView] = [lock, text]
             if module.description.purchaseURL != nil {
                 let description = module.description

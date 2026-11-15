@@ -39,7 +39,7 @@ final class AddOnPatternEditor: NSStackView {
         pattern.field.widthAnchor.constraint(equalToConstant: Self.fieldWidth).isActive = true
         done.controlSize = .small
         problem.font = .preferredFont(forTextStyle: .caption1)
-        problem.textColor = .systemOrange
+        problem.textColor = Tint.problem
         tokens.spacing = Self.buttonSpacing
         addArrangedSubview(pattern.field)
         addArrangedSubview(tokens)

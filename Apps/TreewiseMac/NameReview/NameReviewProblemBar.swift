@@ -26,8 +26,8 @@ final class NameReviewProblemBar {
     }
 
     func makeView() -> NSView {
-        icon.contentTintColor = .systemOrange
-        text.textColor = .systemOrange
+        icon.contentTintColor = Tint.problem
+        text.textColor = Tint.problem
         text.setAccessibilityIdentifier("reviewProblem")
         // The text takes the room the icon and the button leave, so it starts beside the
         // icon and the button keeps to the trailing edge.

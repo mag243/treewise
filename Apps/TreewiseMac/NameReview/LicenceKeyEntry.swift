@@ -102,8 +102,8 @@ private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
             }
         }
         problem.font = .preferredFont(forTextStyle: .caption1)
-        problem.textColor = .systemOrange
-        problemIcon.contentTintColor = .systemOrange
+        problem.textColor = Tint.problem
+        problemIcon.contentTintColor = Tint.problem
         show(problem: nil)
         let cancel = ClosureButton(title: String(localized: "Cancel")) { [weak self] in
             self?.finish(nil)

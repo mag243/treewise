@@ -24,7 +24,7 @@ extension NameReviewRowView {
             image: NSImage(
                 systemSymbolName: "exclamationmark.triangle.fill", accessibilityDescription: nil)
                 ?? NSImage())
-        warning.contentTintColor = .systemOrange
+        warning.contentTintColor = Tint.problem
         warning.alphaValue = hasProblem(entry) ? 1 : 0
         views.append(warning)
         if isSelected, let skip = skipControl(entry) { views.append(skip) }

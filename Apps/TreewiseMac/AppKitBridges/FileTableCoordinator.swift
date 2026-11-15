@@ -12,7 +12,6 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
     private static let iconSpacing: CGFloat = 6
 
     /// The alpha of a cut item's row (PLAN.md §4.3).
-    private static let cutAlpha: CGFloat = 0.5
 
     weak var table: PaneTableView?
     var items: [FileItem] = []
@@ -139,7 +138,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
                 identifier, column: column, alignment: column == .size ? .right : .left)
         let item = items[row]
         cell.textField?.stringValue = text(of: item, in: column)
-        cell.alphaValue = cutItems.contains(item.id) ? Self.cutAlpha : 1
+        cell.alphaValue = cutItems.contains(item.id) ? Tint.cut : 1
         if column == .name {
             let icon = ItemIcon.image(for: item)
             icon.size = Self.iconSize

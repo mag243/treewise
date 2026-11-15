@@ -82,13 +82,13 @@ final class TemplateTreeList: NSScrollView, NSTableViewDataSource, NSTableViewDe
             attributes[.foregroundColor] = NSColor.tertiaryLabelColor
             text += "  " + String(localized: "already there")
         case .leftOut:
-            attributes[.foregroundColor] = NSColor.systemOrange
+            attributes[.foregroundColor] = Tint.problem
             attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
             let reason = String(localized: "a file has this name · left out")
             let shown = NSMutableAttributedString(string: row.name, attributes: attributes)
             shown.append(
                 NSAttributedString(
-                    string: "  " + reason, attributes: [.foregroundColor: NSColor.systemOrange]))
+                    string: "  " + reason, attributes: [.foregroundColor: Tint.problem]))
             return shown
         case .new, nil:
             break

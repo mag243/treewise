@@ -43,17 +43,7 @@ final class SettingsNamesPane: NSViewController {
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = Self.groupSpacing
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        let size = SettingsWindow.paneSize
-        let view = NSView(frame: NSRect(origin: .zero, size: size))
-        view.addSubview(stack)
-        NSLayoutConstraint.activate([
-            view.widthAnchor.constraint(equalToConstant: size.width),
-            view.heightAnchor.constraint(equalToConstant: size.height),
-            stack.topAnchor.constraint(equalTo: view.topAnchor, constant: SettingsForm.margin),
-            stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-        ])
-        self.view = view
+        view = SettingsList.pane(stack)
         Observing.follow(self) { $0.update() }
     }
 

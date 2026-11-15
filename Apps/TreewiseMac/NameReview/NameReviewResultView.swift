@@ -78,9 +78,9 @@ final class NameReviewResultView: NSView, NSTableViewDataSource, NSTableViewDele
             image: NSImage(
                 systemSymbolName: "exclamationmark.triangle", accessibilityDescription: nil)
                 ?? NSImage())
-        icon.contentTintColor = .systemOrange
+        icon.contentTintColor = Tint.problem
         let label = NSTextField(wrappingLabelWithString: text)
-        label.textColor = .systemOrange
+        label.textColor = Tint.problem
         return NSStackView(views: [icon, label])
     }
 

@@ -22,7 +22,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     let model: FolderTemplatesModel
     private let editor: TemplateTreeEditor
     let table = NSTableView()
-    private let treeTitle = NSTextField(labelWithString: "")
+    private let treeTitle = SettingsList.subheading("")
     private let problem = NSTextField(wrappingLabelWithString: "")
     private let offersMissing = NSButton(
         checkboxWithTitle: String(localized: "Offer from the year before"),
@@ -55,8 +55,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
                 localized:
                     "Save a folder’s structure with Save Folder Structure as Template… on the folder. Double-click a name to rename it."
             ))
-        treeTitle.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
-        problem.textColor = .systemOrange
+        problem.textColor = Tint.problem
         problem.preferredMaxLayoutWidth = SettingsList.width
         let section = [
             SettingsList.heading(String(localized: "Folder Templates")), list(), footer(), hint,
@@ -72,17 +71,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         for view in section + tree {
             view.widthAnchor.constraint(equalToConstant: SettingsList.width).isActive = true
         }
-        // As the other panes, the tab has the window's size, its contents in the middle.
-        let size = SettingsWindow.paneSize
-        let pane = NSView(frame: NSRect(origin: .zero, size: size))
-        pane.addSubview(stack)
-        NSLayoutConstraint.activate([
-            pane.widthAnchor.constraint(equalToConstant: size.width),
-            pane.heightAnchor.constraint(equalToConstant: size.height),
-            stack.topAnchor.constraint(equalTo: pane.topAnchor, constant: SettingsForm.margin),
-            stack.centerXAnchor.constraint(equalTo: pane.centerXAnchor),
-        ])
-        view = pane
+        view = SettingsList.pane(stack)
         Observing.follow(self) { $0.update() }
     }
 

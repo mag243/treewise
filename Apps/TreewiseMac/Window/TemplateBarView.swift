@@ -30,7 +30,6 @@ final class TemplateBarView: NSStackView {
 
     let browser: BrowserState
     private let label = NSTextField(labelWithString: "")
-    private static let tint: CGFloat = 0.12
     private static let createTitle = String(localized: "Create Folders…")
     private static let addTitle = String(localized: "Add to Template")
     private lazy var create = ClosureButton(title: Self.createTitle) { [weak self] in
@@ -81,7 +80,8 @@ final class TemplateBarView: NSStackView {
     /// it is set again whenever AppKit asks the view to update.
     override func updateLayer() {
         layer?.cornerRadius = Self.cornerRadius
-        layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(Self.tint).cgColor
+        let fill = NSColor.controlAccentColor.withAlphaComponent(Tint.accentFill)
+        layer?.backgroundColor = fill.cgColor
     }
 
     /// Folders made anywhere, at any depth, may be those the bar offers.

@@ -23,7 +23,7 @@ extension AddOnsSettingsTab {
         card.translatesAutoresizingMaskIntoConstraints = false
         var top = card.topAnchor.constraint(equalTo: cell.topAnchor)
         if let title = heading(for: row) {
-            let label = Self.headingLabel(title)
+            let label = SettingsList.subheading(title)
             cell.addSubview(label)
             label.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -55,7 +55,7 @@ extension AddOnsSettingsTab {
         let height = card.fittingSize.height
         width.isActive = false
         guard let title = heading(for: row) else { return height }
-        return Self.headingLabel(title).fittingSize.height + Self.headingSpacing + height
+        return SettingsList.subheading(title).fittingSize.height + Self.headingSpacing + height
     }
 
     /// Names over the add-ons that propose names and Folders over those that make folder
@@ -65,14 +65,6 @@ extension AddOnsSettingsTab {
         guard names > 0, names < shown.count else { return nil }
         if row == 0 { return String(localized: "Names") }
         return row == names ? String(localized: "Folders") : nil
-    }
-
-    /// A heading as the tab's others, as Reading.
-    static func headingLabel(_ title: String) -> NSTextField {
-        let label = NSTextField(labelWithString: title)
-        label.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
-        label.textColor = .secondaryLabelColor
-        return label
     }
 
     /// Whether the card in `row` is taken at `point`, in the table's coordinates: on its

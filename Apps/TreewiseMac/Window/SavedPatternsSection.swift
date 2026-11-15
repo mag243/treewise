@@ -210,7 +210,7 @@ private final class SavedPatternEditor: NSObject, NSTextFieldDelegate {
         pattern.onSubmit = { [weak self] in self?.commit() }
         pattern.onEndEditing = { [weak self] in self?.commit() }
         problem.font = .preferredFont(forTextStyle: .caption1)
-        problem.textColor = .systemRed
+        problem.textColor = Tint.problem
     }
 
     func makeView() -> NSView {

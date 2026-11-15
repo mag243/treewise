@@ -237,7 +237,7 @@ private final class FolderTemplateSheetController: NSViewController, NSTextField
         create.isEnabled = model.canCreate
         if let problem = model.problem {
             summary.stringValue = TemplateProblemText.text(for: problem)
-            summary.textColor = .systemOrange
+            summary.textColor = Tint.problem
         } else if model.toMakeCount == 0 {
             summary.stringValue = String(localized: "Every folder is already there.")
             summary.textColor = .secondaryLabelColor
