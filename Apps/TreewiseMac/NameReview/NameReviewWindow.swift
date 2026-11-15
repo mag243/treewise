@@ -10,9 +10,6 @@ import TreewiseUI
 enum NameReviewWindow {
     private static let defaultSize = NSSize(width: 980, height: 620)
     private static let minimumSize = NSSize(width: 720, height: 420)
-    /// One connection to the modules' service, for every review.
-    static let host = XPCModuleHost()
-    static let store = FolderSettingsStore(directory: LaunchOptions.folderSettingsDirectory)
     /// The open windows, kept until they close.
     private static var open: [Open] = []
 
@@ -24,7 +21,10 @@ enum NameReviewWindow {
     /// Opens a review of the browser's selection, or of its folder's files.
     static func show(for browser: BrowserState, undoManager: UndoManager?) {
         Task {
-            guard let model = await browser.makeNameReview(host: host, store: store) else { return }
+            guard
+                let model = await browser.makeNameReview(
+                    host: AppServices.moduleHost, store: AppServices.folderSettings)
+            else { return }
             present(model, browser: browser, undoManager: undoManager)
             await model.start()
         }
@@ -33,7 +33,10 @@ enum NameReviewWindow {
     /// Opens a review of the files of the browser's folder, whatever is selected.
     static func showWholeFolder(of browser: BrowserState, undoManager: UndoManager?) {
         Task {
-            guard let model = await browser.makeFolderNameReview(host: host, store: store) else {
+            guard
+                let model = await browser.makeFolderNameReview(
+                    host: AppServices.moduleHost, store: AppServices.folderSettings)
+            else {
                 return
             }
             present(model, browser: browser, undoManager: undoManager)

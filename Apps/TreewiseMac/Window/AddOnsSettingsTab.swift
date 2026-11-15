@@ -38,7 +38,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private lazy var enterKey = SettingsForm.button("Enter Licence Key…") { [weak self] in
         guard let self, let window = view.window else { return }
         LicenceKeyEntry.present(
-            on: window, keeper: licences, host: NameReviewWindow.host
+            on: window, keeper: licences, host: AppServices.moduleHost
         ) { [weak self] in self?.load() }
     }
     /// Whether an add-on that asks may read the same folder a year before (ADR 0090).
@@ -200,7 +200,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     /// a licence replaces nothing (ADR 0071). A trial started or a key entered here reaches
     /// the template items and the Templates tab at once (ADR 0095, ADR 0102).
     func load() {
-        let host = NameReviewWindow.host
+        let host = AppServices.moduleHost
         let context = licences.context()
         let settings = settings
         let licences = licences

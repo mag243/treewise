@@ -204,7 +204,7 @@ final class NameReviewAddOnsView: NSObject {
     private func enterKey() {
         guard let window = stack.window else { return }
         let model = model
-        LicenceKeyEntry.present(on: window, keeper: licences, host: NameReviewWindow.host) {
+        LicenceKeyEntry.present(on: window, keeper: licences, host: AppServices.moduleHost) {
             Task { await model.start() }
         }
     }

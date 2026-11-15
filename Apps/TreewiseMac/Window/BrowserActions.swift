@@ -31,7 +31,7 @@ struct BrowserActions {
     func eject() { VolumeEjection.eject(ejectableSelection) }
     /// Whether there is a selection and another window to copy or move it to.
     var canSendToOtherWindow: Bool {
-        hasSelection && WindowTabs.shared.otherWindow(than: NSApp.keyWindow) != nil
+        hasSelection && AppServices.windows.otherWindow(than: NSApp.keyWindow) != nil
     }
 
     /// Whether the selection can also leave where it is: out of an archive it can only copy.
@@ -67,21 +67,21 @@ struct BrowserActions {
 
     /// Opens a window tab on the current folder (ADR 0037).
     func newTab() {
-        WindowTabs.shared.openTab(
+        AppServices.windows.openTab(
             at: browser.layout.focusedPane.activeTab.folder, beside: NSApp.keyWindow)
     }
 
     /// Opens a window on the current folder beside this one (ADR 0037).
     func windowBeside() {
         let folder = browser.layout.focusedPane.activeTab.folder
-        WindowTabs.shared.openBeside(folder, from: NSApp.keyWindow)
+        AppServices.windows.openBeside(folder, from: NSApp.keyWindow)
     }
 
     /// Puts this window and the other window side by side.
     func tileWithOtherWindow() {
         let window = NSApp.keyWindow
-        guard let other = WindowTabs.shared.otherWindow(than: window) else { return }
-        WindowTabs.shared.tile(window, beside: other)
+        guard let other = AppServices.windows.otherWindow(than: window) else { return }
+        AppServices.windows.tile(window, beside: other)
     }
 
     func show(_ viewMode: ViewMode) { browser.viewMode = viewMode }
@@ -110,7 +110,7 @@ struct BrowserActions {
     func sendToOtherWindow(_ mode: TransferMode) {
         let window = NSApp.keyWindow
         Task {
-            await WindowTabs.shared.send(
+            await AppServices.windows.send(
                 selectionOf: browser, mode: mode, from: window, undoManager: undoManager)
         }
     }

@@ -13,7 +13,7 @@ enum VolumeEjection {
         guard !ejectable.isEmpty else { return }
         Task {
             for volume in ejectable {
-                for browser in WindowTabs.shared.allBrowsers {
+                for browser in AppServices.windows.allBrowsers {
                     await browser.leave(volume: volume.id)
                 }
                 do {

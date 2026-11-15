@@ -32,7 +32,7 @@ enum FolderTemplatesService {
 
     /// Finds the add-on and its licence state, and reads the templates.
     static func refresh(licences: LicenceKeeper?) async {
-        let host = NameReviewWindow.host
+        let host = AppServices.moduleHost
         let modules = (try? await host.availableModules()) ?? []
         let names = Dictionary(
             modules.map { ($0.id, NameReviewText.name(of: $0)) },
@@ -52,7 +52,7 @@ enum FolderTemplatesService {
     static func addOn(licences: LicenceKeeper?) -> FolderStructureAddOn? {
         guard let addOnID = state.addOnID, state.mayWork else { return nil }
         return FolderStructureAddOn(
-            host: NameReviewWindow.host, moduleID: addOnID,
+            host: AppServices.moduleHost, moduleID: addOnID,
             licence: { licences?.context() ?? .none })
     }
 
@@ -62,7 +62,7 @@ enum FolderTemplatesService {
         -> FolderTree
     {
         guard addOnMayWork else { return try await fileSystem.folderTree(of: folder) }
-        let store = NameReviewWindow.store
+        let store = AppServices.folderSettings
         return try await fileSystem.folderTree(of: folder) { await store.names(of: $0) }
     }
 
@@ -70,7 +70,7 @@ enum FolderTemplatesService {
     /// work (ADR 0101).
     static func giveNames(of tree: FolderTree, to made: [[String]: FileItem.ID]) async {
         guard addOnMayWork else { return }
-        await NameReviewWindow.store.give(
+        await AppServices.folderSettings.give(
             namesOf: tree, to: made, catalog: Set(addOnNames.keys))
     }
 
@@ -90,7 +90,7 @@ enum FolderTemplatesService {
         let fileSystem = browser.fileSystem
         let licences = browser.licences
         return TemplateBarModel(
-            fileSystem: fileSystem, settings: NameReviewWindow.store, templates: store,
+            fileSystem: fileSystem, settings: AppServices.folderSettings, templates: store,
             addOnMayWork: { addOnMayWork },
             yearBefore: { await recognized($0, in: fileSystem, licences: licences) },
             offersMissingFolders: { AppServices.settings.offersMissingFolders })

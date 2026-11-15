@@ -72,7 +72,7 @@ final class SettingsNamesPane: NSViewController {
         alert.addButton(withTitle: String(localized: "Cancel"))
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
-            Task { await NameReviewWindow.store.clearAll() }
+            Task { await AppServices.folderSettings.clearAll() }
         }
     }
 }

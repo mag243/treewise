@@ -16,7 +16,7 @@ final class BrowserWindowRestoration: NSObject, NSWindowRestoration {
         let data = state.decodeObject(of: NSData.self, forKey: snapshotKey) as Data?
         let snapshot = data.flatMap { try? JSONDecoder().decode(WindowSnapshot.self, from: $0) }
         MainActor.assumeIsolated {
-            completionHandler(WindowTabs.shared.restore(snapshot), nil)
+            completionHandler(AppServices.windows.restore(snapshot), nil)
         }
     }
 

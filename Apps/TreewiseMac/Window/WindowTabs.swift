@@ -30,7 +30,6 @@ struct TabRequest {
 /// bar's + button, Open in New Tab and ⌘-double-click all come here.
 @MainActor
 final class WindowTabs {
-    static let shared = WindowTabs()
     private static let logger = Logger(subsystem: LogSubsystem.name, category: "tabs")
 
     /// The open browser windows, kept until they close.

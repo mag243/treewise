@@ -1,10 +1,20 @@
+import TreewiseFileSystem
+import TreewiseModuleXPC
 import TreewiseUI
 
-/// What every window shares: the settings, the clipboard (ADR 0037) and the
-/// updater (ADR 0032).
+/// What the app shares across its windows, made here once: the settings, the clipboard
+/// (ADR 0037), the updater (ADR 0032), the windows and their tabs, the connection to the
+/// add-ons' service and the folder settings it keeps (ADR 0057), and the icon view's
+/// thumbnails (ADR 0025).
 @MainActor
 enum AppServices {
     static let settings = BrowserSettings(store: LaunchOptions.settingsStore)
     static let clipboard = SharedClipboard()
     static let updater = AppUpdater()
+    static let windows = WindowTabs()
+    /// One connection to the add-ons' service, for every review and template.
+    static let moduleHost = XPCModuleHost()
+    static let folderSettings = FolderSettingsStore(
+        directory: LaunchOptions.folderSettingsDirectory)
+    static let thumbnails = ThumbnailCache()
 }

@@ -10,7 +10,6 @@ import TreewiseUI
 /// `costLimit` bytes of pixels.
 @MainActor
 final class ThumbnailCache {
-    static let shared = ThumbnailCache()
     /// How many thumbnails are kept; the cache lets the oldest go first.
     private static let limit = 2_000
     /// How many bytes of pixels the thumbnails kept may take.
@@ -30,7 +29,7 @@ final class ThumbnailCache {
     /// The thumbnail each tile waits for, by its key.
     private var asked: [ObjectIdentifier: String] = [:]
 
-    private init() {
+    init() {
         cache.countLimit = Self.limit
         cache.totalCostLimit = Self.costLimit
     }

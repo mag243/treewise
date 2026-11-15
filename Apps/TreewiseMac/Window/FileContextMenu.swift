@@ -89,7 +89,7 @@ struct FileContextMenu {
     /// Copy and Move to Other Window, for the selection the click was on (ADR 0037).
     private func addOtherWindowItems(to menu: NSMenu) {
         let window = NSApp.keyWindow
-        let hasOther = WindowTabs.shared.otherWindow(than: window) != nil
+        let hasOther = AppServices.windows.otherWindow(than: window) != nil
         menu.addItem(
             ClosureMenuItem(
                 String(localized: "Copy to Other Window"), symbol: "doc.on.doc.fill",
@@ -108,7 +108,7 @@ struct FileContextMenu {
 
     private func send(_ mode: TransferMode, from window: NSWindow?) {
         Task {
-            await WindowTabs.shared.send(
+            await AppServices.windows.send(
                 selectionOf: browser, mode: mode, from: window, undoManager: undoManager)
         }
     }

@@ -71,7 +71,7 @@ final class NameSuggestionList {
     private func ask() async {
         guard
             let model = await browser.makeNameProposals(
-                for: item, host: NameReviewWindow.host, store: NameReviewWindow.store)
+                for: item, host: AppServices.moduleHost, store: AppServices.folderSettings)
         else {
             show(note: String(localized: "No proposal."))
             return

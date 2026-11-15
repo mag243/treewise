@@ -179,7 +179,7 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
     private func icon(of item: FileItem, for tile: FileGridItem) -> NSImage {
         let icon = ItemIcon.image(for: item)
         icon.size = FileGridItem.iconSize
-        let thumbnails = ThumbnailCache.shared
+        let thumbnails = AppServices.thumbnails
         // A tile shown for another item stops waiting for the thumbnail it asked before.
         guard !item.isOnlyOnline else {
             thumbnails.cancel(for: tile)

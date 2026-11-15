@@ -25,9 +25,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         MainActor.assumeIsolated {
             if let appearance = LaunchOptions.appearance { NSApp.appearance = appearance }
             // AppKit restored the windows it kept between will- and did-finish-launching.
-            WindowTabs.shared.openWindowIfNoneRestored()
+            AppServices.windows.openWindowIfNoneRestored()
             ApplicationsMover.offerIfNeeded()
-            FolderSettingsCleaner.start(with: NameReviewWindow.store)
+            FolderSettingsCleaner.start(with: AppServices.folderSettings)
             FileOperationRunner.removeLeftoverArchiveCopies(in: LaunchOptions.locations)
         }
     }
@@ -47,22 +47,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// A click on the Dock icon with no window open opens one.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
-        if !hasVisibleWindows { MainActor.assumeIsolated { WindowTabs.shared.openWindow() } }
+        if !hasVisibleWindows { MainActor.assumeIsolated { AppServices.windows.openWindow() } }
         return true
     }
 
     /// File > New Window (⌘N): a window at the start folder (ADR 0023).
     @MainActor @objc func newWindow(_ sender: Any?) {
-        WindowTabs.shared.openWindow()
+        AppServices.windows.openWindow()
     }
 
     /// File > New Tab when no browser window is open, which opens one: AppKit
     /// asks the responder chain, which ends here. A browser window answers it
     /// itself, also while it shows a sheet, when it takes no tab.
     @MainActor @objc func newWindowForTab(_ sender: Any?) {
-        guard NSApp.mainWindow.flatMap(WindowTabs.shared.browser(of:)) == nil else { return }
+        guard NSApp.mainWindow.flatMap(AppServices.windows.browser(of:)) == nil else { return }
         Logger(subsystem: LogSubsystem.name, category: "tabs").info("New tab")
-        WindowTabs.shared.openWindow()
+        AppServices.windows.openWindow()
     }
 
     /// Treewise > Settings… (⌘,).
