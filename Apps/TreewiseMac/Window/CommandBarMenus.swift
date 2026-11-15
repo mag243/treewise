@@ -129,33 +129,11 @@ final class CommandBarMenus: NSObject, NSMenuDelegate {
 
     private func item(
         _ title: String.LocalizationValue, image symbol: String? = nil, checked: Bool = false,
-        enabled: Bool = true, run: @escaping @MainActor () -> Void
+        enabled: Bool = true, run: @escaping () -> Void
     ) -> NSMenuItem {
-        let item = ActionMenuItem(title: String(localized: title), run: run)
-        if let symbol {
-            item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
-        }
+        let item = ClosureMenuItem(String(localized: title), symbol: symbol, handler: run)
         item.state = checked ? .on : .off
         item.isEnabled = enabled
         return item
-    }
-}
-
-/// A menu item that runs a closure when chosen.
-@MainActor
-final class ActionMenuItem: NSMenuItem {
-    private let run: @MainActor () -> Void
-
-    init(title: String, run: @escaping @MainActor () -> Void) {
-        self.run = run
-        super.init(title: title, action: #selector(runAction), keyEquivalent: "")
-        target = self
-    }
-
-    @available(*, unavailable)
-    required init(coder: NSCoder) { fatalError("init(coder:) is not used") }
-
-    @objc private func runAction() {
-        run()
     }
 }

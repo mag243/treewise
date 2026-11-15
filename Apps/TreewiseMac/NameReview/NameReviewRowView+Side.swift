@@ -63,9 +63,9 @@ extension NameReviewRowView {
         skip.font = .preferredFont(forTextStyle: .caption1)
         let menu = NSMenu()
         menu.addItem(withTitle: String(localized: "Skip"), action: nil, keyEquivalent: "")
-        menu.addItem(ActionMenuItem(title: String(localized: "Skip")) { model.skip(id) })
+        menu.addItem(ClosureMenuItem(String(localized: "Skip")) { model.skip(id) })
         menu.addItem(
-            ActionMenuItem(title: String(localized: "Always Skip")) {
+            ClosureMenuItem(String(localized: "Always Skip")) {
                 Task { await model.alwaysSkip(id) }
             })
         skip.menu = menu

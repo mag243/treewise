@@ -2,35 +2,6 @@ import AppKit
 import TreewiseCore
 import TreewiseUI
 
-/// A menu item that runs a closure, so a menu can be built from the pane's actions.
-final class ClosureMenuItem: NSMenuItem {
-    private let handler: () -> Void
-
-    /// `symbol` is the SF Symbol beside the title, the same one the command
-    /// bar uses for that action.
-    init(_ title: String, symbol: String, enabled: Bool = true, handler: @escaping () -> Void) {
-        self.handler = handler
-        super.init(title: title, action: #selector(run), keyEquivalent: "")
-        image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
-        // macOS 27 hides a menu item's image unless asked; CI's older Xcode
-        // does not know the property (ADR 0012, ADR 0052).
-        #if compiler(>=6.4)
-            if #available(macOS 27, *) { preferredImageVisibility = .visible }
-        #endif
-        target = self
-        isEnabled = enabled
-    }
-
-    @available(*, unavailable)
-    required init(coder: NSCoder) {
-        fatalError("ClosureMenuItem is made in code only")
-    }
-
-    @objc private func run() {
-        handler()
-    }
-}
-
 /// The context menu of a pane's list and, later, its icon view (PLAN.md M4):
 /// for the selected items, or for the folder when the click was on empty space.
 @MainActor
