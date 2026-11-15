@@ -36,12 +36,15 @@ enum FolderTemplateSheet {
             today: today())
         let sheet = FolderTemplateSheetController(model: model, making: making)
         let sheetWindow = NSWindow(contentViewController: sheet)
-        sheet.finish = { [weak window, weak sheetWindow] create in
+        // The sheet holds this closure, so it reaches the sheet only weakly.
+        sheet.finish = { [weak window, weak sheetWindow, weak sheet] create in
             guard let window, let sheetWindow else { return }
+            // Read before the sheet ends, which may let it go.
+            let offers = sheet?.offers == true
             window.endSheet(sheetWindow)
             guard create, let tree = model.tree, let folder = model.folderMadeIn else { return }
             let made = Made(
-                tree: tree, folder: folder, offering: sheet.offers ? making.templateID : nil)
+                tree: tree, folder: folder, offering: offers ? making.templateID : nil)
             Task { await make(made, browser: browser, window: window, undoManager: undoManager) }
         }
         window.beginSheet(sheetWindow)
