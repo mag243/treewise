@@ -188,6 +188,15 @@ public struct NameTemplate: Hashable, Sendable {
         return variants.contains { Self.match(name, $0.parts, fixed: fixed) != nil }
     }
 
+    /// Whether names fit, as `matches` says, for many names with the same `fixed` values:
+    /// the expressions are compiled once, not for every name.
+    public func matcher(fixed: [String: String] = [:]) -> (String) -> Bool {
+        let matchers = variants.map { Self.matcher(for: $0.parts, fixed: fixed) }
+        return { name in
+            name == Self.singleSpaced(name) && matchers.contains { $0(name) != nil }
+        }
+    }
+
     private func make(
         _ parts: [Part], from values: [String: Value], context: Context, fixed: [String: String]
     ) -> MadeName? {

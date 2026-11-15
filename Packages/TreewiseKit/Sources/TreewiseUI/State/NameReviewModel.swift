@@ -183,7 +183,11 @@ public final class NameReviewModel {
         return chosen.isEmpty ? freshEnabled : chosen
     }
     /// The folder's items, for the names around a new name and for conflicts.
-    var folderItems: [FileItem] = []
+    var folderItems: [FileItem] = [] {
+        didSet { folderNames = FolderNames(folderItems.filter { !$0.isHidden }.map(\.name)) }
+    }
+    /// The names of the folder's visible items, split once for all the proposals there.
+    private(set) var folderNames = FolderNames([])
     /// The items under review.
     var items: [FileItem] = []
     /// Each item's facts, without contents.
@@ -384,9 +388,7 @@ public final class NameReviewModel {
         let fixed = fixed ?? folderValues
         return templates.compactMap { text in
             guard let template = Self.parse(text, for: description) else { return nil }
-            let fits = stems.count {
-                template.matches($0, fixed: fixed)
-            }
+            let fits = stems.count(where: template.matcher(fixed: fixed))
             return PatternCandidate(text: text, fits: fits, of: stems.count)
         }
     }

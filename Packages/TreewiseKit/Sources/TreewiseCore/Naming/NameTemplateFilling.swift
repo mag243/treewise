@@ -59,12 +59,9 @@ extension NameTemplate {
     func ordered(_ variants: [Variant], context: Context, fixed: [String: String]) -> [Variant] {
         guard variants.count > 1 else { return variants }
         let keyed = variants.enumerated().map { index, variant in
-            let fitsCurrent =
-                variant.hasFixedText
-                && Self.match(context.currentName, variant.parts, fixed: fixed) != nil
-            let fitting = context.siblingNames.count {
-                Self.match($0, variant.parts, fixed: fixed) != nil
-            }
+            let match = Self.matcher(for: variant.parts, fixed: fixed)
+            let fitsCurrent = variant.hasFixedText && match(context.currentName) != nil
+            let fitting = context.siblingNames.count { match($0) != nil }
             return (
                 key: (fitsCurrent ? 0 : 1, variant.hasFixedText ? 0 : 1, -fitting, index),
                 variant: variant
@@ -182,27 +179,6 @@ extension NameTemplate {
         default:
             return nil
         }
-    }
-
-    /// The match of a whole name against parts without a choice of parts, with a group for
-    /// the first date, year and sequence.
-    static func match(_ name: String, _ parts: [Part], fixed: [String: String])
-        -> NSTextCheckingResult?
-    {
-        matchCapturing(name, parts, fixed: fixed, everyField: false)?.match
-    }
-
-    /// The match, and with `everyField` the field of each of its groups.
-    static func matchCapturing(
-        _ name: String, _ parts: [Part], fixed: [String: String], everyField: Bool
-    ) -> (match: NSTextCheckingResult, keys: [String])? {
-        var captured = Capture(everyField: everyField)
-        let body = parts.map { pattern(for: $0, fixed: fixed, captured: &captured) }.joined()
-        guard let expression = try? NSRegularExpression(pattern: "^" + body + "$"),
-            let match = expression.firstMatch(
-                in: name, range: NSRange(name.startIndex..., in: name))
-        else { return nil }
-        return (match, captured.keys)
     }
 
     static func pattern(

@@ -26,7 +26,8 @@ extension NameTemplate {
             return Period(year: fileYear, seq: nil, usesFileYear: fileYear != nil)
         }
         // Only names that fit count, so a number the series cannot give starts nothing.
-        let steps = context.siblingNames.compactMap { step(in: $0, parts: parts, fixed: fixed) }
+        let match = matcher(for: parts, fixed: fixed)
+        let steps = context.siblingNames.compactMap { step(in: $0, match: match) }
         guard let last = steps.max(by: { ($0.year ?? 0, $0.seq) < ($1.year ?? 0, $1.seq) }) else {
             return Period(
                 year: fileYear, seq: padded(series.first, to: series.width),
@@ -61,8 +62,10 @@ extension NameTemplate {
         return nil
     }
 
-    private static func step(in name: String, parts: [Part], fixed: [String: String]) -> Step? {
-        guard let match = match(name, parts, fixed: fixed),
+    private static func step(in name: String, match: (String) -> NSTextCheckingResult?)
+        -> Step?
+    {
+        guard let match = match(name),
             let seqRange = Range(match.range(withName: seqGroup), in: name),
             let seq = Int(name[seqRange])
         else { return nil }

@@ -132,12 +132,10 @@ extension NameReviewModel {
             session?.replaceProposals([], from: moduleID, for: item.id)
             return
         }
-        let siblings = folderItems.filter { !$0.isHidden && $0.id != item.id }.map(\.name)
         let proposals = NameProposal.make(
             from: values, template: template, moduleID: moduleID, folderName: folder.name,
             foldersAbove: foldersAbove, suggestedDate: facts[item.id]?.suggestedDate,
-            siblingNames: siblings,
-            currentName: item.name)
+            folderNames: folderNames, currentName: item.name)
         session?.replaceProposals(proposals, from: moduleID, for: item.id)
     }
 

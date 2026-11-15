@@ -20,10 +20,9 @@ struct NameProposalBenchmarks {
     /// The files proposed for in one measurement; each matches against every sibling.
     private static let proposedCount = 50
     private static let runs = 5
-    private static let fields: [NameTemplate.Field] = [
-        .init(name: "date", kind: .date), .init(name: "text", kind: .text),
-        .init(name: "seq", kind: .number),
-    ]
+    private static let fields: [NameTemplate.Field] =
+        [.init(name: "date", kind: .date), .init(name: "text", kind: .text)]
+        + NameTemplate.Field.suppliedByTreewise
 
     private static let names: [String] = (0..<fileCount).map { index in
         "2026-\(String(format: "%02d", index % 12 + 1))-01 Invoice \(index).pdf"
@@ -33,25 +32,40 @@ struct NameProposalBenchmarks {
     /// tried for a name that nearly fits.
     private static let scans: [String] = (0..<fileCount).map { "Scan \($0).pdf" }
 
+    /// Names of a series, which every proposal reads to find the next number.
+    private static let series: [String] = (0..<fileCount).map {
+        "Invoice \(String(format: "%04d", $0)).pdf"
+    }
+
     @Test func proposingNamesInALargeFolder() throws {
-        try measure(Self.names, "names that fit")
+        try measure("{date} {text}", Self.names, "names that fit")
     }
 
     @Test func proposingNamesForNamesThatDoNotFit() throws {
-        try measure(Self.scans, "names that do not fit")
+        try measure("{date} {text}", Self.scans, "names that do not fit")
     }
 
-    private func measure(_ names: [String], _ kind: String) throws {
-        let template = try NameTemplate.parse("{date} {text} {seq}", fields: Self.fields).get()
+    @Test func proposingTheNextNumberOfASeries() throws {
+        try measure("Invoice {seq}", Self.series, "names of a series")
+    }
+
+    @Test func proposingNamesFromAChoiceOfParts() throws {
+        try measure("{date|text} Invoice {seq}", Self.series, "names for a choice of parts")
+    }
+
+    /// Proposes as the review does: the folder's names are split once for all its files.
+    private func measure(_ pattern: String, _ names: [String], _ kind: String) throws {
+        let template = try NameTemplate.parse(pattern, fields: Self.fields).get()
         let durations = (0..<Self.runs).map { _ in
             ContinuousClock().measure {
+                let folderNames = FolderNames(names)
                 for name in names.prefix(Self.proposedCount) {
                     _ = NameProposal.make(
                         from: [
                             ["text": .text("Invoice"), "date": .date(year: 2026, month: 3, day: 1)]
                         ],
                         template: template, moduleID: "m", folderName: "Invoices",
-                        suggestedDate: nil, siblingNames: names, currentName: name)
+                        suggestedDate: nil, folderNames: folderNames, currentName: name)
                 }
             }
         }
