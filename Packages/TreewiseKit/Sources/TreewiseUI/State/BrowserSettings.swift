@@ -135,30 +135,21 @@ public final class BrowserSettings {
     /// The user's named patterns, one of them the default (ADR 0068).
     public var savedPatterns: SavedPatterns {
         didSet {
-            let json = (try? JSONEncoder().encode(savedPatterns)).flatMap {
-                String(data: $0, encoding: .utf8)
-            }
-            store.setSetting(json, for: Key.savedPatterns)
+            store.setSetting(Self.json(savedPatterns), for: Key.savedPatterns)
         }
     }
 
     /// What the user chose for the add-ons across the app (ADR 0070).
     public var addOns: AddOnPreferences {
         didSet {
-            let json = (try? JSONEncoder().encode(addOns)).flatMap {
-                String(data: $0, encoding: .utf8)
-            }
-            store.setSetting(json, for: Key.addOns)
+            store.setSetting(Self.json(addOns), for: Key.addOns)
         }
     }
 
     /// The licence keys the user entered, which the closed modules check (ADR 0071).
     public var licenceKeys: [String] {
         didSet {
-            let json = (try? JSONEncoder().encode(licenceKeys)).flatMap {
-                String(data: $0, encoding: .utf8)
-            }
-            store.setSetting(json, for: Key.licenceKeys)
+            store.setSetting(Self.json(licenceKeys), for: Key.licenceKeys)
         }
     }
 
@@ -166,10 +157,7 @@ public final class BrowserSettings {
     /// and in the keychain (ADR 0071, ADR 0088).
     public var licenceTrialStarts: [String: String] {
         didSet {
-            let json = (try? JSONEncoder().encode(licenceTrialStarts)).flatMap {
-                String(data: $0, encoding: .utf8)
-            }
-            store.setSetting(json, for: Key.licenceTrialStarts)
+            store.setSetting(Self.json(licenceTrialStarts), for: Key.licenceTrialStarts)
         }
     }
 
@@ -203,11 +191,8 @@ public final class BrowserSettings {
     /// change, while the provider's built-in favorites show.
     public var favoriteFolders: [FileItem.ID]? {
         didSet {
-            let json = favoriteFolders.flatMap { folders in
-                try? JSONEncoder().encode(folders.map(\.rawValue))
-            }
             store.setSetting(
-                json.flatMap { String(data: $0, encoding: .utf8) }, for: Key.favoriteFolders)
+                favoriteFolders.flatMap { Self.json($0.map(\.rawValue)) }, for: Key.favoriteFolders)
         }
     }
 
@@ -226,10 +211,10 @@ public final class BrowserSettings {
             return decoded(WindowSnapshot.self, at: Key.lastWindow).map(SessionSnapshot.init)
         }
         set {
-            guard let newValue, !newValue.groups.isEmpty,
-                let json = try? JSONEncoder().encode(newValue)
-            else { return }
-            store.setSetting(String(data: json, encoding: .utf8), for: Key.lastSession)
+            guard let newValue, !newValue.groups.isEmpty, let json = Self.json(newValue) else {
+                return
+            }
+            store.setSetting(json, for: Key.lastSession)
         }
     }
 
@@ -249,29 +234,19 @@ public final class BrowserSettings {
         terminalApp = store.setting(Key.terminalApp)
         checksSpellingWhileTyping = store.setting(Key.checksSpellingWhileTyping) == "true"
         savedPatterns =
-            store.setting(Key.savedPatterns).flatMap {
-                try? JSONDecoder().decode(SavedPatterns.self, from: Data($0.utf8))
-            }
+            Self.decoded(SavedPatterns.self, at: Key.savedPatterns, in: store)
             ?? store.setting(Key.defaultNamePattern).map { SavedPatterns(keeping: $0) }
             ?? .examples()
-        licenceKeys =
-            store.setting(Key.licenceKeys).flatMap {
-                try? JSONDecoder().decode([String].self, from: Data($0.utf8))
-            } ?? []
+        licenceKeys = Self.decoded([String].self, at: Key.licenceKeys, in: store) ?? []
         licenceTrialStarts =
-            store.setting(Key.licenceTrialStarts).flatMap {
-                try? JSONDecoder().decode([String: String].self, from: Data($0.utf8))
-            } ?? [:]
+            Self.decoded([String: String].self, at: Key.licenceTrialStarts, in: store) ?? [:]
         store.setSetting(nil, for: Key.oldLicenceTrialStart)
         addOns =
-            store.setting(Key.addOns).flatMap {
-                try? JSONDecoder().decode(AddOnPreferences.self, from: Data($0.utf8))
-            } ?? AddOnPreferences()
+            Self.decoded(AddOnPreferences.self, at: Key.addOns, in: store) ?? AddOnPreferences()
         personalDataInNames =
             store.setting(Key.personalDataInNames).flatMap(PersonalDataInNames.init)
             ?? .leaveOutOfApproveAll
-        favoriteFolders = store.setting(Key.favoriteFolders)
-            .flatMap { try? JSONDecoder().decode([String].self, from: Data($0.utf8)) }?
+        favoriteFolders = Self.decoded([String].self, at: Key.favoriteFolders, in: store)?
             .map { FileItem.ID($0) }
         sidebarWidth = store.setting(Key.sidebarWidth).flatMap(Double.init)
         offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
@@ -283,7 +258,19 @@ public final class BrowserSettings {
     }
 
     private func decoded<Value: Decodable>(_ type: Value.Type, at key: String) -> Value? {
+        Self.decoded(type, at: key, in: store)
+    }
+
+    /// A setting kept as JSON, or nil when there is none or it cannot be read.
+    private static func decoded<Value: Decodable>(
+        _ type: Value.Type, at key: String, in store: any SettingsStoring
+    ) -> Value? {
         store.setting(key).flatMap { try? JSONDecoder().decode(type, from: Data($0.utf8)) }
+    }
+
+    /// A value as the JSON text a setting keeps.
+    private static func json<Value: Encodable>(_ value: Value) -> String? {
+        (try? JSONEncoder().encode(value)).flatMap { String(data: $0, encoding: .utf8) }
     }
 
     /// The folder a new window starts at: the chosen one when `lookUp` finds
