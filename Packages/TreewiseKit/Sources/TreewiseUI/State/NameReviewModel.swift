@@ -146,6 +146,16 @@ public final class NameReviewModel {
     }
     /// Whether a module failed to answer.
     public internal(set) var moduleFailed = false
+    /// Why the review shows nothing to name, when it is not that the folder holds nothing.
+    public internal(set) var startProblem: StartProblem?
+
+    /// What kept the review from reading what it needs.
+    public enum StartProblem: Hashable, Sendable {
+        /// The folder could not be read.
+        case folderUnreadable
+        /// The add-ons' process could not be reached.
+        case addOnsUnavailable
+    }
     /// What stands in the way of each name shown now.
     public internal(set) var conflicts: [FileItem.ID: BatchRenameConflict.Kind] = [:]
     /// What applying did, once it ran.
@@ -214,7 +224,14 @@ public final class NameReviewModel {
 
     /// Reads the folder and the modules, and starts asking for values.
     public func start() async {
-        folderItems = (try? await dependencies.operations.contents(of: folder.id)) ?? []
+        startProblem = nil
+        do {
+            folderItems = try await dependencies.operations.contents(of: folder.id)
+        } catch {
+            Self.logger.error("The folder could not be read: \(String(describing: error))")
+            folderItems = []
+            startProblem = .folderUnreadable
+        }
         let visible = folderItems.filter { !$0.isHidden }
         // A provider lists items in no particular order; the rows follow the names.
         items = (scope == .selection ? selection : visible.filter { !$0.isContainer }).sorted {
@@ -262,9 +279,15 @@ public final class NameReviewModel {
     /// the settings go to the one that may (ADR 0067); none turned off in Settings is
     /// offered (ADR 0070). One without a licence comes last, off.
     private func loadSettings() async -> (descriptions: [AddOnDescription], catalog: [String]) {
-        let all = ((try? await dependencies.host.availableModules()) ?? []).filter {
-            $0.proposesNames
+        let available: [AddOnDescription]
+        do {
+            available = try await dependencies.host.availableModules()
+        } catch {
+            Self.logger.error("The add-ons could not be reached: \(String(describing: error))")
+            available = []
+            startProblem = startProblem ?? .addOnsUnavailable
         }
+        let all = available.filter { $0.proposesNames }
         await readLicenceStates(of: all)
         let mayWork = { (module: AddOnDescription) in self.mayWork(module.id) }
         let offered = AddOnDescription.offered(all.filter(mayWork))

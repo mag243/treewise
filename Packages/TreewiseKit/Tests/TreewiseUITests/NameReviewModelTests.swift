@@ -91,6 +91,26 @@ import TreewiseUI
         return model
     }
 
+    @Test func saysWhenTheFolderCannotBeRead() async {
+        _ = addFile("scan.txt")
+        fileSystem.remove(folder.id)
+        let model = await model(host())
+        #expect(model.startProblem == .folderUnreadable)
+    }
+
+    @Test func saysWhenTheAddOnsCannotBeReached() async {
+        _ = addFile("scan.txt")
+        let host = host()
+        host.failAvailableModules()
+        let model = await model(host)
+        #expect(model.startProblem == .addOnsUnavailable)
+    }
+
+    @Test func hasNoProblemWhenAllIsRead() async {
+        _ = addFile("scan.txt")
+        #expect(await model(host()).startProblem == nil)
+    }
+
     @Test func leavesOutADateThatIsNoDay() async {
         let item = addFile("scan.txt")
         let host = host(

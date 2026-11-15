@@ -12,6 +12,7 @@ public final class ScriptedModuleHost: AddOnHosting {
     private let licences = Mutex<[String: ModuleLicenceState]>([:])
     private let askedKeys = Mutex<[[String]]>([])
     private let failingLicences = Mutex<Set<String>>([])
+    private let modulesFail = Mutex(false)
     private let askedNames = Mutex<[[String]]>([])
     private let askedYears = Mutex<[(moduleID: String, years: FolderYears?)]>([])
     private let gate = Mutex(Gate())
@@ -93,7 +94,15 @@ public final class ScriptedModuleHost: AddOnHosting {
     }
 
     /// The scripted modules.
-    public func availableModules() async throws -> [AddOnDescription] { modules }
+    public func availableModules() async throws -> [AddOnDescription] {
+        if modulesFail.withLock({ $0 }) { throw NameModuleHostError.unavailable }
+        return modules
+    }
+
+    /// Makes asking which add-ons there are fail, as when their process cannot be reached.
+    public func failAvailableModules() {
+        modulesFail.withLock { $0 = true }
+    }
 
     /// As Folder Structure Templates does: the year above, or a root named as a year, becomes
     /// `{year}` in the names. Only for an add-on that makes folder structures.
