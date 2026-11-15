@@ -8,7 +8,7 @@ import TreewiseCore
 @MainActor
 final class CrumbButton: NSButton {
     private static let iconSize: CGFloat = 13
-    private static let fontSize: CGFloat = 11
+    private static let fontSize = NSFont.smallSystemFontSize
     private static let outlineRadius: CGFloat = 4
     private static let outlineWidth: CGFloat = 2
     /// Just below the priority with which a window keeps the size it is dragged to.

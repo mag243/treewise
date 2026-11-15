@@ -21,9 +21,9 @@ struct TableCommands {
 /// Return for Rename (ADR 0018) and a click on the selected name (ADR 0039).
 final class PaneTableView: NSTableView, NSMenuItemValidation {
     /// Return and Enter: rename the selected item.
-    private static let renameKeyCodes: Set<UInt16> = [36, 76]
+    private static let renameKeyCodes: Set<UInt16> = [KeyCode.returnKey, KeyCode.enter]
     /// Space: Quick Look.
-    private static let quickLookKeyCode: UInt16 = 49
+    private static let quickLookKeyCode = KeyCode.space
 
     /// Called when the table becomes the first responder.
     var onFocus: (() -> Void)?

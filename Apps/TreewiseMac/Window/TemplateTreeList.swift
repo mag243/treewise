@@ -14,7 +14,10 @@ final class TemplateTreeList: NSScrollView, NSTableViewDataSource, NSTableViewDe
 
     private static let indent: CGFloat = 18
     private static let rowHeight: CGFloat = 20
-    private static let iconSize: CGFloat = 16
+    /// The room before a top-level row's icon.
+    private static let leadingInset: CGFloat = 4
+    /// The opacity of a folder that is there already.
+    private static let existingOpacity: CGFloat = 0.45
     private static let cellID = NSUserInterfaceItemIdentifier("TemplateTreeCell")
     private let table = NSTableView()
 
@@ -63,14 +66,14 @@ final class TemplateTreeList: NSScrollView, NSTableViewDataSource, NSTableViewDe
         let shown = rows[row]
         let icon = NSImageView(image: NSImage(named: NSImage.folderName) ?? NSImage())
         icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.widthAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
-        icon.heightAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
+        icon.widthAnchor.constraint(equalToConstant: ListMetrics.iconSide).isActive = true
+        icon.heightAnchor.constraint(equalToConstant: ListMetrics.iconSide).isActive = true
         let label = NSTextField(labelWithAttributedString: Self.title(of: shown))
         label.lineBreakMode = .byTruncatingTail
         let stack = NSStackView(views: [icon, label])
-        stack.spacing = 6
-        stack.edgeInsets.left = CGFloat(shown.depth) * Self.indent + 4
-        if shown.state == .existing { icon.alphaValue = 0.45 }
+        stack.spacing = ListMetrics.iconSpacing
+        stack.edgeInsets.left = CGFloat(shown.depth) * Self.indent + Self.leadingInset
+        if shown.state == .existing { icon.alphaValue = Self.existingOpacity }
         return stack
     }
 

@@ -12,6 +12,7 @@ final class CommandBar: NSView {
     private static let height: CGFloat = 34
     private static let padding: CGFloat = 8
     private static let dividerHeight: CGFloat = 18
+    private static let dividerWidth: CGFloat = 1
 
     private let browser: BrowserState
     private let menus: CommandBarMenus
@@ -149,7 +150,7 @@ final class CommandBar: NSView {
         box.boxType = .separator
         NSLayoutConstraint.activate([
             box.heightAnchor.constraint(equalToConstant: dividerHeight),
-            box.widthAnchor.constraint(equalToConstant: 1),
+            box.widthAnchor.constraint(equalToConstant: dividerWidth),
         ])
         return box
     }

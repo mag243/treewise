@@ -5,7 +5,6 @@ import TreewiseUI
 /// Feeds the sidebar's outline view and loads folders as they expand.
 @MainActor
 final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
-    private static let iconSize = NSSize(width: 16, height: 16)
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("SidebarCell")
     private static let headerIdentifier = NSUserInterfaceItemIdentifier("SidebarHeader")
 
@@ -151,7 +150,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             cell.textField?.stringValue = folder.name
             let icon = FolderIcon.image(for: folder.id)
             // A symbol keeps its own proportions; a file's icon comes in many sizes.
-            if !FolderIcon.isHome(folder.id) { icon.size = Self.iconSize }
+            if !FolderIcon.isHome(folder.id) { icon.size = ListMetrics.iconSize }
             cell.imageView?.image = icon
             (cell as? SidebarCell)?.eject =
                 folder.isEjectable ? { [weak self] in self?.eject?([folder]) } : nil
@@ -257,6 +256,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         {
             return cell
         }
-        return SidebarCell(identifier: identifier, withIcon: withIcon, iconSize: Self.iconSize)
+        return SidebarCell(
+            identifier: identifier, withIcon: withIcon, iconSize: ListMetrics.iconSize)
     }
 }

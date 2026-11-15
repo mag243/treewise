@@ -10,9 +10,9 @@ import TreewiseUI
 /// `TableCommands` count tiles where the list counts rows.
 final class PaneCollectionView: NSCollectionView, NSMenuItemValidation {
     /// Return and Enter: rename the selected item.
-    private static let renameKeyCodes: Set<UInt16> = [36, 76]
+    private static let renameKeyCodes: Set<UInt16> = [KeyCode.returnKey, KeyCode.enter]
     /// Space: Quick Look.
-    private static let quickLookKeyCode: UInt16 = 49
+    private static let quickLookKeyCode = KeyCode.space
     private static let doubleClick = 2
 
     /// Called when the view becomes the first responder.

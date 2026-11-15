@@ -3,7 +3,6 @@ import AppKit
 /// A sidebar row: an icon and a name, or a section heading without an icon;
 /// a volume that can be ejected has an eject button at the end (ADR 0044).
 final class SidebarCell: NSTableCellView {
-    private static let iconSpacing: CGFloat = 6
     private static let ejectSize: CGFloat = 16
     /// The room a name keeps from the sidebar's edge before it is cut short, as Finder's.
     private static let edgeMargin: CGFloat = 8
@@ -32,7 +31,7 @@ final class SidebarCell: NSTableCellView {
         textField = text
         setUpEjectButton()
         beforeEject = text.trailingAnchor.constraint(
-            lessThanOrEqualTo: ejectButton.leadingAnchor, constant: -Self.iconSpacing)
+            lessThanOrEqualTo: ejectButton.leadingAnchor, constant: -ListMetrics.iconSpacing)
         beforeEdge = text.trailingAnchor.constraint(
             lessThanOrEqualTo: trailingAnchor, constant: -Self.edgeMargin)
         var constraints = [
@@ -50,7 +49,7 @@ final class SidebarCell: NSTableCellView {
                 icon.widthAnchor.constraint(equalToConstant: iconSize.width),
                 icon.heightAnchor.constraint(equalToConstant: iconSize.height),
                 text.leadingAnchor.constraint(
-                    equalTo: icon.trailingAnchor, constant: Self.iconSpacing),
+                    equalTo: icon.trailingAnchor, constant: ListMetrics.iconSpacing),
             ]
         } else {
             constraints.append(text.leadingAnchor.constraint(equalTo: leadingAnchor))

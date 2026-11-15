@@ -8,7 +8,7 @@ import TreewiseUI
 final class PaneStatusBar: NSStackView {
     private static let barPadding: CGFloat = 4
     private static let sidePadding: CGFloat = 10
-    private static let fontSize: CGFloat = 11
+    private static let fontSize = NSFont.smallSystemFontSize
     private static let modes: [ViewMode] = [.list, .icons]
 
     private let counts = NSTextField(labelWithString: "")

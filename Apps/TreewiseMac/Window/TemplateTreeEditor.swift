@@ -27,7 +27,6 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         "me.m-domain.treewise.template-folder")
     private static let pathSeparator = "\u{1F}"
     private static let height: CGFloat = 190
-    private static let iconSize: CGFloat = 16
     /// The space between the tree and its buttons, as in Settings' Names tab.
     private static let spacing: CGFloat = 8
     private static let fields: [(field: String, title: String.LocalizationValue)] = [
@@ -264,8 +263,8 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         let cell = NSTableCellView()
         let icon = NSImageView(image: NSImage(named: NSImage.folderName) ?? NSImage())
         icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.widthAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
-        icon.heightAnchor.constraint(equalToConstant: Self.iconSize).isActive = true
+        icon.widthAnchor.constraint(equalToConstant: ListMetrics.iconSide).isActive = true
+        icon.heightAnchor.constraint(equalToConstant: ListMetrics.iconSide).isActive = true
         let name = NSTextField(string: node.tree.name)
         name.isBordered = false
         name.drawsBackground = false

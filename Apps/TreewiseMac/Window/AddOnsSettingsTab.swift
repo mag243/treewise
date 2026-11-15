@@ -13,6 +13,8 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private static let spacing: CGFloat = 8
     private static let cardSpacing: CGFloat = 8
     private static let groupPadding = NSSize(width: 12, height: 9)
+    /// The room between a switch's title and its note.
+    private static let wordSpacing: CGFloat = 2
     /// The width of the list and the foot, as every list in Settings.
     static let width = SettingsList.width
     /// The room between the list's border and its cards.
@@ -141,7 +143,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         let words = NSStackView(views: [title, note])
         words.orientation = .vertical
         words.alignment = .leading
-        words.spacing = 2
+        words.spacing = Self.wordSpacing
         let row = NSStackView(views: [words, yearBefore])
         row.alignment = .centerY
         row.spacing = Self.spacing

@@ -255,11 +255,3 @@ private final class NameReviewOutline: NSOutlineView {
         if !keys(event) { super.keyDown(with: event) }
     }
 }
-
-/// The keys the overview answers, by their virtual key codes.
-private enum KeyCode {
-    static let returnKey: UInt16 = 36
-    static let space: UInt16 = 49
-    static let leftArrow: UInt16 = 123
-    static let rightArrow: UInt16 = 124
-}

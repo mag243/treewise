@@ -24,6 +24,9 @@ final class AddOnCardView: NSView {
     private static let headerSpacing: CGFloat = 10
     private static let bodySpacing: CGFloat = 8
     private static let selectedEdge: CGFloat = 2
+    private static let edge: CGFloat = 1
+    /// The room between a card's title and the line under it.
+    private static let titleSpacing: CGFloat = 1
     /// The body starts under the name, past the icon.
     private static var bodyIndent: CGFloat { iconSize + headerSpacing }
     static let addOnSymbol = "puzzlepiece.extension.fill"
@@ -56,7 +59,8 @@ final class AddOnCardView: NSView {
         let box = AddOnCardStyle.group(
             fill: AddOnCardStyle.cardFill,
             border: isSelected ? .controlAccentColor : .separatorColor,
-            radius: AddOnCardStyle.cardRadius, borderWidth: isSelected ? Self.selectedEdge : 1)
+            radius: AddOnCardStyle.cardRadius,
+            borderWidth: isSelected ? Self.selectedEdge : Self.edge)
         box.contentViewMargins = Self.padding
         let inner = width - 2 * Self.padding.width
         let header = header()
@@ -129,7 +133,7 @@ final class AddOnCardView: NSView {
         let titles = NSStackView(views: [name, reads])
         titles.orientation = .vertical
         titles.alignment = .leading
-        titles.spacing = 1
+        titles.spacing = Self.titleSpacing
         titles.setContentHuggingPriority(.defaultLow, for: .horizontal)
         var views: [NSView] = [icon(), titles]
         if let badge = badge() { views.append(badge) }

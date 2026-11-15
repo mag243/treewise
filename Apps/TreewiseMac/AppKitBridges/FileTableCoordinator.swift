@@ -5,11 +5,9 @@ import TreewiseUI
 /// Feeds the list's table view and turns its events into `FileTableActions`.
 @MainActor
 final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDelegate {
-    private static let iconSize = NSSize(width: 16, height: 16)
     /// Space between a cell's edges and its contents.
     private static let cellPadding: CGFloat = 2
     /// Space between the icon and the name.
-    private static let iconSpacing: CGFloat = 6
 
     /// The alpha of a cut item's row (PLAN.md §4.3).
 
@@ -141,7 +139,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         cell.alphaValue = cutItems.contains(item.id) ? Tint.cut : 1
         if column == .name {
             let icon = ItemIcon.image(for: item)
-            icon.size = Self.iconSize
+            icon.size = ListMetrics.iconSize
             cell.imageView?.image = icon
             (cell as? FileNameCell)?.showCloudStatus(
                 isOnlyOnline: item.isOnlyOnline, download: downloads[item.id])
@@ -231,9 +229,10 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             constraints += [
                 icon.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: cellPadding),
                 icon.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
-                icon.widthAnchor.constraint(equalToConstant: iconSize.width),
-                icon.heightAnchor.constraint(equalToConstant: iconSize.height),
-                text.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: iconSpacing),
+                icon.widthAnchor.constraint(equalToConstant: ListMetrics.iconSize.width),
+                icon.heightAnchor.constraint(equalToConstant: ListMetrics.iconSize.height),
+                text.leadingAnchor.constraint(
+                    equalTo: icon.trailingAnchor, constant: ListMetrics.iconSpacing),
             ]
         } else {
             constraints.append(

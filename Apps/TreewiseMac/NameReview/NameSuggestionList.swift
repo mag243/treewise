@@ -9,15 +9,6 @@ import TreewiseUI
 /// option and Escape closes it; it closes by itself when the rename ends.
 @MainActor
 final class NameSuggestionList {
-    /// The key codes the list takes from the name while it is open.
-    private enum Key {
-        static let returnKey: UInt16 = 36
-        static let enter: UInt16 = 76
-        static let escape: UInt16 = 53
-        static let down: UInt16 = 125
-        static let up: UInt16 = 126
-    }
-
     /// The list being shown, kept while it is open.
     private static var shown: NameSuggestionList?
 
@@ -158,20 +149,20 @@ final class NameSuggestionList {
             event.modifierFlags.isDisjoint(with: [.command, .option, .control])
         else { return false }
         switch event.keyCode {
-        case Key.down:
+        case KeyCode.down:
             panel.moveHighlight(by: 1)
             return true
-        case Key.up:
+        case KeyCode.up:
             panel.moveHighlight(by: -1)
             return true
-        case Key.returnKey, Key.enter:
+        case KeyCode.returnKey, KeyCode.enter:
             if let highlighted = panel.highlighted {
                 choose(highlighted)
                 return true
             }
             close()
             return false
-        case Key.escape:
+        case KeyCode.escape:
             close()
             return true
         default:
