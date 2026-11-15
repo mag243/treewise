@@ -30,4 +30,10 @@ import TreewiseCore
     @Test func writesTwoDashesForAnUnknownSize() {
         #expect(text(nil) == "--")
     }
+
+    @Test func writesAnyCountOfBytesAsAFilesSize() {
+        let locale = Locale(identifier: "en_GB")
+        #expect(ItemSizeFormatter.bytes(1_840_000, locale: locale) == "1.8 MB")
+        #expect(ItemSizeFormatter.bytes(1_840_000, locale: locale) == text(1_840_000))
+    }
 }

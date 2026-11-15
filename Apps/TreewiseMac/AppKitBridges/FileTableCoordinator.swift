@@ -26,11 +26,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
     /// Set while the table is brought in line with the state, so its own
     /// notifications are not sent back as user actions.
     private var isApplyingState = false
-    private let dates = ItemDateFormatter(
-        calendar: .autoupdatingCurrent, locale: .autoupdatingCurrent, timeZone: .autoupdatingCurrent
-    )
-    private let sizes = ItemSizeFormatter(locale: .autoupdatingCurrent)
-    private let kinds = KindFormatter(locale: .autoupdatingCurrent)
+    private let formats = ItemFormats()
 
     func attach(to table: PaneTableView) {
         self.table = table
@@ -194,9 +190,9 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
     private func text(of item: FileItem, in column: FileTableColumn) -> String {
         switch column {
         case .name: shownName(of: item)
-        case .dateModified: dates.string(forModifiedOf: item, relativeTo: Date())
-        case .size: sizes.string(for: item)
-        case .kind: kinds.string(for: item)
+        case .dateModified: formats.date(of: item)
+        case .size: formats.size(of: item)
+        case .kind: formats.kind(of: item)
         }
     }
 

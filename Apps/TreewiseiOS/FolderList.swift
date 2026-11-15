@@ -54,24 +54,3 @@ struct FolderList: View {
             set: { browser.setSelection($0, in: tab) })
     }
 }
-
-/// The texts of an item's date, size and kind, as the Mac's list shows them.
-struct ItemFormats {
-    private let dates = ItemDateFormatter(
-        calendar: .autoupdatingCurrent, locale: .autoupdatingCurrent, timeZone: .autoupdatingCurrent
-    )
-    private let sizes = ItemSizeFormatter(locale: .autoupdatingCurrent)
-    private let kinds = KindFormatter(locale: .autoupdatingCurrent)
-
-    func date(of item: FileItem) -> String {
-        dates.string(for: item.modified, relativeTo: .now)
-    }
-
-    func size(of item: FileItem) -> String {
-        sizes.string(for: item)
-    }
-
-    func kind(of item: FileItem) -> String {
-        kinds.string(for: item)
-    }
-}

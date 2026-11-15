@@ -28,6 +28,6 @@ public enum StatusLine {
     }
 
     private static func size(_ bytes: Int64, _ locale: Locale) -> String {
-        bytes.formatted(.byteCount(style: .file).locale(locale))
+        ItemSizeFormatter.bytes(bytes, locale: locale)
     }
 }
