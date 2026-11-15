@@ -36,9 +36,14 @@ import TreewiseTestSupport
         }
     }
 
-    /// Whether a change arrives when the watcher follows file changes. FSEvents
-    /// can still deliver what happened just before the stream started, so the
-    /// count settles first and only what arrives after `change` counts.
+    /// How often a count is looked at while waiting for it to change.
+    private static let pollInterval = Duration.milliseconds(20)
+
+    /// Whether a change arrives when the watcher follows file changes. FSEvents can still
+    /// deliver, in batches, what happened before the stream started, even a file made to
+    /// mark the start; so the count settles first, and only what arrives after `change`
+    /// counts. A change that arrives ends the wait at once; only when none comes does it
+    /// last the whole deadline.
     private func reportsFileChange(
         in directory: TempDirectory, after change: () throws -> Void
     ) async throws -> Bool {
@@ -55,8 +60,17 @@ import TreewiseTestSupport
             try await Task.sleep(for: Self.deadline / 2)
         }
         try change()
-        try await Task.sleep(for: Self.deadline)
-        return count.withLock { $0 } > settled
+        return try await Self.waitUntil { count.withLock { $0 } > settled }
+    }
+
+    /// Whether `condition` holds before the deadline, looked at every `pollInterval`.
+    private static func waitUntil(_ condition: () -> Bool) async throws -> Bool {
+        let end = ContinuousClock.now + deadline
+        while ContinuousClock.now < end {
+            if condition() { return true }
+            try await Task.sleep(for: pollInterval)
+        }
+        return condition()
     }
 
     @Test func reportsAFileChangingInAFolderFollowedForFiles() async throws {
