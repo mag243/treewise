@@ -96,7 +96,9 @@ extension BrowserState {
     }
 
     /// Where each item lands: its own name, or what the answer about a name
-    /// that is taken makes of it. Empty when the user stopped.
+    /// that is taken makes of it. A name an earlier item of the same paste takes is kept
+    /// beside it, as there is nothing in the archive yet to replace. Empty when the user
+    /// stopped.
     private static func landing(
         _ items: [FileItem], in folder: FileItem.ID, among names: [String: FileItem],
         mode: TransferMode, resolver: any ConflictResolving
@@ -107,8 +109,13 @@ extension BrowserState {
             let key = ConflictResolver.comparisonKey(item.name)
             let clash = names.values.first { ConflictResolver.comparisonKey($0.name) == key }
             guard let clash else {
-                result.append((item, item.name))
-                taken.append(item.name)
+                let landed = result.contains { ConflictResolver.comparisonKey($0.1) == key }
+                let name =
+                    landed
+                    ? ConflictResolver.availableName(for: item.name, kind: item.kind, among: taken)
+                    : item.name
+                result.append((item, name))
+                taken.append(name)
                 continue
             }
             let isInPlace = mode == .copy && item.parentID == folder

@@ -80,6 +80,24 @@ import TreewiseUI
             ])
     }
 
+    @Test func twoItemsWithOneNameLandUnderTwoNames() async throws {
+        let browser = try await browser(at: Self.inner.id)
+        let volume = try await fileSystem.item(at: "/docs").volume
+        fileSystem.add(FileItem(id: "/docs/other", name: "other", kind: .folder, volume: volume))
+        fileSystem.add(
+            entry("/docs/other/note.txt", parent: "/docs/other", kind: .file, volume: volume))
+        let first = try await fileSystem.item(at: "/docs/note.txt")
+        let second = try await fileSystem.item(at: "/docs/other/note.txt")
+
+        await browser.pasteItems([first, second], resolver: ScriptedResolver(), undoManager: nil)
+
+        guard case .add(let additions) = fileSystem.appliedEdits.first else {
+            Issue.record("nothing was added")
+            return
+        }
+        #expect(Set(additions.map(\.path)).count == 2, "each lands under a name of its own")
+    }
+
     @Test func stoppingAtANameThatIsTakenChangesNothing() async throws {
         let browser = try await browser(at: "/docs")
         fileSystem.add(
