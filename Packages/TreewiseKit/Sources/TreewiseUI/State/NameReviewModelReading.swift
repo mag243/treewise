@@ -72,6 +72,20 @@ extension NameReviewModel {
 
     private func finishReading() { readingCount -= 1 }
 
+    /// The values without those that cannot be written, such as a date that is no day;
+    /// an add-on's answer comes from another process (ADR 0057).
+    static func wellFormed(_ values: [[String: NameTemplate.Value]]) -> [[String: NameTemplate
+        .Value]]
+    {
+        values.map { reading in
+            let kept = reading.filter(\.value.isWellFormed)
+            if kept.count < reading.count {
+                logger.error("An add-on gave a value that cannot be written; it is left out")
+            }
+            return kept
+        }
+    }
+
     private func read(_ item: FileItem, _ module: NameReviewModule) async {
         let visible = folderItems.filter { !$0.isHidden }
         var request = await dependencies.makeRequest(
@@ -82,7 +96,7 @@ extension NameReviewModel {
         do {
             let values = try await dependencies.host.fieldValues(
                 moduleID: module.id, request: request)
-            answers[item.id, default: [:]][module.id] = values
+            answers[item.id, default: [:]][module.id] = Self.wellFormed(values)
             refreshProposals(of: item, from: module.id)
             refreshConflicts()
         } catch {

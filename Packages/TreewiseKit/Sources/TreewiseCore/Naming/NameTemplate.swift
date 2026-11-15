@@ -59,6 +59,20 @@ public struct NameTemplate: Hashable, Sendable {
         case text(String)
         /// A date.
         case date(year: Int, month: Int, day: Int)
+
+        /// The years a date may have, as a name writes them in four digits.
+        private static let years = 1...9999
+
+        /// Whether the value can be written: text always, a date only when it is a real
+        /// Gregorian day. A value from an add-on comes from another process, so it is
+        /// checked before Treewise writes it (ADR 0057).
+        public var isWellFormed: Bool {
+            guard case .date(let year, let month, let day) = self else { return true }
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+            return Self.years.contains(year)
+                && DateComponents(year: year, month: month, day: day).isValidDate(in: calendar)
+        }
     }
 
     /// Why text is not a usable template.

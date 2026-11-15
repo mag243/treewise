@@ -91,6 +91,20 @@ import TreewiseUI
         return model
     }
 
+    @Test func leavesOutADateThatIsNoDay() async {
+        let item = addFile("scan.txt")
+        let host = host(
+            answers: [
+                Self.free: .success([
+                    ["date": .date(year: 2026, month: 13, day: 1), "text": .text("New")]
+                ])
+            ])
+        host.setDerivedTemplate("{date:MMMM yyyy} {text}", for: Self.free)
+        let model = await model(host)
+        #expect(
+            model.session?.entry(item.id)?.proposals.contains { $0.name.contains("13") } != true)
+    }
+
     @Test func proposesANameFromAModulesValues() async {
         let item = addFile("scan.txt")
         let model = await model(host())
