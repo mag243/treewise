@@ -8,7 +8,6 @@ import TreewiseUI
 @MainActor
 final class SettingsNamesPane: NSViewController {
     private static let choices: [PersonalDataInNames] = [.leaveOutOfApproveAll, .onlyWarn]
-    private static let noteWidth: CGFloat = 340
     private static let groupSpacing: CGFloat = 20
 
     private let settings: BrowserSettings
@@ -31,7 +30,7 @@ final class SettingsNamesPane: NSViewController {
         form.row("Names with personal data:", personalData)
         form.note(
             "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not.",
-            width: Self.noteWidth)
+            width: SettingsForm.noteWidth)
         form.group()
         let clear = SettingsForm.button("Clear Folder Settings…") { [weak self] in
             self?.askToClearFolderSettings()
@@ -39,7 +38,7 @@ final class SettingsNamesPane: NSViewController {
         form.row("Folder settings:", clear)
         form.note(
             "For each folder you suggest names in, Treewise keeps which add-ons are on and their patterns. Those of a folder not seen for 30 days go by themselves.",
-            width: Self.noteWidth)
+            width: SettingsForm.noteWidth)
         let stack = NSStackView(views: [patterns.makeView(), form.grid])
         stack.orientation = .vertical
         stack.alignment = .leading

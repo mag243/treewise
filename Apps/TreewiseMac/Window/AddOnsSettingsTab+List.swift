@@ -9,9 +9,38 @@ extension AddOnsSettingsTab {
         shown.count
     }
 
+    /// The card, with room on either side inside the list's border.
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int)
         -> NSView?
     {
+        let card = card(for: row)
+        let cell = NSView()
+        // The row sets the cell's frame; the card follows it.
+        cell.autoresizingMask = [.width, .height]
+        cell.addSubview(card)
+        card.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            card.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: Self.listInset),
+            card.topAnchor.constraint(equalTo: cell.topAnchor),
+            card.bottomAnchor.constraint(equalTo: cell.bottomAnchor),
+        ])
+        return cell
+    }
+
+    /// A card's height, open or folded, measured at the width it has in the list: rows the
+    /// table measures by themselves keep the height a card had before it folded.
+    func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
+        let card = card(for: row)
+        let width = card.widthAnchor.constraint(equalToConstant: Self.cardWidth)
+        width.isActive = true
+        card.layoutSubtreeIfNeeded()
+        let height = card.fittingSize.height
+        width.isActive = false
+        return height
+    }
+
+    /// The card of the add-on in `row`, open when it is the one selected.
+    private func card(for row: Int) -> AddOnCardView {
         let module = shown[row]
         let id = module.id
         let catalog = catalog
@@ -30,7 +59,7 @@ extension AddOnsSettingsTab {
         let view = AddOnCardView(
             module: module, card: card, licence: states[id], isSelected: id == selectedID,
             isOnInNewFolders: settings.addOns.isOnInNewFolders(id, defaultID: defaultID),
-            width: Self.width,
+            width: Self.cardWidth,
             actions: .init(
                 turnOn: { settings.addOns.setOn(id, on: $0, catalog: catalog) },
                 turnOnInNewFolders: {
@@ -63,9 +92,13 @@ extension AddOnsSettingsTab {
         // Only the two cards that change are made again, so a drag that starts here goes on.
         var changed = IndexSet(integer: row)
         if let before { changed.insert(before) }
+        // A card folds and another opens: both rows take the height of their new card
+        // first, so each card is made at the height it keeps.
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0
+            table.noteHeightOfRows(withIndexesChanged: changed)
+        }
         table.reloadData(forRowIndexes: changed, columnIndexes: [0])
-        // A card folds and another opens, so both rows take the height of their new card.
-        table.noteHeightOfRows(withIndexesChanged: changed)
         revealSelection()
     }
 

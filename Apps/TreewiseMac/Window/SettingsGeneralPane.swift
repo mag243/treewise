@@ -13,7 +13,6 @@ final class SettingsGeneralPane: NSViewController {
         string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension")
     private static let placements: [OpenPlacement] = [.samePane, .otherPane]
     private static let densities: [RowDensity] = [.small, .medium, .large]
-    private static let noteWidth: CGFloat = 340
 
     private let settings: BrowserSettings
     private let updater: AppUpdater
@@ -77,7 +76,7 @@ final class SettingsGeneralPane: NSViewController {
         form.row("Keyboard shortcuts:", customize)
         form.note(
             "In Keyboard Shortcuts, choose App Shortcuts, add Treewise and type the name of a menu item as the menu shows it.",
-            width: Self.noteWidth)
+            width: SettingsForm.noteWidth)
         view = form.pane(size: SettingsWindow.paneSize)
         Observing.follow(self) { $0.update() }
     }

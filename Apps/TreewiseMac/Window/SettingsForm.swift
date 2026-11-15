@@ -11,10 +11,21 @@ final class SettingsForm {
     private static let rowSpacing: CGFloat = 8
     private static let columnSpacing: CGFloat = 8
 
+    /// The width of the labels' column in every pane, so the controls of each pane start
+    /// at the same place, as the UI review checks (ADR 0103).
+    static let labelWidth: CGFloat = 200
+    /// The width of a note under a control: the pane's, less the labels' column.
+    static let noteWidth =
+        SettingsWindow.paneSize.width - 2 * margin - labelWidth - columnSpacing
+
     let grid = NSGridView()
     private var startsGroup = false
+    private let labelWidth: CGFloat?
 
-    init() {
+    /// A form whose labels take `labelWidth`, that of every pane; nil sizes the column to
+    /// its labels, for a few fields under a list.
+    init(labelWidth: CGFloat? = SettingsForm.labelWidth) {
+        self.labelWidth = labelWidth
         grid.rowSpacing = Self.rowSpacing
         grid.columnSpacing = Self.columnSpacing
         grid.translatesAutoresizingMaskIntoConstraints = false
@@ -25,6 +36,8 @@ final class SettingsForm {
     func row(_ label: String.LocalizationValue?, _ control: NSView) {
         let title = label.map { NSTextField(labelWithString: String(localized: $0)) }
         let row = grid.addRow(with: [title ?? NSGridCell.emptyContentView, control])
+        grid.column(at: 0).xPlacement = .trailing
+        if let labelWidth { grid.column(at: 0).width = labelWidth }
         if startsGroup {
             row.topPadding = Self.groupSpacing
             startsGroup = false
@@ -46,7 +59,7 @@ final class SettingsForm {
         startsGroup = grid.numberOfRows > 0
     }
 
-    /// The grid in a view of `size`, at the top, in the middle.
+    /// The grid in a view of `size`, at the top, from the pane's margin.
     func pane(size: CGSize) -> NSView {
         grid.column(at: 0).xPlacement = .trailing
         grid.column(at: 1).xPlacement = .leading
@@ -56,9 +69,7 @@ final class SettingsForm {
             view.widthAnchor.constraint(equalToConstant: size.width),
             view.heightAnchor.constraint(equalToConstant: size.height),
             grid.topAnchor.constraint(equalTo: view.topAnchor, constant: Self.margin),
-            grid.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            grid.leadingAnchor.constraint(
-                greaterThanOrEqualTo: view.leadingAnchor, constant: Self.margin),
+            grid.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.margin),
         ])
         return view
     }

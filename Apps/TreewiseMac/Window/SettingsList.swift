@@ -1,12 +1,14 @@
 import AppKit
 
 /// A list in a Settings pane, as the Names tab's Name Patterns has it: a table without a
-/// header in the full-width style, in a scroll view with a bezel, `width` wide and
-/// `height` tall. Every list in Settings is made here, so they look alike.
+/// header in the full-width style, in a scroll view with a bezel, as wide as the pane
+/// between its margins, as the Add-ons tab's cards are. Every list in Settings is made
+/// here, so they look alike; the UI review checks it (ADR 0103).
 @MainActor
 enum SettingsList {
-    /// The width of a list and of what goes with it in a pane.
-    static let width: CGFloat = 440
+    /// The width of a list and of what goes with it in a pane: the pane's between its
+    /// margins.
+    static let width = SettingsWindow.paneSize.width - 2 * SettingsForm.margin
 
     /// `table`, or an outline, in its scroll view.
     static func scroll(_ table: NSTableView, height: CGFloat) -> NSScrollView {

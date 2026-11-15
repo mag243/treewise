@@ -94,7 +94,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         missingForm.row("Missing folders:", offersMissing)
         missingForm.note(
             "A year’s folder offers, in a bar, the folders of the year before it lacks. Add Missing Folders… on the folder offers them too.",
-            width: SettingsList.width / 2)
+            width: SettingsForm.noteWidth)
         return missingForm.grid
     }
 
@@ -209,7 +209,10 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         name.drawsBackground = false
         name.isEditable = true
         name.delegate = self
-        name.setContentHuggingPriority(.required, for: .horizontal)
+        // An editable field has no width of its own: it takes its name's.
+        name.sizeToFit()
+        name.widthAnchor.constraint(greaterThanOrEqualToConstant: name.frame.width)
+            .isActive = true
         let folders = TemplateTreeList.rows(of: template.root).count
         let count = NSTextField(
             labelWithString: template.hasYear
@@ -217,9 +220,18 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
                 : String(localized: "\(folders) folders"))
         count.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         count.textColor = .secondaryLabelColor
-        let cell = NSStackView(views: [name, count])
-        cell.alignment = .firstBaseline
-        cell.spacing = Self.countSpacing
+        let line = NSStackView(views: [name, count])
+        line.alignment = .firstBaseline
+        line.spacing = Self.countSpacing
+        // In the middle of its row, as the names of Name Patterns are.
+        let cell = NSView()
+        cell.addSubview(line)
+        line.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            line.leadingAnchor.constraint(equalTo: cell.leadingAnchor),
+            line.trailingAnchor.constraint(lessThanOrEqualTo: cell.trailingAnchor),
+            line.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+        ])
         return cell
     }
 

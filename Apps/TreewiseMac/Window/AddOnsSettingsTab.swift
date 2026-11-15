@@ -14,8 +14,14 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private static let cardSpacing: CGFloat = 8
     private static let footSpacing: CGFloat = 6
     private static let groupPadding = NSSize(width: 12, height: 9)
-    /// The width of the cards and the foot.
-    static let width = SettingsWindow.paneSize.width - 2 * SettingsForm.margin
+    /// The width of the list and the foot, as every list in Settings.
+    static let width = SettingsList.width
+    /// The room between the list's border and its cards.
+    static let listInset: CGFloat = 8
+    /// The width of a card: the list's, less the room inside its border and a scroller's.
+    static let cardWidth =
+        width - 2 * listInset
+        - NSScroller.scrollerWidth(for: .regular, scrollerStyle: NSScroller.preferredScrollerStyle)
 
     let settings: BrowserSettings
     /// The app's licences.
@@ -93,7 +99,6 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     private func list() -> NSView {
         table.addTableColumn(NSTableColumn(identifier: .init("add-on")))
         table.headerView = nil
-        table.usesAutomaticRowHeights = true
         table.selectionHighlightStyle = .none
         table.allowsEmptySelection = false
         table.style = .plain
@@ -107,6 +112,12 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
         scroll.drawsBackground = false
+        // In a border as the other lists of Settings, so it shows where the list ends.
+        scroll.borderType = .bezelBorder
+        scroll.automaticallyAdjustsContentInsets = false
+        // Above and below the cards; beside them, each row keeps the room itself.
+        scroll.contentInsets = NSEdgeInsets(
+            top: Self.listInset, left: 0, bottom: Self.listInset, right: 0)
         scroll.setContentHuggingPriority(.defaultLow, for: .vertical)
         scroll.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         scroll.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
@@ -199,12 +210,15 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
 
     /// The add-ons, with each paid one's licence. None that another replaces is shown while
     /// that one may work, and the choices made for it go to that one (ADR 0067); one without
-    /// a licence replaces nothing (ADR 0071).
+    /// a licence replaces nothing (ADR 0071). A trial started or a key entered here reaches
+    /// the template items and the Templates tab at once (ADR 0095, ADR 0102).
     func load() {
         let host = NameReviewWindow.host
         let context = licences.context()
         let settings = settings
+        let licences = licences
         Task { [weak self] in
+            await FolderTemplatesService.refresh(licences: licences)
             let all = (try? await host.availableModules()) ?? []
             var found: [String: ModuleLicenceState] = [:]
             for module in all where !module.isFree {

@@ -49,6 +49,11 @@
 #   screenshots The download page's screenshots (ADR 0041): makes the sandbox volumes
 #               afresh, runs ScreenshotTests on them and saves the images as
 #               build/screenshots/<name>.png. Takes the screen, as ci does.
+#   uireview    The UI review (ADR 0103): the official build's screens in the system's
+#               appearance, checked for quirks such as cut-off or overlapping controls,
+#               with a screenshot of each in build/ui-review/index.html. Ends red on a
+#               finding not in tools/uireview/allowed.txt. `uireview all` walks them in
+#               light and in dark. On demand only; takes the screen.
 #   sandboxtest The overview of proposed names from start to end on sandbox volumes made
 #               afresh (PLAN.md M7). Takes the screen, as ci does.
 #   benchmark   How long the add-ons take for a folder of 100 files (M7): the free
@@ -106,11 +111,14 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest run package export fixture sandbox icon publish screenshots sandboxtest official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest run package export fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
 SANDBOX_TESTS="TreewiseMacUITests/SandboxVolumeTests"
+# The UI review's walk, on the official build only, not run by apptest (ADR 0103).
+UIREVIEW_TESTS="TreewiseMacUITests/UIReviewTests"
+UIREVIEW_DIR="$BUILD_DIR/ui-review"
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
 declare -a SUMMARY=()
 
@@ -385,7 +393,7 @@ cmd_apptest() {
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseMacUITests/$test"); done
   xcode apptest -scheme "$MAC_SCHEME" -destination "$MAC_DESTINATION" -resultBundlePath "$bundle" \
     -skip-testing:"$SCREENSHOT_TESTS" -skip-testing:"$BENCHMARK_TESTS" \
-    -skip-testing:"$SANDBOX_TESTS" "${only[@]}" test
+    -skip-testing:"$SANDBOX_TESTS" -skip-testing:"$UIREVIEW_TESTS" "${only[@]}" test
   ok "$MAC_SCHEME tests passed. Results: ${bundle#"$ROOT_DIR"/}"
   slowest_tests "$bundle"
 }
@@ -441,6 +449,33 @@ cmd_screenshots() {
   python3 -I "$TOOLS_DIR/screenshots/name_attachments.py" "$exported" "$SCREENSHOT_DIR"
   rm -rf "$exported"
   ok "Screenshots in ${SCREENSHOT_DIR#"$ROOT_DIR"/}"
+}
+
+# The UI review (ADR 0103): runs UIReviewTests on the official build, then makes the report
+# from what they attached; red when a finding is not in tools/uireview/allowed.txt.
+cmd_uireview() {
+  local variants="${1:-}"
+  [[ -z "$variants" || "$variants" == all ]] || fail "uireview takes nothing, or all."
+  step "UI review${variants:+ (light and dark)}"
+  require_paid_module
+  local bundle; bundle="$(result_bundle UIReview)"
+  rm -rf "$UIREVIEW_DIR"
+  mkdir -p "$UIREVIEW_DIR"
+  # xcodebuild hands TEST_RUNNER_ variables to the tests without the prefix.
+  local -x TEST_RUNNER_UIREVIEW_APPEARANCES=""
+  [[ "$variants" == all ]] && TEST_RUNNER_UIREVIEW_APPEARANCES="light,dark"
+  xcodebuild_logged uireview -workspace "$OFFICIAL_WORKSPACE" \
+    -derivedDataPath "$OFFICIAL_DERIVED_DATA" -scheme "$MAC_SCHEME" \
+    -destination "$MAC_DESTINATION" -resultBundlePath "$bundle" \
+    -only-testing:"$UIREVIEW_TESTS" test
+  local exported="$UIREVIEW_DIR/attachments"
+  xcrun xcresulttool export attachments --path "$bundle" --output-path "$exported" >/dev/null
+  local rc=0
+  python3 -I "$TOOLS_DIR/uireview/report.py" "$exported" "$UIREVIEW_DIR" \
+    "$TOOLS_DIR/uireview/allowed.txt" || rc=$?
+  rm -rf "$exported"
+  ((rc == 0)) || fail "The UI review found quirks: ${UIREVIEW_DIR#"$ROOT_DIR"/}/index.html"
+  ok "No quirks found: ${UIREVIEW_DIR#"$ROOT_DIR"/}/index.html"
 }
 
 # Runs the overview's test from start to end on sandbox volumes made afresh.
@@ -908,6 +943,7 @@ run_command() {
     export) timed export cmd_export ;;
     publish) timed publish cmd_publish ;;
     screenshots) timed screenshots cmd_screenshots ;;
+    uireview) timed uireview cmd_uireview "${2:-}" ;;
     sandboxtest) timed sandboxtest cmd_sandboxtest ;;
     fixture) timed fixture cmd_fixture ;;
     sandbox) timed sandbox cmd_sandbox "${2:-}" ;;
@@ -935,6 +971,8 @@ while (($#)); do
   elif [[ ( "$c" == test || "$c" == apptest ) && -n "${1:-}" && "$COMMANDS" != *" $1 "* ]]; then
     # test and apptest take an optional filter as their next word, unless that
     # word is a command.
+    run_command "$c" "$1"; shift
+  elif [[ "$c" == uireview && "${1:-}" == all ]]; then
     run_command "$c" "$1"; shift
   elif [[ "$c" == benchmark && "${1:-}" == package ]]; then
     run_command "$c" "$1"; shift

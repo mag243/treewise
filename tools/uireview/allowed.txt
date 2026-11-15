@@ -1,0 +1,3 @@
+# Findings of the UI review that are meant (ADR 0103), each with its reason:
+#   screen | check | element  # why
+# A screen is named without its variant to allow it in light and in dark, or `*` for all.

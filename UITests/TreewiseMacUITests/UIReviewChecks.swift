@@ -1,0 +1,289 @@
+import XCTest
+
+/// What the UI review found wrong on one screen (ADR 0103).
+struct UIReviewFinding: Codable, Hashable {
+    /// The check that found it, as `outsideParent`.
+    let check: String
+    /// The element, as `staticText "Folder Pattern"`.
+    let element: String
+    /// What is wrong, with the sizes.
+    let detail: String
+}
+
+/// The checks of the UI review (ADR 0103), on the frames of a window's elements: quirks a
+/// screenshot shows and a behaviour test does not. Each looks at the elements on screen
+/// only; a list's rows scrolled out of sight are left alone.
+@MainActor
+enum UIReviewChecks {
+    /// What a frame may be off by, in points, as frames are rounded.
+    private static let tolerance: CGFloat = 1
+    /// The least room between a text or control and the side of the list holding it.
+    static let listMargin: CGFloat = 4
+    /// The least room between a text or control and the side of the window.
+    static let windowMargin: CGFloat = 12
+    /// The most a row may be taller than what it shows.
+    static let emptyInRow: CGFloat = 40
+    /// The least overlap, in square points, that counts as two elements overlapping.
+    private static let overlapArea: CGFloat = 4
+    /// The least depth of an overlap, in points, as text frames touch by a point.
+    private static let overlapDepth: CGFloat = 2
+    /// What a list may hold beyond its height without a scroller, as its insets.
+    private static let scrollSlack: CGFloat = 4
+    /// How far a line of text may sit from the middle of its row.
+    private static let centreSlack: CGFloat = 3
+    /// The margin a Settings pane keeps on either side, as `SettingsForm.margin`.
+    static let settingsMargin: CGFloat = 20
+
+    /// The elements that show something of their own, which are checked one by one.
+    private static let leafTypes: Set<XCUIElement.ElementType> = [
+        .staticText, .button, .checkBox, .radioButton, .textField, .secureTextField,
+        .popUpButton, .menuButton, .image, .switch, .slider, .stepper, .link, .comboBox,
+        .searchField, .textView, .toggle,
+    ]
+    /// The elements that hold others, which these must lie inside.
+    private static let holderTypes: Set<XCUIElement.ElementType> = [
+        .cell, .tableRow, .outlineRow, .group,
+    ]
+
+    /// An element on screen, with what holds it.
+    private struct Placed {
+        let snapshot: any XCUIElementSnapshot
+        /// The list it is in, if any.
+        let list: CGRect?
+        /// Whether that list has a scroller, so what it cuts off can be scrolled to.
+        let listScrolls: Bool
+        /// The nearest row, cell or group it is in, if any.
+        let holder: (any XCUIElementSnapshot)?
+    }
+
+    /// The findings in `window`. In Settings, `listsSpanThePane` also asks every list to
+    /// take the pane's width between its margins, as the panes share one width.
+    static func findings(in window: any XCUIElementSnapshot, listsSpanThePane: Bool = false)
+        -> [UIReviewFinding]
+    {
+        var placed: [Placed] = []
+        var lists: [any XCUIElementSnapshot] = []
+        collect(window, in: nil, holder: nil, into: &placed, lists: &lists)
+        let leaves = placed.filter { leafTypes.contains($0.snapshot.elementType) }
+        var found: [UIReviewFinding] = []
+        found += collapsed(leaves)
+        found += outside(leaves, window: window.frame)
+        found += overlapping(leaves)
+        found += tooClose(leaves, window: window.frame)
+        found += emptyRows(placed)
+        found += offCentre(placed)
+        found += withoutScroller(lists)
+        if listsSpanThePane { found += notSpanning(lists, window: window.frame) }
+        return found
+    }
+
+    /// The list an element is in: its frame, and whether it has a scroller.
+    private typealias InList = (frame: CGRect, scrolls: Bool)
+
+    private static func collect(
+        _ snapshot: any XCUIElementSnapshot, in list: InList?,
+        holder: (any XCUIElementSnapshot)?, into placed: inout [Placed],
+        lists: inout [any XCUIElementSnapshot]
+    ) {
+        let frame = snapshot.frame
+        // What a list scrolled out of sight is not on screen.
+        if let list, !frame.isEmpty, !frame.intersects(list.frame) { return }
+        placed.append(
+            Placed(
+                snapshot: snapshot, list: list?.frame, listScrolls: list?.scrolls ?? false,
+                holder: holder))
+        var list = list
+        if snapshot.elementType == .scrollView {
+            lists.append(snapshot)
+            list = (frame, snapshot.children.contains { $0.elementType == .scrollBar })
+        }
+        let holds = holderTypes.contains(snapshot.elementType) ? snapshot : holder
+        for child in snapshot.children {
+            collect(child, in: list, holder: holds, into: &placed, lists: &lists)
+        }
+    }
+
+    /// A text or field with words in it but no room to show them.
+    private static func collapsed(_ leaves: [Placed]) -> [UIReviewFinding] {
+        leaves.compactMap { leaf in
+            let snapshot = leaf.snapshot
+            guard snapshot.elementType == .staticText || snapshot.elementType == .textField,
+                let words = snapshot.value as? String, !words.isEmpty,
+                snapshot.frame.width < tolerance * 2 || snapshot.frame.height < tolerance * 2
+            else { return nil }
+            return finding("collapsed", snapshot, "\(snapshot.frame) for \"\(words)\"")
+        }
+    }
+
+    /// A text or control outside its window, its list or its row: cut off on screen.
+    private static func outside(_ leaves: [Placed], window: CGRect) -> [UIReviewFinding] {
+        leaves.compactMap { leaf in
+            let frame = leaf.snapshot.frame
+            guard !frame.isEmpty else { return nil }
+            if !contains(window, frame) {
+                return finding(
+                    "outsideWindow", leaf.snapshot, "\(frame) beyond the window \(window)")
+            }
+            // A list with a scroller shows the rest of a row it cuts off when scrolled.
+            if let list = leaf.list, !leaf.listScrolls, !contains(list, frame) {
+                return finding("cutByList", leaf.snapshot, "\(frame) cut by its list \(list)")
+            }
+            if let holder = leaf.holder, !holder.frame.isEmpty, !contains(holder.frame, frame) {
+                return finding(
+                    "outsideParent", leaf.snapshot,
+                    "\(frame) beyond its \(name(of: holder.elementType)) \(holder.frame)")
+            }
+            return nil
+        }
+    }
+
+    /// Two texts or controls over each other.
+    private static func overlapping(_ leaves: [Placed]) -> [UIReviewFinding] {
+        var found: [UIReviewFinding] = []
+        let shown = leaves.filter { !$0.snapshot.frame.isEmpty }
+        for (index, one) in shown.enumerated() {
+            for other in shown[(index + 1)...] {
+                let both = one.snapshot.frame.intersection(other.snapshot.frame)
+                // Lines of text a point into each other are how text frames sit.
+                guard !both.isNull, both.width * both.height > overlapArea,
+                    min(both.width, both.height) > overlapDepth
+                else { continue }
+                found.append(
+                    finding(
+                        "overlap", one.snapshot,
+                        "overlaps \(describe(other.snapshot)) by \(both.size)"))
+            }
+        }
+        return found
+    }
+
+    /// A text or control against the side of its list or window.
+    private static func tooClose(_ leaves: [Placed], window: CGRect) -> [UIReviewFinding] {
+        leaves.compactMap { leaf in
+            let frame = leaf.snapshot.frame
+            // The window's own buttons sit in its corner by design.
+            guard !frame.isEmpty, !leaf.snapshot.identifier.hasPrefix("_XCUI") else { return nil }
+            if let list = leaf.list,
+                frame.minX - list.minX < listMargin - tolerance
+                    || list.maxX - frame.maxX < listMargin - tolerance
+            {
+                return finding(
+                    "listMargin", leaf.snapshot,
+                    "\(frame) within \(listMargin) of its list's side \(list)")
+            }
+            if frame.minX - window.minX < windowMargin - tolerance
+                || window.maxX - frame.maxX < windowMargin - tolerance
+            {
+                return finding(
+                    "windowMargin", leaf.snapshot,
+                    "\(frame) within \(windowMargin) of the window's side")
+            }
+            return nil
+        }
+    }
+
+    /// A row far taller than what it shows: room left from a card that was taller.
+    private static func emptyRows(_ placed: [Placed]) -> [UIReviewFinding] {
+        placed.compactMap { item in
+            let row = item.snapshot
+            guard row.elementType == .tableRow || row.elementType == .cell else { return nil }
+            let shown = leafFrames(in: row).reduce(CGRect.null) { $0.union($1) }
+            guard !shown.isNull, row.frame.height - shown.height > emptyInRow else { return nil }
+            return finding(
+                "emptyRow", row, "\(row.frame.height) tall for \(shown.height) of content")
+        }
+    }
+
+    /// A row of one line whose text sits above or below its middle.
+    private static func offCentre(_ placed: [Placed]) -> [UIReviewFinding] {
+        placed.compactMap { item in
+            let row = item.snapshot
+            guard row.elementType == .tableRow || row.elementType == .outlineRow else {
+                return nil
+            }
+            let texts = leafFrames(in: row, of: [.staticText, .textField])
+            let shown = texts.reduce(CGRect.null) { $0.union($1) }
+            // Only a row of one line: a card or a row of several lines has its own layout.
+            guard !shown.isNull, texts.allSatisfy({ abs($0.midY - shown.midY) < centreSlack })
+            else { return nil }
+            let off = shown.midY - row.frame.midY
+            guard abs(off) > centreSlack else { return nil }
+            return finding("offCentre", row, "text \(off) from the middle of its row")
+        }
+    }
+
+    /// A list that holds more than shows, without a scroller.
+    private static func withoutScroller(_ lists: [any XCUIElementSnapshot]) -> [UIReviewFinding] {
+        lists.compactMap { list in
+            let content = list.children.filter {
+                $0.elementType == .table || $0.elementType == .outline
+            }
+            let scrolls = list.children.contains { $0.elementType == .scrollBar }
+            guard let tallest = content.map({ $0.frame.height }).max(),
+                tallest > list.frame.height + scrollSlack, !scrolls
+            else { return nil }
+            return finding(
+                "noScroller", list, "holds \(tallest) in \(list.frame.height) without a scroller")
+        }
+    }
+
+    /// A list in Settings that does not take the pane's width between its margins.
+    private static func notSpanning(_ lists: [any XCUIElementSnapshot], window: CGRect)
+        -> [UIReviewFinding]
+    {
+        let left = window.minX + settingsMargin
+        let width = window.width - 2 * settingsMargin
+        return lists.compactMap { list in
+            let frame = list.frame
+            guard abs(frame.minX - left) > tolerance || abs(frame.width - width) > tolerance
+            else { return nil }
+            return finding(
+                "paneWidth", list,
+                "x \(frame.minX - window.minX), \(frame.width) wide; the pane's lists start at \(settingsMargin) and are \(width) wide"
+            )
+        }
+    }
+
+    private static func leafFrames(
+        in snapshot: any XCUIElementSnapshot, of types: Set<XCUIElement.ElementType>
+    ) -> [CGRect] {
+        let own = types.contains(snapshot.elementType) && !snapshot.frame.isEmpty
+        return (own ? [snapshot.frame] : [])
+            + snapshot.children.flatMap { leafFrames(in: $0, of: types) }
+    }
+
+    private static func leafFrames(in snapshot: any XCUIElementSnapshot) -> [CGRect] {
+        let own = leafTypes.contains(snapshot.elementType) && !snapshot.frame.isEmpty
+        return (own ? [snapshot.frame] : []) + snapshot.children.flatMap(leafFrames(in:))
+    }
+
+    private static func contains(_ outer: CGRect, _ inner: CGRect) -> Bool {
+        outer.insetBy(dx: -tolerance, dy: -tolerance).contains(inner)
+    }
+
+    private static func finding(
+        _ check: String, _ snapshot: any XCUIElementSnapshot, _ detail: String
+    ) -> UIReviewFinding {
+        UIReviewFinding(check: check, element: describe(snapshot), detail: detail)
+    }
+
+    /// The element as a person finds it: its kind and what it says or is called.
+    static func describe(_ snapshot: any XCUIElementSnapshot) -> String {
+        let value = snapshot.value.map { "\($0)" }
+        let words =
+            [snapshot.identifier, snapshot.label, snapshot.title, value ?? ""]
+            .first { !$0.isEmpty } ?? ""
+        return "\(name(of: snapshot.elementType)) \"\(words.prefix(60))\""
+    }
+
+    /// The words a finding uses for the kinds of elements it names.
+    private static let names: [XCUIElement.ElementType: String] = [
+        .staticText: "text", .button: "button", .checkBox: "checkbox", .textField: "field",
+        .popUpButton: "pop-up", .image: "image", .scrollView: "list", .tableRow: "row",
+        .outlineRow: "row", .cell: "cell", .group: "group", .switch: "switch", .toggle: "switch",
+    ]
+
+    private static func name(of type: XCUIElement.ElementType) -> String {
+        names[type] ?? "element \(type.rawValue)"
+    }
+}

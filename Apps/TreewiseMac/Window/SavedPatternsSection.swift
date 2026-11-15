@@ -187,7 +187,6 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
 /// key, as each change of the text is a version that folders are offered (ADR 0068).
 @MainActor
 private final class SavedPatternEditor: NSObject, NSTextFieldDelegate {
-    private static let fieldWidth: CGFloat = 360
 
     private let settings: BrowserSettings
     private let name = NSTextField(string: "")
@@ -211,12 +210,14 @@ private final class SavedPatternEditor: NSObject, NSTextFieldDelegate {
     }
 
     func makeView() -> NSView {
-        let form = SettingsForm()
+        let form = SettingsForm(labelWidth: nil)
         form.row("Name:", name)
         form.row("Pattern:", pattern.field)
         form.row(nil, problem)
+        // The fields end where the list above them ends.
+        form.grid.widthAnchor.constraint(equalToConstant: SettingsList.width).isActive = true
         for field in [name, pattern.field] {
-            field.widthAnchor.constraint(equalToConstant: Self.fieldWidth).isActive = true
+            field.trailingAnchor.constraint(equalTo: form.grid.trailingAnchor).isActive = true
         }
         form.grid.column(at: 0).xPlacement = .trailing
         return form.grid
