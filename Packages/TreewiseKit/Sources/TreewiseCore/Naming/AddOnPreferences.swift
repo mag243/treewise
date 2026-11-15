@@ -77,16 +77,15 @@ public struct AddOnPreferences: Hashable, Sendable, Codable {
     /// The add-ons of `catalog` in the default order: those the user ordered first, then
     /// the rest in the catalog's order, so a new add-on comes last.
     public func ordered(_ catalog: [String]) -> [String] {
-        order.filter(catalog.contains) + catalog.filter { !order.contains($0) }
+        UserOrder.ordered(order, catalog)
     }
 
     /// Moves an add-on to a place in the default order.
     public mutating func move(_ id: String, to index: Int, catalog: [String]) {
-        var all = ordered(catalog)
-        guard let from = all.firstIndex(of: id) else { return }
-        all.remove(at: from)
-        all.insert(id, at: min(max(0, index), all.count))
-        order = all
+        guard let moved = UserOrder.moving(id, to: index, in: order, catalog: catalog) else {
+            return
+        }
+        order = moved
     }
 
     /// Gives the choices for a module to the module that replaces it (ADR 0067): whether
@@ -94,13 +93,7 @@ public struct AddOnPreferences: Hashable, Sendable, Codable {
     public mutating func handOver(from replaced: String, to replacing: String) {
         if turnedOff.remove(replaced) != nil { turnedOff.insert(replacing) }
         if onInNewFolders?.remove(replaced) != nil { onInNewFolders?.insert(replacing) }
-        // The replacing module may be in the order already, as after it was dragged there:
-        // it keeps its first place, as a folder's settings do.
-        var kept: [String] = []
-        for id in order.map({ $0 == replaced ? replacing : $0 }) where !kept.contains(id) {
-            kept.append(id)
-        }
-        order = kept
+        order = UserOrder.replacing(replaced, with: replacing, in: order)
     }
 
     /// The settings of a folder reviewed for the first time: the add-ons on in new

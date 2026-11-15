@@ -94,16 +94,14 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     /// The modules of `catalog` in the user's order: those the user ordered first, then
     /// the rest in the catalog's order, so a module new to the folder comes last.
     public func ordered(_ catalog: [String]) -> [String] {
-        moduleOrder.filter(catalog.contains) + catalog.filter { !moduleOrder.contains($0) }
+        UserOrder.ordered(moduleOrder, catalog)
     }
 
     /// Moves a module to a place in the order of `catalog`, and the modules that are on
     /// follow it.
     public mutating func moveModule(_ id: String, to index: Int, catalog: [String]) {
-        var order = ordered(catalog)
-        guard let from = order.firstIndex(of: id) else { return }
-        order.remove(at: from)
-        order.insert(id, at: min(max(0, index), order.count))
+        guard let order = UserOrder.moving(id, to: index, in: moduleOrder, catalog: catalog)
+        else { return }
         moduleOrder = order
         enabledModules = Self.inOrder(Set(enabledModules), order, after: enabledModules)
     }
@@ -112,22 +110,13 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     /// it is on, its pattern unless the other has one of its own, and its place in the
     /// order.
     public mutating func handOver(from replaced: String, to replacing: String) {
-        var enabled: [String] = []
-        for id in enabledModules.map({ $0 == replaced ? replacing : $0 })
-        where !enabled.contains(id) {
-            enabled.append(id)
-        }
-        enabledModules = enabled
+        enabledModules = UserOrder.replacing(replaced, with: replacing, in: enabledModules)
         if let pattern = templates.removeValue(forKey: replaced), templates[replacing] == nil {
             templates[replacing] = pattern
             savedPatternLinks[replacing] = savedPatternLinks[replaced]
         }
         savedPatternLinks[replaced] = nil
-        var order: [String] = []
-        for id in moduleOrder.map({ $0 == replaced ? replacing : $0 }) where !order.contains(id) {
-            order.append(id)
-        }
-        moduleOrder = order
+        moduleOrder = UserOrder.replacing(replaced, with: replacing, in: moduleOrder)
     }
 
     /// Creates settings.
