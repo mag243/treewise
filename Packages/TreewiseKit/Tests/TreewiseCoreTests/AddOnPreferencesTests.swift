@@ -97,4 +97,14 @@ import TreewiseCore
         #expect(preferences.isOnInNewFolders("advanced", defaultID: "advanced"))
         #expect(preferences.ordered(next) == ["invoices", "advanced"])
     }
+
+    @Test func aModuleAlreadyInTheOrderTakesItOnceWhenItReplacesAnother() {
+        let catalog = ["free", "advanced"]
+        var preferences = AddOnPreferences()
+        preferences.move("advanced", to: 0, catalog: catalog)
+        preferences.handOver(from: "free", to: "advanced")
+        #expect(preferences.ordered(["advanced"]) == ["advanced"])
+        preferences.handOver(from: "advanced", to: "free")
+        #expect(preferences.ordered(["free"]) == ["free"])
+    }
 }

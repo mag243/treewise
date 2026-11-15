@@ -94,7 +94,13 @@ public struct AddOnPreferences: Hashable, Sendable, Codable {
     public mutating func handOver(from replaced: String, to replacing: String) {
         if turnedOff.remove(replaced) != nil { turnedOff.insert(replacing) }
         if onInNewFolders?.remove(replaced) != nil { onInNewFolders?.insert(replacing) }
-        order = order.map { $0 == replaced ? replacing : $0 }
+        // The replacing module may be in the order already, as after it was dragged there:
+        // it keeps its first place, as a folder's settings do.
+        var kept: [String] = []
+        for id in order.map({ $0 == replaced ? replacing : $0 }) where !kept.contains(id) {
+            kept.append(id)
+        }
+        order = kept
     }
 
     /// The settings of a folder reviewed for the first time: the add-ons on in new
