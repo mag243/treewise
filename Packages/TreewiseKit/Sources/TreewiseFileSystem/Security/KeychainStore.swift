@@ -1,6 +1,7 @@
 import Foundation
 import Security
 import TreewiseCore
+import os
 
 /// Small values kept in the keychain as generic passwords of one service, on this device
 /// only: resetting the app's settings does not remove them (ADR 0071). It is the data
@@ -10,6 +11,8 @@ import TreewiseCore
 public final class KeychainStore: SecureValueStoring {
     /// The service of the app's own values.
     public static let appService = "me.m-domain.treewise.licence"
+
+    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "Keychain")
 
     private let service: String
 
@@ -40,14 +43,31 @@ public final class KeychainStore: SecureValueStoring {
         return String(data: data, encoding: .utf8)
     }
 
-    /// Keeps `value` under `key`, replacing what was there; nil removes it.
+    /// Keeps `value` under `key`, replacing what was there; nil removes it. The value there
+    /// is changed in place, not removed first, so a write that fails keeps the old value;
+    /// a failure is logged with the keychain's status.
     public func setValue(_ value: String?, for key: String) {
-        SecItemDelete(baseQuery(for: key) as CFDictionary)
-        guard let value else { return }
+        let query = baseQuery(for: key) as CFDictionary
+        guard let value else {
+            let status = SecItemDelete(query)
+            if status != errSecSuccess, status != errSecItemNotFound { log("removed", status) }
+            return
+        }
+        let data = Data(value.utf8)
+        let updated = SecItemUpdate(query, [kSecValueData as String: data] as CFDictionary)
+        guard updated == errSecItemNotFound else {
+            if updated != errSecSuccess { log("changed", updated) }
+            return
+        }
         var item = baseQuery(for: key)
-        item[kSecValueData as String] = Data(value.utf8)
+        item[kSecValueData as String] = data
         item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        SecItemAdd(item as CFDictionary, nil)
+        let added = SecItemAdd(item as CFDictionary, nil)
+        if added != errSecSuccess { log("added", added) }
+    }
+
+    private func log(_ change: String, _ status: OSStatus) {
+        Self.logger.error("A keychain value could not be \(change, privacy: .public): \(status)")
     }
 
     private func baseQuery(for key: String) -> [String: Any] {
