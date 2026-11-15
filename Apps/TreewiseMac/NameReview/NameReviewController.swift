@@ -17,6 +17,7 @@ final class NameReviewController: NSViewController {
     private lazy var addOns = NameReviewAddOnsView(model: model, licences: browser.licences)
     private lazy var list = NameReviewList(model: model)
     private lazy var panel = NameReviewPanel(model: model)
+    private lazy var problemBar = NameReviewProblemBar(model: model)
     private let summary = NSTextField(labelWithString: "")
     /// What add-ons see, at the foot (ADR 0057, ADR 0090).
     private let note = NSTextField(labelWithString: "")
@@ -52,9 +53,21 @@ final class NameReviewController: NSViewController {
         let middle = NSStackView(views: [list.makeView(), panelLine, panelView])
         middle.spacing = 0
         middle.alignment = .height
+        // The bar that says what went wrong sits above the list, and leaves no room while
+        // hidden.
+        let bar = problemBar.makeView()
+        bar.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        middle.setContentHuggingPriority(.defaultLow, for: .vertical)
+        let body = NSStackView(views: [bar, middle])
+        body.orientation = .vertical
+        body.spacing = 0
+        body.alignment = .width
+        body.distribution = .fill
+        // A stack view of gravity areas keeps to its contents' width otherwise.
+        bar.widthAnchor.constraint(equalTo: body.widthAnchor).isActive = true
         // The add-ons at the top and the footer at the bottom, and the list between them
         // takes the height they leave.
-        let parts = [addOns.makeView(), Self.line(), middle, Self.line(), footer()]
+        let parts = [addOns.makeView(), Self.line(), body, Self.line(), footer()]
         let view = NSView()
         for part in parts {
             part.translatesAutoresizingMaskIntoConstraints = false
@@ -73,7 +86,7 @@ final class NameReviewController: NSViewController {
         ])
         // A stack view has no height of its own to hug, so the add-ons and the footer are
         // pulled to the least height their contents allow.
-        for part in parts where part !== middle {
+        for part in parts where part !== body {
             let least = part.heightAnchor.constraint(equalToConstant: 0)
             least.priority = .defaultLow
             least.isActive = true

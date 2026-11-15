@@ -10,6 +10,14 @@ extension NameReviewModel {
     /// The most for one that reads contents, which takes memory and processor time.
     static let contentReadersAtOnce = 2
 
+    /// Reads the folder and the add-ons again, and asks every add-on that gave no answer,
+    /// after a problem kept the review from them.
+    public func retry() async {
+        stop()
+        moduleFailed = false
+        await start()
+    }
+
     /// Asks each module about its files, the modules at the same time and each within its
     /// limit, the selected file first (ADR 0073). A round starts when the one before it is
     /// done, so an older answer never replaces a newer one; one that fails leaves the rest.

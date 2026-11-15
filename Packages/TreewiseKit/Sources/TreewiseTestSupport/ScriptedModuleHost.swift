@@ -104,6 +104,11 @@ public final class ScriptedModuleHost: AddOnHosting {
         modulesFail.withLock { $0 = true }
     }
 
+    /// Makes asking which add-ons there are work again, as when their process is back.
+    public func reachAvailableModules() {
+        modulesFail.withLock { $0 = false }
+    }
+
     /// As Folder Structure Templates does: the year above, or a root named as a year, becomes
     /// `{year}` in the names. Only for an add-on that makes folder structures.
     public func template(
