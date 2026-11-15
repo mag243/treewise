@@ -30,4 +30,33 @@ import TreewiseTestSupport
             atPath: directory.url("link").path)
         #expect(destination == directory.url("folder").path)
     }
+
+    @Test func removesAReadOnlyTree() throws {
+        var directory: TempDirectory? = try TempDirectory()
+        let path = try #require(directory).path
+        try directory?.makeFolder("locked/inside")
+        try directory?.makeFile("locked/inside/note.txt", contents: "x")
+        for folder in ["locked/inside", "locked"] {
+            try FileManager.default.setAttributes(
+                [.posixPermissions: Self.readOnly], ofItemAtPath: path + "/" + folder)
+        }
+        directory = nil
+        #expect(!FileManager.default.fileExists(atPath: path))
+    }
+
+    @Test func leavesAFolderBehindALinkAsItIs() throws {
+        let elsewhere = try TempDirectory()
+        let kept = try elsewhere.makeFolder("kept")
+        try FileManager.default.setAttributes(
+            [.posixPermissions: Self.readOnly], ofItemAtPath: kept.path)
+        var directory: TempDirectory? = try TempDirectory()
+        try FileManager.default.createSymbolicLink(
+            at: try #require(directory).url("link"), withDestinationURL: kept)
+        directory = nil
+        let mode = try FileManager.default.attributesOfItem(atPath: kept.path)[.posixPermissions]
+        #expect(mode as? Int == Self.readOnly)
+    }
+
+    /// Read and search for everyone, writing for no one, as a folder from a disk image.
+    private static let readOnly = 0o555
 }

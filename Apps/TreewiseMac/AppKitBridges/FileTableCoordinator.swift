@@ -99,13 +99,12 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         }
     }
 
-    /// Shows the downloads in the rows on screen, without reloading a row
-    /// that may be being renamed.
+    /// Shows the downloads in the rows that have a view, those on screen and those AppKit
+    /// keeps ready beside them, without reloading a row that may be being renamed; a row
+    /// made later reads them when it is shown.
     private func showDownloads(in table: NSTableView) {
-        let visible = table.rows(in: table.visibleRect)
-        let end = min(items.count, NSMaxRange(visible))
-        let rows = min(max(0, visible.location), end)..<end
-        for row in rows where items[row].isOnlyOnline {
+        table.enumerateAvailableRowViews { _, row in
+            guard items.indices.contains(row), items[row].isOnlyOnline else { return }
             let item = items[row]
             let cell = table.view(atColumn: 0, row: row, makeIfNecessary: false)
             (cell as? FileNameCell)?.showCloudStatus(

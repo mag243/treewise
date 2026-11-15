@@ -47,7 +47,10 @@ final class ThumbnailCache {
         _ item: FileItem, size: NSSize, scale: CGFloat, for owner: AnyObject,
         done: @escaping @MainActor (NSImage) -> Void
     ) {
-        guard item.kind == .file, let file = item.id.diskURL else { return }
+        guard item.kind == .file, let file = item.id.diskURL else {
+            cancel(for: owner)
+            return
+        }
         let key = key(of: item)
         let tile = ObjectIdentifier(owner)
         if asked[tile] != key { cancel(for: owner) }
