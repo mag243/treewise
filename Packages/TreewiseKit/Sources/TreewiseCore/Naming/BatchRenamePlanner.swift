@@ -17,10 +17,12 @@ public enum BatchRenamePlanner {
     ) -> BatchRenamePlan {
         let folders = renames.map(\.folder).uniqued()
         let byFolder = Dictionary(grouping: renames, by: \.folder)
+        // Each folder's names are keyed once, not once for every rename in it.
+        let keys = byFolder.mapValues { siblings in
+            FolderKeys(siblings, names: namesInFolders[siblings[0].folder, default: []])
+        }
         let conflicts = renames.compactMap { rename in
-            conflict(
-                for: rename, among: byFolder[rename.folder, default: []],
-                names: namesInFolders[rename.folder, default: []])
+            keys[rename.folder].flatMap { conflict(for: rename, in: $0) }
         }
         guard conflicts.isEmpty else { return .conflicts(conflicts) }
         return .ready(
@@ -30,15 +32,32 @@ public enum BatchRenamePlanner {
             })
     }
 
-    private static func conflict(
-        for rename: BatchRename, among siblings: [BatchRename], names: [String]
-    ) -> BatchRenameConflict? {
+    /// A folder's names and its renames' names, as keys.
+    private struct FolderKeys {
+        /// How many renames want each name.
+        let targets: [String: Int]
+        /// The names the renames give up.
+        let givenUp: Set<String>
+        /// The names in the folder.
+        let names: Set<String>
+
+        init(_ renames: [BatchRename], names: [String]) {
+            targets = renames.reduce(into: [:]) { counts, rename in
+                counts[BatchRenamePlanner.key(rename.to), default: 0] += 1
+            }
+            givenUp = Set(renames.map { BatchRenamePlanner.key($0.from) })
+            self.names = Set(names.map(BatchRenamePlanner.key))
+        }
+    }
+
+    private static func conflict(for rename: BatchRename, in folder: FolderKeys)
+        -> BatchRenameConflict?
+    {
         let target = key(rename.to)
-        if siblings.count(where: { key($0.to) == target }) > 1 {
+        if folder.targets[target, default: 0] > 1 {
             return BatchRenameConflict(item: rename.item, kind: .duplicateInBatch)
         }
-        let givenUp = Set(siblings.map { key($0.from) })
-        guard names.contains(where: { key($0) == target }), !givenUp.contains(target) else {
+        guard folder.names.contains(target), !folder.givenUp.contains(target) else {
             return nil
         }
         return BatchRenameConflict(item: rename.item, kind: .nameTaken(rename.to))
@@ -93,7 +112,7 @@ public enum BatchRenamePlanner {
         return name
     }
 
-    private static func key(_ name: String) -> String {
+    fileprivate static func key(_ name: String) -> String {
         ConflictResolver.comparisonKey(name)
     }
 }
