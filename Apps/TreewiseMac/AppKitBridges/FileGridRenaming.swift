@@ -1,11 +1,8 @@
 import AppKit
 import TreewiseCore
 
-/// Renaming in the icon view, as in the list: the tile's name becomes
-/// editable with the full name, the part before its extension selected
-/// (ADR 0023). Return commits, Escape cancels, and ⌥Esc or F5 asks the add-ons
-/// for proposals (ADR 0066).
-extension FileGridCoordinator: NameFieldEditing {
+/// Renaming in the icon view, through its `NameFieldRenamer`, as in the list.
+extension FileGridCoordinator {
     /// Scrolls to a tile and lays out what comes into view, because the grid
     /// has no tile for an item out of view. A tile in view stays where it is.
     func reveal(index: Int) {
@@ -23,50 +20,6 @@ extension FileGridCoordinator: NameFieldEditing {
             let tile = grid.item(at: IndexPath(item: index, section: 0)) as? FileGridItem,
             let field = tile.textField
         else { return }
-        let item = items[index]
-        renaming = item
-        field.isEditable = true
-        field.delegate = self
-        field.stringValue = item.name
-        grid.window?.makeFirstResponder(field)
-        // The stem is selected, so typing keeps the extension (ADR 0109).
-        let stem = FileName.stem(of: item.name, kind: item.kind) as NSString
-        field.currentEditor()?.selectedRange = NSRange(location: 0, length: stem.length)
-        NameSpelling.check(field, actions?.checksSpelling() ?? false)
-        if suggests { actions?.suggestName(item, field) }
-    }
-
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector)
-        -> Bool
-    {
-        // ⌥Esc and F5, the keys macOS completes text with, ask for proposals.
-        if commandSelector == #selector(NSTextView.complete(_:)), let item = renaming,
-            let field = control as? NSTextField
-        {
-            actions?.suggestName(item, field)
-            return true
-        }
-        guard commandSelector == #selector(NSResponder.cancelOperation(_:)), let item = renaming
-        else { return false }
-        (control as? NSTextField)?.stringValue = shownName(of: item)
-        renaming = nil
-        control.window?.makeFirstResponder(grid)
-        return true
-    }
-
-    func controlTextDidEndEditing(_ notification: Notification) {
-        NameSpelling.stop(after: notification)
-        guard let field = notification.object as? NSTextField else { return }
-        field.isEditable = false
-        field.isSelectable = false
-        defer { renaming = nil }
-        guard let item = renaming else { return }
-        let name = field.stringValue
-        if name != item.name {
-            actions?.rename(item, name)
-        } else {
-            field.stringValue = shownName(of: item)
-        }
-        grid?.window?.makeFirstResponder(grid)
+        renamer.begin(items[index], in: field, suggests: suggests)
     }
 }

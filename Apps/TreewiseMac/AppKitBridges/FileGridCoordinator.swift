@@ -43,8 +43,11 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
     /// Makes the pane active on a click anywhere in its scroll view.
     var clickFocus: PaneClickFocus?
     var folder: FileItem?
-    /// The item whose name is being edited, if any.
-    var renaming: FileItem?
+    /// Renames items in place, in the name's field.
+    lazy var renamer = NameFieldRenamer(
+        actions: { [weak self] in self?.actions },
+        shownName: { [weak self] item in self?.shownName(of: item) ?? item.name },
+        home: { [weak self] in self?.grid }, unselectableAfter: true)
     private var showsExtensions = true
     private var cutItems: Set<FileItem.ID> = []
     private var downloads: [FileItem.ID: Double] = [:]
