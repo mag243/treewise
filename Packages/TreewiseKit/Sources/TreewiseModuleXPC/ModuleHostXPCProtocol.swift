@@ -28,6 +28,9 @@
     /// How requests and answers are written for the trip. A binary property list
     /// keeps page images as raw bytes.
     enum ModuleWire {
+        /// The most templates sent and taken for one folder, on both sides of the connection.
+        static let maximumTemplates = 5
+
         /// A folder's names and its name, for recognizing a template.
         struct NamesOfFolder: Codable {
             let names: [String]
