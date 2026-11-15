@@ -82,43 +82,24 @@ struct FileContextMenu {
         return menu
     }
 
-    /// New Folder, New Folders from Template ▸ and Paste Folder Structure…, for the folder
-    /// shown.
+    /// New Folder, New Folders from Template ▸, Add Missing Folders… and Paste Folder
+    /// Structure…, for the folder shown.
     private func addNewItems(to menu: NSMenu) {
         menu.addItem(
             item("New Folder", symbol: "folder.badge.plus", enabled: browser.canAddItems) {
                 await browser.newFolder(undoManager: undoManager)
             })
         let folder = browser.layout.focusedPane.activeTab.folder
-        if let templates = FolderTemplateMenu.newFoldersItem(
-            in: folder, browser: browser, undoManager: undoManager,
-            enabled: browser.canAddItems)
-        {
-            menu.addItem(templates)
-        }
-        menu.addItem(
-            FolderTemplateMenu.pasteItem(
-                in: folder, browser: browser, undoManager: undoManager,
-                enabled: browser.canAddItems))
-    }
-
-    /// On one folder, its templates' items and copying and pasting its structure (ADR 0091,
-    /// ADR 0099).
-    private func addTemplateItems(for items: [FileItem], to menu: NSMenu) {
-        guard items.count == 1, items[0].kind == .folder, ArchivePath(items[0].id) == nil else {
-            return
-        }
+        let canAdd = browser.canAddItems
         let shown = [
             FolderTemplateMenu.newFoldersItem(
-                in: items[0].id, browser: browser, undoManager: undoManager),
-            FolderTemplateMenu.saveItem(for: items[0], browser: browser),
-            FolderTemplateMenu.copyItem(for: items[0], browser: browser),
+                in: folder, browser: browser, undoManager: undoManager, enabled: canAdd),
+            FolderTemplateMenu.missingItem(
+                for: folder, browser: browser, undoManager: undoManager, enabled: canAdd),
             FolderTemplateMenu.pasteItem(
-                in: items[0].id, browser: browser, undoManager: undoManager),
-        ].compactMap(\.self)
-        guard !shown.isEmpty else { return }
-        menu.addItem(.separator())
-        for item in shown { menu.addItem(item) }
+                in: folder, browser: browser, undoManager: undoManager, enabled: canAdd),
+        ]
+        for item in shown.compactMap(\.self) { menu.addItem(item) }
     }
 
     private func addOpenItems(for items: [FileItem], to menu: NSMenu) {

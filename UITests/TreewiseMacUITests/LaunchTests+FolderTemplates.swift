@@ -253,7 +253,7 @@ extension LaunchTests {
 
     /// Opens Settings at its Templates tab.
     @MainActor
-    private func openTemplatesTab(in app: XCUIApplication) -> XCUIElement {
+    func openTemplatesTab(in app: XCUIApplication) -> XCUIElement {
         app.typeKey(",", modifierFlags: .command)
         let settings = app.windows[Self.settingsWindow]
         let tab = settings.toolbars.buttons["Templates"]

@@ -17,6 +17,28 @@
         }
       }
     },
+    "%@ has every folder of %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ hat jeden Ordner von %2$@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has every folder of %2$@."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ heeft elke map van %2$@."
+          }
+        }
+      }
+    },
     "%@ is empty. Create the folders of %@ here?" : {
       "localizations" : {
         "de" : {
@@ -35,6 +57,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ is leeg. Wil je hier de mappen van %2$@ maken?"
+          }
+        }
+      }
+    },
+    "%@ lacks %lld folders of %@." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ fehlt %2$lld Ordner von %3$@."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ fehlen %2$lld Ordner von %3$@."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ lacks %2$lld folder of %3$@."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ lacks %2$lld folders of %3$@."
+                }
+              }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ mist %2$lld map van %3$@."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ mist %2$lld mappen van %3$@."
+                }
+              }
+            }
           }
         }
       }
@@ -706,6 +786,22 @@
         }
       }
     },
+    "Add Missing Folders from %@…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehlende Ordner aus %@ hinzufügen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg ontbrekende mappen uit %@ toe…"
+          }
+        }
+      }
+    },
     "Add Pattern" : {
       "localizations" : {
         "de" : {
@@ -722,6 +818,22 @@
         }
       }
     },
+    "Add the Missing Folders of %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehlende Ordner von %@ hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg de ontbrekende mappen van %@ toe"
+          }
+        }
+      }
+    },
     "Add to Favorites" : {
       "localizations" : {
         "de" : {
@@ -734,6 +846,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voeg toe aan Favorieten"
+          }
+        }
+      }
+    },
+    "Add to Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zur Vorlage hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg toe aan sjabloon"
           }
         }
       }
@@ -1882,6 +2010,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gereed"
+          }
+        }
+      }
+    },
+    "Don’t Show These Folders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Ordner nicht zeigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon deze mappen niet"
           }
         }
       }
@@ -3244,6 +3388,22 @@
         }
       }
     },
+    "Missing folders come from the same folder a year before." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehlende Ordner kommen aus demselben Ordner ein Jahr zuvor."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ontbrekende mappen komen uit dezelfde map een jaar eerder."
+          }
+        }
+      }
+    },
     "Move Down" : {
       "localizations" : {
         "de" : {
@@ -3668,6 +3828,22 @@
         }
       }
     },
+    "No folders are missing" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es fehlen keine Ordner"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er ontbreken geen mappen"
+          }
+        }
+      }
+    },
     "No proposal." : {
       "localizations" : {
         "de" : {
@@ -3828,6 +4004,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bied aan voor nieuwe mappen in %@"
+          }
+        }
+      }
+    },
+    "Offer missing folders from the year before" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehlende Ordner aus dem Vorjahr anbieten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bied ontbrekende mappen uit het jaar ervoor aan"
           }
         }
       }
@@ -5659,6 +5851,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hier staat al een map ‘%@’."
+          }
+        }
+      }
+    },
+    "There is no folder %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es gibt keinen Ordner %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er is geen map %@"
           }
         }
       }

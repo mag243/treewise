@@ -10,6 +10,10 @@ extension TemplateBarModel {
         public let folder: FileItem
         /// The same folder a year before.
         public let yearBefore: FileItem.ID
+        /// The year of the folder.
+        public let year: Int
+        /// The folder a year before read as a template, as the add-on recognizes it.
+        public let recognized: FolderTree
         /// The folders missing.
         public let missing: MissingFolders
         /// The one template rooted at `{year}` with the missing folders it lacks added, or
@@ -43,7 +47,8 @@ extension TemplateBarModel {
         let missing = MissingFolders(of: made, in: there, leavingOut: closed)
         guard !missing.isEmpty else { return nil }
         return MissingOffer(
-            folder: folder, yearBefore: before, missing: missing,
+            folder: folder, yearBefore: before, year: year, recognized: recognized,
+            missing: missing,
             template: await template(adding: missing, from: recognized, values: values))
     }
 

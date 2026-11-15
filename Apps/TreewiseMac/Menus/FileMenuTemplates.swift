@@ -22,7 +22,10 @@ final class FileMenuTemplates: NSObject, NSMenuDelegate {
         var added: [NSMenuItem?] = [
             FolderTemplateMenu.newFoldersItem(
                 in: folder, browser: browser, undoManager: SharedUndo.manager,
-                enabled: browser.canAddItems)
+                enabled: browser.canAddItems),
+            FolderTemplateMenu.missingItem(
+                for: folder, browser: browser, undoManager: SharedUndo.manager,
+                enabled: browser.canAddItems),
         ]
         let selected = browser.selectedItems
         if selected.count == 1 {

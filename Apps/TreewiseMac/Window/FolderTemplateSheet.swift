@@ -63,7 +63,7 @@ enum FolderTemplateSheet {
         else { return }
         await FolderTemplatesService.giveNames(of: made.tree, to: outcome.made)
         if let templateID = made.offering {
-            await FolderTemplatesService.bar(for: browser.fileSystem).offer(
+            await FolderTemplatesService.bar(for: browser).offer(
                 templateID, in: made.folder)
         }
         let message = String(localized: "Made \(outcome.madeCount) folders.")

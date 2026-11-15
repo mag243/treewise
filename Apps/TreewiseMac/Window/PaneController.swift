@@ -74,7 +74,7 @@ final class PaneController: NSViewController {
         if view.window != nil { followDownloads(of: items.filter(\.isOnlyOnline).map(\.id)) }
         showFolder(content: content, items: items, tab: tab)
         showMessage(content: content, isEmpty: items.isEmpty)
-        templateBar.follow(folder: content.folder, isEmpty: items.isEmpty)
+        templateBar.follow(folder: content.folder, items: items)
         let isFocused = browser.layout.focusedPaneIndex == paneIndex
         let counts = statusText(items: items, content: content)
         statusBar.show(

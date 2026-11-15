@@ -98,6 +98,22 @@
         }
       }
     },
+    "Add to Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zur Vorlage hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg toe aan sjabloon"
+          }
+        }
+      }
+    },
     "An archive can’t be changed. Extract it first." : {
       "extractionState" : "stale",
       "localizations" : {

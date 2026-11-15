@@ -76,10 +76,39 @@ enum FolderTemplatesService {
             namesOf: tree, to: made, catalog: Set(addOnNames.keys))
     }
 
+    /// Add to Template: adds the folders of `offer` that `template` lacks to it, with Undo
+    /// (ADR 0102).
+    static func addMissing(
+        of offer: TemplateBarModel.MissingOffer, to template: FolderTemplate,
+        undoManager: UndoManager?
+    ) async {
+        await templates.addMissing(
+            offer.missing, from: offer.recognized, year: offer.year, to: template.id,
+            undoManager: undoManager)
+    }
+
     /// The bar's state, for the folders of `browser`'s file system.
-    static func bar(for fileSystem: any FileSystemProviding) -> TemplateBarModel {
-        TemplateBarModel(
+    static func bar(for browser: BrowserState) -> TemplateBarModel {
+        let fileSystem = browser.fileSystem
+        let licences = browser.licences
+        return TemplateBarModel(
             fileSystem: fileSystem, settings: NameReviewWindow.store, templates: store,
-            addOnMayWork: { addOnMayWork })
+            addOnMayWork: { addOnMayWork },
+            yearBefore: { await recognized($0, in: fileSystem, licences: licences) },
+            offersMissingFolders: { AppServices.settings.offersMissingFolders })
+    }
+
+    /// The folder at `id` read as a template, with the year as `{year}` and what else the
+    /// add-on recognizes (ADR 0094, ADR 0102); nil while the add-on may not work.
+    static func recognized(
+        _ id: FileItem.ID, in fileSystem: any FileSystemProviding, licences: LicenceKeeper?
+    ) async -> FolderTree? {
+        guard let addOn = addOn(licences: licences),
+            let folder = try? await fileSystem.item(at: id),
+            let tree = try? await tree(of: folder, in: fileSystem)
+        else { return nil }
+        return try? await addOn.host.template(
+            moduleID: addOn.moduleID, from: tree, yearAbove: YearFolders.year(of: id),
+            licence: licences?.context() ?? .none)
     }
 }

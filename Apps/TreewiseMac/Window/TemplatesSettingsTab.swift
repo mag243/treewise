@@ -5,14 +5,16 @@ import UniformTypeIdentifiers
 
 /// Settings' Templates tab (ADR 0091, ADR 0095, ADR 0099): the saved templates, renamed in the
 /// list and deleted with −, Import… and Export…, and the tree of the one selected below,
-/// edited in place. It is Treewise's own, so it works without the add-on.
+/// edited in place. It is Treewise's own, so it works without the add-on; while the add-on
+/// may work, a checkbox above them says whether a year's folder offers the folders of the
+/// year before it lacks (ADR 0102).
 @MainActor
 final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTableViewDelegate,
     NSTextFieldDelegate
 {
     private static let padding: CGFloat = 20
     private static let spacing: CGFloat = 8
-    private static let listHeight: CGFloat = 130
+    private static let listHeight: CGFloat = 110
     private static let countWidth: CGFloat = 130
 
     private let model: FolderTemplatesModel
@@ -20,6 +22,9 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     private let table = NSTableView()
     private let treeTitle = NSTextField(labelWithString: "")
     private let problem = NSTextField(wrappingLabelWithString: "")
+    private let offersMissing = NSButton(
+        checkboxWithTitle: String(localized: "Offer missing folders from the year before"),
+        target: nil, action: nil)
     private lazy var remove = ActionButton(
         title: String(localized: "Delete Template"), symbol: "minus"
     ) { [weak self] in self?.deleteTemplate() }
@@ -50,8 +55,11 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         hint.textColor = .secondaryLabelColor
         treeTitle.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
         problem.textColor = .systemOrange
+        offersMissing.target = self
+        offersMissing.action = #selector(offersMissingChanged)
+        offersMissing.setAccessibilityIdentifier("offersMissingFolders")
         let stack = NSStackView(views: [
-            hint, list(), footer(), treeTitle, editor.makeView(), problem,
+            offersMissing, hint, list(), footer(), treeTitle, editor.makeView(), problem,
         ])
         stack.orientation = .vertical
         stack.alignment = .leading
@@ -77,7 +85,13 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
 
     override func viewWillAppear() {
         super.viewWillAppear()
+        offersMissing.isHidden = !FolderTemplatesService.addOnMayWork
+        offersMissing.state = AppServices.settings.offersMissingFolders ? .on : .off
         Task { await model.load() }
+    }
+
+    @objc private func offersMissingChanged() {
+        AppServices.settings.offersMissingFolders = offersMissing.state == .on
     }
 
     private func list() -> NSView {
