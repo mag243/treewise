@@ -241,7 +241,7 @@ struct FileContextMenu {
             ) {
                 Task {
                     await browser.moveHere(
-                        resolver: AlertConflictResolver(), undoManager: undoManager)
+                        resolver: AlertConflictResolver.make(), undoManager: undoManager)
                 }
             })
     }

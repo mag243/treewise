@@ -34,7 +34,8 @@ struct ClipboardCommands {
         let undoManager = undoManager
         Task {
             if browser.clipboard != nil && !FilePasteboard.changedElsewhere {
-                await browser.paste(resolver: AlertConflictResolver(), undoManager: undoManager)
+                await browser.paste(
+                    resolver: AlertConflictResolver.make(), undoManager: undoManager)
                 return
             }
             var items: [FileItem] = []
@@ -45,7 +46,7 @@ struct ClipboardCommands {
                 }
             }
             await browser.pasteItems(
-                items, resolver: AlertConflictResolver(), undoManager: undoManager)
+                items, resolver: AlertConflictResolver.make(), undoManager: undoManager)
         }
     }
 }

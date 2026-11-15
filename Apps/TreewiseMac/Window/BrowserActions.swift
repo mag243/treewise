@@ -116,6 +116,8 @@ struct BrowserActions {
     }
 
     func moveHere() {
-        Task { await browser.moveHere(resolver: AlertConflictResolver(), undoManager: undoManager) }
+        Task {
+            await browser.moveHere(resolver: AlertConflictResolver.make(), undoManager: undoManager)
+        }
     }
 }

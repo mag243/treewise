@@ -125,7 +125,7 @@ enum DropRouting {
     static func action(for browser: BrowserState, undoManager: UndoManager?) -> DropAction {
         { items, target, modifiers in
             await browser.drop(
-                items, onto: target, modifiers: modifiers, resolver: AlertConflictResolver(),
+                items, onto: target, modifiers: modifiers, resolver: AlertConflictResolver.make(),
                 undoManager: undoManager)
         }
     }

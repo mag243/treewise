@@ -1,19 +1,18 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
-/// Asks the user what to do when a name is taken: Replace, Keep Both or Stop,
-/// with "Apply to All" for the rest of the operation (PLAN.md §4.2, ADR 0018).
-/// One resolver serves one operation.
+/// Asks the user what to do when a name is taken, in an alert: Replace, Keep Both or
+/// Stop, with "Apply to All" for the rest of the operation (PLAN.md §4.2, ADR 0018).
+/// `AskingConflictResolver` keeps the answer for all; one resolver serves one operation.
 @MainActor
-final class AlertConflictResolver: ConflictResolving {
-    private var answerForAll: ConflictDecision?
-
-    nonisolated func decide(existing: FileItem, incoming: FileItem) async -> ConflictDecision {
-        await ask(about: incoming)
+enum AlertConflictResolver {
+    /// A resolver for one operation.
+    static func make() -> AskingConflictResolver {
+        AskingConflictResolver { item in ask(about: item) }
     }
 
-    private func ask(about item: FileItem) -> ConflictDecision {
-        if let answerForAll { return answerForAll }
+    private static func ask(about item: FileItem) -> AskingConflictResolver.Answer {
         let alert = NSAlert()
         alert.messageText = String(
             localized: "An item named “\(item.name)” already exists in this location.",
@@ -34,7 +33,7 @@ final class AlertConflictResolver: ConflictResolving {
             case .alertSecondButtonReturn: .replace
             default: .stop
             }
-        if alert.suppressionButton?.state == .on { answerForAll = decision }
-        return decision
+        return AskingConflictResolver.Answer(
+            decision: decision, appliesToAll: alert.suppressionButton?.state == .on)
     }
 }

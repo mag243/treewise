@@ -28,7 +28,7 @@ extension WindowTabs {
     ) async {
         guard let folder = otherWindowFolder(than: window) else { return }
         await browser.send(
-            selectionTo: folder, mode: mode, resolver: AlertConflictResolver(),
+            selectionTo: folder, mode: mode, resolver: AlertConflictResolver.make(),
             undoManager: undoManager)
     }
 
