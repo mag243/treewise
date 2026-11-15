@@ -50,9 +50,10 @@ extension BrowserState {
         shownArchives = shown
     }
 
-    /// Watches exactly the folders the panes' active tabs show.
+    /// Watches exactly the folders the panes' active tabs show; nothing once stopped.
     func updateWatches() {
         releaseArchivesNoLongerShown()
+        guard !isStopped else { return }
         let shown = Dictionary(
             layout.panes.map { ($0.activeTabID, $0.activeTab.folder) }
         ) { first, _ in first }
@@ -100,6 +101,7 @@ extension BrowserState {
     /// Stops watching the folders the panes show and This Mac, as a window does once it
     /// closes. A transfer that runs goes on: closing a window does not stop a copy.
     public func stop() {
+        isStopped = true
         for watch in watches.values { watch.task.cancel() }
         watches = [:]
         locationsWatch?.cancel()
@@ -109,7 +111,7 @@ extension BrowserState {
     /// Reads the Locations again whenever a volume is mounted or ejected,
     /// which the watcher reports as a change of This Mac (ADR 0044).
     func watchLocations() {
-        guard locationsWatch == nil else { return }
+        guard locationsWatch == nil, !isStopped else { return }
         let changes = watcher.changes(of: .computer)
         locationsWatch = Task { [weak self] in
             for await _ in changes {

@@ -68,6 +68,9 @@ public final class BrowserState {
     @ObservationIgnored var shownArchives: Set<FileItem.ID> = []
     /// The watch on This Mac, which keeps the Locations current (ADR 0044).
     @ObservationIgnored var locationsWatch: Task<Void, Never>?
+    /// Whether `stop()` ended the watches; a reading after it, as at the end of a transfer
+    /// that outlives the window, starts none again.
+    @ObservationIgnored var isStopped = false
     /// The transfer that runs, which `cancelOperation()` stops.
     @ObservationIgnored var runningTransfer: Task<OperationResult?, Never>?
     /// The last transfer that waits its turn, or runs; the next one waits for it.

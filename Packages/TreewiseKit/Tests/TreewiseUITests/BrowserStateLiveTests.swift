@@ -24,6 +24,25 @@ import TreewiseUI
         #expect(await eventually { watcher.watchedFolders.isEmpty })
     }
 
+    @Test func staysStoppedWhenATransferEndsAfterwards() async throws {
+        let fileSystem = ChangingFileSystem()
+        let watcher = ManualFolderWatcher()
+        let browser = await makeBrowser(fileSystem: fileSystem, watcher: watcher, at: "projects")
+        let notes = try await fileSystem.item(at: "doc2")
+        fileSystem.holdChanges()
+        let paste = Task {
+            await browser.pasteItems([notes], resolver: ScriptedResolver(), undoManager: nil)
+        }
+        #expect(await eventually { fileSystem.changesStarted == 1 })
+
+        browser.stop()
+        fileSystem.releaseChanges()
+        await paste.value
+
+        #expect(await eventually { watcher.watchedFolders.isEmpty })
+        #expect(!(await eventually { !watcher.watchedFolders.isEmpty }))
+    }
+
     @Test func reloadsAFolderWhenItChanges() async {
         let fileSystem = ChangingFileSystem()
         let watcher = ManualFolderWatcher()
