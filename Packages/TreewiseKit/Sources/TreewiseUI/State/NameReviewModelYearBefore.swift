@@ -31,9 +31,10 @@ extension NameReviewModel {
             folderFound: items != nil)
     }
 
-    /// Whether a module may work: free, licensed or in its trial (ADR 0071, ADR 0088).
+    /// Whether a module may work: free, licensed or in its trial (ADR 0071, ADR 0088); not
+    /// when its licence could not be checked.
     func mayWork(_ id: String) -> Bool {
-        licenceStates[id]?.mayWork ?? true
+        licenceStates[id]?.mayWork ?? !uncheckedLicences.contains(id)
     }
 
     /// The folder's year and the names a year before, for a module that reads them and may

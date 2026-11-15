@@ -158,6 +158,8 @@ public final class NameReviewModel {
     var licence = LicenceContext.none
     /// What each paid module's licence lets it do.
     var licenceStates: [String: ModuleLicenceState] = [:]
+    /// The paid add-ons whose licence could not be checked; they do not work.
+    var uncheckedLicences: Set<String> = []
     /// The modules that may work in this review: offered, on in Settings and licensed or
     /// in their trial.
     var working: [String] = []
@@ -263,8 +265,8 @@ public final class NameReviewModel {
         let all = ((try? await dependencies.host.availableModules()) ?? []).filter {
             $0.proposesNames
         }
-        let states = await licenceStates(of: all)
-        let mayWork = { (module: AddOnDescription) in states[module.id]?.mayWork ?? true }
+        await readLicenceStates(of: all)
+        let mayWork = { (module: AddOnDescription) in self.mayWork(module.id) }
         let offered = AddOnDescription.offered(all.filter(mayWork))
         var addOns = dependencies.addOns
         let saved = await dependencies.store.settings(forFolderAt: folder.id.rawValue)
@@ -294,19 +296,24 @@ public final class NameReviewModel {
         return (offered.filter { working.contains($0.id) } + locked, working + locked.map(\.id))
     }
 
-    /// Each paid module's licence state; the context they were asked with is kept for the
-    /// review.
-    private func licenceStates(of modules: [AddOnDescription]) async
-        -> [String: ModuleLicenceState]
-    {
+    /// Reads each paid module's licence state, and which could not be checked; the context
+    /// they were asked with is kept for the review.
+    private func readLicenceStates(of modules: [AddOnDescription]) async {
         licence = dependencies.licence()
         var states: [String: ModuleLicenceState] = [:]
+        var failed: Set<String> = []
         for module in modules where !module.isFree {
-            states[module.id] = try? await dependencies.host.licenceState(
-                moduleID: module.id, licence: licence)
+            do {
+                states[module.id] = try await dependencies.host.licenceState(
+                    moduleID: module.id, licence: licence)
+            } catch {
+                // Unknown is not free: a paid add-on whose licence cannot be read does not work.
+                Self.logger.error("A licence could not be checked: \(String(describing: error))")
+                failed.insert(module.id)
+            }
         }
         licenceStates = states
-        return states
+        uncheckedLicences = failed
     }
 
     private func makeModule(_ description: AddOnDescription, names: [String]) async

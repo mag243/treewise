@@ -142,6 +142,22 @@ extension NameReviewModelTests {
         return host
     }
 
+    @Test func offersNoAddOnWhoseLicenceCouldNotBeChecked() async {
+        _ = addFile("scan.pdf")
+        await store.save(
+            FolderSettings(enabledModules: [Self.free, Self.paid], templates: [:]),
+            forFolderAt: "review")
+        let host = host(
+            modules: [Self.freeDescription, Self.paidDescription],
+            answers: [
+                Self.free: .success([["text": .text("New")]]),
+                Self.paid: .success([["company": .text("Co")]]),
+            ])
+        host.failLicenceChecks(of: Self.paid)
+        let model = await model(host)
+        #expect(model.modules.first { $0.id == Self.paid }?.isOn != true)
+    }
+
     @Test func showsAnAddOnWithoutALicenceAsOffAndAsksItNothing() async {
         _ = addFile("scan.pdf")
         await store.save(

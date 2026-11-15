@@ -11,6 +11,7 @@ public final class ScriptedModuleHost: AddOnHosting {
     private let templates = Mutex<[String: [String]]>([:])
     private let licences = Mutex<[String: ModuleLicenceState]>([:])
     private let askedKeys = Mutex<[[String]]>([])
+    private let failingLicences = Mutex<Set<String>>([])
     private let askedNames = Mutex<[[String]]>([])
     private let askedYears = Mutex<[(moduleID: String, years: FolderYears?)]>([])
     private let gate = Mutex(Gate())
@@ -75,11 +76,19 @@ public final class ScriptedModuleHost: AddOnHosting {
         licences.withLock { $0[moduleID] = state }
     }
 
+    /// Makes the licence question about a module fail, as when its process cannot be reached.
+    public func failLicenceChecks(of moduleID: String) {
+        _ = failingLicences.withLock { $0.insert(moduleID) }
+    }
+
     /// Records the keys and gives the scripted licence state, if any.
     public func licenceState(moduleID: String, licence: LicenceContext)
         async throws -> ModuleLicenceState?
     {
         askedKeys.withLock { $0.append(licence.keys) }
+        if failingLicences.withLock({ $0.contains(moduleID) }) {
+            throw NameModuleHostError.unavailable
+        }
         return licences.withLock { $0[moduleID] }
     }
 

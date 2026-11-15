@@ -157,6 +157,10 @@ private final class LicenceKeySheet: NSViewController, NSTextViewDelegate {
                         localized:
                             "This key unlocks none of your add-ons. It may be for another add-on, or withdrawn."
                     ))
+            case .notChecked:
+                show(
+                    problem: String(
+                        localized: "Your add-ons could not check this key just now. Try again."))
             case .unlocked(let modules, let licensee):
                 let names = modules.map { NameReviewText.name(ofModule: $0) }
                     .joined(separator: ", ")

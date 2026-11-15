@@ -122,6 +122,13 @@ import TreewiseUI
         #expect(settings.licenceKeys.isEmpty)
     }
 
+    @Test func saysAKeyCouldNotBeCheckedWhenNoAddOnAnswers() async {
+        let host = ScriptedModuleHost(modules: [Self.paid], answers: [:])
+        host.failLicenceChecks(of: "paid")
+        #expect(await keeper().enter(key: "TW1-abc.def", host: host) == .notChecked)
+        #expect(settings.licenceKeys.isEmpty)
+    }
+
     @Test func refusesTextThatIsNoKey() async {
         let host = ScriptedModuleHost(modules: [Self.paid], answers: [:])
         #expect(await keeper().enter(key: "hello", host: host) == .notAKey)

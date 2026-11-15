@@ -20,6 +20,8 @@ public enum LicenceKeyOutcome: Hashable, Sendable {
     case notAKey
     /// No add-on the app has takes it: it is for another, withdrawn or not genuine.
     case unlocksNothing
+    /// No add-on could check it, as their process could not be reached.
+    case notChecked
     /// It unlocks these modules, for this licensee, and is kept.
     case unlocked(modules: [String], licensee: String)
 }
@@ -76,15 +78,22 @@ public final class LicenceKeeper {
         let question = LicenceContext(keys: [key], trialStarts: [:], lastSeen: nil)
         var unlocked: [String] = []
         var licensee = ""
-        for module in (try? await host.availableModules()) ?? [] where !module.isFree {
-            if case .licensed(let name, _) = try? await host.licenceState(
-                moduleID: module.id, licence: question)
-            {
+        var checked = false
+        guard let modules = try? await host.availableModules() else { return .notChecked }
+        for module in modules where !module.isFree {
+            let state: ModuleLicenceState?
+            do {
+                state = try await host.licenceState(moduleID: module.id, licence: question)
+            } catch {
+                continue
+            }
+            checked = true
+            if case .licensed(let name, _) = state {
                 unlocked.append(module.id)
                 licensee = name
             }
         }
-        guard !unlocked.isEmpty else { return .unlocksNothing }
+        guard !unlocked.isEmpty else { return checked ? .unlocksNothing : .notChecked }
         add(key: key)
         return .unlocked(modules: unlocked, licensee: licensee)
     }

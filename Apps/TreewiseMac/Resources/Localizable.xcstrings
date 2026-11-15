@@ -6677,6 +6677,22 @@
         }
       }
     },
+    "Your add-ons could not check this key just now. Try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Add-ons konnten diesen Schlüssel gerade nicht prüfen. Versuche es erneut."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je add-ons konden deze sleutel nu niet controleren. Probeer het opnieuw."
+          }
+        }
+      }
+    },
     "Zoom" : {
       "localizations" : {
         "de" : {
