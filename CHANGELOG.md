@@ -19,6 +19,7 @@ All notable changes to Treewise are recorded here. The format follows
 - Add-ons are described the same way whatever they do, so a second kind of add-on fits beside those that propose names.
 
 ### Fixed
+- Export… in Settings > Templates proposes a name that says it is a folder template, with its .json extension shown, and says why a template could not be saved.
 - Settings > Add-ons: choosing another add-on's card left the card before as tall as when it was open and cut off the one chosen.
 
 ## [0.8.5] - 2026-11-13

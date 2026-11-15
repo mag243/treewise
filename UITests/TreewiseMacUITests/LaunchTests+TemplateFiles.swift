@@ -37,12 +37,15 @@ extension LaunchTests {
         settings.buttons["Export…"].click()
         let panel = settings.sheets.firstMatch
         XCTAssertTrue(panel.appeared(timeout: Self.launchTimeout), "Export… asks where to save")
+        XCTAssertEqual(
+            panel.textFields.firstMatch.value as? String, "Client Folder Template.json",
+            "it proposes a name that says what the file is, with its extension (ADR 0104)")
         // Go to the test's own folder, then save under the name proposed.
         app.typeKey("g", modifierFlags: [.command, .shift])
         app.typeText(root.appendingPathComponent("Documents").path + "\r")
         panel.buttons["Save"].click()
         XCTAssertTrue(panel.disappeared(timeout: Self.launchTimeout), "Save closes the panel")
-        let saved = root.appendingPathComponent("Documents/Client.json")
+        let saved = root.appendingPathComponent("Documents/Client Folder Template.json")
         let written = XCTNSPredicateExpectation(
             predicate: NSPredicate { _, _ in FileManager.default.fileExists(atPath: saved.path) },
             object: nil)

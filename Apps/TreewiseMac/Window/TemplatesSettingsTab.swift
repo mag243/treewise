@@ -187,7 +187,12 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         guard let window = view.window, let template = selected else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = template.name + "." + FolderTemplateFile.pathExtension
+        // A name that says what the file is, and its extension that says it is JSON
+        // (ADR 0104).
+        panel.nameFieldStringValue =
+            String(localized: "\(template.name) Folder Template") + "."
+            + FolderTemplateFile.pathExtension
+        panel.isExtensionHidden = false
         panel.beginSheetModal(for: window) { response in
             guard response == .OK, let url = panel.url else { return }
             do {
