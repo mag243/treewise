@@ -30,10 +30,32 @@ import TreewiseTestSupport
             try FileCopier.copyCompletely(
                 source, into: directory.url("to"), as: "Report", onFile: Self.noProgress,
                 control: TransferControl(),
-                verifying: { _ in FileCopier.Footprint(size: 0, items: 0) })
+                verifying: { url in
+                    url == source
+                        ? FileCopier.footprint(of: url) : FileCopier.Footprint(size: 0, items: 0)
+                })
         }
         #expect(try names(in: directory.url("to")).isEmpty)
         #expect(try names(in: source) == ["a.txt", "b.txt"])
+    }
+
+    /// A file that lands in the source while it is copied is not in the copy, and the
+    /// source must then stay, as removing it would lose that file.
+    @Test func refusesACopyOfASourceThatGrewWhileCopied() throws {
+        let directory = try TempDirectory()
+        let source = try report(in: directory)
+        let grown = Mutex(false)
+        let growing: FileCopyProgress = { _, _ in
+            guard !grown.withLock({ $0 }) else { return }
+            grown.withLock { $0 = true }
+            try? Data("late".utf8).write(to: source.appendingPathComponent("late.txt"))
+        }
+        #expect(throws: FileSystemError.verificationFailed(FileItem.ID(source.path))) {
+            try FileCopier.copyCompletely(
+                source, into: directory.url("to"), as: "Report", onFile: growing,
+                control: TransferControl(), verifying: FileCopier.footprint(of:))
+        }
+        #expect(try names(in: directory.url("to")).isEmpty)
     }
 
     @Test func checksTheCopyBeforeItHasItsName() throws {
@@ -44,7 +66,7 @@ import TreewiseTestSupport
             source, into: directory.url("to"), as: "Report", onFile: Self.noProgress,
             control: TransferControl(),
             verifying: { copy in
-                checked.withLock { $0.append(copy.lastPathComponent) }
+                if copy != source { checked.withLock { $0.append(copy.lastPathComponent) } }
                 return FileCopier.footprint(of: copy)
             })
         let names = checked.withLock { $0 }

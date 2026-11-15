@@ -178,8 +178,8 @@ public actor FileOperationRunner: FileOperating {
     }
 
     /// Copy, verify, then remove the source, on the copy queue (ADR 0026). The copy is
-    /// checked before it has its name, so on a mismatch nothing new is left and the
-    /// source stays.
+    /// checked against the source before it has its name, so on a mismatch nothing new is
+    /// left and the source stays.
     private func moveAcrossVolumes(
         _ item: FileItem, into folder: URL, as name: String, onFile: @escaping FileCopyProgress,
         control: TransferControl

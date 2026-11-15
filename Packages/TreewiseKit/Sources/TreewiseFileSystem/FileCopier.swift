@@ -48,9 +48,10 @@ enum FileCopier {
     }
 
     /// Copies `source` into `folder` as `name`, through a hidden partial copy. With
-    /// `verifying`, the partial copy's footprint, as `verifying` measures it, must equal the
-    /// source's, measured while it was copied, before the copy gets its name; a move then
-    /// never leaves an incomplete copy under the real name (ADR 0004).
+    /// `verifying`, the partial copy's footprint must equal the source's, both measured
+    /// by `verifying` once the copy is done, before the copy gets its name: a move then
+    /// never leaves an incomplete copy under the real name, and a source that changed while
+    /// it was copied stays (ADR 0004).
     ///
     /// Postcondition: either the complete copy exists under `name`, or nothing new does.
     /// - Throws: `FileSystemError.verificationFailed` when the footprints differ.
@@ -61,9 +62,11 @@ enum FileCopier {
         let partial = folder.appendingPathComponent(partialPrefix + UUID().uuidString)
         let destination = folder.appendingPathComponent(name)
         do {
-            var copied = Footprint(size: 0, items: 0)
+            var copied: Int64 = 0
             try copyTree(source, to: partial, onFile: onFile, control: control, copied: &copied)
-            if let verifying, verifying(partial) != copied {
+            // The source is measured again, not added up while copying, so that a file
+            // that landed in it meanwhile is noticed and not removed with it.
+            if let verifying, verifying(partial) != verifying(source) {
                 throw FileSystemError.verificationFailed(FileItem.ID(source.path))
             }
             guard !FileManager.default.fileExists(atPath: destination.path) else {
@@ -106,19 +109,18 @@ enum FileCopier {
     /// Copies a folder file by file, waiting while paused and ending when
     /// stopped before each file; `onFile` hears of each file and of its bytes.
     /// Packages and symbolic links are copied whole, links as links. `copied`
-    /// adds up the footprint of what was copied so far, measured as `footprint(of:)`
-    /// measures, so the source need not be walked again to check the copy.
+    /// counts the bytes copied so far.
     private static func copyTree(
         _ source: URL, to destination: URL, onFile: @escaping FileCopyProgress,
         control: TransferControl,
-        copied: inout Footprint
+        copied: inout Int64
     ) throws {
         guard control.waitWhilePaused() else { throw FileSystemError.cancelled }
         let values = try source.resourceValues(forKeys: [
             .isDirectoryKey, .isSymbolicLinkKey, .isPackageKey, .isRegularFileKey,
         ])
         let name = source.lastPathComponent
-        let before = Int64(copied.size)
+        let before = copied
         if values.isRegularFile == true, values.isSymbolicLink != true {
             onFile(name, before)
             try copyFile(source, to: destination, control: control) { onFile(name, before + $0) }
@@ -129,8 +131,6 @@ enum FileCopier {
             try FileManager.default.createDirectory(
                 at: destination, withIntermediateDirectories: false)
             copyExtendedAttributes(from: source, to: destination)
-            copied.size += (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-            copied.items += 1
             for child in try FileManager.default.contentsOfDirectory(
                 at: source, includingPropertiesForKeys: nil)
             {
@@ -140,9 +140,7 @@ enum FileCopier {
             }
             return
         }
-        let part = footprint(of: source)
-        copied.size += part.size
-        copied.items += part.items
+        copied += Int64(footprint(of: source).size)
     }
 
     /// Copies a folder's extended attributes, such as Finder tags. A folder is made
