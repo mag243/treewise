@@ -41,32 +41,56 @@ enum FileCopier {
         }
     }
 
-    /// Copies `source` into `folder` as `name`, through a hidden partial copy.
+    /// The total size and number of items of a file or folder.
+    struct Footprint: Equatable, Sendable {
+        var size: Int
+        var items: Int
+    }
+
+    /// Copies `source` into `folder` as `name`, through a hidden partial copy. With
+    /// `verifying`, the partial copy's footprint, as `verifying` measures it, must equal the
+    /// source's, measured while it was copied, before the copy gets its name; a move then
+    /// never leaves an incomplete copy under the real name (ADR 0004).
     ///
     /// Postcondition: either the complete copy exists under `name`, or nothing new does.
+    /// - Throws: `FileSystemError.verificationFailed` when the footprints differ.
     static func copyCompletely(
         _ source: URL, into folder: URL, as name: String, onFile: @escaping FileCopyProgress,
-        control: TransferControl
+        control: TransferControl, verifying: ((URL) -> Footprint)? = nil
     ) throws -> URL {
         let partial = folder.appendingPathComponent(partialPrefix + UUID().uuidString)
         let destination = folder.appendingPathComponent(name)
         do {
-            var copied: Int64 = 0
+            var copied = Footprint(size: 0, items: 0)
             try copyTree(source, to: partial, onFile: onFile, control: control, copied: &copied)
+            if let verifying, verifying(partial) != copied {
+                throw FileSystemError.verificationFailed(FileItem.ID(source.path))
+            }
             guard !FileManager.default.fileExists(atPath: destination.path) else {
                 throw FileSystemError.alreadyExists(FileItem.ID(destination.path))
             }
             try FileManager.default.moveItem(at: partial, to: destination)
             return destination
         } catch {
-            try? FileManager.default.removeItem(at: partial)
+            removePartial(partial)
             throw error is FileSystemError
                 ? error : TrashService.error(error, for: FileItem.ID(source.path))
         }
     }
 
+    /// Removes a partial copy Treewise made itself; one it cannot remove is logged, as it
+    /// stays behind, hidden, under its partial name.
+    private static func removePartial(_ partial: URL) {
+        guard FileManager.default.fileExists(atPath: partial.path) else { return }
+        do {
+            try FileManager.default.removeItem(at: partial)
+        } catch {
+            logger.error("A partial copy could not be removed: \(error.localizedDescription)")
+        }
+    }
+
     /// The total size and number of items of a file or folder, for verifying a copy.
-    static func footprint(of url: URL) -> (size: Int, items: Int) {
+    static func footprint(of url: URL) -> Footprint {
         let keys: Set<URLResourceKey> = [.fileSizeKey, .isSymbolicLinkKey]
         var size = (try? url.resourceValues(forKeys: keys).fileSize) ?? 0
         var items = 1
@@ -76,24 +100,25 @@ enum FileCopier {
             size += (try? entry.resourceValues(forKeys: keys).fileSize) ?? 0
             items += 1
         }
-        return (size, items)
+        return Footprint(size: size, items: items)
     }
 
     /// Copies a folder file by file, waiting while paused and ending when
     /// stopped before each file; `onFile` hears of each file and of its bytes.
     /// Packages and symbolic links are copied whole, links as links. `copied`
-    /// counts the bytes copied so far.
+    /// adds up the footprint of what was copied so far, measured as `footprint(of:)`
+    /// measures, so the source need not be walked again to check the copy.
     private static func copyTree(
         _ source: URL, to destination: URL, onFile: @escaping FileCopyProgress,
         control: TransferControl,
-        copied: inout Int64
+        copied: inout Footprint
     ) throws {
         guard control.waitWhilePaused() else { throw FileSystemError.cancelled }
         let values = try source.resourceValues(forKeys: [
             .isDirectoryKey, .isSymbolicLinkKey, .isPackageKey, .isRegularFileKey,
         ])
         let name = source.lastPathComponent
-        let before = copied
+        let before = Int64(copied.size)
         if values.isRegularFile == true, values.isSymbolicLink != true {
             onFile(name, before)
             try copyFile(source, to: destination, control: control) { onFile(name, before + $0) }
@@ -104,6 +129,8 @@ enum FileCopier {
             try FileManager.default.createDirectory(
                 at: destination, withIntermediateDirectories: false)
             copyExtendedAttributes(from: source, to: destination)
+            copied.size += (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            copied.items += 1
             for child in try FileManager.default.contentsOfDirectory(
                 at: source, includingPropertiesForKeys: nil)
             {
@@ -113,7 +140,9 @@ enum FileCopier {
             }
             return
         }
-        copied += Int64(footprint(of: source).size)
+        let part = footprint(of: source)
+        copied.size += part.size
+        copied.items += part.items
     }
 
     /// Copies a folder's extended attributes, such as Finder tags. A folder is made

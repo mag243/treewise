@@ -68,7 +68,10 @@ public actor FileOperationRunner: FileOperating {
                 return try await reader.archiveTree(for: place).byteCount(at: place.entry)
             }
         #endif
-        return Int64(FileCopier.footprint(of: url(item.id)).size)
+        // A whole tree is walked, which may wait for a File Provider: on the copy queue,
+        // not on the actor (ADR 0026).
+        let source = url(item.id)
+        return Int64(try await FileCopier.run { FileCopier.footprint(of: source).size })
     }
 
     public func copy(
@@ -174,8 +177,9 @@ public actor FileOperationRunner: FileOperating {
         if id.isInsideArchive { throw FileSystemError.notWritable(id) }
     }
 
-    /// Copy, verify, then remove the source, on the copy queue (ADR 0026). On
-    /// a mismatch the copy goes and the source stays.
+    /// Copy, verify, then remove the source, on the copy queue (ADR 0026). The copy is
+    /// checked before it has its name, so on a mismatch nothing new is left and the
+    /// source stays.
     private func moveAcrossVolumes(
         _ item: FileItem, into folder: URL, as name: String, onFile: @escaping FileCopyProgress,
         control: TransferControl
@@ -183,14 +187,14 @@ public actor FileOperationRunner: FileOperating {
         let source = url(item.id)
         try await FileCopier.run(control: control) {
             let target = folder.appendingPathComponent(name)
-            try FileCoordination.read(source, andWrite: target) { source, target in
-                let copy = try FileCopier.copyCompletely(
-                    source, into: target.deletingLastPathComponent(), as: name, onFile: onFile,
-                    control: control)
-                guard FileCopier.footprint(of: copy) == FileCopier.footprint(of: source) else {
-                    try? FileManager.default.removeItem(at: copy)
-                    throw FileSystemError.verificationFailed(item.id)
+            do {
+                try FileCoordination.read(source, andWrite: target) { source, target in
+                    _ = try FileCopier.copyCompletely(
+                        source, into: target.deletingLastPathComponent(), as: name,
+                        onFile: onFile, control: control, verifying: FileCopier.footprint(of:))
                 }
+            } catch FileSystemError.verificationFailed {
+                throw FileSystemError.verificationFailed(item.id)
             }
             try Self.mapping(item.id) {
                 try FileCoordination.delete(source) { try FileManager.default.removeItem(at: $0) }
