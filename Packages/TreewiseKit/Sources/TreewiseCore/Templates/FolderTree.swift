@@ -74,57 +74,53 @@ public struct FolderTree: Codable, Hashable, Sendable {
     /// within `mostFolders` and `mostLevels`.
     public func check() throws(Problem) {
         var count = 0
-        try check(level: 1, count: &count) { name throws(Problem) in
-            guard FolderNaming.isValidName(name) else { throw .invalidName(name) }
+        try check(level: 1, inRepeat: false, count: &count) { folder, _, _ throws(Problem) in
+            guard FileName.isValid(folder.name) else { throw .invalidName(folder.name) }
+            return false
         }
     }
 
     /// Checks the tree of a template as `check()` does, with its fields (ADR 0096): they must
     /// read, `{seq}` only in the root, a repeat only below it and never in another (ADR 0100),
     /// and the text around them a name can hold, since a `:` in a field is no path separator.
-    /// Its names are checked once more when filled in.
+    /// Its names are checked once more when filled in. Each name is read once.
     public func checkTemplate() throws(Problem) {
         var count = 0
-        try check(level: 1, count: &count) { name throws(Problem) in
-            let read = try FolderNameFields(name)
-            guard FolderNaming.isValidName(read.plainText) else { throw .invalidName(name) }
-        }
-        for folder in folders {
-            try folder.checkNoNumber()
-        }
-        if (try? FolderNameFields(name))?.repeats.isEmpty == false { throw .repeatAtTop(name) }
-        for folder in folders {
-            try folder.checkRepeats(inRepeat: false)
-        }
+        try check(level: 1, inRepeat: false, count: &count, folder: Self.checkFields)
     }
 
-    private func checkRepeats(inRepeat: Bool) throws(Problem) {
-        let repeats = (try? FolderNameFields(name))?.repeats.count ?? 0
-        guard repeats <= 1, !inRepeat || repeats == 0 else { throw .repeatInRepeat(name) }
-        for folder in folders { try folder.checkRepeats(inRepeat: inRepeat || repeats > 0) }
+    /// Checks one folder's name with its fields, and says whether the folder repeats.
+    private static func checkFields(_ folder: FolderTree, isRoot: Bool, inRepeat: Bool)
+        throws(Problem) -> Bool
+    {
+        let read = try FolderNameFields(folder.name)
+        guard FileName.isValid(read.plainText) else { throw .invalidName(folder.name) }
+        if !isRoot, read.fields.contains(.number) { throw .numberBelowTop(folder.name) }
+        let repeats = read.repeats.count
+        if isRoot, repeats > 0 { throw .repeatAtTop(folder.name) }
+        guard repeats <= 1, !inRepeat || repeats == 0 else { throw .repeatInRepeat(folder.name) }
+        return repeats > 0
     }
 
-    private func checkNoNumber() throws(Problem) {
-        if (try? FolderNameFields(name))?.fields.contains(.number) == true {
-            throw .numberBelowTop(name)
-        }
-        for folder in folders { try folder.checkNoNumber() }
-    }
-
+    /// Walks the tree once: the depth and the count, each folder's own check, its name not
+    /// hidden, and no name twice in one folder. `folder` gets the folder, whether it is the
+    /// root and whether a repeat is above it, and says whether the folder repeats.
     private func check(
-        level: Int, count: inout Int, name check: (String) throws(Problem) -> Void
+        level: Int, inRepeat: Bool, count: inout Int,
+        folder check: (FolderTree, Bool, Bool) throws(Problem) -> Bool
     ) throws(Problem) {
         guard level <= Self.mostLevels else { throw .tooDeep }
         count += 1
         guard count <= Self.mostFolders else { throw .tooManyFolders }
-        try check(name)
+        let repeats = try check(self, level == 1, inRepeat)
         guard !name.hasPrefix(".") else { throw .hiddenName(name) }
         var seen = Set<String>()
         for folder in folders {
             guard seen.insert(ConflictResolver.comparisonKey(folder.name)).inserted else {
                 throw .sameName(folder.name)
             }
-            try folder.check(level: level + 1, count: &count, name: check)
+            try folder.check(
+                level: level + 1, inRepeat: inRepeat || repeats, count: &count, folder: check)
         }
     }
 }

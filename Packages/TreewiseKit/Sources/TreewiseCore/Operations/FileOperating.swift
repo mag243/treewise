@@ -69,17 +69,26 @@ extension FileOperating {
     ///   when another item has the name.
     @discardableResult
     public func rename(_ item: FileItem, to name: String) async throws -> OperationResult {
-        guard FolderNaming.isValidName(name) else { throw FileSystemError.invalidName(name) }
+        guard FileName.isValid(name) else { throw FileSystemError.invalidName(name) }
+        let folder = try await ensureNameFree(name, for: item)
+        let renamed = try await move(item, into: folder, as: name)
+        return OperationResult(
+            items: [renamed],
+            undo: .relocate([Relocation(item: renamed.id, folder: folder, name: item.name)]))
+    }
+
+    /// The folder of `item`, once no other item there has `name`.
+    ///
+    /// - Throws: `notWritable` for an item without a folder, `alreadyExists` when another
+    ///   item has the name.
+    func ensureNameFree(_ name: String, for item: FileItem) async throws -> FileItem.ID {
         guard let folder = item.parentID else { throw FileSystemError.notWritable(item.id) }
         let key = ConflictResolver.comparisonKey(name)
         let taken = try await itemsByName(in: folder).values.contains {
             $0.id != item.id && ConflictResolver.comparisonKey($0.name) == key
         }
         guard !taken else { throw FileSystemError.alreadyExists(item.id) }
-        let renamed = try await move(item, into: folder, as: name)
-        return OperationResult(
-            items: [renamed],
-            undo: .relocate([Relocation(item: renamed.id, folder: folder, name: item.name)]))
+        return folder
     }
 
     /// Creates a folder named "untitled folder" (numbered when taken) in `folder`.

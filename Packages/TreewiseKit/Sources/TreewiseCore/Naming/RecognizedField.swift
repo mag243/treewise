@@ -5,7 +5,14 @@ import Foundation
 public struct RecognizedField: Equatable, Sendable {
     /// What kind of thing the field stands for.
     public enum Kind: Equatable, Sendable, CaseIterable {
-        case date, series, text, choice
+        /// A date, such as `{date:yyyy.MM.dd}`.
+        case date
+        /// A number that runs on, such as `{seq:4}`.
+        case series
+        /// Words, such as `{text}` or the folder's name.
+        case text
+        /// A choice between parts, such as `<…|…>`.
+        case choice
     }
 
     /// The kinds `fields` hold, each once, in the legend's order: what a card's legend
@@ -16,6 +23,7 @@ public struct RecognizedField: Equatable, Sendable {
 
     /// The field as the add-on writes it, as `{seq:4}` or `<…|…>`.
     public let token: String
+    /// What kind of thing it stands for.
     public let kind: Kind
     /// What the field writes, as `1–4` for `{seq:4}`; empty when there is no example.
     public let example: String

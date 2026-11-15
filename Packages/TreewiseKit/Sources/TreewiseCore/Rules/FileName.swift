@@ -1,7 +1,8 @@
 import Foundation
 
-/// Where a name's extension starts: the one rule for the list, renaming, copy names and
-/// proposed names (ADR 0109).
+/// The rules of a file's name: which names an item may get (ADR 0018), and where a name's
+/// extension starts, the one rule for the list, renaming, copy names and proposed names
+/// (ADR 0109).
 public enum FileName {
     /// File name extensions of two parts that count as one.
     private static let compoundExtensions = ["tar.gz", "tar.bz2", "tar.xz"]
@@ -25,6 +26,14 @@ public enum FileName {
             isExtension(name[name.index(after: dot)...])
         else { return (name, "") }
         return (String(name[..<dot]), String(name[dot...]))
+    }
+
+    /// Whether a name can be given to an item: not empty or only spaces, not `.` or `..`,
+    /// and without `/` or `:` (which Finder shows as each other).
+    public static func isValid(_ name: String) -> Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        return !trimmed.isEmpty && name != "." && name != ".." && !name.contains("/")
+            && !name.contains(":")
     }
 
     /// The name without its extension.

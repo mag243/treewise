@@ -39,7 +39,7 @@ extension BrowserState {
     )
         async
     {
-        guard FolderNaming.isValidName(name) else {
+        guard FileName.isValid(name) else {
             failure = .invalidName(name)
             return
         }

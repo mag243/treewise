@@ -26,7 +26,6 @@ struct DateTemplate: Hashable, Sendable {
         ("MMM", .monthName(short: true)), ("MM", .month), ("dd", .day), ("d", .shortDay),
     ]
     private static let languageMark: Character = "@"
-    private static let shortYearDivisor = 100
 
     private let pieces: [Piece]
     /// The language of a month's name; nil for the app's language.
@@ -88,7 +87,7 @@ struct DateTemplate: Hashable, Sendable {
         pieces.map { piece in
             switch piece {
             case .longYear: String(format: "%04d", year)
-            case .shortYear: String(format: "%02d", year % Self.shortYearDivisor)
+            case .shortYear: TwoDigitYear.write(year)
             case .month: String(format: "%02d", month)
             case .monthName(let short):
                 MonthNames.name(of: month, short: short, in: language ?? fallback)

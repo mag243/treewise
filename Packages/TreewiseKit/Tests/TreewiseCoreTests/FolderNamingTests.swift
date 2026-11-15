@@ -25,11 +25,11 @@ import TreewiseCore
 
     @Test(arguments: ["Notes.md", ".hidden", "a b", "café"])
     func acceptsOrdinaryNames(_ name: String) {
-        #expect(FolderNaming.isValidName(name))
+        #expect(FileName.isValid(name))
     }
 
     @Test(arguments: ["", "   ", ".", "..", "a/b", "a:b"])
     func rejectsNamesTheFileSystemCannotHold(_ name: String) {
-        #expect(!FolderNaming.isValidName(name))
+        #expect(!FileName.isValid(name))
     }
 }

@@ -13,6 +13,7 @@ public enum ApplicationsMove {
         /// `~/Applications`, for when the system folder is not writable.
         public let user: String
 
+        /// The two folders, as paths.
         public init(system: String, user: String) {
             self.system = system
             self.user = user

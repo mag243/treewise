@@ -69,9 +69,8 @@ extension NameTemplate {
             let seqRange = Range(match.range(withName: seqGroup), in: name),
             let seq = Int(name[seqRange])
         else { return nil }
-        let year = Range(match.range(withName: yearGroup), in: name).flatMap { range in
-            // A year in two digits is one of this century (ADR 0089).
-            Int(name[range]).map { name[range].count == 2 ? 2000 + $0 : $0 }
+        let year = Range(match.range(withName: yearGroup), in: name).flatMap {
+            TwoDigitYear.read(name[$0])
         }
         return Step(year: year, seq: seq, width: name[seqRange].count)
     }

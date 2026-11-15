@@ -59,12 +59,7 @@ extension FileOperating {
     }
 
     private func rename(_ item: FileItem, toDiskName name: String) async throws -> FileItem {
-        guard let folder = item.parentID else { throw FileSystemError.notWritable(item.id) }
-        let key = ConflictResolver.comparisonKey(name)
-        let taken = try await itemsByName(in: folder).values.contains {
-            $0.id != item.id && ConflictResolver.comparisonKey($0.name) == key
-        }
-        guard !taken else { throw FileSystemError.alreadyExists(item.id) }
+        let folder = try await ensureNameFree(name, for: item)
         return try await move(item, into: folder, as: name)
     }
 }

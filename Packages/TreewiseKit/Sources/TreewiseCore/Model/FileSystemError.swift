@@ -9,7 +9,7 @@ public enum FileSystemError: Error, Hashable, Sendable {
     case notWritable(FileItem.ID)
     /// An item with this name is already in the folder.
     case alreadyExists(FileItem.ID)
-    /// The name cannot be given to an item (`FolderNaming.isValidName`).
+    /// The name cannot be given to an item (`FileName.isValid`).
     case invalidName(String)
     /// The operation was cancelled; what was done before stays done.
     case cancelled

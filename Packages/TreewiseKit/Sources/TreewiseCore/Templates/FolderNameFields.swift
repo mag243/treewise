@@ -17,8 +17,6 @@ struct FolderNameFields {
         case repeating(FolderRepeat, DateTemplate?, written: String)
     }
 
-    /// What a year in two digits is the rest of.
-    private static let century = 100
     /// What stands for a field in `plainText`, a character any folder's name can hold.
     private static let fieldStandIn = "x"
     /// A template's field, its name and what follows its colon.
@@ -147,8 +145,7 @@ struct FolderNameFields {
         switch field {
         case .year:
             guard let year = values.year else { return nil }
-            return format == .twoDigitYear
-                ? String(format: "%02d", year % Self.century) : String(year)
+            return format == .twoDigitYear ? TwoDigitYear.write(year) : String(year)
         case .text:
             guard let text = values.text?.trimmingCharacters(in: .whitespaces) else { return nil }
             guard case .textCase(let textCase) = format else { return text }

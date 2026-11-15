@@ -1,6 +1,6 @@
 import Foundation
 
-/// Names for new folders, and which names an item may get (ADR 0018).
+/// Names for new folders (ADR 0018).
 public enum FolderNaming {
     /// The first number added when the plain name is taken.
     private static let firstNumber = 2
@@ -25,13 +25,5 @@ public enum FolderNaming {
             number += 1
         }
         return candidate
-    }
-
-    /// Whether a name can be given to an item: not empty or only spaces, not
-    /// `.` or `..`, and without `/` or `:` (which Finder shows as each other).
-    public static func isValidName(_ name: String) -> Bool {
-        let trimmed = name.trimmingCharacters(in: .whitespaces)
-        return !trimmed.isEmpty && name != "." && name != ".." && !name.contains("/")
-            && !name.contains(":")
     }
 }
