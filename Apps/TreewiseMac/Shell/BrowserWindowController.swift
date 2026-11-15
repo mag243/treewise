@@ -104,6 +104,9 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         if LaunchOptions.windowSize != nil { Self.center(window) }
         window.makeKeyAndOrderFront(nil)
         showSidebarAtItsWidth()
+        // The split view lays out after this, at its own share for a sidebar; the width
+        // is set again once it has, as for a window restored.
+        DispatchQueue.main.async { [weak self] in self?.showSidebarAtItsWidth() }
         start()
     }
 
@@ -132,9 +135,11 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     }
 
     /// Keeps the width the user dragged the sidebar to, for this window and a new one.
-    /// Only a drag of the divider tells its index; a window made narrower does not.
+    /// Only a drag of the divider tells its index; a window made narrower does not, and the
+    /// split view's own first layout, which tells it too, comes without the mouse.
     @objc private func sidebarResized(_ notification: Notification) {
-        guard notification.userInfo?["NSSplitViewDividerIndex"] != nil,
+        let byMouse = [.leftMouseDragged, .leftMouseUp].contains(NSApp.currentEvent?.type)
+        guard byMouse, notification.userInfo?["NSSplitViewDividerIndex"] != nil,
             let sidebar = splitView?.arrangedSubviews.first, !sidebar.isHidden
         else { return }
         let width = sidebar.frame.width

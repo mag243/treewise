@@ -76,7 +76,8 @@ final class UIReviewTests: XCTestCase {
     /// and the variant, for the report.
     @MainActor
     func review(
-        _ window: XCUIElement, as name: String, appearance: String?, isSettingsPane: Bool = false
+        _ window: XCUIElement, as name: String, appearance: String?, isSettingsPane: Bool = false,
+        also more: [UIReviewFinding] = []
     ) {
         let full = appearance.map { "\(name)-\($0)" } ?? name
         let screenshot = XCTAttachment(screenshot: window.screenshot())
@@ -93,6 +94,7 @@ final class UIReviewTests: XCTestCase {
         } catch {
             found = [UIReviewFinding(check: "snapshot", element: "window", detail: "\(error)")]
         }
+        found += more
         let findings = XCTAttachment(
             data: (try? JSONEncoder().encode(found)) ?? Data(), uniformTypeIdentifier: "public.json"
         )
