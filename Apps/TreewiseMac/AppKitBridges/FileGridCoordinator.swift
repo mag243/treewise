@@ -88,21 +88,14 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
         isApplyingState = true
         defer { isApplyingState = false }
         if items != view.items || cutItems != view.cutItems
-            || showsExtensions != view.showsExtensions || isActive != view.isActive
+            || showsExtensions != view.showsExtensions
         {
             items = view.items
             cutItems = view.cutItems
             showsExtensions = view.showsExtensions
-            isActive = view.isActive
             grid.reloadData()
         }
-        if downloads != view.downloads {
-            downloads = view.downloads
-            for (index, item) in items.enumerated() {
-                let tile = grid.item(at: IndexPath(item: index, section: 0)) as? FileGridItem
-                tile?.showCloudStatus(isOnlyOnline: item.isOnlyOnline, download: downloads[item.id])
-            }
-        }
+        showTileState(of: view, in: grid)
         let selected = Set(
             items.indices.filter { view.selection.contains(items[$0].id) }
                 .map { IndexPath(item: $0, section: 0) })
@@ -121,6 +114,24 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
             DispatchQueue.main.async { [weak self] in
                 self?.beginRename(index: index, suggests: suggests)
             }
+        }
+    }
+
+    /// Shows whether the pane is active and the downloads in the tiles on screen. Only
+    /// those tiles exist; one made later reads both when it is shown.
+    private func showTileState(of view: FileGridContent, in grid: NSCollectionView) {
+        if isActive != view.isActive {
+            isActive = view.isActive
+            for case let tile as FileGridItem in grid.visibleItems() {
+                tile.isActivePane = isActive
+            }
+        }
+        guard downloads != view.downloads else { return }
+        downloads = view.downloads
+        for path in grid.indexPathsForVisibleItems() where items.indices.contains(path.item) {
+            let item = items[path.item]
+            (grid.item(at: path) as? FileGridItem)?.showCloudStatus(
+                isOnlyOnline: item.isOnlyOnline, download: downloads[item.id])
         }
     }
 
