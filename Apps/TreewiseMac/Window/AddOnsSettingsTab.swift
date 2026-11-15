@@ -31,7 +31,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     let settings: BrowserSettings
     /// The app's licences.
     let licences: LicenceKeeper
-    let table = NSTableView()
+    let table = AddOnCardTable()
     private let scroll = NSScrollView()
     private var contextMenu: SettingsListMenu?
     private lazy var enterKey = SettingsForm.button("Enter Licence Key…") { [weak self] in
@@ -114,6 +114,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         table.delegate = self
         table.registerForDraggedTypes([Self.dragType])
         table.setAccessibilityLabel(String(localized: "Add-ons"))
+        table.canDrag = { [weak self] row, point in self?.cardGrips(row: row, at: point) ?? false }
         contextMenu = SettingsListMenu(for: table) { [weak self] row in
             self?.cardMenuItems(for: row) ?? []
         }

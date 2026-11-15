@@ -85,6 +85,7 @@ enum UIReviewChecks {
         found += cutShortWithRoom(placed)
         found += offTitleLine(placed)
         found += withoutScroller(lists)
+        found += twiceInAList(lists)
         if isSettingsPane { found += notSpanning(lists, window: window.frame) }
         return found
     }
@@ -223,6 +224,28 @@ enum UIReviewChecks {
             else { return nil }
             return finding(
                 "noScroller", list, "holds \(tallest) in \(list.frame.height) without a scroller")
+        }
+    }
+
+    /// A list that shows the same item twice: two cards or rows of one name.
+    private static func twiceInAList(_ lists: [any XCUIElementSnapshot]) -> [UIReviewFinding] {
+        lists.flatMap { list -> [UIReviewFinding] in
+            let items = outerGroups(in: list)
+            var seen: Set<String> = []
+            return items.compactMap { item in
+                let name = item.label
+                guard !name.isEmpty, !seen.insert(name).inserted else { return nil }
+                return finding("twiceInAList", item, "shown more than once in its list")
+            }
+        }
+    }
+
+    /// The groups in `snapshot` that no other group holds, as a list's cards.
+    private static func outerGroups(in snapshot: any XCUIElementSnapshot)
+        -> [any XCUIElementSnapshot]
+    {
+        snapshot.children.flatMap { child in
+            child.elementType == .group ? [child] : outerGroups(in: child)
         }
     }
 

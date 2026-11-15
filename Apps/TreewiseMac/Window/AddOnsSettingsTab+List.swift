@@ -75,6 +75,15 @@ extension AddOnsSettingsTab {
         return label
     }
 
+    /// Whether the card in `row` is taken at `point`, in the table's coordinates: on its
+    /// header, not on its switch or body (ADR 0106).
+    func cardGrips(row: Int, at point: NSPoint) -> Bool {
+        guard let cell = table.view(atColumn: 0, row: row, makeIfNecessary: false),
+            let card = cell.subviews.lazy.compactMap({ $0 as? AddOnCardView }).first
+        else { return false }
+        return card.grips(at: card.convert(point, from: table))
+    }
+
     /// What the card of the add-on in `row` offers: on, switchable, trial or licence.
     func addOnCard(for row: Int) -> AddOnCard {
         let module = shown[row]

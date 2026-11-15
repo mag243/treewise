@@ -21,6 +21,7 @@ All notable changes to Treewise are recorded here. The format follows
 - Add-ons are described the same way whatever they do, so a second kind of add-on fits beside those that propose names.
 
 ### Fixed
+- Settings > Add-ons showed an add-on twice when it was dragged before its trial took the free add-on's place.
 - The overview of proposed names shows In This Folder only with the names around a new name, not as an empty heading for a file without one.
 - A new window's sidebar starts at its ideal width again, instead of the narrowest the window's first layout gave it.
 - A folder's name in the sidebar runs to near its edge before it is cut short, and shows whole while the pointer rests on it.

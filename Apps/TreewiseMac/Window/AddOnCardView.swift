@@ -17,7 +17,7 @@ final class AddOnCardView: NSView {
         let startTrial: @MainActor () -> Void
     }
 
-    private static let padding = NSSize(width: 12, height: 9)
+    static let padding = NSSize(width: 12, height: 9)
     private static let iconSize: CGFloat = 26
     private static let iconRadius: CGFloat = 6
     private static let iconInset: CGFloat = 4
@@ -26,16 +26,19 @@ final class AddOnCardView: NSView {
     private static let selectedEdge: CGFloat = 2
     /// The body starts under the name, past the icon.
     private static var bodyIndent: CGFloat { iconSize + headerSpacing }
-    private static let addOnSymbol = "puzzlepiece.extension.fill"
+    static let addOnSymbol = "puzzlepiece.extension.fill"
     /// The grip the icon turns into on a card that can be dragged, as the overview's
     /// (ADR 0065, ADR 0106).
-    private static let gripSymbol = "line.3.horizontal"
+    static let gripSymbol = "line.3.horizontal"
 
     /// The icon's symbol, which shows the grip while the pointer is on a card that can be
     /// dragged.
-    private let symbol = NSImageView()
+    let symbol = NSImageView()
+    /// The header, where the card is taken to be dragged, and its switch, which is clicked.
+    weak var headerView: NSView?
+    weak var switchView: NSView?
 
-    private let module: AddOnDescription
+    let module: AddOnDescription
     private let card: AddOnCard
     private let licence: ModuleLicenceState?
     private let actions: Actions
@@ -57,6 +60,7 @@ final class AddOnCardView: NSView {
         box.contentViewMargins = Self.padding
         let inner = width - 2 * Self.padding.width
         let header = header()
+        headerView = header
         Self.prefer(header.widthAnchor.constraint(equalToConstant: inner))
         var rows: [NSView] = [header]
         if isSelected {
@@ -77,8 +81,11 @@ final class AddOnCardView: NSView {
         if module.proposesNames {
             addTrackingArea(
                 NSTrackingArea(
-                    rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
-                    owner: self))
+                    rect: .zero,
+                    options: [
+                        .mouseEnteredAndExited, .mouseMoved, .cursorUpdate, .activeAlways,
+                        .inVisibleRect,
+                    ], owner: self))
         }
     }
 
@@ -94,24 +101,6 @@ final class AddOnCardView: NSView {
             line.trailingAnchor.constraint(equalTo: trailingAnchor),
             line.topAnchor.constraint(equalTo: header.bottomAnchor, constant: Self.bodySpacing),
         ])
-    }
-
-    // MARK: Dragging (ADR 0106)
-
-    override func mouseEntered(with event: NSEvent) {
-        show(Self.gripSymbol)
-    }
-
-    override func mouseExited(with event: NSEvent) {
-        show(Self.addOnSymbol)
-    }
-
-    override func resetCursorRects() {
-        if module.proposesNames { addCursorRect(bounds, cursor: .openHand) }
-    }
-
-    private func show(_ name: String) {
-        symbol.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
     }
 
     @available(*, unavailable)
@@ -145,6 +134,7 @@ final class AddOnCardView: NSView {
         var views: [NSView] = [icon(), titles]
         if let badge = badge() { views.append(badge) }
         let toggle = card.showsSwitch ? control() : nil
+        switchView = toggle
         // The name at the leading edge, the badge and the switch at the trailing one.
         let header = NSStackView()
         header.setViews(Array(views.prefix(2)), in: .leading)

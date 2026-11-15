@@ -15,6 +15,8 @@ extension UIReviewTests {
         let list = window.tables.firstMatch
         XCTAssertTrue(list.groups.firstMatch.waitForExistence(timeout: Self.timeout), "cards show")
         for card in cardNames(in: list) {
+            // A trial started can take a free card's place before it is reached.
+            guard cardNames(in: list).contains(card) else { continue }
             choose(card, in: list)
             let tryIt = window.buttons["Try for 14 Days"]
             if tryIt.exists {
@@ -46,6 +48,7 @@ extension UIReviewTests {
         }
         try reviewCards(in: window, appearance: appearance, startingTrials: false)
         hoverFirstCard(in: window, appearance: appearance)
+        try dragCardsByHeaderOnly(in: window)
         try reviewCards(in: window, appearance: appearance, startingTrials: true)
         checkCardMenu(in: window)
         open("Templates", in: window)
@@ -75,6 +78,8 @@ extension UIReviewTests {
         XCTAssertTrue(list.groups.firstMatch.waitForExistence(timeout: Self.timeout), "cards show")
         let name = startingTrials ? "settings-add-ons-trial" : "settings-add-ons"
         for card in cardNames(in: list) {
+            // A trial started can take a free card's place before it is reached.
+            guard cardNames(in: list).contains(card) else { continue }
             choose(card, in: list)
             let tryIt = window.buttons["Try for 14 Days"]
             if startingTrials, tryIt.exists {
@@ -108,7 +113,8 @@ extension UIReviewTests {
 
     @MainActor
     func choose(_ card: String, in list: XCUIElement) {
-        let title = list.groups[card].staticTexts[card]
+        // The first, so a card shown twice is left to the checks to find, not the walk.
+        let title = list.groups[card].firstMatch.staticTexts[card].firstMatch
         XCTAssertTrue(title.waitForExistence(timeout: Self.timeout), "\(card) shows")
         title.click()
         settleScreen()
@@ -122,7 +128,7 @@ extension UIReviewTests {
         guard let card = cardNames(in: list).first(where: { $0.hasPrefix("Advanced") }) else {
             return
         }
-        list.groups[card].staticTexts[card].rightClick()
+        list.groups[card].firstMatch.staticTexts[card].firstMatch.rightClick()
         let menu = list.menus.firstMatch
         XCTAssertTrue(menu.waitForExistence(timeout: Self.timeout), "the card has a menu")
         // The only add-on that proposes names stays on, so it offers no Turn Off.
@@ -136,9 +142,43 @@ extension UIReviewTests {
     private func hoverFirstCard(in window: XCUIElement, appearance: String?) {
         let list = window.tables.firstMatch
         guard let card = cardNames(in: list).first else { return }
-        list.groups[card].staticTexts[card].hover()
+        list.groups[card].firstMatch.staticTexts[card].firstMatch.hover()
         settleScreen()
         review(
             window, as: "settings-add-ons-hover", appearance: appearance, isSettingsPane: true)
+    }
+
+    /// A card is taken by its header only (ADR 0106): a drag from an open card's body leaves
+    /// the order alone, one from its title moves it.
+    @MainActor
+    private func dragCardsByHeaderOnly(in window: XCUIElement) throws {
+        let list = window.tables.firstMatch
+        let names = cardNames(in: list)
+        guard names.count >= 2, let last = names.last(where: { $0.hasPrefix("Advanced") }),
+            let first = names.first, first != last
+        else { return }
+        choose(last, in: list)
+        let card = list.groups[last].firstMatch
+        // A text in the body that is not selectable, as its summary is, so a drag there is
+        // the list's to start or not.
+        let body = card.staticTexts.matching(NSPredicate(format: "value == 'Recognizes'"))
+            .firstMatch
+        let target = list.groups[first].firstMatch.staticTexts[first].firstMatch
+        XCTAssertTrue(body.waitForExistence(timeout: Self.timeout), "the card is open")
+        drag(body, onto: target)
+        XCTAssertEqual(cardNames(in: list).first, first, "a drag from the body moves nothing")
+        drag(card.staticTexts[last].firstMatch, onto: target)
+        XCTAssertTrue(
+            XCUIApplication().eventually { cardNames(in: list).first == last },
+            "a drag from the title moves the card")
+    }
+
+    @MainActor
+    private func drag(_ source: XCUIElement, onto target: XCUIElement) {
+        let centre = CGVector(dx: 0.5, dy: 0.5)
+        source.coordinate(withNormalizedOffset: centre).click(
+            forDuration: 0.5, thenDragTo: target.coordinate(withNormalizedOffset: centre),
+            withVelocity: .slow, thenHoldForDuration: 0.3)
+        settleScreen()
     }
 }
