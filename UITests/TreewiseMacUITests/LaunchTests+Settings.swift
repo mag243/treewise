@@ -117,6 +117,10 @@ extension LaunchTests {
         advanced.click()
         XCTAssertTrue(tryIt.appeared(timeout: Self.launchTimeout), "the card selected opens")
         XCTAssertEqual(recognizes.count, 1, "the card before folds")
+        XCTAssertTrue(tryIt.isHittable, "the card opened shows whole, not cut off")
+        XCTAssertLessThan(
+            advanced.frame.minY - settings.staticTexts["Folder Pattern"].frame.minY,
+            settings.frame.height / 4, "the card folded takes no more room than a folded card")
     }
 
     @MainActor

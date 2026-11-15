@@ -26,7 +26,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private static let dragType = NSPasteboard.PasteboardType(
         "me.m-domain.treewise.template-folder")
     private static let pathSeparator = "\u{1F}"
-    private static let height: CGFloat = 230
+    private static let height: CGFloat = 190
     private static let iconSize: CGFloat = 16
     /// The space between the tree and its buttons, as in Settings' Names tab.
     private static let spacing: CGFloat = 8
@@ -67,18 +67,13 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("folder"))
         outline.addTableColumn(column)
         outline.outlineTableColumn = column
-        outline.headerView = nil
         outline.dataSource = self
         outline.delegate = self
         outline.doubleAction = #selector(renameSelected)
         outline.target = self
         outline.registerForDraggedTypes([Self.dragType])
         outline.setAccessibilityIdentifier("templateTreeEditor")
-        let scroll = NSScrollView()
-        scroll.documentView = outline
-        scroll.hasVerticalScroller = true
-        scroll.borderType = .bezelBorder
-        scroll.heightAnchor.constraint(equalToConstant: Self.height).isActive = true
+        let scroll = SettingsList.scroll(outline, height: Self.height)
         insert.addItem(withTitle: String(localized: "Insert Field"))
         for (field, title) in Self.fields {
             let item = NSMenuItem(

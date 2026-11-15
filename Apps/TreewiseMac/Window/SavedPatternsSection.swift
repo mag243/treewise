@@ -9,7 +9,7 @@ import TreewiseUI
 @MainActor
 final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDelegate {
     private static let listHeight: CGFloat = 150
-    private static let width: CGFloat = 440
+    private static let width = SettingsList.width
     private static let spacing: CGFloat = 8
     private static let checkSpacing: CGFloat = 6
     private static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.pattern")
@@ -41,16 +41,12 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
 
     /// The section's views, one under the other.
     func makeView() -> NSView {
-        let header = NSTextField(labelWithString: String(localized: "Name Patterns"))
-        header.font = .boldSystemFont(ofSize: NSFont.systemFontSize)
-        let note = NSTextField(
-            wrappingLabelWithString: String(
+        let header = SettingsList.heading(String(localized: "Name Patterns"))
+        let note = SettingsList.note(
+            String(
                 localized:
                     "The default is offered to a folder without a pattern of its own. A folder keeps the version of a pattern it uses, and is offered a newer one."
             ))
-        note.font = .preferredFont(forTextStyle: .caption1)
-        note.textColor = .secondaryLabelColor
-        note.preferredMaxLayoutWidth = Self.width
         let stack = NSStackView(views: [header, list(), buttons(), editor.makeView(), note])
         stack.orientation = .vertical
         stack.alignment = .leading
@@ -62,21 +58,11 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
     private func list() -> NSView {
         let column = NSTableColumn(identifier: .init("pattern"))
         table.addTableColumn(column)
-        table.headerView = nil
         table.dataSource = self
         table.delegate = self
-        table.style = .fullWidth
         table.registerForDraggedTypes([Self.dragType])
         table.setAccessibilityLabel(String(localized: "Name Patterns"))
-        let scroll = NSScrollView()
-        scroll.documentView = table
-        scroll.hasVerticalScroller = true
-        scroll.borderType = .bezelBorder
-        NSLayoutConstraint.activate([
-            scroll.widthAnchor.constraint(equalToConstant: Self.width),
-            scroll.heightAnchor.constraint(equalToConstant: Self.listHeight),
-        ])
-        return scroll
+        return SettingsList.scroll(table, height: Self.listHeight)
     }
 
     private func buttons() -> NSView {

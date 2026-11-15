@@ -24,8 +24,9 @@ extension LaunchTests {
         let tree = templates.outlines["templateTreeEditor"]
         XCTAssertTrue(field("Contract", in: tree).exists, "its folders show below it")
         XCTAssertTrue(field("Invoices", in: tree).exists)
-        XCTAssertGreaterThan(
-            tree.frame.width, templates.frame.width * 0.8, "the tree takes the tab's width")
+        XCTAssertEqual(
+            tree.frame.width, templates.tables["templatesList"].frame.width, accuracy: 1,
+            "the tree is as wide as the list, as the Names tab's lists")
         let icon = tree.outlineRows.firstMatch.images.firstMatch
         XCTAssertLessThanOrEqual(icon.frame.height, Self.iconHeight, "a folder's icon is small")
         let below = [

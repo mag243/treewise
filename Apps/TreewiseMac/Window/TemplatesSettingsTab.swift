@@ -3,19 +3,20 @@ import TreewiseCore
 import TreewiseUI
 import UniformTypeIdentifiers
 
-/// Settings' Templates tab (ADR 0091, ADR 0095, ADR 0099): the saved templates, renamed in the
-/// list and deleted with −, Import… and Export…, and the tree of the one selected below,
-/// edited in place. It is Treewise's own, so it works without the add-on; while the add-on
-/// may work, a checkbox above them says whether a year's folder offers the folders of the
-/// year before it lacks (ADR 0102).
+/// Settings' Templates tab (ADR 0091, ADR 0095, ADR 0099), laid out as the Names tab: the
+/// saved templates under their heading, each with its number of folders, renamed in the list
+/// and deleted with −, Import… and Export…, and the tree of the one selected below, edited in
+/// place. It is Treewise's own, so it works without the add-on; while the add-on may work, a
+/// row below says whether a year's folder offers the folders of the year before it lacks
+/// (ADR 0102).
 @MainActor
 final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTableViewDelegate,
     NSTextFieldDelegate
 {
-    private static let padding: CGFloat = 20
     private static let spacing: CGFloat = 8
-    private static let listHeight: CGFloat = 110
-    private static let countWidth: CGFloat = 130
+    private static let groupSpacing: CGFloat = 20
+    private static let listHeight: CGFloat = 100
+    private static let countSpacing: CGFloat = 6
 
     private let model: FolderTemplatesModel
     private let editor: TemplateTreeEditor
@@ -23,8 +24,9 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     private let treeTitle = NSTextField(labelWithString: "")
     private let problem = NSTextField(wrappingLabelWithString: "")
     private let offersMissing = NSButton(
-        checkboxWithTitle: String(localized: "Offer missing folders from the year before"),
+        checkboxWithTitle: String(localized: "Offer from the year before"),
         target: nil, action: nil)
+    private let missingForm = SettingsForm()
     private lazy var remove = ActionButton(
         title: String(localized: "Delete Template"), symbol: "minus"
     ) { [weak self] in self?.deleteTemplate() }
@@ -47,45 +49,58 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     required init?(coder: NSCoder) { nil }
 
     override func loadView() {
-        let hint = NSTextField(
-            wrappingLabelWithString: String(
+        let hint = SettingsList.note(
+            String(
                 localized:
                     "Save a folder’s structure with Save Folder Structure as Template… on the folder. Double-click a name to rename it."
             ))
-        hint.textColor = .secondaryLabelColor
         treeTitle.font = .systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
         problem.textColor = .systemOrange
-        offersMissing.target = self
-        offersMissing.action = #selector(offersMissingChanged)
-        offersMissing.setAccessibilityIdentifier("offersMissingFolders")
-        let stack = NSStackView(views: [
-            offersMissing, hint, list(), footer(), treeTitle, editor.makeView(), problem,
-        ])
+        problem.preferredMaxLayoutWidth = SettingsList.width
+        let section = [
+            SettingsList.heading(String(localized: "Folder Templates")), list(), footer(), hint,
+        ]
+        let tree = [treeTitle, editor.makeView(), problem]
+        let stack = NSStackView(views: section + tree + [missingFolders()])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = Self.spacing
+        stack.setCustomSpacing(Self.groupSpacing, after: hint)
+        stack.setCustomSpacing(Self.groupSpacing, after: problem)
         stack.translatesAutoresizingMaskIntoConstraints = false
-        // As the other panes, the tab has the window's size, and its contents its width.
+        for view in section + tree {
+            view.widthAnchor.constraint(equalToConstant: SettingsList.width).isActive = true
+        }
+        // As the other panes, the tab has the window's size, its contents in the middle.
         let size = SettingsWindow.paneSize
         let pane = NSView(frame: NSRect(origin: .zero, size: size))
         pane.addSubview(stack)
         NSLayoutConstraint.activate([
             pane.widthAnchor.constraint(equalToConstant: size.width),
             pane.heightAnchor.constraint(equalToConstant: size.height),
-            stack.topAnchor.constraint(equalTo: pane.topAnchor, constant: Self.padding),
-            stack.leadingAnchor.constraint(equalTo: pane.leadingAnchor, constant: Self.padding),
-            stack.trailingAnchor.constraint(equalTo: pane.trailingAnchor, constant: -Self.padding),
+            stack.topAnchor.constraint(equalTo: pane.topAnchor, constant: SettingsForm.margin),
+            stack.centerXAnchor.constraint(equalTo: pane.centerXAnchor),
         ])
-        for view in stack.arrangedSubviews {
-            view.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        }
         view = pane
         Observing.follow(self) { $0.update() }
     }
 
+    /// Missing folders: Offer from the year before, with its note, as the Names tab's rows
+    /// (ADR 0102).
+    private func missingFolders() -> NSView {
+        offersMissing.target = self
+        offersMissing.action = #selector(offersMissingChanged)
+        offersMissing.setAccessibilityIdentifier("offersMissingFolders")
+        missingForm.row("Missing folders:", offersMissing)
+        missingForm.note(
+            "A year’s folder offers, in a bar, the folders of the year before it lacks. Add Missing Folders… on the folder offers them too.",
+            width: SettingsList.width / 2)
+        return missingForm.grid
+    }
+
     override func viewWillAppear() {
         super.viewWillAppear()
-        offersMissing.isHidden = !FolderTemplatesService.addOnMayWork
+        missingForm.grid.isHidden = !FolderTemplatesService.addOnMayWork
         offersMissing.state = AppServices.settings.offersMissingFolders ? .on : .off
         Task { await model.load() }
     }
@@ -95,23 +110,13 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     }
 
     private func list() -> NSView {
-        let name = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("name"))
-        let count = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("count"))
-        count.width = Self.countWidth
-        table.addTableColumn(name)
-        table.addTableColumn(count)
-        table.headerView = nil
+        table.addTableColumn(NSTableColumn(identifier: NSUserInterfaceItemIdentifier("name")))
         table.dataSource = self
         table.delegate = self
         table.target = self
         table.doubleAction = #selector(renameSelected)
         table.setAccessibilityIdentifier("templatesList")
-        let scroll = NSScrollView()
-        scroll.documentView = table
-        scroll.hasVerticalScroller = true
-        scroll.borderType = .bezelBorder
-        scroll.heightAnchor.constraint(equalToConstant: Self.listHeight).isActive = true
-        return scroll
+        return SettingsList.scroll(table, height: Self.listHeight)
     }
 
     private func footer() -> NSView {
@@ -136,6 +141,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         }
         showSelected()
         problem.stringValue = model.problem.map(TemplateProblemText.text(for:)) ?? ""
+        problem.isHidden = model.problem == nil
         remove.isEnabled = selected != nil
         exportButton.isEnabled = selected != nil
     }
@@ -157,8 +163,11 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     }
 
     @objc private func renameSelected() {
-        guard table.clickedRow >= 0 else { return }
-        table.editColumn(0, row: table.clickedRow, with: nil, select: true)
+        guard table.clickedRow >= 0,
+            let cell = table.view(atColumn: 0, row: table.clickedRow, makeIfNecessary: false),
+            let name = cell.subviews.first as? NSTextField
+        else { return }
+        view.window?.makeFirstResponder(name)
     }
 
     private func importTemplate() {
@@ -195,22 +204,23 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         -> NSView?
     {
         let template = model.templates[row]
-        guard tableColumn?.identifier.rawValue == "name" else {
-            let count = TemplateTreeList.rows(of: template.root).count
-            let text =
-                template.hasYear
-                ? String(localized: "\(count) folders · {year}")
-                : String(localized: "\(count) folders")
-            let label = NSTextField(labelWithString: text)
-            label.textColor = .secondaryLabelColor
-            return label
-        }
         let name = NSTextField(string: template.name)
         name.isBordered = false
         name.drawsBackground = false
         name.isEditable = true
         name.delegate = self
-        return name
+        name.setContentHuggingPriority(.required, for: .horizontal)
+        let folders = TemplateTreeList.rows(of: template.root).count
+        let count = NSTextField(
+            labelWithString: template.hasYear
+                ? String(localized: "\(folders) folders · {year}")
+                : String(localized: "\(folders) folders"))
+        count.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        count.textColor = .secondaryLabelColor
+        let cell = NSStackView(views: [name, count])
+        cell.alignment = .firstBaseline
+        cell.spacing = Self.countSpacing
+        return cell
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {

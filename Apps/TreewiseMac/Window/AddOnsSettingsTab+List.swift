@@ -64,6 +64,8 @@ extension AddOnsSettingsTab {
         var changed = IndexSet(integer: row)
         if let before { changed.insert(before) }
         table.reloadData(forRowIndexes: changed, columnIndexes: [0])
+        // A card folds and another opens, so both rows take the height of their new card.
+        table.noteHeightOfRows(withIndexesChanged: changed)
         revealSelection()
     }
 

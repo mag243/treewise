@@ -721,6 +721,22 @@
         }
       }
     },
+    "A year’s folder offers, in a bar, the folders of the year before it lacks. Add Missing Folders… on the folder offers them too." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Jahresordner bietet in einer Leiste die Ordner des Vorjahres an, die ihm fehlen. Auch „Fehlende Ordner hinzufügen …“ am Ordner bietet sie an."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een jaarmap biedt in een balk de mappen van het jaar ervoor aan die hij mist. Ook ‘Voeg ontbrekende mappen toe…’ op de map biedt ze aan."
+          }
+        }
+      }
+    },
     "About Treewise" : {
       "localizations" : {
         "de" : {
@@ -2564,6 +2580,22 @@
         }
       }
     },
+    "Folder Templates" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnervorlagen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapsjablonen"
+          }
+        }
+      }
+    },
     "Folder settings:" : {
       "localizations" : {
         "de" : {
@@ -3403,6 +3435,22 @@
         }
       }
     },
+    "Missing folders:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehlende Ordner:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ontbrekende mappen:"
+          }
+        }
+      }
+    },
     "Move Down" : {
       "localizations" : {
         "de" : {
@@ -4007,18 +4055,18 @@
         }
       }
     },
-    "Offer missing folders from the year before" : {
+    "Offer from the year before" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fehlende Ordner aus dem Vorjahr anbieten"
+            "value" : "Aus dem Vorjahr anbieten"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bied ontbrekende mappen uit het jaar ervoor aan"
+            "value" : "Bied aan uit het jaar ervoor"
           }
         }
       }

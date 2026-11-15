@@ -15,7 +15,11 @@ All notable changes to Treewise are recorded here. The format follows
 - Folder Structure Templates, a paid add-on with its own 14-day trial, writes a year's folder and that year in the names below it as `{year}` when a structure is saved, so a template makes any year's folders. It also turns folders for each month, quarter or half, from the first on, into one folder that repeats. With it, an empty year's folder offers the folders of the same folder a year before in a bar above its list, and a folder can offer one template for every new folder in it, or nothing. A template saved with it keeps each folder's name settings: which add-ons are on, their order and their patterns. The folders made from it propose names at once, as the folders it was saved from did. Settings > Templates shows them for the folder selected, with Remove. A year's folder that lacks folders the year before has offers them in a bar, as `2027 lacks 1 folder of 2026.`, with Create Folders… and, for the one `{year}` template that lacks them too, Add to Template. Its close button hides those folders or every one in that folder, and Settings > Templates turns the bar off. Add Missing Folders from 2026… in the context menu and the File menu offers them by hand.
 
 ### Changed
+- Settings > Templates is laid out as Settings > Names: the templates under their heading in the same kind of list, each with its number of folders in small grey text after its name.
 - Add-ons are described the same way whatever they do, so a second kind of add-on fits beside those that propose names.
+
+### Fixed
+- Settings > Add-ons: choosing another add-on's card left the card before as tall as when it was open and cut off the one chosen.
 
 ## [0.8.5] - 2026-11-13
 
