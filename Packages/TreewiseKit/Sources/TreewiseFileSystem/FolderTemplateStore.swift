@@ -63,6 +63,7 @@ public actor FolderTemplateStore: FolderTemplateStoring {
 
     /// Saves the template in a file as a new one, with a new id and, when its name is taken,
     /// `name 2`, `name 3`, …
+    /// - Throws: the file's problem, or `.notSaved` when the template cannot be kept.
     public func importTemplate(from data: Data) throws(FolderTemplateFile.Problem)
         -> FolderTemplate
     {
@@ -72,7 +73,8 @@ public actor FolderTemplateStore: FolderTemplateStoring {
         do {
             try save(template)
         } catch {
-            throw .unreadable
+            Self.logger.error("Imported template not saved: \(error.localizedDescription)")
+            throw .notSaved
         }
         return template
     }

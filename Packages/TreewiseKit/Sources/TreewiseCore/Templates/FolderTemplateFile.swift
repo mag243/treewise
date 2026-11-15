@@ -16,6 +16,8 @@ public enum FolderTemplateFile {
         case newerFormat
         /// The file's folders cannot be made.
         case folders(FolderTree.Problem)
+        /// The file was read, but the template could not be kept.
+        case notSaved
     }
 
     private struct Envelope: Codable {

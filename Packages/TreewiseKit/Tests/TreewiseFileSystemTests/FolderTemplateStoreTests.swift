@@ -71,6 +71,20 @@ import TreewiseTestSupport
         #expect(await store.templates().count == 2)
     }
 
+    @Test func saysAnImportThatCannotBeSavedIsNotSaved() async throws {
+        try await store.save(Self.year)
+        let folder = root.url("Templates")
+        try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: folder.path)
+        defer {
+            try? FileManager.default.setAttributes(
+                [.posixPermissions: 0o755], ofItemAtPath: folder.path)
+        }
+        let data = try FolderTemplateFile.data(of: Self.client)
+        await #expect(throws: FolderTemplateFile.Problem.notSaved) {
+            try await store.importTemplate(from: data)
+        }
+    }
+
     @Test func refusesToImportAFileThatIsNoTemplate() async {
         await #expect(throws: FolderTemplateFile.Problem.unreadable) {
             try await store.importTemplate(from: Data("nope".utf8))

@@ -93,6 +93,8 @@ public final class FolderTemplatesModel {
         do {
             _ = try await store.importTemplate(from: data)
             problem = nil
+        } catch .notSaved {
+            problem = .notSaved
         } catch {
             problem = .file(error)
         }
