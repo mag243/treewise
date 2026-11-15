@@ -14,7 +14,6 @@ final class NameReviewRowView: NSView {
     private static let spacing: CGFloat = 8
     private static let sideSpacing: CGFloat = 4
     private static let skippedAlpha: CGFloat = 0.5
-    private static let lookOpacity: CGFloat = 0.25
     private static let verticalPadding: CGFloat = 4
 
     let id: FileItem.ID
@@ -194,39 +193,25 @@ final class NameReviewRowView: NSView {
             : String(localized: "No proposal. Type a name.")
     }
 
-    /// The gap, or the date of a name whose date needs a look, for the field being edited.
+    /// The gap, or the date of a name whose date needs a look.
     private func lookMarks(in name: String, _ entry: NameProposalSession.Entry) -> [ColoredRange] {
-        let text = name as NSString
-        let gap = text.range(of: NameTemplate.gap)
-        if gap.location != NSNotFound { return [ColoredRange(range: gap, tint: .gap)] }
-        guard entry.currentDateSource != nil else { return [] }
-        let date = text.range(of: Self.dateText(in: name))
-        return date.location == NSNotFound || date.length == text.length
-            ? [] : [ColoredRange(range: date, tint: .dateToCheck)]
+        guard
+            let mark = NameReviewLook.mark(in: name, dateFromFile: entry.currentDateSource != nil)
+        else { return [] }
+        let range = NSRange(mark.range, in: name)
+        switch mark.kind {
+        case .gap: return [ColoredRange(range: range, tint: .gap)]
+        case .dateToCheck: return [ColoredRange(range: range, tint: .dateToCheck)]
+        }
     }
 
     /// Colours a gap, and the date of a name whose date needs a look.
     private func marked(_ name: String, _ entry: NameProposalSession.Entry) -> NSAttributedString {
         let text = NSMutableAttributedString(
             string: name, attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize)])
-        let gap = (name as NSString).range(of: NameTemplate.gap)
-        if gap.location != NSNotFound {
-            text.addAttribute(
-                .backgroundColor,
-                value: NSColor.controlAccentColor.withAlphaComponent(Self.lookOpacity), range: gap)
-        } else if entry.currentDateSource != nil {
-            let date = (name as NSString).range(of: Self.dateText(in: name))
-            if date.location != NSNotFound {
-                text.addAttribute(
-                    .backgroundColor,
-                    value: NSColor.systemOrange.withAlphaComponent(Self.lookOpacity), range: date)
-            }
+        for mark in lookMarks(in: name, entry) {
+            text.addAttribute(.backgroundColor, value: mark.color, range: mark.range)
         }
         return text
-    }
-
-    private static func dateText(in name: String) -> String {
-        name.range(of: "[0-9]{2,4}[.-][0-9]{2}[.-][0-9]{2,4}|[0-9]{8}", options: .regularExpression)
-            .map { String(name[$0]) } ?? name
     }
 }
