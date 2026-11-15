@@ -15,44 +15,42 @@ enum FolderTemplatesService {
     /// The templates as menus, sheets and Settings show them.
     static let templates = FolderTemplatesModel(store: store)
 
-    /// The structure Copy Folder Structure copied, for Paste Folder Structure… in any window
-    /// (ADR 0099); nil until a folder's structure is copied.
-    static var copiedStructure: FolderTree?
+    /// What changes while Treewise runs: the copied structure and the add-on's state.
+    static let state = FolderTemplatesState()
 
-    /// The id of the add-on that makes folder structures, when the build carries one.
-    private static var addOnID: String?
-    /// Whether that add-on may work, with a licence or in its trial (ADR 0088).
-    private static var mayWork = false
+    /// The structure Copy Folder Structure copied (ADR 0099).
+    static var copiedStructure: FolderTree? {
+        get { state.copiedStructure }
+        set { state.copiedStructure = newValue }
+    }
 
-    /// The name of each add-on the build carries, by its id, for the name settings a
-    /// template keeps (ADR 0101).
-    private(set) static var addOnNames: [String: String] = [:]
+    /// The name of each add-on the build carries, by its id (ADR 0101).
+    static var addOnNames: [String: String] { state.addOnNames }
 
     /// Whether the build carries the add-on and it may work now.
-    static var addOnMayWork: Bool { addOnID != nil && mayWork }
+    static var addOnMayWork: Bool { state.addOnMayWork }
 
     /// Finds the add-on and its licence state, and reads the templates.
     static func refresh(licences: LicenceKeeper?) async {
         let host = NameReviewWindow.host
         let modules = (try? await host.availableModules()) ?? []
-        addOnNames = Dictionary(
+        let names = Dictionary(
             modules.map { ($0.id, NameReviewText.name(of: $0)) },
             uniquingKeysWith: { first, _ in first })
         let found = modules.first(where: \.makesFolderStructures)
-        addOnID = found?.id
+        var mayWork = false
         if let found {
-            let state = try? await host.licenceState(
+            let licence = try? await host.licenceState(
                 moduleID: found.id, licence: licences?.context() ?? .none)
-            mayWork = state?.mayWork ?? true
-        } else {
-            mayWork = false
+            mayWork = licence?.mayWork ?? true
         }
+        state.found(addOnID: found?.id, mayWork: mayWork, addOnNames: names)
         await templates.load()
     }
 
     /// The add-on to ask, while it may work.
     static func addOn(licences: LicenceKeeper?) -> FolderStructureAddOn? {
-        guard let addOnID, mayWork else { return nil }
+        guard let addOnID = state.addOnID, state.mayWork else { return nil }
         return FolderStructureAddOn(
             host: NameReviewWindow.host, moduleID: addOnID,
             licence: { licences?.context() ?? .none })

@@ -90,7 +90,6 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
 
     override func viewWillAppear() {
         super.viewWillAppear()
-        missingForm.grid.isHidden = !FolderTemplatesService.addOnMayWork
         offersMissing.state = AppServices.settings.offersMissingFolders ? .on : .off
         Task { await model.load() }
     }
@@ -137,6 +136,8 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         problem.isHidden = model.problem == nil
         remove.isEnabled = selected != nil
         exportButton.isEnabled = selected != nil
+        // Followed, so a licence entered while the tab is open shows the setting at once.
+        missingForm.grid.isHidden = !FolderTemplatesService.addOnMayWork
     }
 
     private func showSelected() {
@@ -245,6 +246,8 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         showSelected()
         remove.isEnabled = selected != nil
         exportButton.isEnabled = selected != nil
+        // Followed, so a licence entered while the tab is open shows the setting at once.
+        missingForm.grid.isHidden = !FolderTemplatesService.addOnMayWork
     }
 
     func controlTextDidEndEditing(_ notification: Notification) {
