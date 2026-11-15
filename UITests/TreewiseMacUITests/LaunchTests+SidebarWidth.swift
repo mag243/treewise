@@ -35,9 +35,12 @@ extension LaunchTests {
         let dragged = sidebar.frame.width
         app.typeKey("n", modifierFlags: .command)
         XCTAssertTrue(app.eventually { app.windows.count >= 2 }, "a new window opens")
-        let newSidebar = app.windows.firstMatch.outlines.firstMatch
+        // Both windows, not whichever is first: the new one may open behind on a narrow screen.
         XCTAssertTrue(
-            app.eventually { abs(newSidebar.frame.width - dragged) < 2 },
-            "the new window takes the width dragged to")
+            app.eventually {
+                app.windows.allElementsBoundByIndex.allSatisfy {
+                    abs($0.outlines.firstMatch.frame.width - dragged) < 2
+                }
+            }, "the new window takes the width dragged to")
     }
 }

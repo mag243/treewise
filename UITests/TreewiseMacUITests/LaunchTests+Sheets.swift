@@ -18,7 +18,10 @@ extension LaunchTests {
         XCTAssertTrue(
             app.windows.element(boundBy: 1).appeared(timeout: Self.launchTimeout),
             "a new window opens, as on every Mac")
-        XCTAssertTrue(app.sheets.firstMatch.exists, "and the sheet still waits for an answer")
+        // The sheet is on the window it was opened in, whichever window is in front now.
+        XCTAssertEqual(
+            app.windows.containing(.sheet, identifier: nil).count, 1,
+            "and the sheet still waits for an answer")
     }
 
     @MainActor

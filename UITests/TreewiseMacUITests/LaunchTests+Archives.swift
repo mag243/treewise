@@ -183,11 +183,8 @@ extension LaunchTests {
             withVelocity: .slow, thenHoldForDuration: Self.dragHold)
 
         let landed = root.appendingPathComponent("Projects/inside.txt").path
-        let deadline = Date().addingTimeInterval(Self.launchTimeout)
-        while !FileManager.default.fileExists(atPath: landed), Date() < deadline {
-            Thread.sleep(forTimeInterval: Self.landingPoll)
-        }
-        XCTAssertTrue(FileManager.default.fileExists(atPath: landed), "the file lands")
+        XCTAssertTrue(
+            app.eventually { FileManager.default.fileExists(atPath: landed) }, "the file lands")
         assertQuitsPromptly(app)
     }
 
@@ -274,20 +271,18 @@ extension LaunchTests {
         XCTAssertTrue(inside.appeared(timeout: Self.launchTimeout))
         let refused = outside.appendingPathComponent("inside.txt").path
         try drag(inside, in: app, to: outside)
-        Thread.sleep(forTimeInterval: Self.settle)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: refused), "outside: nothing lands")
+        // The sheet comes once the drop is refused, so after it nothing can land any more.
         let alert = window.sheets.firstMatch
         XCTAssertTrue(alert.appeared(timeout: Self.launchTimeout), "the window tells why")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: refused), "outside: nothing lands")
         alert.buttons["OK"].click()
 
         try drag(inside, in: app, to: allowed)
 
         let landed = allowed.appendingPathComponent("inside.txt").path
-        let deadline = Date().addingTimeInterval(Self.launchTimeout)
-        while !FileManager.default.fileExists(atPath: landed), Date() < deadline {
-            Thread.sleep(forTimeInterval: Self.landingPoll)
-        }
-        XCTAssertTrue(FileManager.default.fileExists(atPath: landed), "inside: the file lands")
+        XCTAssertTrue(
+            app.eventually { FileManager.default.fileExists(atPath: landed) },
+            "inside: the file lands")
         XCTAssertEqual(try String(contentsOfFile: landed, encoding: .utf8), "from the archive")
     }
 
@@ -355,10 +350,8 @@ extension LaunchTests {
             stride(from: 0.35, through: 0.95, by: 0.1).map { dx in CGVector(dx: dx, dy: dy) }
         }
     }
-    private static let settle: TimeInterval = 2
     private static let finderGrabHeight: CGFloat = 8
     private static let finderGap: CGFloat = 20
 
-    private static let landingPoll: TimeInterval = 0.2
     private static let dragHold: TimeInterval = 0.6
 }
