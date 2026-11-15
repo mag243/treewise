@@ -40,9 +40,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private static let belowRootOnly: Set<String> = ["{month:MM MMMM}", "Q{quarter}", "H{half}"]
 
     private let model: FolderTemplatesModel
-    private let outline = NSOutlineView()
+    let outline = NSOutlineView()
     private var root: Node?
-    private var templateID: String?
+    var templateID: String?
     /// The template shown, so a change elsewhere in the model leaves its tree, and a name
     /// being edited in it, alone.
     private var shown: FolderTemplate?
@@ -54,8 +54,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private lazy var remove = ActionButton(
         title: String(localized: "Delete Folder"), symbol: "minus"
     ) { [weak self] in self?.removeFolder() }
-    private let insert = NSPopUpButton(frame: .zero, pullsDown: true)
+    let insert = NSPopUpButton(frame: .zero, pullsDown: true)
     private let namesLine = TemplateNamesLine()
+    private var contextMenu: SettingsListMenu?
 
     init(model: FolderTemplatesModel) {
         self.model = model
@@ -74,6 +75,9 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         outline.registerForDraggedTypes([Self.dragType])
         outline.setAccessibilityIdentifier("templateTreeEditor")
         let scroll = SettingsList.scroll(outline, height: Self.height)
+        contextMenu = SettingsListMenu(for: outline) { [weak self] _ in
+            self?.folderMenuItems() ?? []
+        }
         insert.addItem(withTitle: String(localized: "Insert Field"))
         for (field, title) in Self.fields {
             let item = NSMenuItem(
@@ -120,7 +124,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         if pending.rename { renameSelected() }
     }
 
-    private var selectedNode: Node? { outline.item(atRow: outline.selectedRow) as? Node }
+    var selectedNode: Node? { outline.item(atRow: outline.selectedRow) as? Node }
 
     /// Selects the folder at `path`, and says whether the tree shows it.
     @discardableResult
@@ -152,7 +156,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
 
     private var undoManager: UndoManager? { outline.window?.undoManager }
 
-    private func addFolder() {
+    func addFolder() {
         guard let id = templateID, let node = selectedNode else { return }
         let name = String(localized: "untitled folder")
         Task {
@@ -165,22 +169,22 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         }
     }
 
-    private func removeFolder() {
+    func removeFolder() {
         guard let id = templateID, let node = selectedNode, !node.path.isEmpty else { return }
         Task { await model.removeFolder(node.path, of: id, undoManager: undoManager) }
     }
 
-    private func removeNames() {
+    func removeNames() {
         guard let id = templateID, let node = selectedNode else { return }
         Task { await model.removeNames(at: node.path, of: id, undoManager: undoManager) }
     }
 
-    @objc private func renameSelected() {
+    @objc func renameSelected() {
         guard outline.selectedRow >= 0 else { return }
         outline.editColumn(0, row: outline.selectedRow, with: nil, select: true)
     }
 
-    @objc private func insertField(_ item: NSMenuItem) {
+    @objc func insertField(_ item: NSMenuItem) {
         guard let id = templateID, let node = selectedNode,
             let field = item.representedObject as? String
         else { return }

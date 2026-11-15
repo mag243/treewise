@@ -14,9 +14,10 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
     private static let checkSpacing: CGFloat = 6
     private static let dragType = NSPasteboard.PasteboardType("me.m-domain.treewise.pattern")
 
-    private let settings: BrowserSettings
-    private let table = NSTableView()
+    let settings: BrowserSettings
+    let table = NSTableView()
     private let editor: SavedPatternEditor
+    private var contextMenu: SettingsListMenu?
     private lazy var remove = ActionButton(
         title: String(localized: "Remove Pattern"), symbol: "minus"
     ) { [weak self] in self?.removeSelected() }
@@ -35,7 +36,7 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
     }
 
     private var patterns: SavedPatterns { settings.savedPatterns }
-    private var selected: SavedPattern? {
+    var selected: SavedPattern? {
         patterns.patterns.first { $0.id == selection } ?? patterns.patterns.first
     }
 
@@ -62,6 +63,9 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
         table.delegate = self
         table.registerForDraggedTypes([Self.dragType])
         table.setAccessibilityLabel(String(localized: "Name Patterns"))
+        contextMenu = SettingsListMenu(for: table) { [weak self] _ in
+            self?.patternMenuItems() ?? []
+        }
         return SettingsList.scroll(table, height: Self.listHeight)
     }
 
@@ -108,13 +112,13 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
         }
     }
 
-    private func removeSelected() {
+    func removeSelected() {
         guard let selected else { return }
         settings.savedPatterns.remove(selected.id)
         choose(settings.savedPatterns.patterns.first?.id)
     }
 
-    private func choose(_ id: SavedPattern.ID?) {
+    func choose(_ id: SavedPattern.ID?) {
         editor.commit()
         selection = id
         update()
@@ -188,7 +192,7 @@ final class SavedPatternsSection: NSObject, NSTableViewDataSource, NSTableViewDe
 @MainActor
 private final class SavedPatternEditor: NSObject, NSTextFieldDelegate {
 
-    private let settings: BrowserSettings
+    let settings: BrowserSettings
     private let name = NSTextField(string: "")
     private let pattern = PatternFieldDriver(text: "")
     private let problem = NSTextField(labelWithString: "")

@@ -46,6 +46,7 @@ extension UIReviewTests {
         }
         try reviewCards(in: window, appearance: appearance, startingTrials: false)
         try reviewCards(in: window, appearance: appearance, startingTrials: true)
+        checkCardMenu(in: window)
         open("Templates", in: window)
         let list = window.tables["templatesList"]
         let year = list.textFields.matching(NSPredicate(format: "value == %@", "Household Year"))
@@ -95,8 +96,13 @@ extension UIReviewTests {
     /// The cards of the list, each a group named after its add-on.
     @MainActor
     func cardNames(in list: XCUIElement) -> [String] {
-        list.groups.allElementsBoundByIndex
-            .filter { !$0.label.isEmpty && $0.staticTexts[$0.label].exists }.map(\.label)
+        // A card's title is a text in it with the card's own name; a long label, as the
+        // fields a card recognizes, is matched by value, as a query cannot take it.
+        list.groups.allElementsBoundByIndex.filter { group in
+            !group.label.isEmpty
+                && group.staticTexts.matching(NSPredicate(format: "value == %@", group.label))
+                    .firstMatch.exists
+        }.map(\.label)
     }
 
     @MainActor
@@ -105,5 +111,22 @@ extension UIReviewTests {
         XCTAssertTrue(title.waitForExistence(timeout: Self.timeout), "\(card) shows")
         title.click()
         settleScreen()
+    }
+
+    /// A right-click on a paid card offers what the card allows (ADR 0105): its order, and
+    /// no Turn Off while it is the only add-on that proposes names.
+    @MainActor
+    private func checkCardMenu(in window: XCUIElement) {
+        let list = window.tables.firstMatch
+        guard let card = cardNames(in: list).first(where: { $0.hasPrefix("Advanced") }) else {
+            return
+        }
+        list.groups[card].staticTexts[card].rightClick()
+        let menu = list.menus.firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: Self.timeout), "the card has a menu")
+        // The only add-on that proposes names stays on, so it offers no Turn Off.
+        XCTAssertTrue(menu.menuItems["Move Up"].exists, "the card's menu offers its order")
+        XCTAssertFalse(menu.menuItems["Turn Off"].exists, "nor a switch it cannot use")
+        window.typeKey(.escape, modifierFlags: [])
     }
 }

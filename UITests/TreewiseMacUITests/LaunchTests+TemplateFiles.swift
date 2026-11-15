@@ -55,12 +55,12 @@ extension LaunchTests {
     }
 
     @MainActor
-    private func templateName(_ name: String, in list: XCUIElement) -> XCUIElement {
+    func templateName(_ name: String, in list: XCUIElement) -> XCUIElement {
         list.textFields.matching(NSPredicate(format: "value == %@", name)).firstMatch
     }
 
     /// Two invented templates where the app keeps a UI test's: beside its root.
-    private func seedTwoTemplates() throws {
+    func seedTwoTemplates() throws {
         let root = try XCTUnwrap(self.root)
         let settings = root.deletingLastPathComponent().appendingPathComponent(
             root.lastPathComponent + "-folder-settings", isDirectory: true)

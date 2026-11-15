@@ -31,6 +31,7 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
     let licences: LicenceKeeper
     let table = NSTableView()
     private let scroll = NSScrollView()
+    private var contextMenu: SettingsListMenu?
     private lazy var enterKey = SettingsForm.button("Enter Licence Key…") { [weak self] in
         guard let self, let window = view.window else { return }
         LicenceKeyEntry.present(
@@ -111,6 +112,9 @@ final class AddOnsSettingsTab: NSViewController, NSTableViewDataSource, NSTableV
         table.delegate = self
         table.registerForDraggedTypes([Self.dragType])
         table.setAccessibilityLabel(String(localized: "Add-ons"))
+        contextMenu = SettingsListMenu(for: table) { [weak self] row in
+            self?.cardMenuItems(for: row) ?? []
+        }
         scroll.documentView = table
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true

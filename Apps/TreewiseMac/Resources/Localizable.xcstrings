@@ -2159,6 +2159,22 @@
         }
       }
     },
+    "Duplicate" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplizieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dupliceer"
+          }
+        }
+      }
+    },
     "Each Half" : {
       "localizations" : {
         "de" : {
@@ -4651,6 +4667,22 @@
         }
       }
     },
+    "Remove Name Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namenseinstellungen entfernen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder naaminstellingen"
+          }
+        }
+      }
+    },
     "Remove Pattern" : {
       "localizations" : {
         "de" : {
@@ -6299,6 +6331,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Probeer 14 dagen"
+          }
+        }
+      }
+    },
+    "Turn Off" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausschalten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zet uit"
+          }
+        }
+      }
+    },
+    "Turn On" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einschalten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zet aan"
           }
         }
       }

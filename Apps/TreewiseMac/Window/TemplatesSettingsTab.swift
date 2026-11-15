@@ -18,9 +18,10 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
     private static let listHeight: CGFloat = 100
     private static let countSpacing: CGFloat = 6
 
-    private let model: FolderTemplatesModel
+    private var contextMenu: SettingsListMenu?
+    let model: FolderTemplatesModel
     private let editor: TemplateTreeEditor
-    private let table = NSTableView()
+    let table = NSTableView()
     private let treeTitle = NSTextField(labelWithString: "")
     private let problem = NSTextField(wrappingLabelWithString: "")
     private let offersMissing = NSButton(
@@ -116,6 +117,9 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         table.target = self
         table.doubleAction = #selector(renameSelected)
         table.setAccessibilityIdentifier("templatesList")
+        contextMenu = SettingsListMenu(for: table) { [weak self] _ in
+            self?.templateMenuItems() ?? []
+        }
         return SettingsList.scroll(table, height: Self.listHeight)
     }
 
@@ -126,7 +130,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         return row
     }
 
-    private var selected: FolderTemplate? {
+    var selected: FolderTemplate? {
         model.templates.indices.contains(table.selectedRow)
             ? model.templates[table.selectedRow] : nil
     }
@@ -156,7 +160,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
 
     // MARK: Actions
 
-    private func deleteTemplate() {
+    func deleteTemplate() {
         guard let template = selected else { return }
         let undo = view.window?.undoManager
         Task { await model.delete(template.id, undoManager: undo) }
@@ -183,7 +187,7 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
         }
     }
 
-    private func exportTemplate() {
+    func exportTemplate() {
         guard let window = view.window, let template = selected else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.json]

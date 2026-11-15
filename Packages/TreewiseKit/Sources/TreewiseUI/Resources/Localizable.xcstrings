@@ -344,6 +344,22 @@
         }
       }
     },
+    "Duplicate" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplizieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dupliceer"
+          }
+        }
+      }
+    },
     "Extract" : {
       "localizations" : {
         "de" : {

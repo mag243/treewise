@@ -41,6 +41,24 @@ extension AddOnsSettingsTab {
         return height
     }
 
+    /// What the card of the add-on in `row` offers: on, switchable, trial or licence.
+    func addOnCard(for row: Int) -> AddOnCard {
+        let module = shown[row]
+        let id = module.id
+        let settings = settings
+        let defaultID = AddOnDescription.defaultID(among: modules)
+        let inNewFolders = working.filter {
+            settings.addOns.isOnInNewFolders($0, defaultID: defaultID)
+        }
+        return AddOnCard(
+            isOnSetting: settings.addOns.isOn(id), licence: states[id],
+            isLastWorking: working == [id], isLastInNewFolders: inNewFolders == [id],
+            isOnlyWorking: modules.filter {
+                $0.proposesNames && states[$0.id]?.mayWork ?? true
+            }.map(\.id) == [id],
+            makesFolderStructures: module.makesFolderStructures)
+    }
+
     /// The card of the add-on in `row`, open when it is the one selected.
     private func card(for row: Int) -> AddOnCardView {
         let module = shown[row]
@@ -48,16 +66,7 @@ extension AddOnsSettingsTab {
         let catalog = catalog
         let settings = settings
         let defaultID = AddOnDescription.defaultID(among: modules)
-        let inNewFolders = working.filter {
-            settings.addOns.isOnInNewFolders($0, defaultID: defaultID)
-        }
-        let card = AddOnCard(
-            isOnSetting: settings.addOns.isOn(id), licence: states[id],
-            isLastWorking: working == [id], isLastInNewFolders: inNewFolders == [id],
-            isOnlyWorking: modules.filter {
-                $0.proposesNames && states[$0.id]?.mayWork ?? true
-            }.map(\.id) == [id],
-            makesFolderStructures: module.makesFolderStructures)
+        let card = addOnCard(for: row)
         let view = AddOnCardView(
             module: module, card: card, licence: states[id], isSelected: id == selectedID,
             isOnInNewFolders: settings.addOns.isOnInNewFolders(id, defaultID: defaultID),
