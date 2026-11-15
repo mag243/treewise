@@ -122,6 +122,21 @@ import TreewiseUI
         #expect(settings.licenceKeys.isEmpty)
     }
 
+    @Test func saysAKeyUnlocksNothingWithoutPaidAddOns() async {
+        let host = ScriptedModuleHost(modules: [Self.free], answers: [:])
+        #expect(await keeper().enter(key: "TW1-abc.def", host: host) == .unlocksNothing)
+    }
+
+    @Test func saysAKeyCouldNotBeCheckedWhenOneAddOnDidNotAnswer() async {
+        let other = AddOnDescription(
+            id: "other", contentTypes: ["public.item"], neededContent: [], fields: [],
+            defaultTemplate: "{folder}")
+        let host = ScriptedModuleHost(modules: [Self.paid, other], answers: [:])
+        host.failLicenceChecks(of: "paid")
+        host.setLicenceState(.unlicensed, for: "other")
+        #expect(await keeper().enter(key: "TW1-abc.def", host: host) == .notChecked)
+    }
+
     @Test func saysAKeyCouldNotBeCheckedWhenNoAddOnAnswers() async {
         let host = ScriptedModuleHost(modules: [Self.paid], answers: [:])
         host.failLicenceChecks(of: "paid")
