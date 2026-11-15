@@ -152,6 +152,14 @@ public final class BrowserState {
         return ItemSort().sorted(folders, kinds: kinds)
     }
 
+    /// Whether a folder has subfolders, as `subfolders(of:)` counts them; unknown where the
+    /// folder does not read quickly, and the sidebar keeps its disclosure triangle until it
+    /// is opened (ADR 0108).
+    public func subfolderPresence(in folder: FileItem.ID) async -> SubfolderPresence {
+        guard fileSystem.readsQuickly(folder) else { return .unknown }
+        return (await subfolders(of: folder)).isEmpty ? .absent : .present
+    }
+
     /// Sorts by a column; the same column again flips the direction.
     public func sort(by column: SortColumn) {
         sort = sort.selecting(column)

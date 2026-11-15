@@ -173,6 +173,9 @@ public final class ChangingFileSystem: FileOperating {
         try await tree().favorites()
     }
 
+    /// Every folder in memory reads quickly.
+    public func readsQuickly(_ folder: FileItem.ID) -> Bool { true }
+
     public func availableCapacity(of folder: FileItem.ID) async throws -> Int64? {
         try await tree().availableCapacity(of: folder)
     }

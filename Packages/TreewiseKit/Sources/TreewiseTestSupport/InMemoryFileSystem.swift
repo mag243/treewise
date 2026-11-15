@@ -103,6 +103,9 @@ public struct InMemoryFileSystem: FileSystemProviding {
         favoriteIDs.compactMap { itemsByID[$0] }
     }
 
+    /// Every folder in memory reads quickly.
+    public func readsQuickly(_ folder: FileItem.ID) -> Bool { true }
+
     public func availableCapacity(of folder: FileItem.ID) async throws -> Int64? {
         if folder == .computer { return nil }
         guard let item = itemsByID[folder] else { throw FileSystemError.notFound(folder) }

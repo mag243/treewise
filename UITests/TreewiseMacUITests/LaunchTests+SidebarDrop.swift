@@ -37,4 +37,25 @@ extension LaunchTests {
             app.eventually { FileManager.default.fileExists(atPath: moved.path) },
             "the file is in the folder")
     }
+
+    /// A folder on the local disk without subfolders shows no disclosure triangle in the
+    /// sidebar (ADR 0108).
+    @MainActor
+    func testAnEmptyFolderInTheSidebarHasNoDisclosureTriangle() throws {
+        let root = try XCTUnwrap(self.root)
+        try FileManager.default.createDirectory(
+            at: root.appendingPathComponent("Empty"), withIntermediateDirectories: false)
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        let documents = window.tables.staticTexts["Documents"]
+        XCTAssertTrue(documents.appeared(timeout: Self.launchTimeout))
+        documents.doubleClick()
+        app.typeKey("[", modifierFlags: .command)
+        let row = window.outlines.outlineRows.containing(.staticText, identifier: "Empty")
+            .firstMatch
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout), "the sidebar shows the folder")
+        XCTAssertTrue(
+            app.eventually { !row.disclosureTriangles.firstMatch.exists },
+            "an empty folder has nothing to open")
+    }
 }

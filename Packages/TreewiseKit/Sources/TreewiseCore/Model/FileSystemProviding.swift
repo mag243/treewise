@@ -24,9 +24,17 @@ public protocol FileSystemProviding: Sendable {
     ///
     /// - Throws: `FileSystemError.notFound` when `folder` does not exist.
     func availableCapacity(of folder: FileItem.ID) async throws -> Int64?
+
+    /// Whether a folder can be read without a cost worth avoiding, such as a folder on a
+    /// local disk; not one in the cloud, on a network volume or inside an archive, where a
+    /// reading the user did not ask for may be slow or start work (ADR 0108).
+    func readsQuickly(_ folder: FileItem.ID) -> Bool
 }
 
 extension FileSystemProviding {
+    /// No folder reads quickly unless a provider says so.
+    public func readsQuickly(_ folder: FileItem.ID) -> Bool { false }
+
     /// Returns the identities of an item's containers, nearest first, up to and
     /// including its top-level location.
     ///

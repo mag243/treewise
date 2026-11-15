@@ -67,6 +67,7 @@ final class SidebarController: NSViewController {
             pathToReveal: browser.settings.expandsSidebarToOpenFolder ? browser.treePath : nil,
             showsHiddenFiles: browser.settings.showsHiddenFiles,
             loadSubfolders: { await browser.subfolders(of: $0) },
+            subfolderPresence: { await browser.subfolderPresence(in: $0) },
             select: { folder in
                 Task {
                     await browser.navigate(pane: browser.layout.focusedPaneIndex, to: folder.id)

@@ -15,6 +15,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     /// The hidden-files setting the loaded folders follow.
     private var showsHiddenFiles = false
     private var loadSubfolders: ((FileItem.ID) async -> [FileItem])?
+    private var subfolderPresence: ((FileItem.ID) async -> SubfolderPresence)?
     private var select: ((FileItem) -> Void)?
     /// Ejects volumes: the eject buttons and the context menu (ADR 0044).
     private(set) var eject: (([FileItem]) -> Void)?
@@ -25,7 +26,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     /// Set while the selection follows the active pane, so it is not sent back
     /// as a choice of the user.
     private var isApplyingState = false
-    /// Folders a drag opened that turned out to hold no subfolders, redrawn once it ends.
+    /// Rows of folders found to hold no subfolders during a drag, redrawn once it ends.
     private var redrawnAfterDrag: [SidebarNode] = []
     /// The last way through the tree that was opened, so a rerender does not
     /// open again what the user closed since.
@@ -56,6 +57,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
 
     func update(with view: SidebarContent) {
         loadSubfolders = view.loadSubfolders
+        subfolderPresence = view.subfolderPresence
         select = view.select
         eject = view.eject
         drop = view.drop
@@ -219,6 +221,25 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         }
         outline?.reloadItem(node, reloadChildren: true)
         outline?.expandItem(node)
+        await dropTriangles(of: node.children ?? [])
+    }
+
+    /// Takes the disclosure triangle off the rows whose folder turns out to hold no
+    /// subfolders, where that is known without a costly reading (ADR 0108). During a drag a
+    /// row is redrawn only once it ends, as a redrawn row loses the drop on it.
+    private func dropTriangles(of nodes: [SidebarNode]) async {
+        guard let subfolderPresence else { return }
+        for node in nodes where node.children == nil {
+            guard let folder = node.item,
+                await subfolderPresence(folder.id) == .absent, node.children == nil
+            else { continue }
+            node.children = []
+            if springLoading.isDragging {
+                redrawnAfterDrag.append(node)
+            } else {
+                outline?.reloadItem(node)
+            }
+        }
     }
 
     /// The drag left the sidebar, dropped or ended: what it opened may be redrawn now.

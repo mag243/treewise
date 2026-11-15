@@ -43,6 +43,10 @@ public actor FileOperationRunner: FileOperating {
         try await reader.favorites()
     }
 
+    public nonisolated func readsQuickly(_ folder: FileItem.ID) -> Bool {
+        reader.readsQuickly(folder)
+    }
+
     public func availableCapacity(of folder: FileItem.ID) async throws -> Int64? {
         try await reader.availableCapacity(of: folder)
     }

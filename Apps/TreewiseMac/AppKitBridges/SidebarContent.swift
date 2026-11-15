@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// What the sidebar shows, as an `NSOutlineView` (ADR 0002): Favorites as a
 /// flat list, Locations as a tree whose folders load their subfolders when
@@ -14,6 +15,9 @@ struct SidebarContent {
     /// Whether folders list their hidden subfolders (ADR 0023).
     var showsHiddenFiles: Bool
     var loadSubfolders: (FileItem.ID) async -> [FileItem]
+    /// Whether a folder has subfolders, so a row without them shows no disclosure
+    /// triangle; unknown where looking costs too much (ADR 0108).
+    var subfolderPresence: (FileItem.ID) async -> SubfolderPresence
     var select: (FileItem) -> Void
     /// Ejects volumes (ADR 0044).
     var eject: ([FileItem]) -> Void

@@ -151,6 +151,16 @@ public struct LocalFileSystem: FileSystemProviding {
             ?? values.volumeAvailableCapacity.map(Int64.init)
     }
 
+    /// A folder on a local volume, outside cloud folders and archives, reads quickly
+    /// (ADR 0108); a network volume, a cloud folder or a File Provider does not.
+    public func readsQuickly(_ folder: FileItem.ID) -> Bool {
+        guard folder != .computer, !folder.isInsideArchive, !isInCloudFolder(folder) else {
+            return false
+        }
+        let values = try? url(of: folder).resourceValues(forKeys: [.volumeIsLocalKey])
+        return values?.volumeIsLocal == true
+    }
+
     func url(of id: FileItem.ID) -> URL {
         URL(fileURLWithPath: id.rawValue)
     }
