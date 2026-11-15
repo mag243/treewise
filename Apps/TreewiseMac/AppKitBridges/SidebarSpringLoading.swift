@@ -9,7 +9,8 @@ final class SidebarSpringLoading {
     /// How long a drag rests on a folder before it opens.
     static let delay: Duration = .seconds(1)
 
-    private var isDragging = false
+    /// Whether a drag is over the sidebar.
+    private(set) var isDragging = false
     private var hovered: SidebarNode?
     /// The folders opened during this drag, which may finish opening when
     /// their subfolders arrive later.

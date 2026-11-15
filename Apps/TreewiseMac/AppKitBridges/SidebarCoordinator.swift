@@ -25,6 +25,8 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     /// Set while the selection follows the active pane, so it is not sent back
     /// as a choice of the user.
     private var isApplyingState = false
+    /// Folders a drag opened that turned out to hold no subfolders, redrawn once it ends.
+    private var redrawnAfterDrag: [SidebarNode] = []
     /// The last way through the tree that was opened, so a rerender does not
     /// open again what the user closed since.
     var revealedPath: [FileItem.ID]?
@@ -45,7 +47,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         outline.setDraggingSourceOperationMask([.copy, .move, .generic], forLocal: false)
         outline.dataSource = self
         outline.delegate = self
-        (outline as? SidebarOutline)?.dragEnded = { [weak self] in self?.springLoading.end() }
+        (outline as? SidebarOutline)?.dragEnded = { [weak self] in self?.dragEnded() }
         (outline as? SidebarOutline)?.rowMenu = { [weak self, weak outline] node in
             guard let outline else { return nil }
             return self?.menu(for: node, in: outline)
@@ -208,8 +210,23 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         guard let loadSubfolders else { return }
         let subfolders = await loadSubfolders(folder)
         node.children = subfolders.map { SidebarNode(item: $0, expandable: true) }
+        // Reloading a row during a drag drops the drag's target, so a drop on it would do
+        // nothing. A folder a drag opened that holds no subfolders only loses its
+        // disclosure triangle, which can wait until the drag ends.
+        if subfolders.isEmpty, springLoading.isDragging {
+            redrawnAfterDrag.append(node)
+            return
+        }
         outline?.reloadItem(node, reloadChildren: true)
         outline?.expandItem(node)
+    }
+
+    /// The drag left the sidebar, dropped or ended: what it opened may be redrawn now.
+    private func dragEnded() {
+        springLoading.end()
+        let nodes = redrawnAfterDrag
+        redrawnAfterDrag = []
+        for node in nodes { outline?.reloadItem(node, reloadChildren: true) }
     }
 
     private func reusedCell(
