@@ -13,7 +13,6 @@ struct FileTableActions {
     var paste: () -> Void
     var canPaste: () -> Bool
     var rename: (FileItem, String) -> Void
-    /// Called when the list starts renaming the item it was asked to.
     /// The list started the rename it was asked for; says whether that rename asks for
     /// proposals at once, as Rename with Suggestions does (ADR 0066).
     var renameStarted: () -> Bool

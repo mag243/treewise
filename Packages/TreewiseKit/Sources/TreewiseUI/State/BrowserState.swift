@@ -37,10 +37,10 @@ public final class BrowserState {
     /// An item Treewise just made or renamed, which the list should bring into
     /// view; the list sets it back to `nil` when it does.
     public var revealRequest: FileItem.ID?
-    /// An item the list should start renaming, such as a new folder; the
     /// A short message the focused pane's status bar shows in place of its counts, as
     /// `Made 14 folders.` after New Folders from Template (ADR 0095); nil shows the counts.
     public var statusMessage: String?
+    /// An item the list should start renaming, such as a new folder; the
     /// list sets it back to `nil` when it starts.
     public var renameRequest: FileItem.ID?
     /// Whether the rename `renameRequest` asks for opens the proposals at once, as Rename

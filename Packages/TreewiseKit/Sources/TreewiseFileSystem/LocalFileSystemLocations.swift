@@ -48,13 +48,13 @@ extension LocalFileSystem {
             _ = try TrashService().trash(FileItem.ID(file.path))
         }
 
-        /// What macOS reports: a file not downloaded is only online (ADR 0051).
-        /// Reading it does not download the file.
         /// Where the copies of entries of archives are kept (ADR 0076).
         public var archiveCacheFolder: URL {
             home.appendingPathComponent("Library/Caches/me.m-domain.treewise/Archives")
         }
 
+        /// What macOS reports: a file not downloaded is only online (ADR 0051).
+        /// Reading it does not download the file.
         public static func systemIsOnlyOnline(_ url: URL) -> Bool {
             let values = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
             return values?.ubiquitousItemDownloadingStatus == .notDownloaded
