@@ -4,8 +4,14 @@ import Foundation
 /// what it writes, for Settings' Add-ons tab (ADR 0088, ADR 0092).
 public struct RecognizedField: Equatable, Sendable {
     /// What kind of thing the field stands for.
-    public enum Kind: Equatable, Sendable {
+    public enum Kind: Equatable, Sendable, CaseIterable {
         case date, series, text, choice
+    }
+
+    /// The kinds `fields` hold, each once, in the legend's order: what a card's legend
+    /// explains.
+    public static func kinds(of fields: [RecognizedField]) -> [Kind] {
+        Kind.allCases.filter { kind in fields.contains { $0.kind == kind } }
     }
 
     /// The field as the add-on writes it, as `{seq:4}` or `<…|…>`.

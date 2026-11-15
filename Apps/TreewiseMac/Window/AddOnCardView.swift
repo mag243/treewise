@@ -201,7 +201,7 @@ final class AddOnCardView: NSView {
                 RecognizedField($0, today: Date(), calendar: .current)
             }
             views.append(RecognizedFieldsView(fields, width: width))
-            views.append(AddOnCardStyle.legend())
+            views.append(AddOnCardStyle.legend(of: fields))
         }
         if let offer = Self.offer(module, licence: licence, startTrial: actions.startTrial) {
             views.append(offer)

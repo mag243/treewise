@@ -18,6 +18,12 @@ import Testing
             token, today: today, calendar: calendar, locale: Locale(identifier: "en"))
     }
 
+    @Test func theKindsOfFieldsAreThoseUsedInTheLegendsOrder() {
+        let fields = ["{month}", "{year}", "{text}", "{quarter}"].map(Self.field)
+        #expect(RecognizedField.kinds(of: fields) == [.date, .text])
+        #expect(RecognizedField.kinds(of: []).isEmpty)
+    }
+
     @Test(arguments: [
         ("{date}", RecognizedField.Kind.date, "2026-11-13"),
         ("{date:dd.MM.yyyy}", .date, "13.11.2026"),

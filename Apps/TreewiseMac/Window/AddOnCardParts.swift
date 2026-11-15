@@ -98,11 +98,14 @@ enum AddOnCardStyle {
     }
 
     /// The kinds of field, each with its colour, for under the labels.
-    static func legend() -> NSView {
-        LegendView(kinds: [
-            (.date, String(localized: "Dates")), (.series, String(localized: "Series")),
-            (.text, String(localized: "Text")), (.choice, String(localized: "Choice")),
-        ])
+    /// The legend of the kinds `fields` hold, and of no other.
+    static func legend(of fields: [RecognizedField]) -> NSView {
+        let names: [RecognizedField.Kind: String] = [
+            .date: String(localized: "Dates"), .series: String(localized: "Series"),
+            .text: String(localized: "Text"), .choice: String(localized: "Choice"),
+        ]
+        return LegendView(
+            kinds: RecognizedField.kinds(of: fields).map { ($0, names[$0] ?? "") })
     }
 }
 
