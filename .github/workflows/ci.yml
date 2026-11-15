@@ -1,7 +1,8 @@
 # Builds and tests Treewise after each push to main, once a week and when started
 # by hand (ADR 0075). The weekly run finds what changes without a commit, such as
 # the runner's image. Before a push the gate is local: tools/build.sh verify and
-# the git hooks. A release needs tools/build.sh ci on the owner's Mac.
+# the git hooks. A release needs tools/build.sh ci and crossvolume on the owner's
+# Mac (ADR 0107).
 name: CI
 
 on:
@@ -78,6 +79,12 @@ jobs:
       - name: Check and package tests
         timeout-minutes: 10
         run: tools/build.sh quick
+
+      - name: Cross-volume tests
+        # The move between volumes, on a disk image the tests attach with hdiutil
+        # (ADR 0107). A plain test run skips them, so they have a step of their own.
+        timeout-minutes: 10
+        run: tools/build.sh crossvolume
 
       - name: Build both apps
         run: tools/build.sh build
