@@ -60,8 +60,23 @@ extension WindowTabs {
     /// Window > Tile Windows Side by Side, and the end of Window Beside.
     func tile(_ window: NSWindow?, beside other: NSWindow) {
         guard let screen = window?.screen ?? other.screen ?? NSScreen.main else { return }
-        let (left, right) = SideBySide.frames(
-            in: screen.visibleFrame, minimumWidth: WindowWidths.windowMinimum)
+        place(window, other, in: screen.visibleFrame, minimumWidth: WindowWidths.windowMinimum)
+        // AppKit may keep a window wider than its content's least width, by a frame or a
+        // divider that differs between macOS versions; then both go against the edges
+        // again at the width it gave.
+        let given = max(window?.frame.width ?? 0, other.frame.width)
+        let asked = SideBySide.frames(
+            in: screen.visibleFrame, minimumWidth: WindowWidths.windowMinimum
+        ).left.width
+        if given > asked {
+            place(window, other, in: screen.visibleFrame, minimumWidth: given)
+        }
+    }
+
+    private func place(
+        _ window: NSWindow?, _ other: NSWindow, in screen: CGRect, minimumWidth: CGFloat
+    ) {
+        let (left, right) = SideBySide.frames(in: screen, minimumWidth: minimumWidth)
         window?.setFrame(left, display: true, animate: true)
         other.setFrame(right, display: true, animate: true)
     }
