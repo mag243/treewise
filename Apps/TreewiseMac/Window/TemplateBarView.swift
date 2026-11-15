@@ -68,13 +68,20 @@ final class TemplateBarView: NSStackView {
             top: Self.padding, left: Self.padding * 2, bottom: Self.padding,
             right: Self.padding)
         wantsLayer = true
-        layer?.cornerRadius = Self.cornerRadius
-        layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(Self.tint).cgColor
         setAccessibilityIdentifier("templateBar")
         isHidden = true
         NotificationCenter.default.addObserver(
             self, selector: #selector(foldersMade), name: FolderTemplateSheet.foldersMade,
             object: nil)
+    }
+
+    override var wantsUpdateLayer: Bool { true }
+
+    /// A layer's colour does not follow the appearance or the accent colour by itself, so
+    /// it is set again whenever AppKit asks the view to update.
+    override func updateLayer() {
+        layer?.cornerRadius = Self.cornerRadius
+        layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(Self.tint).cgColor
     }
 
     /// Folders made anywhere, at any depth, may be those the bar offers.
