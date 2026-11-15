@@ -31,4 +31,14 @@ import TreewiseCore
     func aYearsOwnFolderIsTheOneNamedAsTheYear(_ path: String, _ year: Int?) {
         #expect(YearFolders.ownYear(of: FileItem.ID(path)) == year)
     }
+
+    @Test(arguments: [("2026", 2026), ("1900", 1900), ("2099", 2099)])
+    func readsAYearsName(_ name: String, _ year: Int) {
+        #expect(YearFolders.year(named: name) == year)
+    }
+
+    @Test(arguments: ["1899", "2100", "026", "02026", "２０２６", "Tax 2026", ""])
+    func readsNoYearInAnyOtherName(_ name: String) {
+        #expect(YearFolders.year(named: name) == nil)
+    }
 }

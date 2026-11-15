@@ -1,10 +1,6 @@
 /// A template's fields across its tree, what they are filled in with, and what the sheet
 /// proposes for them (ADR 0095, ADR 0096).
 extension FolderTree {
-    /// The years a folder's own name counts as one, as in ADR 0090.
-    private static let years = 1900...2099
-    private static let yearDigits = 4
-
     /// The fields of the tree, each once, in the order they first appear from the root down.
     /// A name with a field it cannot read counts as plain text here; `checkTemplate()` says
     /// why.
@@ -120,12 +116,7 @@ extension FolderTree {
     /// after it, and `currentYear` when no folder's name is a year. A tree with fields
     /// besides the year cannot say what a year lacks, so it proposes the one after.
     public func proposedYear(in contents: FolderContents, currentYear: Int) -> Int {
-        let years = contents.folderNames.compactMap { name -> Int? in
-            guard name.count == Self.yearDigits, name.allSatisfy({ $0.isASCII && $0.isNumber }),
-                let year = Int(name), Self.years.contains(year)
-            else { return nil }
-            return year
-        }
+        let years = contents.folderNames.compactMap(YearFolders.year(named:))
         guard let highest = years.max() else { return currentYear }
         guard fields.allSatisfy({ $0 == .year }) else { return highest + 1 }
         let plan = FolderTemplatePlan(making: filling(year: highest), in: contents)

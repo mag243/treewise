@@ -43,8 +43,6 @@ public final class FolderTemplateSheetModel {
     /// The tree to make, once it can be.
     public private(set) var tree: FolderTree?
 
-    /// The years a folder's own name counts as one (ADR 0090).
-    private static let years = 1900...2099
     private let fileSystem: any FileSystemProviding
     private let currentYear: Int
     /// The names of the folders in the folder the root goes into, for the number.
@@ -83,7 +81,7 @@ public final class FolderTemplateSheetModel {
             let shallow = (try? await fileSystem.contents(of: folder)) ?? []
             besideRoot = shallow.filter { $0.kind == .folder }.map(\.name)
             if fields.contains(.year) {
-                let years = besideRoot.compactMap(Int.init).filter(Self.years.contains)
+                let years = besideRoot.compactMap(YearFolders.year(named:))
                 let highest = years.max() ?? currentYear
                 let deep = await read(template.filling(year: highest), in: folder)
                 values.year = template.proposedYear(in: deep, currentYear: currentYear)

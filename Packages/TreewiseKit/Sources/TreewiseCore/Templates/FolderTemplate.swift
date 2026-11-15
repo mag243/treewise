@@ -29,11 +29,8 @@ public struct FolderTemplate: Codable, Hashable, Sendable, Identifiable {
     /// it, rather than making its root inside (ADR 0095): a template rooted at `{year}`, in a
     /// folder named as a year from 1900 to 2099. Nil when the root is made inside.
     public func yearOfFolderItFills(named name: String) -> Int? {
-        guard isRootedAtYear, name.count == Self.yearDigits,
-            name.allSatisfy({ $0.isASCII && $0.isNumber }), let year = Int(name),
-            Self.years.contains(year)
-        else { return nil }
-        return year
+        guard isRootedAtYear else { return nil }
+        return YearFolders.year(named: name)
     }
 
     /// `name`, or `name 2`, `name 3`, … when one of `taken` has it, for a template that comes
@@ -49,7 +46,4 @@ public struct FolderTemplate: Codable, Hashable, Sendable, Identifiable {
         }
         return unique
     }
-
-    private static let yearDigits = 4
-    private static let years = 1900...2099
 }

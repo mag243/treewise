@@ -2,8 +2,17 @@
 /// before it.
 public enum YearFolders {
     /// The years a folder of its own counts as one.
-    private static let years = 1900...2099
+    public static let years = 1900...2099
     private static let yearDigits = 4
+
+    /// The year a name is, written as four ASCII digits within `years`, or nil for any
+    /// other name, as `Tax 2026` or `２０２６`.
+    public static func year(named name: some StringProtocol) -> Int? {
+        guard name.count == yearDigits, name.allSatisfy({ $0.isASCII && $0.isNumber }),
+            let year = Int(name), years.contains(year)
+        else { return nil }
+        return year
+    }
 
     /// The year of a folder: its nearest path component that is a year, or nil without one.
     /// A place inside an archive has none, and a year inside a name, as `Tax 2026`, is no year.
@@ -33,10 +42,7 @@ public enum YearFolders {
         guard !folder.isInsideArchive else { return nil }
         let parts = folder.rawValue.split(separator: "/", omittingEmptySubsequences: false)
         for index in parts.indices.reversed() {
-            let part = parts[index]
-            guard part.count == yearDigits, part.allSatisfy({ $0.isASCII && $0.isNumber }),
-                let year = Int(part), years.contains(year), years.contains(year - 1)
-            else { continue }
+            guard let year = year(named: parts[index]), years.contains(year - 1) else { continue }
             return (index, year)
         }
         return nil
