@@ -7,27 +7,33 @@ import XCTest
 /// `apptest` and `ci` skip this class. A finding does not fail the walk, so every screen is
 /// taken; only a walk that cannot go on fails.
 final class UIReviewTests: XCTestCase {
-    private static let timeout: TimeInterval = 10
+    static let timeout: TimeInterval = 10
     /// How long a screen settles before it is looked at: a card opens and the list scrolls
     /// to it with an animation that offers nothing to wait for. The review tests no
     /// behaviour, so a fixed pause is fine, as for the download page's screenshots.
     private static let settle: TimeInterval = 1
-    private static let settingsWindow = "TreewiseSettings"
-    private static let tabs = ["General", "Names", "Templates", "Add-ons"]
+    static let settingsWindow = "TreewiseSettings"
 
-    private var root: URL?
+    private(set) var root: URL?
 
     override func setUpWithError() throws {
         let folder = FileManager.default.temporaryDirectory
             .appendingPathComponent("TreewiseUIReview-\(UUID().uuidString)", isDirectory: true)
         for path in [
-            "Projects", "Documents", "Administration/2026/Tax/Appeals",
-            "Administration/2026/Receipts", "Administration/2027/Receipts",
+            "Projects/Client A/Contract", "Projects/Client A/Invoices", "Documents/Taxes",
+            "Administration/2026/Tax/Appeals", "Administration/2026/Receipts",
+            "Administration/2027/Receipts", "Administration/2028",
         ] {
             try FileManager.default.createDirectory(
                 at: folder.appendingPathComponent(path), withIntermediateDirectories: true)
         }
-        try Data("notes".utf8).write(to: folder.appendingPathComponent("Notes.md"))
+        for file in [
+            "Notes.md", "Documents/Taxes/2026-01-15 Invoice Acme.pdf",
+            "Documents/Taxes/2026-02-15 Invoice Acme.pdf", "Documents/Taxes/scan0001.pdf",
+            "Documents/Taxes/Payment reminder.pdf",
+        ] {
+            try Data("invented".utf8).write(to: folder.appendingPathComponent(file))
+        }
         root = folder
         try seedTemplates(beside: folder)
     }
@@ -47,96 +53,19 @@ final class UIReviewTests: XCTestCase {
         return list.isEmpty ? [nil] : list
     }
 
+    /// Runs `walk` in each appearance asked for, with the app quit between them.
     @MainActor
-    func testSettings() throws {
+    func eachAppearance(_ walk: (String?) throws -> Void) throws {
         for appearance in Self.appearances {
-            try settings(appearance: appearance)
+            try walk(appearance)
             XCUIApplication().terminate()
         }
-    }
-
-    // MARK: - Walks
-
-    /// Every tab of Settings; every add-on card open in turn and back to the first, then
-    /// each paid one's trial started from its card; and the Templates tab with the add-on.
-    @MainActor
-    private func settings(appearance: String?) throws {
-        let app = try launch(appearance: appearance)
-        app.typeKey(",", modifierFlags: .command)
-        let window = app.windows[Self.settingsWindow]
-        XCTAssertTrue(window.waitForExistence(timeout: Self.timeout), "Settings opens")
-        for tab in Self.tabs {
-            open(tab, in: window)
-            review(
-                window, as: "settings-\(slug(tab))", appearance: appearance, listsSpanThePane: true)
-        }
-        try reviewCards(in: window, appearance: appearance, startingTrials: false)
-        try reviewCards(in: window, appearance: appearance, startingTrials: true)
-        open("Templates", in: window)
-        let list = window.tables["templatesList"]
-        let year = list.textFields.matching(NSPredicate(format: "value == %@", "Household Year"))
-            .firstMatch
-        XCTAssertTrue(year.waitForExistence(timeout: Self.timeout), "the templates are listed")
-        year.click()
-        let tree = window.outlines["templateTreeEditor"]
-        let tax = tree.textFields.matching(NSPredicate(format: "value == %@", "Tax")).firstMatch
-        XCTAssertTrue(tax.waitForExistence(timeout: Self.timeout), "its tree shows")
-        tax.click()
-        settleScreen()
-        review(
-            window, as: "settings-templates-trial", appearance: appearance, listsSpanThePane: true)
-    }
-
-    /// Opens each card of the Add-ons tab in turn, and the first again after the last.
-    /// `startingTrials` starts each paid add-on's trial from its card, as the user does.
-    @MainActor
-    private func reviewCards(in window: XCUIElement, appearance: String?, startingTrials: Bool)
-        throws
-    {
-        open("Add-ons", in: window)
-        // Each card is a group named after its add-on.
-        let list = window.tables.firstMatch
-        XCTAssertTrue(list.groups.firstMatch.waitForExistence(timeout: Self.timeout), "cards show")
-        let name = startingTrials ? "settings-add-ons-trial" : "settings-add-ons"
-        for card in cardNames(in: list) {
-            choose(card, in: list)
-            let tryIt = window.buttons["Try for 14 Days"]
-            if startingTrials, tryIt.exists {
-                tryIt.click()
-                settleScreen()
-            }
-            review(
-                window, as: "\(name)-\(slug(card))", appearance: appearance,
-                listsSpanThePane: true)
-        }
-        // Back to the first card there is now: a trial can take a free card's place.
-        if let first = cardNames(in: list).first {
-            choose(first, in: list)
-            review(
-                window, as: "\(name)-\(slug(first))-again", appearance: appearance,
-                listsSpanThePane: true)
-        }
-    }
-
-    /// The cards of the list, each a group named after its add-on.
-    @MainActor
-    private func cardNames(in list: XCUIElement) -> [String] {
-        list.groups.allElementsBoundByIndex
-            .filter { !$0.label.isEmpty && $0.staticTexts[$0.label].exists }.map(\.label)
-    }
-
-    @MainActor
-    private func choose(_ card: String, in list: XCUIElement) {
-        let title = list.groups[card].staticTexts[card]
-        XCTAssertTrue(title.waitForExistence(timeout: Self.timeout), "\(card) shows")
-        title.click()
-        settleScreen()
     }
 
     // MARK: - Looking
 
     @MainActor
-    private func open(_ tab: String, in window: XCUIElement) {
+    func open(_ tab: String, in window: XCUIElement) {
         let button = window.toolbars.buttons[tab]
         XCTAssertTrue(button.waitForExistence(timeout: Self.timeout), "Settings has \(tab)")
         button.click()
@@ -146,8 +75,8 @@ final class UIReviewTests: XCTestCase {
     /// Keeps a screenshot of `window` and what the checks found on it, both named `name`
     /// and the variant, for the report.
     @MainActor
-    private func review(
-        _ window: XCUIElement, as name: String, appearance: String?, listsSpanThePane: Bool = false
+    func review(
+        _ window: XCUIElement, as name: String, appearance: String?, isSettingsPane: Bool = false
     ) {
         let full = appearance.map { "\(name)-\($0)" } ?? name
         let screenshot = XCTAttachment(screenshot: window.screenshot())
@@ -155,9 +84,12 @@ final class UIReviewTests: XCTestCase {
         screenshot.lifetime = .keepAlways
         add(screenshot)
         var found: [UIReviewFinding] = []
+        // A sheet on the window is what is looked at; the window under it is covered.
+        let sheet = window.sheets.firstMatch
+        let looked = sheet.exists ? sheet : window
         do {
             found = UIReviewChecks.findings(
-                in: try window.snapshot(), listsSpanThePane: listsSpanThePane)
+                in: try looked.snapshot(), isSettingsPane: isSettingsPane && !sheet.exists)
         } catch {
             found = [UIReviewFinding(check: "snapshot", element: "window", detail: "\(error)")]
         }
@@ -172,7 +104,7 @@ final class UIReviewTests: XCTestCase {
     // MARK: - Setting up
 
     @MainActor
-    private func launch(appearance: String?) throws -> XCUIApplication {
+    func launch(appearance: String?) throws -> XCUIApplication {
         let app = XCUIApplication()
         let root = try XCTUnwrap(root)
         app.launchArguments =
@@ -186,11 +118,11 @@ final class UIReviewTests: XCTestCase {
         return app
     }
 
-    private func settleScreen() {
+    func settleScreen() {
         Thread.sleep(forTimeInterval: Self.settle)
     }
 
-    private func slug(_ text: String) -> String {
+    func slug(_ text: String) -> String {
         text.lowercased().map { $0.isLetter || $0.isNumber ? String($0) : "-" }.joined()
     }
 

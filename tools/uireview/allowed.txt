@@ -1,3 +1,10 @@
 # Findings of the UI review that are meant (ADR 0103), each with its reason:
 #   screen | check | element  # why
 # A screen is named without its variant to allow it in light and in dark, or `*` for all.
+
+# An icon view's item reports only its icon as its frame; its name, under the icon, is drawn
+# in the item as on screen.
+browser-icons | outsideParent | *  # the item's frame leaves out its name, which shows whole
+# The overview's drag handles sit a point past their list's side, which does not show.
+names-overview | listMargin | image "drag"  # a point, not visible
+names-add-ons | listMargin | image "drag"  # a point, not visible

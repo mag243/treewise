@@ -52,8 +52,9 @@
 #   uireview    The UI review (ADR 0103): the official build's screens in the system's
 #               appearance, checked for quirks such as cut-off or overlapping controls,
 #               with a screenshot of each in build/ui-review/index.html. Ends red on a
-#               finding not in tools/uireview/allowed.txt. `uireview all` walks them in
-#               light and in dark. On demand only; takes the screen.
+#               finding not in tools/uireview/allowed.txt. Followed by a category, only
+#               that one: settings, browser, templates, names or dialogs; and by `all`,
+#               in light and in dark. On demand only; takes the screen.
 #   sandboxtest The overview of proposed names from start to end on sandbox volumes made
 #               afresh (PLAN.md M7). Takes the screen, as ci does.
 #   benchmark   How long the add-ons take for a folder of 100 files (M7): the free
@@ -119,6 +120,7 @@ SANDBOX_TESTS="TreewiseMacUITests/SandboxVolumeTests"
 # The UI review's walk, on the official build only, not run by apptest (ADR 0103).
 UIREVIEW_TESTS="TreewiseMacUITests/UIReviewTests"
 UIREVIEW_DIR="$BUILD_DIR/ui-review"
+UIREVIEW_CATEGORIES=" settings browser templates names dialogs "
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
 declare -a SUMMARY=()
 
@@ -454,9 +456,19 @@ cmd_screenshots() {
 # The UI review (ADR 0103): runs UIReviewTests on the official build, then makes the report
 # from what they attached; red when a finding is not in tools/uireview/allowed.txt.
 cmd_uireview() {
-  local variants="${1:-}"
-  [[ -z "$variants" || "$variants" == all ]] || fail "uireview takes nothing, or all."
-  step "UI review${variants:+ (light and dark)}"
+  local word category="" variants="" only=()
+  for word in "$@"; do
+    if [[ "$word" == all ]]; then
+      variants=all
+    elif [[ "$UIREVIEW_CATEGORIES" == *" $word "* ]]; then
+      category="$word"
+    else
+      fail "uireview takes a category (${UIREVIEW_CATEGORIES# }) and all."
+    fi
+  done
+  [[ -n "$category" ]] && only=(-only-testing:"$UIREVIEW_TESTS/test${category^}")
+  ((${#only[@]})) || only=(-only-testing:"$UIREVIEW_TESTS")
+  step "UI review${category:+ of $category}${variants:+ (light and dark)}"
   require_paid_module
   local bundle; bundle="$(result_bundle UIReview)"
   rm -rf "$UIREVIEW_DIR"
@@ -466,8 +478,7 @@ cmd_uireview() {
   [[ "$variants" == all ]] && TEST_RUNNER_UIREVIEW_APPEARANCES="light,dark"
   xcodebuild_logged uireview -workspace "$OFFICIAL_WORKSPACE" \
     -derivedDataPath "$OFFICIAL_DERIVED_DATA" -scheme "$MAC_SCHEME" \
-    -destination "$MAC_DESTINATION" -resultBundlePath "$bundle" \
-    -only-testing:"$UIREVIEW_TESTS" test
+    -destination "$MAC_DESTINATION" -resultBundlePath "$bundle" "${only[@]}" test
   local exported="$UIREVIEW_DIR/attachments"
   xcrun xcresulttool export attachments --path "$bundle" --output-path "$exported" >/dev/null
   local rc=0
@@ -943,7 +954,7 @@ run_command() {
     export) timed export cmd_export ;;
     publish) timed publish cmd_publish ;;
     screenshots) timed screenshots cmd_screenshots ;;
-    uireview) timed uireview cmd_uireview "${2:-}" ;;
+    uireview) timed uireview cmd_uireview "${@:2}" ;;
     sandboxtest) timed sandboxtest cmd_sandboxtest ;;
     fixture) timed fixture cmd_fixture ;;
     sandbox) timed sandbox cmd_sandbox "${2:-}" ;;
@@ -972,8 +983,13 @@ while (($#)); do
     # test and apptest take an optional filter as their next word, unless that
     # word is a command.
     run_command "$c" "$1"; shift
-  elif [[ "$c" == uireview && "${1:-}" == all ]]; then
-    run_command "$c" "$1"; shift
+  elif [[ "$c" == uireview ]]; then
+    # uireview takes a category and `all` as its next words.
+    words=()
+    while (($#)) && [[ "$1" == all || "$UIREVIEW_CATEGORIES" == *" $1 "* ]]; do
+      words+=("$1"); shift
+    done
+    run_command "$c" "${words[@]}"
   elif [[ "$c" == benchmark && "${1:-}" == package ]]; then
     run_command "$c" "$1"; shift
   elif [[ "$c" == sandbox && ( "${1:-}" == reset || "${1:-}" == eject ) ]]; then

@@ -56,9 +56,10 @@ enum UIReviewChecks {
         let holder: (any XCUIElementSnapshot)?
     }
 
-    /// The findings in `window`. In Settings, `listsSpanThePane` also asks every list to
-    /// take the pane's width between its margins, as the panes share one width.
-    static func findings(in window: any XCUIElementSnapshot, listsSpanThePane: Bool = false)
+    /// The findings in `window`, or in the sheet on it. In a Settings pane, `isSettingsPane`
+    /// also asks every list to take the pane's width between its margins and everything to
+    /// keep the window's margin, as the panes share one layout.
+    static func findings(in window: any XCUIElementSnapshot, isSettingsPane: Bool = false)
         -> [UIReviewFinding]
     {
         var placed: [Placed] = []
@@ -69,11 +70,11 @@ enum UIReviewChecks {
         found += collapsed(leaves)
         found += outside(leaves, window: window.frame)
         found += overlapping(leaves)
-        found += tooClose(leaves, window: window.frame)
+        found += tooClose(leaves, window: window.frame, windowToo: isSettingsPane)
         found += emptyRows(placed)
         found += offCentre(placed)
         found += withoutScroller(lists)
-        if listsSpanThePane { found += notSpanning(lists, window: window.frame) }
+        if isSettingsPane { found += notSpanning(lists, window: window.frame) }
         return found
     }
 
@@ -143,7 +144,10 @@ enum UIReviewChecks {
         let shown = leaves.filter { !$0.snapshot.frame.isEmpty }
         for (index, one) in shown.enumerated() {
             for other in shown[(index + 1)...] {
-                let both = one.snapshot.frame.intersection(other.snapshot.frame)
+                let (first, second) = (one.snapshot.frame, other.snapshot.frame)
+                // One inside the other, as the glass in a search field, is not over it.
+                guard !first.contains(second), !second.contains(first) else { continue }
+                let both = first.intersection(second)
                 // Lines of text a point into each other are how text frames sit.
                 guard !both.isNull, both.width * both.height > overlapArea,
                     min(both.width, both.height) > overlapDepth
@@ -158,12 +162,16 @@ enum UIReviewChecks {
     }
 
     /// A text or control against the side of its list or window.
-    private static func tooClose(_ leaves: [Placed], window: CGRect) -> [UIReviewFinding] {
+    private static func tooClose(_ leaves: [Placed], window: CGRect, windowToo: Bool)
+        -> [UIReviewFinding]
+    {
         leaves.compactMap { leaf in
             let frame = leaf.snapshot.frame
             // The window's own buttons sit in its corner by design.
             guard !frame.isEmpty, !leaf.snapshot.identifier.hasPrefix("_XCUI") else { return nil }
-            if let list = leaf.list,
+            // A column's header meets the list's sides by design; texts and fields do not.
+            let isText = [.staticText, .textField].contains(leaf.snapshot.elementType)
+            if let list = leaf.list, isText,
                 frame.minX - list.minX < listMargin - tolerance
                     || list.maxX - frame.maxX < listMargin - tolerance
             {
@@ -171,8 +179,9 @@ enum UIReviewChecks {
                     "listMargin", leaf.snapshot,
                     "\(frame) within \(listMargin) of its list's side \(list)")
             }
-            if frame.minX - window.minX < windowMargin - tolerance
-                || window.maxX - frame.maxX < windowMargin - tolerance
+            if windowToo,
+                frame.minX - window.minX < windowMargin - tolerance
+                    || window.maxX - frame.maxX < windowMargin - tolerance
             {
                 return finding(
                     "windowMargin", leaf.snapshot,
