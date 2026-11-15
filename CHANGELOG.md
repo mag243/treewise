@@ -1,33 +1,37 @@
 # Changelog
 
-All notable changes to Treewise are recorded here. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
-[Semantic Versioning](https://semver.org/).
+What is new in each version of Treewise, as you notice it when you use the app.
+Versions follow [Semantic Versioning](https://semver.org/); every change, down to
+the smallest, is in the commits.
 
 ## [Unreleased]
 
-### Added
-- Folder structure templates: save a folder's structure as a template, its folders without their files, and make it in another folder in one step. Names can hold `{year}`, `{year:yy}`, `{text}`, `{seq}` and `{date}`, written as in name patterns, which the sheet asks for with the next number and today's date proposed. Templates are part of Treewise and need no add-on.
-- A folder of a template can repeat for each month, quarter or half: `{month:MM MMMM}`, `Q{quarter}` and `H{half}` make twelve, four or two folders, each with the folders below it. Insert Field in Settings > Templates writes them.
-- New Folders from Template in the context menu, the File menu and the command bar's New menu opens a sheet with the tree of folders it makes, those already there in grey and those a file stops struck through. Folders already there are kept and filled; one Undo removes all the folders made.
-- Copy Folder Structure on a folder and Paste Folder Structure… on another, in the context menu and the File menu, make the same folders without their files, in the same sheet, without saving a template.
-- Save Folder Structure as Template… on a folder, and Settings > Templates to rename, delete, import and export templates and to edit a template's folders.
-- Folder Structure Templates, a paid add-on with its own 14-day trial, writes a year's folder and that year in the names below it as `{year}` when a structure is saved, so a template makes any year's folders. It also turns folders for each month, quarter or half, from the first on, into one folder that repeats. With it, an empty year's folder offers the folders of the same folder a year before in a bar above its list, and a folder can offer one template for every new folder in it, or nothing. A template saved with it keeps each folder's name settings: which add-ons are on, their order and their patterns. The folders made from it propose names at once, as the folders it was saved from did. Settings > Templates shows them for the folder selected, with Remove. A year's folder that lacks folders the year before has offers them in a bar, as `2027 lacks 1 folder of 2026.`, with Create Folders… and, for the one `{year}` template that lacks them too, Add to Template. Its close button hides those folders or every one in that folder, and Settings > Templates turns the bar off. Add Missing Folders from 2026… in the context menu and the File menu offers them by hand.
+## [0.9.0] - 2026-11-15
 
-### Changed
-- Settings > Add-ons shows the add-ons that propose names under Names and those that make folders under Folders. An add-on card that sets the order shows a grip in place of its icon while the pointer is on it.
-- Settings' lists answer a right-click with what can be done to the row clicked: templates, a template's folders, name patterns and add-on cards. Duplicate copies a template or a pattern beside it.
-- Settings > Templates is laid out as Settings > Names: the templates under their heading in the same kind of list, each with its number of folders in small grey text after its name.
-- Add-ons are described the same way whatever they do, so a second kind of add-on fits beside those that propose names.
+Set up the same folders again in one go: for a new client, a new project or a new year.
+
+### New
+- **Folder templates.** Save a folder's structure, its folders without their files, as a template, and make it anywhere with New Folders from Template. You see every folder before it is made, folders already there are kept and filled, and one Undo takes them all away again.
+- **Copy and paste a folder structure** without saving a template: Copy Folder Structure on one folder, Paste Folder Structure… on another.
+- **Folder names that fill themselves in.** A template's names can hold the year, a number that counts on, today's date or a text you type when you make it. A folder can repeat for each month, quarter or half, so one template makes `01 January` to `12 December`.
+- **Settings › Templates** to rename, edit, duplicate, import and export your templates.
+- **The Folder Structure Templates add-on**, free to try for 14 days, makes one template from a year's folder that works for every year. When a new year's folder is empty or lacks folders of the year before, it offers to make them.
+- **About Treewise** says what Treewise is, with links to the website, the source code and the privacy statement. Help › Acknowledgements lists the licences of the parts it uses.
+
+### Improved
+- **Faster in large folders.** Suggest Names proposes names in a folder with a thousand files several times faster, and the icon view makes only the thumbnails you see and uses less memory for them.
+- **Suggest Names says why** it has nothing to propose, in a bar above the list.
+- **Tidier Settings.** Add-ons are grouped under Names and Folders, every list has a right-click menu, and name patterns can be duplicated.
+- **The sidebar** shows no disclosure triangle on a folder without subfolders, shows a long name in full when you point at it, and starts at a comfortable width in a new window.
+- **A narrow list** makes its names narrower first and then scrolls sideways, as Finder does, instead of cutting off columns.
 
 ### Fixed
-- Settings > Add-ons showed an add-on twice when it was dragged before its trial took the free add-on's place.
-- The overview of proposed names shows In This Folder only with the names around a new name, not as an empty heading for a file without one.
-- A new window's sidebar starts at its ideal width again, instead of the narrowest the window's first layout gave it.
-- A folder's name in the sidebar runs to near its edge before it is cut short, and shows whole while the pointer rests on it.
-- A narrow list, as beside the details pane, makes the names narrower first and then scrolls sideways, as Finder does, instead of cutting off the columns at its right.
-- Export… in Settings > Templates proposes a name that says it is a folder template, with its .json extension shown, and says why a template could not be saved.
-- Settings > Add-ons: choosing another add-on's card left the card before as tall as when it was open and cut off the one chosen.
+- Window Beside on a small screen no longer leaves a window partly off the screen.
+- The command bar's menus show their icons again on macOS 27.
+- An item dropped on a sidebar folder that opened while you held it over it lands in that folder.
+- Compressing two items with the same name from different folders keeps both.
+- An Undo that cannot be done says so.
+- Settings › Add-ons no longer shows an add-on twice after it is dragged.
 
 ## [0.8.5] - 2026-11-13
 
