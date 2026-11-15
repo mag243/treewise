@@ -117,16 +117,19 @@ enum FileCopier {
     ) throws {
         guard control.waitWhilePaused() else { throw FileSystemError.cancelled }
         let values = try source.resourceValues(forKeys: [
-            .isDirectoryKey, .isSymbolicLinkKey, .isPackageKey, .isRegularFileKey,
+            .isDirectoryKey, .isSymbolicLinkKey, .isPackageKey, .isRegularFileKey, .fileSizeKey,
         ])
         let name = source.lastPathComponent
         let before = copied
         if values.isRegularFile == true, values.isSymbolicLink != true {
             onFile(name, before)
             try copyFile(source, to: destination, control: control) { onFile(name, before + $0) }
+            // The size read above, so a file is not looked up a second time.
+            copied += Int64(values.fileSize ?? 0)
         } else if values.isDirectory != true || values.isPackage == true {
             onFile(name, before)
             try FileManager.default.copyItem(at: source, to: destination)
+            copied += Int64(footprint(of: source).size)
         } else {
             try FileManager.default.createDirectory(
                 at: destination, withIntermediateDirectories: false)
@@ -138,9 +141,7 @@ enum FileCopier {
                     child, to: destination.appendingPathComponent(child.lastPathComponent),
                     onFile: onFile, control: control, copied: &copied)
             }
-            return
         }
-        copied += Int64(footprint(of: source).size)
     }
 
     /// Copies a folder's extended attributes, such as Finder tags. A folder is made
