@@ -27,6 +27,7 @@ Set up the same folders again in one go: for a new client, a new project or a ne
 
 ### Fixed
 - The sidebar shows a new, renamed or removed folder at once, whether Treewise or another app changed it.
+- After a restart, or a jump to a folder far down a long tree, the sidebar shows that folder in its middle instead of at its edge.
 - Window Beside on a small screen no longer leaves a window partly off the screen.
 - The command bar's menus show their icons again on macOS 27.
 - An item dropped on a sidebar folder that opened while you held it over it lands in that folder.

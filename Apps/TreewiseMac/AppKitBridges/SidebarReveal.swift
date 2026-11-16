@@ -15,7 +15,7 @@ extension SidebarCoordinator {
     /// Opens the folders along `path`, from the innermost location on it, and
     /// brings the last one into view. The last one itself stays closed.
     private func reveal(_ path: [FileItem.ID]) async {
-        guard let outline, roots.count > 1, let computer = roots[1].children?.first,
+        guard outline != nil, roots.count > 1, let computer = roots[1].children?.first,
             let last = path.last
         else { return }
         var rows = computer.children ?? []
@@ -32,7 +32,32 @@ extension SidebarCoordinator {
             rows = node.children ?? []
         }
         selectRow(of: last)
-        if let target { outline.scrollRowToVisible(outline.row(forItem: target)) }
+        if let target { bringToMiddleIfOutOfView(target) }
+    }
+
+    /// Scrolls a row that is not wholly in view to the middle of the tree, as far as the
+    /// tree goes; a row in view stays where it is, so the tree does not move under the
+    /// pointer. A restored window takes its size and its sidebar's width after the tree is
+    /// opened, so the row is placed once the window is laid out.
+    private func bringToMiddleIfOutOfView(_ node: SidebarNode) {
+        DispatchQueue.main.async { [weak self, weak node] in
+            guard let self, let node, let outline,
+                let scrollView = outline.enclosingScrollView
+            else { return }
+            outline.window?.layoutIfNeeded()
+            let row = outline.row(forItem: node)
+            guard row >= 0 else { return }
+            let frame = outline.rect(ofRow: row)
+            let clip = scrollView.contentView
+            guard !clip.documentVisibleRect.contains(frame) else { return }
+            let insets = scrollView.contentInsets
+            let highest = -insets.top
+            let lowest = max(
+                highest, outline.frame.height - clip.bounds.height + insets.bottom)
+            let top = min(max(frame.midY - clip.bounds.height / 2, highest), lowest)
+            clip.scroll(to: NSPoint(x: clip.bounds.minX, y: top))
+            scrollView.reflectScrolledClipView(clip)
+        }
     }
 
     private func open(_ node: SidebarNode) async {
