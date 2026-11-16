@@ -160,6 +160,13 @@ public final class BrowserState {
         return (await subfolders(of: folder)).isEmpty ? .absent : .present
     }
 
+    /// The item `renameRequest` names, among everything the focused tab holds, also what
+    /// its search hides, so a new folder that does not match the search is still renamed.
+    public var renameTarget: FileItem? {
+        guard let request = renameRequest else { return nil }
+        return content(of: layout.focusedPane.activeTabID).items.first { $0.id == request }
+    }
+
     /// The changes to a folder's entries, as the list follows them, for the sidebar tree to
     /// follow the folders it shows open (ADR 0112). Ending the iteration stops the watching.
     public func changes(of folder: FileItem.ID) -> AsyncStream<Void> {

@@ -6,12 +6,12 @@ import TreewiseUI
 /// Rename, and for a new folder (ADR 0047).
 struct RenameAlert: ViewModifier {
     let browser: BrowserState
-    let items: [FileItem]
     let undoManager: UndoManager?
     @State private var name = ""
 
+    /// Found among all the folder's items, as a search may hide a new folder.
     private var item: FileItem? {
-        browser.renameRequest.flatMap { request in items.first { $0.id == request } }
+        browser.renameTarget
     }
 
     func body(content: Content) -> some View {

@@ -39,7 +39,7 @@ struct FolderView: View {
         .refreshable { await browser.refresh(pane: 0) }
         .safeAreaInset(edge: .bottom) { ProgressBar(browser: browser) }
         .quickLookPreview($previewed, in: previewableFiles)
-        .modifier(RenameAlert(browser: browser, items: items, undoManager: undoManager))
+        .modifier(RenameAlert(browser: browser, undoManager: undoManager))
         .sheet(isPresented: isAskingAboutConflict) {
             if let question = conflicts.question {
                 ConflictSheet(questions: conflicts, name: question.name)
