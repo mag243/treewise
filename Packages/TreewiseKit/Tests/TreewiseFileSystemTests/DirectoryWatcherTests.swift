@@ -73,14 +73,17 @@ import TreewiseTestSupport
         return condition()
     }
 
-    @Test func reportsAFileChangingInAFolderFollowedForFiles() async throws {
-        let directory = try TempDirectory()
-        let file = try directory.makeFile("report.pdf")
-        #expect(
-            try await reportsFileChange(in: directory) {
-                try Data("changed".utf8).write(to: file)
-            })
-    }
+    // Files are followed through FSEvents, on the Mac only (ADR 0051).
+    #if os(macOS)
+        @Test func reportsAFileChangingInAFolderFollowedForFiles() async throws {
+            let directory = try TempDirectory()
+            let file = try directory.makeFile("report.pdf")
+            #expect(
+                try await reportsFileChange(in: directory) {
+                    try Data("changed".utf8).write(to: file)
+                })
+        }
+    #endif
 
     @Test func doesNotReportAFileChangingInASubfolder() async throws {
         let directory = try TempDirectory()

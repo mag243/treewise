@@ -45,7 +45,8 @@ import TreewiseTestSupport
         #expect(await store.templates() == [renamed])
     }
 
-    @Test func deletesATemplateAndBringsItBack() async throws {
+    @Test(.enabled(if: TrashAvailability.inTemporaryDirectory, "needs a Trash"))
+    func deletesATemplateAndBringsItBack() async throws {
         try await store.save(Self.year)
         try await store.save(Self.client)
         let trashed = try await store.delete(id: "year")
