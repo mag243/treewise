@@ -15,7 +15,7 @@ struct FolderDropDelegate: DropDelegate {
     let drops: ItemDrops
 
     func validateDrop(info: DropInfo) -> Bool {
-        info.hasItemsConforming(to: [.treewiseItem])
+        info.hasItemsConforming(to: [.treewiseItem, .item])
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
@@ -25,6 +25,10 @@ struct FolderDropDelegate: DropDelegate {
     func performDrop(info: DropInfo) -> Bool {
         let providers = info.itemProviders(for: [.treewiseItem])
         Self.logger.info("A drop of \(providers.count) items landed")
+        guard !providers.isEmpty else {
+            drops.receive(info.itemProviders(for: [.item]), into: target)
+            return true
+        }
         let drops = drops
         let target = target
         Task {

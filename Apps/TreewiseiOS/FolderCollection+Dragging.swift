@@ -31,7 +31,9 @@ extension FolderCollectionCoordinator: UICollectionViewDragDelegate,
     }
 
     func collectionView(_ view: UICollectionView, canHandle session: any UIDropSession) -> Bool {
-        session.hasItemsConforming(toTypeIdentifiers: [UTType.treewiseItem.identifier])
+        session.hasItemsConforming(toTypeIdentifiers: [
+            UTType.treewiseItem.identifier, UTType.item.identifier,
+        ])
     }
 
     func collectionView(
@@ -65,6 +67,13 @@ extension FolderCollectionCoordinator: UICollectionViewDragDelegate,
             return
         }
         let providers = coordinator.items.map(\.dragItem.itemProvider)
+        let ownItems = providers.filter {
+            $0.hasItemConformingToTypeIdentifier(UTType.treewiseItem.identifier)
+        }
+        guard !ownItems.isEmpty else {
+            drops.receive(providers, into: target)
+            return
+        }
         Task {
             var dragged: [DraggedItem] = []
             for provider in providers {
