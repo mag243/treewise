@@ -107,6 +107,12 @@ enum LaunchOptions {
         return CGSize(width: parts[0], height: parts[1])
     }
 
+    /// Whether this is a run for UI tests or screenshots, which opens its windows on the
+    /// main display (`MainDisplayKeeper`).
+    static var isTestRun: Bool {
+        root != nil || windowSize != nil
+    }
+
     /// Light or dark for Treewise whatever the system uses, from
     /// `-TreewiseAppearance light|dark`, for screenshots (ADR 0041).
     static var appearance: NSAppearance? {

@@ -14,7 +14,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
         // Every quit keeps the windows for the next launch, whatever the system says.
         UserDefaults.standard.set(true, forKey: Self.quitAlwaysKeepsWindows)
-        MainActor.assumeIsolated { MainMenu.install() }
+        MainActor.assumeIsolated {
+            MainMenu.install()
+            // Before AppKit restores windows, so a restored one is kept on the main display too.
+            MainDisplayKeeper.startIfTestRun()
+        }
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
