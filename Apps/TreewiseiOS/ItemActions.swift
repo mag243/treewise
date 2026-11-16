@@ -9,7 +9,7 @@ import TreewiseUI
 struct ItemActions {
     let browser: BrowserState
     let conflicts: ConflictQuestions
-    let undoManager: UndoManager?
+    let undoManager: UndoManager
     /// Opens a folder, or shows a file in Quick Look.
     let open: (FileItem) -> Void
 

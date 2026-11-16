@@ -14,7 +14,6 @@ struct LocationsSidebar: View {
     let locations: Locations
     let addLocation: () -> Void
     let reconnect: (Bookmark) -> Void
-    @Environment(\.undoManager) private var undoManager
 
     var body: some View {
         List(selection: selection) {
@@ -57,7 +56,7 @@ struct LocationsSidebar: View {
 
     private var drops: ItemDrops? {
         locations.browser.map {
-            ItemDrops(browser: $0, locations: locations, undoManager: undoManager)
+            ItemDrops(browser: $0, locations: locations, undoManager: locations.undo.manager)
         }
     }
 

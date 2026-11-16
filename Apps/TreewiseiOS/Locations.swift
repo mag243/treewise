@@ -28,6 +28,8 @@ final class Locations {
     private(set) var unavailable: [Bookmark] = []
     /// Asks what to do with a name taken, for every operation of the window.
     let conflicts = ConflictQuestions()
+    /// The app's one undo history (ADR 0047).
+    let undo = SharedUndo()
     /// Why the last drop was refused as it landed, for an alert (ADR 0047, amended).
     var dropRefusal: String?
 

@@ -20,8 +20,8 @@ struct FolderTable: View {
             FolderTableHeadings(browser: browser)
             Divider()
             FolderCollection(
-                browser: browser, items: items, folder: folder, settings: settings,
-                actions: actions, drops: drops)
+                browser: browser, undoManager: actions.undoManager,
+                items: items, folder: folder, settings: settings, actions: actions, drops: drops)
         }
     }
 }

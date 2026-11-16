@@ -9,7 +9,6 @@ import TreewiseUI
 struct FolderView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.locale) private var locale
-    @Environment(\.undoManager) private var undoManager
     /// The file Quick Look shows, if any.
     @State private var previewed: URL?
 
@@ -18,6 +17,7 @@ struct FolderView: View {
     let locations: Locations
 
     private var conflicts: ConflictQuestions { locations.conflicts }
+    private var undoManager: UndoManager { locations.undo.manager }
 
     private var tab: TabModel { browser.layout.focusedPane.activeTab }
     private var content: TreewiseUI.TabContent { browser.content(of: tab.id) }

@@ -10,6 +10,9 @@ import UniformTypeIdentifiers
 /// goes through the drag rules (ADR 0047).
 struct FolderCollection: UIViewRepresentable {
     let browser: BrowserState
+    /// The app's one undo history, which the system's Undo, ⌘Z and the three-finger swipe
+    /// use while the table is the first responder (ADR 0047).
+    let undoManager: UndoManager
     let items: [FileItem]
     let folder: FileItem?
     let settings: BrowserSettings
@@ -23,9 +26,10 @@ struct FolderCollection: UIViewRepresentable {
     func makeUIView(context: Context) -> UICollectionView {
         var list = UICollectionLayoutListConfiguration(appearance: .plain)
         list.showsSeparators = true
-        let view = UICollectionView(
+        let view = FolderCollectionView(
             frame: .zero,
             collectionViewLayout: UICollectionViewCompositionalLayout.list(using: list))
+        view.sharedUndo = undoManager
         view.accessibilityIdentifier = "folderTable"
         context.coordinator.attach(to: view)
         return view
@@ -152,5 +156,28 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
             title: command.title, image: UIImage(systemName: command.symbol),
             attributes: attributes
         ) { _ in command.perform() }
+    }
+}
+
+/// The table's collection view: the first responder in its window, so the system's Undo and
+/// Redo, from the keyboard, the menu bar and the three-finger swipe, take from the app's one
+/// history rather than the window's own (ADR 0047).
+final class FolderCollectionView: UICollectionView {
+    var sharedUndo: UndoManager?
+
+    override var undoManager: UndoManager? { sharedUndo }
+
+    override var canBecomeFirstResponder: Bool { true }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil { becomeFirstResponder() }
+    }
+
+    /// A touch in the table takes the keyboard back, as an alert or the search field may
+    /// have held it, so Undo reaches the app's history again.
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !isFirstResponder { becomeFirstResponder() }
+        super.touchesBegan(touches, with: event)
     }
 }
