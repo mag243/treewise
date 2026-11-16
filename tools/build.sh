@@ -22,6 +22,7 @@
 #               sight. Followed by a filter, as apptest; `iosuitest --show [filter]` opens
 #               the Simulator app first, to watch.
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
+#               on the pinned iPad and a smaller one on the newest iOS (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
 #               build/ui-review-ipad/index.html. Followed by a screen (start or browser),
 #               `all` for light and dark, and `--show` to watch.
@@ -532,11 +533,13 @@ cmd_iostest() {
   ok "Package tests passed on iOS $IOS_SIMULATOR_OS. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
-# The pinned iPad simulator's id, booted and shown in the Simulator app when [1] is --show,
-# so the owner can watch the tests (ADR 0115); otherwise xcodebuild runs it out of sight.
+# The pinned iPad simulator's id, or that of the simulator named [2], booted and shown in the
+# Simulator app when [1] is --show, so the owner can watch the tests (ADR 0115); otherwise
+# xcodebuild runs it out of sight.
 ipad_simulator() {
-  local udid; udid="$(ios_simulator_udid)"
-  [[ -n "$udid" ]] || fail "Simulator '$IOS_SIMULATOR_NAME' not found. Run tools/setup.sh."
+  local name="${2:-$IOS_SIMULATOR_NAME}"
+  local udid; udid="$(ios_simulator_udid "$name")"
+  [[ -n "$udid" ]] || fail "Simulator '$name' not found. Run tools/setup.sh."
   if [[ "${1:-}" == --show ]]; then
     xcrun simctl boot "$udid" 2>/dev/null || true
     open -a Simulator --args -CurrentDeviceUDID "$udid"
@@ -580,15 +583,25 @@ cmd_iosreview() {
   [[ " $* " == *" all "* ]] && TEST_RUNNER_UIREVIEW_APPEARANCES="light,dark"
   step "iPad UI review${screen:+ of $screen}${TEST_RUNNER_UIREVIEW_APPEARANCES:+ (light and dark)}"
   require_project
-  local udid; udid="$(ipad_simulator "$show")"
-  local bundle; bundle="$(result_bundle IPadReview)"
-  only=(-only-testing:"$IPAD_REVIEW_TESTS${screen:+/test${screen^}}")
   rm -rf "$IPAD_REVIEW_DIR"
   mkdir -p "$IPAD_REVIEW_DIR"
-  xcode iosreview -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
-    "${only[@]}" test
-  local exported="$IPAD_REVIEW_DIR/attachments" rc=0
-  xcrun xcresulttool export attachments --path "$bundle" --output-path "$exported" >/dev/null
+  local exported="$IPAD_REVIEW_DIR/attachments"
+  only=(-only-testing:"$IPAD_REVIEW_TESTS${screen:+/test${screen^}}")
+  # The pinned iPad, and a smaller one on the newest iOS whose screens are named "11inch".
+  local -x TEST_RUNNER_UIREVIEW_DEVICE device name udid bundle
+  for device in "" 11inch; do
+    name="$IOS_SIMULATOR_NAME"
+    [[ -n "$device" ]] && name="$IOS_REVIEW_SIMULATOR_NAME"
+    TEST_RUNNER_UIREVIEW_DEVICE="$device"
+    udid="$(ipad_simulator "$show" "$name")"
+    bundle="$(result_bundle "IPadReview${device:+-$device}")"
+    info "On $name"
+    xcode iosreview -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
+      "${only[@]}" test
+    xcrun xcresulttool export attachments --path "$bundle" \
+      --output-path "$exported/${device:-pinned}" >/dev/null
+  done
+  local rc=0
   python3 -I "$TOOLS_DIR/uireview/report.py" "$exported" "$IPAD_REVIEW_DIR" \
     "$TOOLS_DIR/uireview/allowed-ipad.txt" || rc=$?
   rm -rf "$exported"

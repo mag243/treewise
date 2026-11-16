@@ -94,37 +94,46 @@ install_homebrew_tools() {
   done
 }
 
-# Prints the identifier of the installed iOS runtime for IOS_SIMULATOR_OS, or nothing.
+# Prints the identifier of the installed iOS runtime for version [1], or nothing.
 ios_runtime_id() {
   xcrun simctl list runtimes available 2>/dev/null |
-    grep -E "^iOS ${IOS_SIMULATOR_OS//./\\.} " |
+    grep -E "^iOS ${1//./\\.} " |
     grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+' | head -n 1 || true
 }
 
-install_simulator() {
-  step "iOS Simulator $IOS_SIMULATOR_OS"
+install_simulators() {
   if ((WITH_SIMULATOR == 0)); then
+    step "iOS Simulators"
     info "Skipped (--no-simulator)"
     return
   fi
-  local runtime; runtime="$(ios_runtime_id)"
+  install_simulator "$IOS_SIMULATOR_OS" "$IOS_SIMULATOR_DEVICE_TYPE" "$IOS_SIMULATOR_NAME"
+  install_simulator "$IOS_REVIEW_SIMULATOR_OS" "$IOS_REVIEW_SIMULATOR_DEVICE_TYPE" \
+    "$IOS_REVIEW_SIMULATOR_NAME"
+}
+
+# Installs the runtime of iOS [1] when missing and creates the simulator [3] of device type [2].
+install_simulator() {
+  local os="$1" type="$2" name="$3"
+  step "iOS Simulator $os ($type)"
+  local runtime; runtime="$(ios_runtime_id "$os")"
   if [[ -n "$runtime" ]]; then
     ok "Runtime $runtime"
   else
-    info "Downloading the iOS $IOS_SIMULATOR_OS runtime (several GB)"
-    xcodebuild -downloadPlatform iOS -buildVersion "$IOS_SIMULATOR_OS" \
-      || fail "Could not download the iOS $IOS_SIMULATOR_OS runtime"
-    runtime="$(ios_runtime_id)"
-    [[ -n "$runtime" ]] || fail "iOS $IOS_SIMULATOR_OS runtime still missing after the download"
+    info "Downloading the iOS $os runtime (several GB)"
+    xcodebuild -downloadPlatform iOS -buildVersion "$os" \
+      || fail "Could not download the iOS $os runtime"
+    runtime="$(ios_runtime_id "$os")"
+    [[ -n "$runtime" ]] || fail "iOS $os runtime still missing after the download"
     ok "Installed $runtime"
   fi
-  local udid; udid="$(ios_simulator_udid)"
+  local udid; udid="$(ios_simulator_udid "$name")"
   if [[ -n "$udid" ]]; then
-    ok "Simulator '$IOS_SIMULATOR_NAME' ($udid)"
+    ok "Simulator '$name' ($udid)"
   else
-    udid="$(xcrun simctl create "$IOS_SIMULATOR_NAME" "$IOS_SIMULATOR_DEVICE_TYPE" "$runtime")" \
-      || fail "Could not create simulator '$IOS_SIMULATOR_NAME'"
-    ok "Created simulator '$IOS_SIMULATOR_NAME' ($udid)"
+    udid="$(xcrun simctl create "$name" "$type" "$runtime")" \
+      || fail "Could not create simulator '$name'"
+    ok "Created simulator '$name' ($udid)"
   fi
 }
 
@@ -158,7 +167,7 @@ install_dmgbuild() {
 
 check_xcode
 install_homebrew_tools
-install_simulator
+install_simulators
 configure_git
 resolve_package
 install_dmgbuild

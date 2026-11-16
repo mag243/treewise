@@ -48,10 +48,12 @@ xcode_version() {
   xcodebuild -version 2>/dev/null | sed -n 's/^Xcode \([0-9][0-9.]*\).*/\1/p' | head -n 1
 }
 
-# Prints the UDID of the Treewise test simulator, or nothing when it does not exist.
+# Prints the UDID of the Treewise test simulator, or of the simulator named [1], or nothing
+# when it does not exist.
 ios_simulator_udid() {
+  local name="${1:-$IOS_SIMULATOR_NAME}"
   xcrun simctl list devices available 2>/dev/null |
-    grep -F "    $IOS_SIMULATOR_NAME (" |
+    grep -F "    $name (" |
     grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}' | head -n 1 || true
 }
 

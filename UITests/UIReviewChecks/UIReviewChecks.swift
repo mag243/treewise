@@ -112,8 +112,12 @@ enum UIReviewChecks {
         lists: inout [any XCUIElementSnapshot]
     ) {
         let frame = snapshot.frame
-        // What a list scrolled out of sight is not on screen.
-        if let list, !frame.isEmpty, !frame.intersects(list.frame) { return }
+        // What a list scrolled out of sight, above or below it, is not on screen; beside it,
+        // it is cut off.
+        if let list, !frame.isEmpty, frame.maxY <= list.frame.minY || frame.minY >= list.frame.maxY
+        {
+            return
+        }
         placed.append(
             Placed(
                 snapshot: snapshot, list: list?.frame, listScrolls: list?.scrolls ?? false,

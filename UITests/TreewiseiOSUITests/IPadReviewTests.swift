@@ -24,6 +24,12 @@ final class IPadReviewTests: XCTestCase {
         return list.isEmpty ? ["light"] : list
     }
 
+    /// The device's name in the screens' names, as `UIREVIEW_DEVICE` gives it: empty on the
+    /// pinned iPad, `11inch` on the smaller one (ADR 0115).
+    private static var device: String {
+        ProcessInfo.processInfo.environment["UIREVIEW_DEVICE"] ?? ""
+    }
+
     override func setUp() {
         continueAfterFailure = false
     }
@@ -35,7 +41,8 @@ final class IPadReviewTests: XCTestCase {
             XCUIDevice.shared.appearance = appearance == "dark" ? .dark : .light
             for (name, orientation) in Self.orientations {
                 XCUIDevice.shared.orientation = orientation
-                try walk("\(name)-\(appearance)")
+                let place = Self.device.isEmpty ? name : "\(name)-\(Self.device)"
+                try walk("\(place)-\(appearance)")
             }
         }
         XCUIDevice.shared.appearance = .light

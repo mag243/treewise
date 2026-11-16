@@ -4,6 +4,7 @@ and findings.txt. Findings listed in allowed.txt, with their reason, are shown b
 nothing. Exits 1 when any other finding is left.
 
 Usage: python3 -I report.py <exported attachments folder> <output folder> <allowed.txt>
+The attachments folder holds one export, or one folder per exported result bundle.
 """
 
 import html
@@ -42,9 +43,14 @@ def is_allowed(screen: str, finding: dict, allowed) -> bool:
 def main() -> None:
     exported, output, allowed_path = (Path(arg) for arg in sys.argv[1:4])
     allowed = allowed_entries(allowed_path) if allowed_path.exists() else []
-    manifest = json.loads((exported / "manifest.json").read_text())
     screens: dict[str, dict] = {}
-    for test in manifest:
+    # One manifest per result bundle, in the folder itself or one folder per bundle in it.
+    tests = [
+        (path.parent, test)
+        for path in sorted(exported.rglob("manifest.json"))
+        for test in json.loads(path.read_text())
+    ]
+    for folder, test in tests:
         for attachment in test.get("attachments", []):
             name = attachment.get("suggestedHumanReadableName", "")
             if not name.startswith(PREFIX):
@@ -53,7 +59,7 @@ def main() -> None:
             parts = UNIQUE.match(name)
             name, extension = (parts[1], parts[2] or "") if parts else (name, "")
             name = name[len(PREFIX):]
-            source = exported / attachment["exportedFileName"]
+            source = folder / attachment["exportedFileName"]
             if extension == ".findings":
                 screens.setdefault(name, {})["findings"] = json.loads(source.read_text() or "[]")
             else:
