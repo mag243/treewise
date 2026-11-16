@@ -30,3 +30,7 @@ __pycache__/
 
 # Coverage output of swift test and instrumented runs
 *.profraw
+
+# App Store Connect API keys live in ~/.config/treewise, never here (ADR 0118)
+*.p8
+asc-credentials.env
