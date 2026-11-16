@@ -13,6 +13,8 @@ struct FolderCollection: UIViewRepresentable {
     /// The app's one undo history, which the system's Undo, ⌘Z and the three-finger swipe
     /// use while the table is the first responder (ADR 0047).
     let undoManager: UndoManager
+    /// Whether the rows are a narrow folder's: the name with the date and size beneath it.
+    let isNarrow: Bool
     let items: [FileItem]
     let folder: FileItem?
     let settings: BrowserSettings
@@ -69,10 +71,16 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
     private func configure(_ cell: UICollectionViewListCell, for id: FileItem.ID) {
         guard let item = itemsByID[id] else { return }
         let showsExtensions = content?.settings.showsExtensions ?? true
-        cell.contentConfiguration = UIHostingConfiguration {
-            FolderTableRow(item: item, showsExtensions: showsExtensions)
+        if content?.isNarrow == true {
+            cell.contentConfiguration = UIHostingConfiguration {
+                FolderNarrowRow(item: item, showsExtensions: showsExtensions)
+            }
+        } else {
+            cell.contentConfiguration = UIHostingConfiguration {
+                FolderTableRow(item: item, showsExtensions: showsExtensions)
+            }
+            .margins(.horizontal, FolderTableColumn.margin)
         }
-        .margins(.horizontal, FolderTableColumn.margin)
     }
 
     func update(with content: FolderCollection, in view: UICollectionView) {
@@ -82,7 +90,8 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         var snapshot = NSDiffableDataSourceSnapshot<Int, FileItem.ID>()
         snapshot.appendSections([0])
         snapshot.appendItems(content.items.map(\.id))
-        // An item may change under the same identity, as when it is renamed or its size changes.
+        // An item may change under the same identity, as when it is renamed or its size
+        // changes, and every row changes when the folder turns narrow or wide.
         let shown = Set(dataSource?.snapshot().itemIdentifiers ?? [])
         snapshot.reconfigureItems(content.items.map(\.id).filter(shown.contains))
         dataSource?.apply(snapshot, animatingDifferences: !isFirst)

@@ -2,10 +2,12 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// The folder as a table with the Mac's columns, on a wide screen (ADR 0116): headings in
-/// SwiftUI that sort through `BrowserState`, so folders stay first and names compare as on
-/// the Mac (PLAN.md §4), above rows in a UIKit collection view, which take drops on their
-/// folders (ADR 0047).
+/// The folder as a table with the Mac's columns (ADR 0116): headings in SwiftUI that sort
+/// through `BrowserState`, so folders stay first and names compare as on the Mac (PLAN.md §4),
+/// above rows in a UIKit collection view, which take drops on their folders (ADR 0047).
+/// Where the folder is narrower than the columns need, as on a compact screen or an 11-inch
+/// iPad in portrait beside the sidebar, the headings go and each row shows the name with the
+/// date and size beneath it.
 struct FolderTable: View {
     let browser: BrowserState
     let items: [FileItem]
@@ -14,14 +16,30 @@ struct FolderTable: View {
     let settings: BrowserSettings
     let actions: ItemActions
     let drops: ItemDrops
+    /// Whether the screen is compact, where the folder is always narrow.
+    let isCompact: Bool
+
+    @State private var width: CGFloat = 0
+
+    private var isNarrow: Bool {
+        isCompact || width < FolderTableColumn.minimumTableWidth
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            FolderTableHeadings(browser: browser)
-            Divider()
+            if !isNarrow {
+                FolderTableHeadings(browser: browser)
+                Divider()
+            }
             FolderCollection(
-                browser: browser, undoManager: actions.undoManager,
+                browser: browser, undoManager: actions.undoManager, isNarrow: isNarrow,
                 items: items, folder: folder, settings: settings, actions: actions, drops: drops)
+        }
+        .frame(maxWidth: .infinity)
+        .onGeometryChange(for: CGFloat.self) {
+            $0.size.width
+        } action: {
+            width = $0
         }
     }
 }
@@ -35,6 +53,14 @@ enum FolderTableColumn: CaseIterable {
     static let margin: CGFloat = 20
     /// The room between two columns.
     static let spacing: CGFloat = 12
+    /// The narrowest the name column may be before the folder shows its narrow rows.
+    static let minimumNameWidth: CGFloat = 200
+
+    /// The width the columns need, with a name of `minimumNameWidth`.
+    static var minimumTableWidth: CGFloat {
+        let fixed = allCases.compactMap(\.width).reduce(0, +)
+        return margin * 2 + spacing * CGFloat(allCases.count - 1) + fixed + minimumNameWidth
+    }
 
     var sortColumn: SortColumn {
         switch self {

@@ -3,8 +3,8 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// The folder the browser shows: its path above a table on a wide screen or
-/// a list on a narrow one, with Back, Forward and Enclosing Folder. Opening
+/// The folder the browser shows: its path above its table, with Back, Forward
+/// and Enclosing Folder. Opening
 /// a folder goes into it; opening a file shows it in Quick Look.
 struct FolderView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -77,16 +77,10 @@ struct FolderView: View {
         Binding(get: { browser.failure != nil }, set: { if !$0 { browser.clearFailure() } })
     }
 
-    @ViewBuilder private var list: some View {
-        if sizeClass == .compact {
-            FolderList(
-                browser: browser, items: items, settings: settings, actions: actions,
-                drops: drops, folder: content.folder)
-        } else {
-            FolderTable(
-                browser: browser, items: items, folder: content.folder, settings: settings,
-                actions: actions, drops: drops)
-        }
+    private var list: some View {
+        FolderTable(
+            browser: browser, items: items, folder: content.folder, settings: settings,
+            actions: actions, drops: drops, isCompact: sizeClass == .compact)
     }
 
     @ViewBuilder private var placeholder: some View {
