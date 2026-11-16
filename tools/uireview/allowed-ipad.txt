@@ -1,0 +1,3 @@
+# Findings of the iPad's UI review that are meant (ADR 0115), each with its reason:
+#   screen | check | element  # why
+# A screen is named without its appearance, as start-landscape, or `*` for all.

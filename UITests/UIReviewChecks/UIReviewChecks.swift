@@ -1,5 +1,10 @@
-import AppKit
 import XCTest
+
+#if canImport(AppKit)
+    import AppKit
+#else
+    import UIKit
+#endif
 
 /// What the UI review found wrong on one screen (ADR 0103).
 struct UIReviewFinding: Codable, Hashable {
@@ -32,8 +37,13 @@ enum UIReviewChecks {
     private static let scrollSlack: CGFloat = 4
     /// How far a line of text may sit from the middle of its row.
     static let centreSlack: CGFloat = 3
-    /// The font of a list's rows, to measure what a text needs.
-    static let listFont = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+    /// The font of a list's rows, to measure what a text needs: the platform's own
+    /// (ADR 0115).
+    #if canImport(AppKit)
+        static let listFont = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+    #else
+        static let listFont = UIFont.preferredFont(forTextStyle: .body)
+    #endif
     /// How much wider than its frame a text must need to count as cut short; a heading in
     /// a smaller font than the list's needs less than it is measured at.
     static let cutSlack: CGFloat = 6

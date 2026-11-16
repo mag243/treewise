@@ -90,6 +90,11 @@
 			path = TreewiseiOSUITests;
 			sourceTree = "<group>";
 		};
+		710000000000000000007006 /* UIReviewChecks */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = UIReviewChecks;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -175,6 +180,7 @@
 			children = (
 				710000000000000000007003 /* TreewiseMacUITests */,
 				710000000000000000007005 /* TreewiseiOSUITests */,
+				710000000000000000007006 /* UIReviewChecks */,
 			);
 			path = UITests;
 			sourceTree = "<group>";
@@ -251,6 +257,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				710000000000000000007003 /* TreewiseMacUITests */,
+				710000000000000000007006 /* UIReviewChecks */,
 			);
 			name = TreewiseMacUITests;
 			productName = TreewiseMacUITests;
@@ -296,6 +303,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				710000000000000000007005 /* TreewiseiOSUITests */,
+				710000000000000000007006 /* UIReviewChecks */,
 			);
 			name = TreewiseiOSUITests;
 			productName = TreewiseiOSUITests;

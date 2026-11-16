@@ -18,8 +18,13 @@
 #               tools/build.sh apptest LaunchTests/testSpaceShowsQuickLook
 #   iostest     The package tests on the pinned iOS Simulator (tools/versions.env), so
 #               the shared code is tested on iOS too (M6a).
-#   iosuitest   The iPad app's UI tests on the pinned iOS Simulator (ADR 0114); the
-#               Simulator's window may come to the front. Followed by a filter, as apptest.
+#   iosuitest   The iPad app's UI tests on the pinned iOS Simulator (ADR 0114), out of
+#               sight. Followed by a filter, as apptest; `iosuitest --show [filter]` opens
+#               the Simulator app first, to watch.
+#   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
+#               checked for quirks as uireview does, with a screenshot of each in
+#               build/ui-review-ipad/index.html. Followed by a screen (start or browser),
+#               `all` for light and dark, and `--show` to watch.
 #   run         Build the macOS app and start it. Every word after run goes to the
 #               app: tools/build.sh run -TreewiseRoot /tmp/fixture. `run sandbox`
 #               starts it confined to the sandbox volumes, attached first (ADR 0019).
@@ -114,7 +119,7 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest run package export fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest iosreview run package export fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
@@ -123,6 +128,10 @@ SANDBOX_TESTS="TreewiseMacUITests/SandboxVolumeTests"
 UIREVIEW_TESTS="TreewiseMacUITests/UIReviewTests"
 UIREVIEW_DIR="$BUILD_DIR/ui-review"
 UIREVIEW_CATEGORIES=" settings browser templates names dialogs "
+# The iPad's UI review (ADR 0115).
+IPAD_REVIEW_TESTS="TreewiseiOSUITests/IPadReviewTests"
+IPAD_REVIEW_DIR="$BUILD_DIR/ui-review-ipad"
+IPAD_REVIEW_SCREENS=" start browser "
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
 declare -a SUMMARY=()
 
@@ -523,20 +532,68 @@ cmd_iostest() {
   ok "Package tests passed on iOS $IOS_SIMULATOR_OS. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
-# The iPad app's UI tests on the pinned simulator (ADR 0114), or only those of filter [1],
-# as Class or Class/testName separated by commas.
-cmd_iosuitest() {
-  local filter="${1:-}" only=() tests=() test
-  step "iPad app UI tests${filter:+ ($filter)}"
-  require_project
+# The pinned iPad simulator's id, booted and shown in the Simulator app when [1] is --show,
+# so the owner can watch the tests (ADR 0115); otherwise xcodebuild runs it out of sight.
+ipad_simulator() {
   local udid; udid="$(ios_simulator_udid)"
   [[ -n "$udid" ]] || fail "Simulator '$IOS_SIMULATOR_NAME' not found. Run tools/setup.sh."
+  if [[ "${1:-}" == --show ]]; then
+    xcrun simctl boot "$udid" 2>/dev/null || true
+    open -a Simulator --args -CurrentDeviceUDID "$udid"
+  fi
+  echo "$udid"
+}
+
+# The iPad app's UI tests on the pinned simulator (ADR 0114), or only those of the filter,
+# as Class or Class/testName separated by commas; --show first opens the Simulator app.
+cmd_iosuitest() {
+  local show="" filter="" only=() tests=() test
+  for word in "$@"; do
+    if [[ "$word" == --show ]]; then show=--show; else filter="$word"; fi
+  done
+  step "iPad app UI tests${filter:+ ($filter)}"
+  require_project
+  local udid; udid="$(ipad_simulator "$show")"
   local bundle; bundle="$(result_bundle "TreewiseiOS-UI")"
   IFS=, read -ra tests <<<"$filter"
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseiOSUITests/$test"); done
   xcode iosuitest -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
-    "${only[@]}" test
+    -skip-testing:"$IPAD_REVIEW_TESTS" "${only[@]}" test
   ok "iPad app UI tests passed on iOS $IOS_SIMULATOR_OS. Results: ${bundle#"$ROOT_DIR"/}"
+}
+
+# The iPad's UI review (ADR 0115): a screen, `all` for light and dark, and --show.
+cmd_iosreview() {
+  local word screen="" show="" only=()
+  for word in "$@"; do
+    case "$word" in
+      all) ;;
+      --show) show=--show ;;
+      *)
+        [[ "$IPAD_REVIEW_SCREENS" == *" $word "* ]] ||
+          fail "iosreview takes a screen (${IPAD_REVIEW_SCREENS# }), all and --show."
+        screen="$word"
+        ;;
+    esac
+  done
+  local -x TEST_RUNNER_UIREVIEW_APPEARANCES=""
+  [[ " $* " == *" all "* ]] && TEST_RUNNER_UIREVIEW_APPEARANCES="light,dark"
+  step "iPad UI review${screen:+ of $screen}${TEST_RUNNER_UIREVIEW_APPEARANCES:+ (light and dark)}"
+  require_project
+  local udid; udid="$(ipad_simulator "$show")"
+  local bundle; bundle="$(result_bundle IPadReview)"
+  only=(-only-testing:"$IPAD_REVIEW_TESTS${screen:+/test${screen^}}")
+  rm -rf "$IPAD_REVIEW_DIR"
+  mkdir -p "$IPAD_REVIEW_DIR"
+  xcode iosreview -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
+    "${only[@]}" test
+  local exported="$IPAD_REVIEW_DIR/attachments" rc=0
+  xcrun xcresulttool export attachments --path "$bundle" --output-path "$exported" >/dev/null
+  python3 -I "$TOOLS_DIR/uireview/report.py" "$exported" "$IPAD_REVIEW_DIR" \
+    "$TOOLS_DIR/uireview/allowed-ipad.txt" || rc=$?
+  rm -rf "$exported"
+  ((rc == 0)) || fail "The iPad UI review found quirks: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
+  ok "No quirks found: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
 }
 
 # Builds the macOS app (Debug) and starts it in the foreground with the arguments given.
@@ -968,7 +1025,8 @@ run_command() {
     build) timed build cmd_build ;;
     apptest) timed apptest cmd_apptest "${2:-}" ;;
     iostest) timed iostest cmd_iostest ;;
-    iosuitest) timed iosuitest cmd_iosuitest "${2:-}" ;;
+    iosuitest) timed iosuitest cmd_iosuitest "${@:2}" ;;
+    iosreview) timed iosreview cmd_iosreview "${@:2}" ;;
     package) timed package cmd_package ;;
     export) timed export cmd_export ;;
     publish) timed publish cmd_publish ;;
@@ -998,10 +1056,24 @@ while (($#)); do
   elif [[ "$c" == run-official ]]; then
     cmd_run_official "$@"
     exit 0
-  elif [[ ( "$c" == test || "$c" == apptest || "$c" == iosuitest ) && -n "${1:-}" && "$COMMANDS" != *" $1 "* ]]; then
-    # test, apptest and iosuitest take an optional filter as their next word, unless that
+  elif [[ ( "$c" == test || "$c" == apptest ) && -n "${1:-}" && "$COMMANDS" != *" $1 "* ]]; then
+    # test and apptest take an optional filter as their next word, unless that
     # word is a command.
     run_command "$c" "$1"; shift
+  elif [[ "$c" == iosuitest ]]; then
+    # iosuitest takes --show and a filter as its next words, a word that is no command.
+    words=()
+    while (($#)) && [[ "$1" == --show || "$COMMANDS" != *" $1 "* ]]; do
+      words+=("$1"); shift
+    done
+    run_command "$c" "${words[@]}"
+  elif [[ "$c" == iosreview ]]; then
+    # iosreview takes a screen, `all` and --show as its next words.
+    words=()
+    while (($#)) && [[ "$1" == all || "$1" == --show || "$IPAD_REVIEW_SCREENS" == *" $1 "* ]]; do
+      words+=("$1"); shift
+    done
+    run_command "$c" "${words[@]}"
   elif [[ "$c" == uireview ]]; then
     # uireview takes a category and `all` as its next words.
     words=()

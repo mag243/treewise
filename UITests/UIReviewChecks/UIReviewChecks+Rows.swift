@@ -1,5 +1,10 @@
-import AppKit
 import XCTest
+
+#if canImport(AppKit)
+    import AppKit
+#else
+    import UIKit
+#endif
 
 /// The UI review's checks of a list's rows (ADR 0103): a row far taller than what it shows,
 /// a line of text off its middle, and a text cut short while the row has room after it.
