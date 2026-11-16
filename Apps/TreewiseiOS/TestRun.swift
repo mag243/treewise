@@ -5,11 +5,13 @@ import Foundation
 /// folders the app may read.
 /// - `-TreewiseTestState <name>`: the run's state, found again by a relaunch with that name.
 /// - `-TreewiseTestFixture YES`: the folders `Documents` and `Work`, added when none are.
+/// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders (`DemoTree`).
 /// - `-TreewiseTestRemove <folder>`: removes a fixture folder before the locations are read.
 struct TestRun {
     private static let stateArgument = "TreewiseTestState"
     private static let fixtureArgument = "TreewiseTestFixture"
     private static let removeArgument = "TreewiseTestRemove"
+    private static let demoArgument = "TreewiseTestDemo"
     /// The fixture's folders and their files.
     private static let fixture: [String: [String]] = [
         "Documents": ["Notes.md", "Budget.txt", "Projects/"],
@@ -39,6 +41,11 @@ struct TestRun {
 
     /// The fixture's folders to add, made if they are missing, when the launch asks for them.
     func fixtureFolders() throws -> [URL] {
+        #if DEBUG
+            if UserDefaults.standard.bool(forKey: Self.demoArgument) {
+                return try DemoTree.make(in: folder)
+            }
+        #endif
         guard UserDefaults.standard.bool(forKey: Self.fixtureArgument) else { return [] }
         let manager = FileManager.default
         var folders: [URL] = []

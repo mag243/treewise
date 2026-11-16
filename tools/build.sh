@@ -26,6 +26,9 @@
 #               checked for quirks as uireview does, with a screenshot of each in
 #               build/ui-review-ipad/index.html. Followed by a screen (start or browser),
 #               `all` for light and dark, and `--show` to watch.
+#   appstorescreenshots  The iPad app's App Store screenshots (ADR 0118) on the pinned
+#               iPad, in English, Dutch and German, in build/appstore/screenshots/, for
+#               tools/appstore/upload.py; `--show` to watch.
 #   run         Build the macOS app and start it. Every word after run goes to the
 #               app: tools/build.sh run -TreewiseRoot /tmp/fixture. `run sandbox`
 #               starts it confined to the sandbox volumes, attached first (ADR 0019).
@@ -120,7 +123,7 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest iosreview run package export fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest iosreview run package export appstorescreenshots fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
@@ -131,6 +134,8 @@ UIREVIEW_DIR="$BUILD_DIR/ui-review"
 UIREVIEW_CATEGORIES=" settings browser templates names dialogs "
 # The iPad's UI review (ADR 0115).
 IPAD_REVIEW_TESTS="TreewiseiOSUITests/IPadReviewTests"
+APPSTORE_SCREENSHOT_TESTS="TreewiseiOSUITests/AppStoreScreenshotTests"
+APPSTORE_SCREENSHOT_DIR="$BUILD_DIR/appstore/screenshots"
 IPAD_REVIEW_DIR="$BUILD_DIR/ui-review-ipad"
 IPAD_REVIEW_SCREENS=" start browser "
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
@@ -561,7 +566,7 @@ cmd_iosuitest() {
   IFS=, read -ra tests <<<"$filter"
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseiOSUITests/$test"); done
   xcode iosuitest -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
-    -skip-testing:"$IPAD_REVIEW_TESTS" "${only[@]}" test
+    -skip-testing:"$IPAD_REVIEW_TESTS" -skip-testing:"$APPSTORE_SCREENSHOT_TESTS" "${only[@]}" test
   ok "iPad app UI tests passed on iOS $IOS_SIMULATOR_OS. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
@@ -607,6 +612,31 @@ cmd_iosreview() {
   rm -rf "$exported"
   ((rc == 0)) || fail "The iPad UI review found quirks: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
   ok "No quirks found: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
+}
+
+# The iPad app's App Store screenshots (ADR 0118): AppStoreScreenshotTests on the pinned
+# 13-inch iPad in each language of the listing, with the status bar's time fixed, copied to
+# build/appstore/screenshots/<locale>/ for tools/appstore/upload.py; --show opens Simulator.
+cmd_appstorescreenshots() {
+  step "App Store screenshots"
+  require_project
+  local udid; udid="$(ipad_simulator "${1:-}")"
+  local bundle; bundle="$(result_bundle "AppStoreScreenshots")"
+  rm -rf "$APPSTORE_SCREENSHOT_DIR"
+  mkdir -p "$APPSTORE_SCREENSHOT_DIR"
+  xcrun simctl boot "$udid" 2>/dev/null || true
+  xcrun simctl status_bar "$udid" override --time 9:41 --batteryState charged --batteryLevel 100 \
+    --wifiBars 3 --cellularMode notSupported
+  local rc=0
+  xcode appstorescreenshots -scheme "$IOS_SCHEME" -destination "id=$udid" \
+    -resultBundlePath "$bundle" -only-testing:"$APPSTORE_SCREENSHOT_TESTS" test || rc=$?
+  xcrun simctl status_bar "$udid" clear
+  ((rc == 0)) || exit "$rc"
+  local exported="$APPSTORE_SCREENSHOT_DIR/attachments"
+  xcrun xcresulttool export attachments --path "$bundle" --output-path "$exported" >/dev/null
+  python3 -I "$TOOLS_DIR/appstore/collect_screenshots.py" "$exported" "$APPSTORE_SCREENSHOT_DIR"
+  rm -rf "$exported"
+  ok "Screenshots in ${APPSTORE_SCREENSHOT_DIR#"$ROOT_DIR"/}"
 }
 
 # Builds the macOS app (Debug) and starts it in the foreground with the arguments given.
@@ -1040,6 +1070,7 @@ run_command() {
     iostest) timed iostest cmd_iostest ;;
     iosuitest) timed iosuitest cmd_iosuitest "${@:2}" ;;
     iosreview) timed iosreview cmd_iosreview "${@:2}" ;;
+    appstorescreenshots) timed appstorescreenshots cmd_appstorescreenshots "${@:2}" ;;
     package) timed package cmd_package ;;
     export) timed export cmd_export ;;
     publish) timed publish cmd_publish ;;

@@ -26,6 +26,7 @@ struct ViewMenu: View {
         } label: {
             Label("View", systemImage: "ellipsis.circle")
         }
+        .accessibilityIdentifier("viewMenu")
     }
 
     private var column: Binding<SortColumn> {
