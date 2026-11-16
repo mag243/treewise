@@ -3,6 +3,41 @@
     <channel>
         <title>Treewise</title>
         <item>
+            <title>0.9.0</title>
+            <pubDate>Mon, 16 Nov 2026 11:54:49 +0100</pubDate>
+            <sparkle:version>2026.1116.115202</sparkle:version>
+            <sparkle:shortVersionString>0.9.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[Set up the same folders again in one go: for a new client, a new project or a new year.
+
+### New
+- **Folder templates.** Save a folder's structure, its folders without their files, as a template, and make it anywhere with New Folders from Template. You see every folder before it is made, folders already there are kept and filled, and one Undo takes them all away again.
+- **Copy and paste a folder structure** without saving a template: Copy Folder Structure on one folder, Paste Folder Structure… on another.
+- **Folder names that fill themselves in.** A template's names can hold the year, a number that counts on, today's date or a text you type when you make it. A folder can repeat for each month, quarter or half, so one template makes `01 January` to `12 December`.
+- **Settings › Templates** to rename, edit, duplicate, import and export your templates.
+- **The Folder Structure Templates add-on**, free to try for 14 days, makes one template from a year's folder that works for every year. When a new year's folder is empty or lacks folders of the year before, it offers to make them.
+- **About Treewise** says what Treewise is, with links to the website, the source code and the privacy statement. Help › Acknowledgements lists the licences of the parts it uses.
+
+### Improved
+- **Faster in large folders.** Suggest Names proposes names in a folder with a thousand files several times faster, and the icon view makes only the thumbnails you see and uses less memory for them.
+- **Suggest Names says why** it has nothing to propose, in a bar above the list.
+- **Tidier Settings.** Add-ons are grouped under Names and Folders, every list has a right-click menu, and name patterns can be duplicated.
+- **The sidebar** shows no disclosure triangle on a folder without subfolders, shows a long name in full when you point at it, and starts at a comfortable width in a new window.
+- **A narrow list** makes its names narrower first and then scrolls sideways, as Finder does, instead of cutting off columns.
+
+### Fixed
+- The sidebar shows a new, renamed or removed folder at once, whether Treewise or another app changed it.
+- After a restart, or a jump to a folder far down a long tree, the sidebar shows that folder in its middle instead of at its edge.
+- Window Beside on a small screen no longer leaves a window partly off the screen.
+- The command bar's menus show their icons again on macOS 27.
+- An item dropped on a sidebar folder that opened while you held it over it lands in that folder.
+- Compressing two items with the same name from different folders keeps both.
+- An Undo that cannot be done says so.
+- Settings › Add-ons no longer shows an add-on twice after it is dragged.
+]]></description>
+            <enclosure url="https://github.com/mag243/treewise/releases/download/v0.9.0/Treewise-0.9.0-2026.1116.115202.zip" length="5908613" type="application/octet-stream" sparkle:edSignature="aq5LiITQNcNJp7TG/to9gsD8Agrj7N+izmldF4mv7UDXHdZlsOMwx4Lo92UP1yFWjOQ6F25D+HNLsYFiGBepAg=="/>
+        </item>
+        <item>
             <title>0.8.5</title>
             <pubDate>Fri, 13 Nov 2026 19:57:45 +0100</pubDate>
             <sparkle:version>2026.1113.195502</sparkle:version>
