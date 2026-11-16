@@ -30,6 +30,8 @@ final class ScreenshotTests: XCTestCase {
     @MainActor func testNameSuggestionsDark() throws { try nameSuggestions(dark: true) }
     @MainActor func testCopyToAnotherVolumeLight() throws { try copyToAnotherVolume(dark: false) }
     @MainActor func testCopyToAnotherVolumeDark() throws { try copyToAnotherVolume(dark: true) }
+    @MainActor func testFolderTemplateLight() throws { try folderTemplate(dark: false) }
+    @MainActor func testFolderTemplateDark() throws { try folderTemplate(dark: true) }
 
     // MARK: - Scenes
 
@@ -133,6 +135,25 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(stop.waitForExistence(timeout: Self.timeout), "the copy shows its progress")
         keep(window.screenshot(), as: name("06-progress", dark: dark))
         stop.click()
+    }
+
+    /// A year's folders about to be saved as a template: the sheet with the tree of folders.
+    @MainActor
+    private func folderTemplate(dark: Bool) throws {
+        let app = try launch(dark: dark)
+        go(to: "Documents/Administration", in: app)
+        let window = app.windows.firstMatch
+        let year = window.tables.staticTexts["2025"]
+        XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
+        year.rightClick()
+        window.tables.menus.menuItems["Save Folder Structure as Template…"].click()
+        let sheet = window.sheets.firstMatch
+        XCTAssertTrue(
+            sheet.staticTexts["Appeals"].waitForExistence(timeout: Self.timeout),
+            "the sheet shows the tree")
+        settleScene()
+        keep(window.screenshot(), as: name("07-templates", dark: dark))
+        sheet.buttons["Cancel"].click()
     }
 
     @MainActor
