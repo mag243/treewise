@@ -6,7 +6,7 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
-## [0.9.0] - 2026-11-15
+## [0.9.0] - 2026-11-16
 
 Set up the same folders again in one go: for a new client, a new project or a new year.
 
