@@ -1,4 +1,6 @@
 import Foundation
+import TreewiseCore
+import os
 
 /// The folders the user added through the document picker on iOS (ADR 0045):
 /// kept as bookmarks, resolved on every launch, and accessed for as long as
@@ -8,9 +10,14 @@ import Foundation
 /// security scope. The scope covers the folder's whole tree for the process,
 /// so items under it can be read through fresh URLs of their paths.
 ///
+/// A folder that cannot be reached at launch, such as one on a drive that is not
+/// attached, is kept and listed as unavailable, to be picked again (ADR 0111).
+///
 /// Invariant: every listed folder's scope was started once and is stopped when
 /// the folder is removed.
 public actor AddedFolders {
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "locations")
+
     private struct Added {
         let bookmark: Bookmark
         let url: URL
@@ -22,6 +29,7 @@ public actor AddedFolders {
 
     private let store: BookmarkStore
     private var added: [Added] = []
+    private var missing: [Bookmark] = []
 
     /// Creates the list over `store`; `load()` resolves its bookmarks.
     public init(store: BookmarkStore) {
@@ -33,19 +41,61 @@ public actor AddedFolders {
         added.map(\.url)
     }
 
+    /// The saved folders that could not be reached at the last `load()`, oldest first.
+    public func unavailable() -> [Bookmark] {
+        missing
+    }
+
     /// Resolves the saved bookmarks and starts their scopes. A bookmark whose
-    /// folder cannot be resolved, such as one on a drive that is not
-    /// connected, is left out and kept for a later launch.
+    /// folder cannot be resolved or reached, such as one on a drive that is not
+    /// connected, is listed as unavailable and kept for a later launch. A stale
+    /// bookmark is renewed inside its folder's scope; when that fails, its folder
+    /// stays added with the old data.
     public func load() async {
         stopAll()
+        missing = []
         for bookmark in await store.bookmarks() {
-            guard let url = try? await store.resolve(bookmark) else { continue }
+            guard let resolved = try? await store.resolve(bookmark) else {
+                missing.append(bookmark)
+                continue
+            }
+            let url = resolved.url
             let isScoped = url.startAccessingSecurityScopedResource()
             guard (try? url.checkResourceIsReachable()) == true else {
                 if isScoped { url.stopAccessingSecurityScopedResource() }
+                missing.append(bookmark)
                 continue
             }
+            if resolved.isStale { await renew(bookmark, for: url) }
             added.append(Added(bookmark: bookmark, url: url, isScoped: isScoped))
+        }
+    }
+
+    /// Puts a folder the user picked in the place of one that could not be reached.
+    ///
+    /// - Throws: when the system cannot make a bookmark for the folder.
+    public func reconnect(_ bookmark: Bookmark, to url: URL) async throws {
+        guard index(of: url) == nil else {
+            await store.remove(bookmark)
+            missing.removeAll { $0.id == bookmark.id }
+            return
+        }
+        let isScoped = url.startAccessingSecurityScopedResource()
+        do {
+            let renewed = try await store.replace(bookmark, with: url)
+            added.append(Added(bookmark: renewed, url: url, isScoped: isScoped))
+            missing.removeAll { $0.id == bookmark.id }
+        } catch {
+            if isScoped { url.stopAccessingSecurityScopedResource() }
+            throw error
+        }
+    }
+
+    private func renew(_ bookmark: Bookmark, for url: URL) async {
+        do {
+            try await store.renew(bookmark, for: url)
+        } catch {
+            Self.logger.error("A stale bookmark was not renewed: \(error.localizedDescription)")
         }
     }
 
