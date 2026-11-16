@@ -30,6 +30,11 @@ struct ItemDrops {
         return items.isEmpty || items.count != dragged.count ? nil : items
     }
 
+    /// Whether the items move or copy onto `target`, or `nil` where they may not drop.
+    func mode(of items: [FileItem], over target: FileItem) -> TransferMode? {
+        session(of: items).badge(over: target, modifiers: [])?.mode
+    }
+
     /// Drops the dragged items that landed on `target`, or says why they may not.
     func land(_ dragged: [DraggedItem], on target: FileItem) {
         Self.logger.info("Landing \(dragged.count) dragged items")

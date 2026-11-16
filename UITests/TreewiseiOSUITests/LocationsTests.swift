@@ -52,10 +52,8 @@ final class LocationsTests: XCTestCase {
         let notes = row("Notes.md", in: app)
         XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
         XCTAssertLessThan(budget.frame.minY, notes.frame.minY, "by name, ascending")
-        // The Name column's heading, as on the Mac, turns the order round. Its element spans
-        // the whole header row, so the tap goes to its left, where the heading is.
-        app.collectionViews.buttons["Name"].firstMatch
-            .coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.5)).tap()
+        // The Name column's heading, as on the Mac, turns the order round.
+        app.buttons["Name"].firstMatch.tap()
         XCTAssertTrue(
             app.eventually { notes.frame.minY < budget.frame.minY }, "by name, descending")
     }

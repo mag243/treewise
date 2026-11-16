@@ -30,22 +30,11 @@ struct FolderDropDelegate: DropDelegate {
         Task {
             var dragged: [DraggedItem] = []
             for provider in providers {
-                if let item = await Self.item(of: provider) { dragged.append(item) }
+                if let item = await DraggedItem.load(from: provider) { dragged.append(item) }
             }
             drops.land(dragged, on: target)
         }
         return true
-    }
-
-    private static func item(of provider: NSItemProvider) async -> DraggedItem? {
-        await withCheckedContinuation { continuation in
-            _ = provider.loadTransferable(type: DraggedItem.self) { result in
-                if case .failure(let error) = result {
-                    logger.error("A dropped item could not be read: \(error.localizedDescription)")
-                }
-                continuation.resume(returning: try? result.get())
-            }
-        }
     }
 }
 

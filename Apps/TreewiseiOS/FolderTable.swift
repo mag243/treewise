@@ -2,11 +2,10 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// The folder as a table with the Mac's columns, on a wide screen. A column
-/// header sorts through `BrowserState`, so folders stay first and names
-/// compare as on the Mac (PLAN.md §4). A row is dragged as its item; its cells take drops,
-/// checked as they land, and a drop on a file's row goes to the folder shown (ADR 0047,
-/// amended 2026-11-16).
+/// The folder as a table with the Mac's columns, on a wide screen (ADR 0116): headings in
+/// SwiftUI that sort through `BrowserState`, so folders stay first and names compare as on
+/// the Mac (PLAN.md §4), above rows in a UIKit collection view, which take drops on their
+/// folders (ADR 0047).
 struct FolderTable: View {
     let browser: BrowserState
     let items: [FileItem]
@@ -16,70 +15,119 @@ struct FolderTable: View {
     let actions: ItemActions
     let drops: ItemDrops
 
-    private let formats = ItemFormats()
-    private static let byDate = ColumnComparator(column: .dateModified)
+    var body: some View {
+        VStack(spacing: 0) {
+            FolderTableHeadings(browser: browser)
+            Divider()
+            FolderCollection(
+                browser: browser, items: items, folder: folder, settings: settings,
+                actions: actions, drops: drops)
+        }
+    }
+}
+
+/// The table's columns: their headings, what they sort by and their widths, the name taking
+/// the room the others leave.
+enum FolderTableColumn: CaseIterable {
+    case name, dateModified, size, kind
+
+    /// The margin before the first column and after the last.
+    static let margin: CGFloat = 20
+    /// The room between two columns.
+    static let spacing: CGFloat = 12
+
+    var sortColumn: SortColumn {
+        switch self {
+        case .name: .name
+        case .dateModified: .dateModified
+        case .size: .size
+        case .kind: .kind
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .name: String(localized: "Name")
+        case .dateModified: String(localized: "Date Modified")
+        case .size: String(localized: "Size")
+        case .kind: String(localized: "Kind")
+        }
+    }
+
+    /// The column's width; `nil` for the name, which takes the rest.
+    var width: CGFloat? {
+        switch self {
+        case .name: nil
+        case .dateModified: 240
+        case .size: 110
+        case .kind: 240
+        }
+    }
+}
+
+extension View {
+    /// Sets a view in a column of the table, its width as its heading's.
+    func inColumn(_ column: FolderTableColumn) -> some View {
+        frame(maxWidth: column.width ?? .infinity, alignment: .leading)
+            .frame(width: column.width, alignment: .leading)
+    }
+}
+
+/// The table's headings: tapping one sorts by its column, tapping it again turns the order
+/// round, as on the Mac.
+private struct FolderTableHeadings: View {
+    /// The room above and below the headings.
+    private static let padding: CGFloat = 10
+
+    let browser: BrowserState
 
     var body: some View {
-        Table(of: FileItem.self, selection: selection, sortOrder: sortOrder) {
-            TableColumn("Name", sortUsing: ColumnComparator(column: .name)) { item in
-                cell(of: item) {
-                    Label {
-                        Text(DisplayName.text(for: item, showsExtension: settings.showsExtensions))
-                    } icon: {
-                        Image(systemName: ItemSymbol.name(for: item))
-                            .foregroundStyle(item.isContainer ? Color.accentColor : .secondary)
+        HStack(spacing: FolderTableColumn.spacing) {
+            ForEach(FolderTableColumn.allCases, id: \.self) { column in
+                Button {
+                    browser.sort(by: column.sortColumn)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(column.title).fontWeight(.semibold)
+                        if browser.sort.column == column.sortColumn {
+                            Image(
+                                systemName: browser.sort.ascending ? "chevron.up" : "chevron.down"
+                            )
+                            .font(.caption)
+                        }
                     }
                 }
-            }
-            TableColumn("Date Modified", sortUsing: Self.byDate) { item in
-                cell(of: item) { Text(formats.date(of: item)).foregroundStyle(.secondary) }
-            }
-            TableColumn("Size", sortUsing: ColumnComparator(column: .size)) { item in
-                cell(of: item) { Text(formats.size(of: item)).foregroundStyle(.secondary) }
-            }
-            TableColumn("Kind", sortUsing: ColumnComparator(column: .kind)) { item in
-                cell(of: item) { Text(formats.kind(of: item)).foregroundStyle(.secondary) }
-            }
-        } rows: {
-            ForEach(items) { item in
-                TableRow(item).itemProvider { drops.provider(for: item) }
+                .accessibilityLabel(Text(column.title))
+                .inColumn(column)
             }
         }
-        .contextMenu(forSelectionType: FileItem.ID.self) { ids in
-            ItemMenu(items: items.filter { ids.contains($0.id) }, actions: actions)
-        } primaryAction: { ids in
-            if let item = items.first(where: { ids.contains($0.id) }) { actions.open(item) }
+        .font(.subheadline)
+        .padding(.horizontal, FolderTableColumn.margin)
+        .padding(.vertical, Self.padding)
+    }
+}
+
+/// A row of the table: the item's name with its icon, its date, size and kind.
+struct FolderTableRow: View {
+    let item: FileItem
+    let showsExtensions: Bool
+
+    private let formats = ItemFormats()
+
+    var body: some View {
+        HStack(spacing: FolderTableColumn.spacing) {
+            Label {
+                Text(DisplayName.text(for: item, showsExtension: showsExtensions))
+                    .lineLimit(1)
+            } icon: {
+                Image(systemName: ItemSymbol.name(for: item))
+                    .foregroundStyle(item.isContainer ? Color.accentColor : .secondary)
+            }
+            .inColumn(.name)
+            Text(formats.date(of: item)).foregroundStyle(.secondary).inColumn(.dateModified)
+            Text(formats.size(of: item)).foregroundStyle(.secondary).inColumn(.size)
+            Text(formats.kind(of: item)).foregroundStyle(.secondary).lineLimit(1)
+                .inColumn(.kind)
         }
-    }
-
-    /// A cell that takes drops across its width: on its folder, or for a file's row on the
-    /// folder shown (PLAN.md §4.1), as the table itself takes none on the iPad.
-    private func cell(of item: FileItem, @ViewBuilder content: () -> some View) -> some View {
-        content()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .takesDrops(on: item.isContainer ? item : folder, with: drops)
-    }
-
-    private var selection: Binding<Set<FileItem.ID>> {
-        let tab = browser.layout.focusedPane.activeTabID
-        return Binding(
-            get: { browser.content(of: tab).selection },
-            set: { browser.setSelection($0, in: tab) })
-    }
-
-    private var sortOrder: Binding<[ColumnComparator]> {
-        Binding(
-            get: {
-                [
-                    ColumnComparator(
-                        column: browser.sort.column,
-                        order: browser.sort.ascending ? .forward : .reverse)
-                ]
-            },
-            set: { order in
-                guard let first = order.first else { return }
-                browser.sort(by: first.column, ascending: first.order == .forward)
-            })
     }
 }
