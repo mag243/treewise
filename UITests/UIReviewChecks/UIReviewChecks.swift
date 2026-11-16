@@ -77,10 +77,12 @@ enum UIReviewChecks {
 
     /// The findings in `window`, or in the sheet on it. In a Settings pane, `isSettingsPane`
     /// also asks every list to take the pane's width between its margins and everything to
-    /// keep the window's margin, as the panes share one layout.
-    static func findings(in window: any XCUIElementSnapshot, isSettingsPane: Bool = false)
-        -> [UIReviewFinding]
-    {
+    /// keep the window's margin, as the panes share one layout. `readableLines` also asks
+    /// running text to keep to a readable width, as on the iPad's wide screen (ADR 0115).
+    static func findings(
+        in window: any XCUIElementSnapshot, isSettingsPane: Bool = false,
+        readableLines: Bool = false
+    ) -> [UIReviewFinding] {
         var placed: [Placed] = []
         var lists: [any XCUIElementSnapshot] = []
         collect(window, in: nil, holder: nil, into: &placed, lists: &lists)
@@ -97,6 +99,7 @@ enum UIReviewChecks {
         found += withoutScroller(lists)
         found += twiceInAList(lists)
         if isSettingsPane { found += notSpanning(lists, window: window.frame) }
+        if readableLines { found += overlongLines(placed) }
         return found
     }
 

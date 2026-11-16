@@ -122,7 +122,7 @@ final class IPadReviewTests: XCTestCase {
         add(screenshot)
         var found: [UIReviewFinding]
         do {
-            found = UIReviewChecks.findings(in: try app.snapshot())
+            found = UIReviewChecks.findings(in: try app.snapshot(), readableLines: true)
         } catch {
             found = [UIReviewFinding(check: "snapshot", element: "app", detail: "\(error)")]
         }
