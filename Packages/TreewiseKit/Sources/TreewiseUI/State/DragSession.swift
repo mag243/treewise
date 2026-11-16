@@ -49,6 +49,34 @@ public struct DragSession: Sendable {
         TransferPlanner.refusal(target: target).map { FailureMessage.text(for: $0, locale: locale) }
     }
 
+    /// Why the items may not drop on a target, for a drop checked only as it lands, as in
+    /// the iPad's table (ADR 0047, amended 2026-11-16); `nil` when they may.
+    public func landingRefusalText(
+        over target: FileItem, modifiers: DropModifiers, locale: Locale
+    ) -> String? {
+        guard
+            let refusal = TransferPlanner.refusal(
+                items: items, target: target, modifiers: modifiers, ancestry: ancestry)
+        else { return nil }
+        let bundle = Bundle.module.localizationBundle(for: locale)
+        switch refusal {
+        case .intoItself:
+            return String(
+                localized: "A folder can’t go into itself.", bundle: bundle, locale: locale)
+        case .alreadyThere:
+            return String(
+                localized: "Already in ‘\(target.name)’.", bundle: bundle, locale: locale)
+        case .notAFolder:
+            return String(
+                localized: "Items can only be dropped on a folder.", bundle: bundle, locale: locale)
+        case .notMovable:
+            return String(
+                localized: "These items can’t be moved or copied.", bundle: bundle, locale: locale)
+        case .archiveReadOnly:
+            return FailureMessage.text(for: .archiveReadOnly, locale: locale)
+        }
+    }
+
     /// The badge over a target for files another app promises to write
     /// (ADR 0020): they are always copied into a folder, whatever the
     /// modifiers; `nil` over anything that is not a folder, or inside an archive.

@@ -31,6 +31,30 @@ public enum TransferPlanner {
         return mode
     }
 
+    /// Why `plan` refuses the drop, or `nil` when it allows it: the same rules, in the same
+    /// order, with the first that refuses named.
+    ///
+    /// Postcondition: the result is `nil` exactly when `plan` returns a mode.
+    public static func refusal(
+        items: [FileItem],
+        target: FileItem,
+        modifiers: DropModifiers,
+        ancestry: (FileItem.ID) -> [FileItem.ID]
+    ) -> DropRefusal? {
+        guard !items.isEmpty else { return .notMovable }
+        guard target.acceptsItems else {
+            return refusal(target: target) == nil ? .notAFolder : .archiveReadOnly
+        }
+        let targetAndAncestors = Set([target.id] + ancestry(target.id))
+        if items.contains(where: { targetAndAncestors.contains($0.id) }) { return .intoItself }
+        guard items.allSatisfy(\.isCopyable) else { return .notMovable }
+        let mode = mode(of: items, onto: target, modifiers: modifiers)
+        if mode == .move && items.allSatisfy({ $0.parentID == target.id }) {
+            return .alreadyThere
+        }
+        return nil
+    }
+
     /// How items on the clipboard land on `target`: cut items move, unless
     /// that would cross the edge of an archive, and copied items copy.
     public static func pasteMode(of items: [FileItem], onto target: FileItem, cut: Bool)

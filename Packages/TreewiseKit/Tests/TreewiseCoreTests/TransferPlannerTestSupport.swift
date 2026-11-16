@@ -18,3 +18,21 @@ func planDrag(
     return TransferPlanner.plan(
         items: items, target: targetItem, modifiers: modifiers, ancestry: fileSystem.ancestry)
 }
+
+/// Why a drag of fixture items onto a fixture target is refused, if it is.
+///
+/// Precondition: every identity is in `Fixture.standard`.
+func refusalOfDrag(
+    _ ids: [FileItem.ID], onto target: FileItem.ID, _ modifiers: DropModifiers = []
+) -> DropRefusal? {
+    let fileSystem = Fixture.standard
+    let items = ids.map { id in
+        guard let item = fileSystem[id] else { preconditionFailure("\(id) is in the fixture") }
+        return item
+    }
+    guard let targetItem = fileSystem[target] else {
+        preconditionFailure("\(target) is in the fixture")
+    }
+    return TransferPlanner.refusal(
+        items: items, target: targetItem, modifiers: modifiers, ancestry: fileSystem.ancestry)
+}
