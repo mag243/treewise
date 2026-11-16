@@ -18,6 +18,8 @@
 #               tools/build.sh apptest LaunchTests/testSpaceShowsQuickLook
 #   iostest     The package tests on the pinned iOS Simulator (tools/versions.env), so
 #               the shared code is tested on iOS too (M6a).
+#   iosuitest   The iPad app's UI tests on the pinned iOS Simulator (ADR 0114); the
+#               Simulator's window may come to the front. Followed by a filter, as apptest.
 #   run         Build the macOS app and start it. Every word after run goes to the
 #               app: tools/build.sh run -TreewiseRoot /tmp/fixture. `run sandbox`
 #               starts it confined to the sandbox volumes, attached first (ADR 0019).
@@ -112,7 +114,7 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest run package export fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest run package export fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
@@ -519,6 +521,22 @@ cmd_iostest() {
     -destination "id=$udid" -resultBundlePath "$bundle" test >"$log" 2>&1) || rc=$?
   ((rc == 0)) || { tail -n 30 "$log" >&2; fail "iOS package tests failed; log: ${log#"$ROOT_DIR"/}"; }
   ok "Package tests passed on iOS $IOS_SIMULATOR_OS. Results: ${bundle#"$ROOT_DIR"/}"
+}
+
+# The iPad app's UI tests on the pinned simulator (ADR 0114), or only those of filter [1],
+# as Class or Class/testName separated by commas.
+cmd_iosuitest() {
+  local filter="${1:-}" only=() tests=() test
+  step "iPad app UI tests${filter:+ ($filter)}"
+  require_project
+  local udid; udid="$(ios_simulator_udid)"
+  [[ -n "$udid" ]] || fail "Simulator '$IOS_SIMULATOR_NAME' not found. Run tools/setup.sh."
+  local bundle; bundle="$(result_bundle "TreewiseiOS-UI")"
+  IFS=, read -ra tests <<<"$filter"
+  for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseiOSUITests/$test"); done
+  xcode iosuitest -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
+    "${only[@]}" test
+  ok "iPad app UI tests passed on iOS $IOS_SIMULATOR_OS. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
 # Builds the macOS app (Debug) and starts it in the foreground with the arguments given.
@@ -950,6 +968,7 @@ run_command() {
     build) timed build cmd_build ;;
     apptest) timed apptest cmd_apptest "${2:-}" ;;
     iostest) timed iostest cmd_iostest ;;
+    iosuitest) timed iosuitest cmd_iosuitest "${2:-}" ;;
     package) timed package cmd_package ;;
     export) timed export cmd_export ;;
     publish) timed publish cmd_publish ;;

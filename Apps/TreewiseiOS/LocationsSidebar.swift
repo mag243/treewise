@@ -40,6 +40,8 @@ struct LocationsSidebar: View {
                 }
             }
         }
+        // The UI tests find the sidebar by it (ADR 0114).
+        .accessibilityIdentifier("locations")
         .navigationTitle(Text(verbatim: "Treewise"))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

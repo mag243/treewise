@@ -27,25 +27,29 @@ final class Locations {
     /// that is not attached, to connect again (ADR 0111).
     private(set) var unavailable: [Bookmark] = []
 
-    let settings = BrowserSettings(store: UserDefaults.standard)
+    let settings: BrowserSettings
     @ObservationIgnored private let added: AddedFolders
+    /// A UI test's run, whose bookmarks and settings are its own (ADR 0114).
+    @ObservationIgnored private let testRun: TestRun?
     @ObservationIgnored private let watcher = DirectoryWatcher()
     @ObservationIgnored private let clipboard = SharedClipboard()
 
-    init() {
+    init(testRun: TestRun? = .current) {
         let support =
             FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL.temporaryDirectory
-        added = AddedFolders(
-            store: BookmarkStore(
-                storage: FileBookmarkStorage(
-                    file: support.appendingPathComponent(Self.bookmarksFile))))
+        let file = testRun?.bookmarksFile ?? support.appendingPathComponent(Self.bookmarksFile)
+        self.testRun = testRun
+        settings = BrowserSettings(store: testRun?.defaults ?? UserDefaults.standard)
+        added = AddedFolders(store: BookmarkStore(storage: FileBookmarkStorage(file: file)))
     }
 
     /// Resolves the saved folders and opens the browser where the last
     /// launch left it.
     func start() async {
+        try? testRun?.removeAskedFolder()
         await added.load()
+        await addFixtureIfEmpty()
         unavailable = await added.unavailable()
         await rebuild(restoring: settings.lastSession)
         isLoaded = true
@@ -89,6 +93,14 @@ final class Locations {
     func remove(_ location: FileItem) async {
         await added.remove(URL(fileURLWithPath: location.id.rawValue))
         await rebuild(restoring: nil)
+    }
+
+    /// Adds a UI test's fixture folders when its run has no locations yet (ADR 0114).
+    private func addFixtureIfEmpty() async {
+        guard let testRun, await added.folders().isEmpty, await added.unavailable().isEmpty,
+            let folders = try? testRun.fixtureFolders()
+        else { return }
+        for folder in folders { try? await added.add(folder) }
     }
 
     /// Keeps the folder shown and the sort order for the next launch.

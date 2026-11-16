@@ -1,0 +1,155 @@
+import XCTest
+
+/// The iPad app's locations and browsing on the simulator (ADR 0045, 0111, 0114): each test
+/// runs in a state of its own, with the fixture's folders `Documents` and `Work` added.
+final class LocationsTests: XCTestCase {
+    static let timeout: TimeInterval = 10
+
+    override func setUp() {
+        continueAfterFailure = false
+        // The sidebar stays beside the folder in landscape.
+        XCUIDevice.shared.orientation = .landscapeLeft
+    }
+
+    /// Starts Treewise in the state `name`, with the fixture's folders unless `fixture` is
+    /// false, after removing the fixture folder `removing`.
+    @MainActor
+    func launch(state name: String, fixture: Bool = true, removing: String? = nil)
+        -> XCUIApplication
+    {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-TreewiseTestState", name, "-TreewiseTestFixture", fixture ? "YES" : "NO",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+        ]
+        if let removing { app.launchArguments += ["-TreewiseTestRemove", removing] }
+        app.launch()
+        return app
+    }
+
+    @MainActor
+    func sidebar(of app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any)["locations"].firstMatch
+    }
+
+    @MainActor
+    func testTheStartSaysOneTopFolderIsEnough() {
+        let app = launch(state: UUID().uuidString, fixture: false)
+        let hint = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'everything below it comes along'")
+        ).firstMatch
+        XCTAssertTrue(hint.waitForExistence(timeout: Self.timeout), "the start says it")
+        XCTAssertTrue(app.buttons["Add Location"].firstMatch.exists)
+    }
+
+    @MainActor
+    func testAddLocationOpensThePicker() {
+        let app = launch(state: UUID().uuidString, fixture: false)
+        let add = app.buttons["Add Location"].firstMatch
+        XCTAssertTrue(add.waitForExistence(timeout: Self.timeout))
+        add.tap()
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: Self.timeout), "the picker opens")
+        cancel.tap()
+        XCTAssertTrue(add.waitForExistence(timeout: Self.timeout), "and closes again")
+    }
+
+    @MainActor
+    func testTheAddedFoldersShowInTheSidebarAndTheirFilesInTheList() {
+        let app = launch(state: UUID().uuidString)
+        let sidebar = sidebar(of: app)
+        XCTAssertTrue(sidebar.staticTexts["Documents"].waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(sidebar.staticTexts["Work"].exists)
+        sidebar.staticTexts["Documents"].tap()
+        XCTAssertTrue(app.staticTexts["Notes.md"].waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(app.staticTexts["Projects"].exists, "with its folder")
+    }
+
+    @MainActor
+    func testSortingByNameDescendingPutsTheLastNameFirst() throws {
+        let app = launch(state: UUID().uuidString)
+        sidebar(of: app).staticTexts["Documents"].tap()
+        let budget = app.staticTexts["Budget.txt"]
+        let notes = app.staticTexts["Notes.md"]
+        XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
+        XCTAssertLessThan(budget.frame.minY, notes.frame.minY, "by name, ascending")
+        app.buttons["View"].firstMatch.tap()
+        app.buttons["Order"].firstMatch.tap()
+        app.buttons["Descending"].firstMatch.tap()
+        XCTAssertTrue(
+            app.eventually { notes.frame.minY < budget.frame.minY }, "by name, descending")
+    }
+
+    @MainActor
+    func testOpeningAFileShowsItInQuickLook() {
+        let app = launch(state: UUID().uuidString)
+        sidebar(of: app).staticTexts["Work"].tap()
+        let report = app.staticTexts["Report.txt"]
+        XCTAssertTrue(report.waitForExistence(timeout: Self.timeout))
+        report.tap()
+        XCTAssertTrue(
+            app.navigationBars["Report.txt"].waitForExistence(timeout: Self.timeout),
+            "Quick Look shows the file")
+    }
+
+    @MainActor
+    func testARelaunchKeepsTheLocationsAndTheFolderShown() {
+        let state = UUID().uuidString
+        let app = launch(state: state)
+        sidebar(of: app).staticTexts["Documents"].tap()
+        let projects = app.staticTexts["Projects"]
+        XCTAssertTrue(projects.waitForExistence(timeout: Self.timeout))
+        projects.tap()
+        XCTAssertTrue(app.navigationBars["Projects"].waitForExistence(timeout: Self.timeout))
+        // To the background first, so the app keeps where it was, as when the user leaves.
+        XCUIDevice.shared.press(.home)
+        app.terminate()
+
+        let again = launch(state: state)
+        XCTAssertTrue(
+            again.navigationBars["Projects"].waitForExistence(timeout: Self.timeout),
+            "the folder shown comes back")
+        XCTAssertTrue(sidebar(of: again).staticTexts["Documents"].exists)
+        XCTAssertTrue(sidebar(of: again).staticTexts["Work"].exists)
+    }
+
+    @MainActor
+    func testAFolderOutOfReachStaysGreyedWithReconnectAndCanBeRemoved() {
+        let state = UUID().uuidString
+        let app = launch(state: state)
+        XCTAssertTrue(sidebar(of: app).staticTexts["Work"].waitForExistence(timeout: Self.timeout))
+        app.terminate()
+
+        let again = launch(state: state, removing: "Work")
+        let work = sidebar(of: again).buttons["Work"]
+        XCTAssertTrue(work.waitForExistence(timeout: Self.timeout), "it stays, by its name")
+        work.press(forDuration: 1)
+        XCTAssertTrue(again.buttons["Reconnect…"].waitForExistence(timeout: Self.timeout))
+        again.buttons["Remove Location"].tap()
+        XCTAssertTrue(work.waitForNonExistence(timeout: Self.timeout), "and leaves when removed")
+    }
+
+    /// The rename alert finds a new folder that the search hides (audit 2026-11, A21).
+    @MainActor
+    func testANewFolderIsRenamedWhileASearchHidesIt() {
+        let app = launch(state: UUID().uuidString)
+        sidebar(of: app).staticTexts["Documents"].tap()
+        XCTAssertTrue(app.staticTexts["Notes.md"].waitForExistence(timeout: Self.timeout))
+        let search = app.searchFields.firstMatch
+        search.tap()
+        search.typeText("Notes")
+        app.buttons["New Folder"].firstMatch.tap()
+        XCTAssertTrue(
+            app.alerts["Rename"].waitForExistence(timeout: Self.timeout), "the alert asks a name")
+    }
+}
+
+extension XCUIApplication {
+    /// Whether `condition` holds within ten seconds.
+    @MainActor
+    func eventually(_ condition: @escaping () -> Bool) -> Bool {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in condition() }, object: nil)
+        return XCTWaiter.wait(for: [expectation], timeout: LocationsTests.timeout) == .completed
+    }
+}

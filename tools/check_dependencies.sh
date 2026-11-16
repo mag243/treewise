@@ -10,7 +10,8 @@
 #     and uses no SwiftUI (ADR 0082);
 #   - removeItem( appears only in TreewiseFileSystem's FileOperationRunner, the
 #     one place that removes a user's file without the Trash (ADR 0004, 0018),
-#     and for folders Treewise made itself (ADR 0020, 0074).
+#     and for folders Treewise made itself (ADR 0020, 0074), such as the iPad app's
+#     fixture for a UI test, in a Debug build's temporary directory (ADR 0114).
 # Package.swift already enforces the dependency direction between the modules.
 set -euo pipefail
 # shellcheck source=tools/lib.sh
@@ -83,8 +84,9 @@ removals="$(grep -rn --include='*.swift' 'removeItem(' "$SOURCES" "$ROOT_DIR/App
   grep -v "$SOURCES/TreewiseFileSystem/FileCopier.swift:" |
   grep -v "$SOURCES/TreewiseFileSystem/PromiseInbox.swift:" |
   grep -v "$SOURCES/TreewiseFileSystem/Archives/ArchiveWorkspace.swift:" |
-  grep -v "$SOURCES/TreewiseTestSupport/" | sed "s|^$ROOT_DIR/||" || true)"
-report "Only FileOperationRunner, its FileCopier, PromiseInbox and ArchiveWorkspace may call removeItem (ADR 0004, 0020, 0074); use TrashService" \
+  grep -v "$SOURCES/TreewiseTestSupport/" |
+  grep -v "$ROOT_DIR/Apps/TreewiseiOS/TestRun.swift:" | sed "s|^$ROOT_DIR/||" || true)"
+report "Only FileOperationRunner, its FileCopier, PromiseInbox, ArchiveWorkspace and the iPad's TestRun may call removeItem (ADR 0004, 0020, 0074, 0114); use TrashService" \
   "$removals"
 
 raw_paths="$(grep -rnE --include='*.swift' 'URL\(fileURLWithPath:.*rawValue|forFile:.*rawValue' "$ROOT_DIR/Apps/TreewiseMac" 2>/dev/null |

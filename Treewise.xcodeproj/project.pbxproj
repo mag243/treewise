@@ -33,6 +33,13 @@
 			remoteGlobalIDString = 810000000000000000008004;
 			remoteInfo = TreewiseModuleHost;
 		};
+		C1000000000000000000C003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1000000000000000000A001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 810000000000000000008002;
+			remoteInfo = TreewiseiOS;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -53,6 +60,7 @@
 		F1000000000000000000F001 /* Treewise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Treewise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1000000000000000000F002 /* Treewise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Treewise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1000000000000000000F003 /* TreewiseMacUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TreewiseMacUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1000000000000000000F005 /* TreewiseiOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TreewiseiOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1000000000000000000F004 /* TreewiseModuleHost.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = TreewiseModuleHost.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -75,6 +83,11 @@
 		710000000000000000007004 /* TreewiseModuleHost */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = TreewiseModuleHost;
+			sourceTree = "<group>";
+		};
+		710000000000000000007005 /* TreewiseiOSUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TreewiseiOSUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -116,6 +129,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		110000000000000000001005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -135,6 +155,7 @@
 				F1000000000000000000F001 /* Treewise.app */,
 				F1000000000000000000F002 /* Treewise.app */,
 				F1000000000000000000F003 /* TreewiseMacUITests.xctest */,
+				F1000000000000000000F005 /* TreewiseiOSUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -153,6 +174,7 @@
 			isa = PBXGroup;
 			children = (
 				710000000000000000007003 /* TreewiseMacUITests */,
+				710000000000000000007005 /* TreewiseiOSUITests */,
 			);
 			path = UITests;
 			sourceTree = "<group>";
@@ -259,6 +281,27 @@
 			productReference = F1000000000000000000F004 /* TreewiseModuleHost.xpc */;
 			productType = "com.apple.product-type.xpc-service";
 		};
+		810000000000000000008005 /* TreewiseiOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 410000000000000000004007 /* Build configuration list for PBXNativeTarget "TreewiseiOSUITests" */;
+			buildPhases = (
+				210000000000000000002005 /* Sources */,
+				110000000000000000001005 /* Frameworks */,
+				310000000000000000003005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				510000000000000000005003 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				710000000000000000007005 /* TreewiseiOSUITests */,
+			);
+			name = TreewiseiOSUITests;
+			productName = TreewiseiOSUITests;
+			productReference = F1000000000000000000F005 /* TreewiseiOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -281,6 +324,10 @@
 					810000000000000000008003 = {
 						CreatedOnToolsVersion = 27.1;
 						TestTargetID = 810000000000000000008001;
+					};
+					810000000000000000008005 = {
+						CreatedOnToolsVersion = 27.1;
+						TestTargetID = 810000000000000000008002;
 					};
 				};
 			};
@@ -309,6 +356,7 @@
 				810000000000000000008004 /* TreewiseModuleHost */,
 				810000000000000000008002 /* TreewiseiOS */,
 				810000000000000000008003 /* TreewiseMacUITests */,
+				810000000000000000008005 /* TreewiseiOSUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -329,6 +377,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		310000000000000000003003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		310000000000000000003005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -426,6 +481,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		210000000000000000002005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -438,6 +500,11 @@
 			isa = PBXTargetDependency;
 			target = 810000000000000000008004 /* TreewiseModuleHost */;
 			targetProxy = C1000000000000000000C002 /* PBXContainerItemProxy */;
+		};
+		510000000000000000005003 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 810000000000000000008002 /* TreewiseiOS */;
+			targetProxy = C1000000000000000000C003 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -695,6 +762,34 @@
 			};
 			name = Release;
 		};
+		910000000000000000009021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.m-domain.treewise.ios.uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TreewiseiOS;
+			};
+			name = Debug;
+		};
+		910000000000000000009022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.m-domain.treewise.ios.uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TreewiseiOS;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -739,6 +834,15 @@
 			buildConfigurations = (
 				910000000000000000009009 /* Debug */,
 				91000000000000000000900A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		410000000000000000004007 /* Build configuration list for PBXNativeTarget "TreewiseiOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				910000000000000000009021 /* Debug */,
+				910000000000000000009022 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
