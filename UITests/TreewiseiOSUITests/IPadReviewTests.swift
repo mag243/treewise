@@ -116,7 +116,7 @@ final class IPadReviewTests: XCTestCase {
     private func review(_ app: XCUIApplication, as name: String, variant: String) {
         settleScreen()
         let full = "\(name)-\(variant)"
-        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        let screenshot = XCTAttachment(image: Self.upright(XCUIScreen.main.screenshot().image))
         screenshot.name = "uireview-\(full)"
         screenshot.lifetime = .keepAlways
         add(screenshot)
@@ -132,6 +132,17 @@ final class IPadReviewTests: XCTestCase {
         findings.name = "uireview-\(full).findings"
         findings.lifetime = .keepAlways
         add(findings)
+    }
+
+    /// The screenshot drawn as the screen is held: the simulator keeps a landscape one's
+    /// pixels in portrait with a note of how to turn them, which the report does not read.
+    @MainActor
+    private static func upright(_ image: UIImage) -> UIImage {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        return UIGraphicsImageRenderer(size: image.size, format: format).image { _ in
+            image.draw(at: .zero)
+        }
     }
 
     private func settleScreen() {

@@ -1,3 +1,12 @@
 # Findings of the iPad's UI review that are meant (ADR 0115), each with its reason:
 #   screen | check | element  # why
 # A screen is named without its appearance, as start-landscape, or `*` for all.
+
+# The on-screen keyboard is still sliding in when the rename alert is looked at; its keys
+# are iPadOS's, not Treewise's layout.
+rename-landscape | outsideWindow | button "Return"  # iPadOS's keyboard, sliding in
+rename-landscape | outsideWindow | button "shift"  # iPadOS's keyboard, sliding in
+rename-landscape | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard, sliding in
+# A system menu's shadow reaches above the screen; the menu itself is inside.
+view-menu-landscape | outsideWindow | image ""  # iPadOS's menu shadow
+view-menu-portrait | outsideWindow | image ""  # iPadOS's menu shadow
