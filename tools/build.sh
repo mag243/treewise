@@ -42,6 +42,9 @@
 #               tag v<MARKETING_VERSION> points at HEAD, here and on GitHub, runs package,
 #               then tools/publish.sh: GitHub Release, appcast and download link on the
 #               site branch, and the Homebrew cask. It pushes to GitHub: the owner runs it.
+#   testflight  Archive the iPad app in Release and upload it to App Store Connect for
+#               TestFlight (ADR 0118), signed in with the App Store Connect API key in
+#               ~/.config/treewise. Sends a build to Apple: the owner runs it.
 #   export      Release archive and Developer ID export of the official macOS app ->
 #               build/TreewiseMac/, with tools/ExportOptions-mac.plist; not notarized.
 #   quick       check + test: the gate for a step that leaves the apps alone.
@@ -120,7 +123,7 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest iosreview run package export fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest iosreview run package export testflight fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
@@ -814,6 +817,47 @@ cmd_publish() {
   "$TOOLS_DIR/publish.sh"
 }
 
+# The App Store Connect API key (ADR 0118): asc-key.p8 and asc-credentials.env, which holds
+# ASC_KEY_ID and ASC_ISSUER_ID, in ~/.config/treewise (TREEWISE_ASC_DIR); never in the repo.
+ASC_DIR="${TREEWISE_ASC_DIR:-$HOME/.config/treewise}"
+IOS_EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-ios.plist"
+
+# Prints xcodebuild's arguments that sign in to Apple with the API key.
+asc_xcodebuild_credentials() {
+  local env="$ASC_DIR/asc-credentials.env" key="$ASC_DIR/asc-key.p8"
+  [[ -f "$env" && -f "$key" ]] ||
+    fail "No App Store Connect API key in ${ASC_DIR/#$HOME/~}: asc-key.p8 and asc-credentials.env."
+  local ASC_KEY_ID="" ASC_ISSUER_ID=""
+  # shellcheck source=/dev/null
+  source "$env"
+  [[ -n "$ASC_KEY_ID" && -n "$ASC_ISSUER_ID" ]] ||
+    fail "asc-credentials.env must set ASC_KEY_ID and ASC_ISSUER_ID."
+  printf '%s\n' -allowProvisioningUpdates -authenticationKeyPath "$key" \
+    -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+}
+
+# Archives the iPad app in Release and uploads it to App Store Connect, where it appears in
+# TestFlight once Apple has processed it (ADR 0118). Owner only: it signs with the team's
+# App Store certificate and sends the build to Apple.
+cmd_testflight() {
+  step "TestFlight"
+  require_project
+  [[ -z "$(git -C "$ROOT_DIR" status --porcelain)" ]] || fail "The working tree has changes; commit them first."
+  local credentials; mapfile -t credentials < <(asc_xcodebuild_credentials)
+  ((${#credentials[@]})) || exit 1
+  local archive="$BUILD_DIR/archives/$IOS_SCHEME.xcarchive"
+  rm -rf "$archive"
+  xcode testflight-archive -scheme "$IOS_SCHEME" -configuration Release \
+    -destination "generic/platform=iOS" -archivePath "$archive" "${credentials[@]}" archive
+  local version build
+  version="$(plutil -extract ApplicationProperties.CFBundleShortVersionString raw "$archive/Info.plist")"
+  build="$(plutil -extract ApplicationProperties.CFBundleVersion raw "$archive/Info.plist")"
+  ok "Archived $APP_NAME $version ($build)"
+  xcodebuild_logged testflight-upload -exportArchive -archivePath "$archive" \
+    -exportPath "$BUILD_DIR/testflight" -exportOptionsPlist "$IOS_EXPORT_OPTIONS" "${credentials[@]}"
+  ok "Uploaded; it shows in TestFlight once App Store Connect has processed it."
+}
+
 cmd_export() {
   step "Export"
   require_project
@@ -1043,6 +1087,7 @@ run_command() {
     package) timed package cmd_package ;;
     export) timed export cmd_export ;;
     publish) timed publish cmd_publish ;;
+    testflight) timed testflight cmd_testflight ;;
     screenshots) timed screenshots cmd_screenshots ;;
     uireview) timed uireview cmd_uireview "${@:2}" ;;
     sandboxtest) timed sandboxtest cmd_sandboxtest ;;
