@@ -13,8 +13,16 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     private var shown: (favorites: [FileItem], locations: [FileItem]) = ([], [])
     /// The hidden-files setting the loaded folders follow.
     private var showsHiddenFiles = false
-    private var loadSubfolders: ((FileItem.ID) async -> [FileItem])?
-    private var subfolderPresence: ((FileItem.ID) async -> SubfolderPresence)?
+    private(set) var loadSubfolders: ((FileItem.ID) async -> [FileItem])?
+    private(set) var subfolderPresence: ((FileItem.ID) async -> SubfolderPresence)?
+    /// The changes to a folder's entries, for following the folders open in the tree.
+    private(set) var changes: ((FileItem.ID) -> AsyncStream<Void>)?
+    /// The folders open in the tree that are followed (ADR 0112).
+    let watches = SidebarFolderWatches()
+    /// The listing of the folder a pane showed at the last update.
+    private var shownListing: SidebarShownListing?
+    /// The folder the active pane shows, whose row stays selected.
+    private(set) var currentFolder: FileItem.ID?
     private var select: ((FileItem) -> Void)?
     /// Ejects volumes: the eject buttons and the context menu (ADR 0044).
     private(set) var eject: (([FileItem]) -> Void)?
@@ -26,7 +34,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     /// as a choice of the user.
     private var isApplyingState = false
     /// Rows of folders found to hold no subfolders during a drag, redrawn once it ends.
-    private var redrawnAfterDrag: [SidebarNode] = []
+    var redrawnAfterDrag: [SidebarNode] = []
     /// The last way through the tree that was opened, so a rerender does not
     /// open again what the user closed since.
     var revealedPath: [FileItem.ID]?
@@ -57,6 +65,8 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     func update(with view: SidebarContent) {
         loadSubfolders = view.loadSubfolders
         subfolderPresence = view.subfolderPresence
+        changes = view.changes
+        currentFolder = view.currentFolder
         select = view.select
         eject = view.eject
         drop = view.drop
@@ -69,6 +79,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             showsHiddenFiles = view.showsHiddenFiles
             reloadFolders()
         }
+        follow(view.shownListing)
         guard let outline, shown.favorites != view.favorites || shown.locations != view.locations
         else { return }
         let onlyFavoritesChanged = shown.locations == view.locations && !roots.isEmpty
@@ -80,9 +91,15 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             outline.reloadItem(root, reloadChildren: true)
             return
         }
+        rebuild(favorites: favorites, locations: view.locations, in: outline)
+    }
+
+    /// Makes the tree anew, with the locations' rows closed.
+    private func rebuild(favorites: [SidebarNode], locations: [FileItem], in outline: NSOutlineView)
+    {
         let computer = SidebarNode(
             computer: String(localized: "This Mac", comment: "Sidebar row that holds the volumes"),
-            children: view.locations.map { SidebarNode(item: $0, expandable: true) })
+            children: locations.map { SidebarNode(item: $0, expandable: true) })
         roots = [
             SidebarNode(
                 section: String(localized: "Favorites", comment: "Sidebar section"),
@@ -91,6 +108,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
                 section: String(localized: "Locations", comment: "Sidebar section"),
                 children: [computer]),
         ]
+        watches.endAll()
         outline.reloadData()
         for root in roots {
             outline.expandItem(root)
@@ -194,8 +212,20 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     /// Loads the open locations of the tree again and forgets the closed
     /// ones, after the hidden-files setting changed. A reloaded location gets
     /// new rows, so folders open inside it close.
+    /// Reads the folder a pane shows again in the tree when its listing changed, not when the
+    /// pane went to another folder (ADR 0112).
+    private func follow(_ listing: SidebarShownListing) {
+        let before = shownListing
+        shownListing = listing
+        guard let before, before.folder == listing.folder, before.items != listing.items else {
+            return
+        }
+        readAgain(shown: listing.folder)
+    }
+
     private func reloadFolders() {
         guard let outline, roots.count > 1, let computer = roots[1].children?.first else { return }
+        watches.endAll()
         for node in computer.children ?? [] {
             guard node.children != nil, let folder = node.item else { continue }
             if outline.isItemExpanded(node) {
@@ -211,6 +241,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         guard let loadSubfolders else { return }
         let subfolders = await loadSubfolders(folder)
         node.children = subfolders.map { SidebarNode(item: $0, expandable: true) }
+        watch(node, folder: folder)
         // Reloading a row during a drag drops the drag's target, so a drop on it would do
         // nothing. A folder a drag opened that holds no subfolders only loses its
         // disclosure triangle, which can wait until the drag ends.
@@ -226,7 +257,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     /// Takes the disclosure triangle off the rows whose folder turns out to hold no
     /// subfolders, where that is known without a costly reading (ADR 0108). During a drag a
     /// row is redrawn only once it ends, as a redrawn row loses the drop on it.
-    private func dropTriangles(of nodes: [SidebarNode]) async {
+    func dropTriangles(of nodes: [SidebarNode]) async {
         guard let subfolderPresence else { return }
         for node in nodes where node.children == nil {
             guard let folder = node.item,

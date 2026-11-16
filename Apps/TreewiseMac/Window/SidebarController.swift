@@ -68,6 +68,8 @@ final class SidebarController: NSViewController {
             showsHiddenFiles: browser.settings.showsHiddenFiles,
             loadSubfolders: { await browser.subfolders(of: $0) },
             subfolderPresence: { await browser.subfolderPresence(in: $0) },
+            changes: { browser.changes(of: $0) },
+            shownListing: shownListing,
             select: { folder in
                 Task {
                     await browser.navigate(pane: browser.layout.focusedPaneIndex, to: folder.id)
@@ -78,6 +80,13 @@ final class SidebarController: NSViewController {
             eject: { VolumeEjection.eject($0) },
             drop: DropRouting.action(for: browser, undoManager: undoManager),
             favoriteActions: favoriteActions)
+    }
+
+    private var shownListing: SidebarShownListing {
+        let pane = browser.layout.focusedPane
+        return SidebarShownListing(
+            folder: pane.activeTab.folder,
+            items: browser.content(of: pane.activeTabID).items.map(\.id))
     }
 
     private var favoriteActions: SidebarFavoriteActions {

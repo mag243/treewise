@@ -18,12 +18,24 @@ struct SidebarContent {
     /// Whether a folder has subfolders, so a row without them shows no disclosure
     /// triangle; unknown where looking costs too much (ADR 0108).
     var subfolderPresence: (FileItem.ID) async -> SubfolderPresence
+    /// The changes to a folder's entries, for following the folders open in the tree
+    /// (ADR 0112).
+    var changes: (FileItem.ID) -> AsyncStream<Void>
+    /// The folder the active pane shows and what it holds, so the tree reads that folder
+    /// again when its listing changes (ADR 0112).
+    var shownListing: SidebarShownListing
     var select: (FileItem) -> Void
     /// Ejects volumes (ADR 0044).
     var eject: ([FileItem]) -> Void
     var drop: DropAction
     /// Adds, removes and moves favorites (ADR 0050).
     var favoriteActions: SidebarFavoriteActions
+}
+
+/// The folder a pane shows and the items in it, by id.
+struct SidebarShownListing: Equatable {
+    var folder: FileItem.ID
+    var items: [FileItem.ID]
 }
 
 extension SidebarCoordinator {

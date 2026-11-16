@@ -160,6 +160,12 @@ public final class BrowserState {
         return (await subfolders(of: folder)).isEmpty ? .absent : .present
     }
 
+    /// The changes to a folder's entries, as the list follows them, for the sidebar tree to
+    /// follow the folders it shows open (ADR 0112). Ending the iteration stops the watching.
+    public func changes(of folder: FileItem.ID) -> AsyncStream<Void> {
+        watcher.changes(of: folder)
+    }
+
     /// Sorts by a column; the same column again flips the direction.
     public func sort(by column: SortColumn) {
         sort = sort.selecting(column)
