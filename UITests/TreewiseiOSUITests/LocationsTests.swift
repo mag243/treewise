@@ -5,10 +5,16 @@ import XCTest
 final class LocationsTests: XCTestCase {
     static let timeout: TimeInterval = 10
 
-    override func setUp() {
+    override func setUp() async throws {
         continueAfterFailure = false
         // The sidebar stays beside the folder in landscape.
-        XCUIDevice.shared.orientation = .landscapeLeft
+        await MainActor.run { XCUIDevice.shared.orientation = .landscapeLeft }
+    }
+
+    /// A name in the folder's table, which reports each name twice to the tests.
+    @MainActor
+    func row(_ name: String, in app: XCUIApplication) -> XCUIElement {
+        app.staticTexts[name].firstMatch
     }
 
     /// Starts Treewise in the state `name`, with the fixture's folders unless `fixture` is
@@ -61,21 +67,22 @@ final class LocationsTests: XCTestCase {
         XCTAssertTrue(sidebar.staticTexts["Documents"].waitForExistence(timeout: Self.timeout))
         XCTAssertTrue(sidebar.staticTexts["Work"].exists)
         sidebar.staticTexts["Documents"].tap()
-        XCTAssertTrue(app.staticTexts["Notes.md"].waitForExistence(timeout: Self.timeout))
-        XCTAssertTrue(app.staticTexts["Projects"].exists, "with its folder")
+        XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(row("Projects", in: app).exists, "with its folder")
     }
 
     @MainActor
     func testSortingByNameDescendingPutsTheLastNameFirst() throws {
         let app = launch(state: UUID().uuidString)
         sidebar(of: app).staticTexts["Documents"].tap()
-        let budget = app.staticTexts["Budget.txt"]
-        let notes = app.staticTexts["Notes.md"]
+        let budget = row("Budget.txt", in: app)
+        let notes = row("Notes.md", in: app)
         XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
         XCTAssertLessThan(budget.frame.minY, notes.frame.minY, "by name, ascending")
-        app.buttons["View"].firstMatch.tap()
-        app.buttons["Order"].firstMatch.tap()
-        app.buttons["Descending"].firstMatch.tap()
+        // The Name column's heading, as on the Mac, turns the order round. Its element spans
+        // the whole header row, so the tap goes to its left, where the heading is.
+        app.collectionViews.buttons["Name"].firstMatch
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.5)).tap()
         XCTAssertTrue(
             app.eventually { notes.frame.minY < budget.frame.minY }, "by name, descending")
     }
@@ -84,11 +91,11 @@ final class LocationsTests: XCTestCase {
     func testOpeningAFileShowsItInQuickLook() {
         let app = launch(state: UUID().uuidString)
         sidebar(of: app).staticTexts["Work"].tap()
-        let report = app.staticTexts["Report.txt"]
+        let report = row("Report.txt", in: app)
         XCTAssertTrue(report.waitForExistence(timeout: Self.timeout))
         report.tap()
         XCTAssertTrue(
-            app.navigationBars["Report.txt"].waitForExistence(timeout: Self.timeout),
+            app.otherElements["QLPreviewControllerView"].waitForExistence(timeout: Self.timeout),
             "Quick Look shows the file")
     }
 
@@ -97,7 +104,7 @@ final class LocationsTests: XCTestCase {
         let state = UUID().uuidString
         let app = launch(state: state)
         sidebar(of: app).staticTexts["Documents"].tap()
-        let projects = app.staticTexts["Projects"]
+        let projects = row("Projects", in: app)
         XCTAssertTrue(projects.waitForExistence(timeout: Self.timeout))
         projects.tap()
         XCTAssertTrue(app.navigationBars["Projects"].waitForExistence(timeout: Self.timeout))
@@ -134,7 +141,7 @@ final class LocationsTests: XCTestCase {
     func testANewFolderIsRenamedWhileASearchHidesIt() {
         let app = launch(state: UUID().uuidString)
         sidebar(of: app).staticTexts["Documents"].tap()
-        XCTAssertTrue(app.staticTexts["Notes.md"].waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
         let search = app.searchFields.firstMatch
         search.tap()
         search.typeText("Notes")

@@ -998,8 +998,8 @@ while (($#)); do
   elif [[ "$c" == run-official ]]; then
     cmd_run_official "$@"
     exit 0
-  elif [[ ( "$c" == test || "$c" == apptest ) && -n "${1:-}" && "$COMMANDS" != *" $1 "* ]]; then
-    # test and apptest take an optional filter as their next word, unless that
+  elif [[ ( "$c" == test || "$c" == apptest || "$c" == iosuitest ) && -n "${1:-}" && "$COMMANDS" != *" $1 "* ]]; then
+    # test, apptest and iosuitest take an optional filter as their next word, unless that
     # word is a command.
     run_command "$c" "$1"; shift
   elif [[ "$c" == uireview ]]; then
