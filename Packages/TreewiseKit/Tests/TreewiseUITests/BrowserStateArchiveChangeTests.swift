@@ -41,6 +41,21 @@ import TreewiseUI
         browser.setSelection(ids, in: browser.layout.focusedPane.activeTabID)
     }
 
+    @Test func undoPutsTheArchiveBackAsItWasBeforeTheChange() async throws {
+        let browser = try await browser(at: "/docs")
+        let undoManager = UndoManager()
+        select(["/docs/note.txt"], in: browser)
+        browser.copySelection()
+        await browser.navigate(pane: 0, to: Self.inner.id)
+        await browser.paste(resolver: ScriptedResolver(), undoManager: undoManager)
+        #expect(fileSystem.appliedEdits.count == 1)
+
+        undoManager.undo()
+
+        #expect(await eventually { fileSystem.restoredVersions.count == 1 })
+        #expect(fileSystem.restoredVersions.first?.archive == "/docs/Photos.zip")
+    }
+
     @Test func pastingAFileAddsItToTheArchive() async throws {
         let browser = try await browser(at: "/docs")
         select(["/docs/note.txt"], in: browser)

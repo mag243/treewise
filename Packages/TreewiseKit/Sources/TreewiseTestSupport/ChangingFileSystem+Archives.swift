@@ -3,7 +3,8 @@ import TreewiseCore
 
 /// An archive engine without archives: an extraction makes an empty folder, a
 /// compression an empty file. Both wait while changes are held, and report one
-/// entry of two.
+/// entry of two. A change to an archive is recorded and leaves a version that undo
+/// puts back.
 extension ChangingFileSystem: ArchiveOperating {
     public func extract(
         _ archive: FileItem, into folder: FileItem.ID, as name: String,
@@ -24,12 +25,14 @@ extension ChangingFileSystem: ArchiveOperating {
         onProgress: @escaping ArchiveProgressHandler, control: TransferControl
     ) async throws -> UndoRecord {
         try await prepare(onProgress: onProgress, control: control)
-        recordEdit(edit)
-        return .none
+        return .archiveVersion(recordEdit(edit, to: archive))
     }
 
+    /// Puts a version back, as undo does, and gives it again for redo.
     public func restore(_ version: ArchiveVersion) async throws -> ArchiveVersion {
-        version
+        try throwFailureIfSet()
+        recordRestore(of: version)
+        return version
     }
 
     public func writeEntry(_ entry: FileItem, toPromisedFile file: URL) async throws {

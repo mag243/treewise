@@ -119,6 +119,20 @@ import TreewiseUI
         #expect(fileSystem.trashedIDs.count == 1)
     }
 
+    @Test func undoMovesTheExtractedFolderToTheTrash() async throws {
+        let browser = try await browser()
+        let undoManager = UndoManager()
+        select(["zip"], in: browser)
+        await browser.extractSelection(to: "documents", undoManager: undoManager)
+        #expect(browser.focusedNames.contains("Photos"))
+
+        undoManager.undo()
+
+        #expect(await eventually { !browser.focusedNames.contains("Photos") })
+        #expect(fileSystem.trashedIDs.count == 1)
+        #expect(browser.focusedNames.contains("Photos.zip"), "the archive itself stays")
+    }
+
     @Test func aFailureIsShown() async throws {
         let browser = try await browser()
         select(["zip"], in: browser)

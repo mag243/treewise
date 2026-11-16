@@ -17,6 +17,7 @@ public final class ChangingFileSystem: FileOperating {
         var changesStarted = 0
         var released: [FileItem.ID] = []
         var edits: [ArchiveEdit] = []
+        var restoredVersions: [ArchiveVersion] = []
         var listingsToHold = 0
         var heldListings = 0
 
@@ -47,8 +48,23 @@ public final class ChangingFileSystem: FileOperating {
         state.withLock { $0.edits }
     }
 
-    func recordEdit(_ edit: ArchiveEdit) {
-        state.withLock { $0.edits.append(edit) }
+    /// Records a change to an archive, and gives the version it leaves for undo: the
+    /// archive and the number of the change.
+    func recordEdit(_ edit: ArchiveEdit, to archive: FileItem.ID) -> ArchiveVersion {
+        state.withLock { state in
+            state.edits.append(edit)
+            return ArchiveVersion(
+                archive: archive, file: state.newID("version"), signature: "\(state.edits.count)")
+        }
+    }
+
+    /// The versions of archives undo put back, in order.
+    public var restoredVersions: [ArchiveVersion] {
+        state.withLock { $0.restoredVersions }
+    }
+
+    func recordRestore(of version: ArchiveVersion) {
+        state.withLock { $0.restoredVersions.append(version) }
     }
 
     func recordRelease(of archive: FileItem.ID) {
