@@ -17,7 +17,24 @@
         }
       }
     },
+    "Add a Location" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge einen Ort hinzu"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg een locatie toe"
+          }
+        }
+      }
+    },
     "Add a folder from On My iPad, iCloud Drive, a drive or another app to browse it in Treewise." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29,6 +46,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voeg een map toe uit Op mijn iPad, iCloud Drive, een schijf of een andere app om die in Treewise te bekijken."
+          }
+        }
+      }
+    },
+    "Add the top of iCloud Drive, On My iPad or a drive: everything below it comes along." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge den obersten Ordner von iCloud Drive, Auf meinem iPad oder einem Laufwerk hinzu: Alles darunter kommt mit."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg de bovenste map van iCloud Drive, Op mijn iPad of een schijf toe: alles daaronder komt mee."
           }
         }
       }
@@ -322,6 +355,7 @@
       }
     },
     "No Locations" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -333,6 +367,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geen locaties"
+          }
+        }
+      }
+    },
+    "Not available. Tap to connect it again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht verfügbar. Tippe, um ihn erneut zu verbinden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet beschikbaar. Tik om opnieuw te verbinden."
           }
         }
       }
@@ -429,6 +479,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Snel bekijken"
+          }
+        }
+      }
+    },
+    "Reconnect…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut verbinden …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opnieuw verbinden…"
           }
         }
       }
@@ -589,6 +655,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De map kan niet worden toegevoegd."
+          }
+        }
+      }
+    },
+    "Treewise shows the folders you give it. Add the top of iCloud Drive, On My iPad or a drive: everything below it comes along, so once is enough." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Ordner, die du ihm gibst. Füge den obersten Ordner von iCloud Drive, Auf meinem iPad oder einem Laufwerk hinzu: Alles darunter kommt mit, einmal genügt also."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de mappen die je het geeft. Voeg de bovenste map van iCloud Drive, Op mijn iPad of een schijf toe: alles daaronder komt mee, dus één keer is genoeg."
+          }
+        }
+      }
+    },
+    "Unavailable Folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht verfügbarer Ordner"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet-beschikbare map"
           }
         }
       }

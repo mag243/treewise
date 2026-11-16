@@ -1,28 +1,42 @@
 import SwiftUI
 import TreewiseCore
+import TreewiseFileSystem
 import TreewiseUI
 import UniformTypeIdentifiers
 
 /// The iPad app's shell (ADR 0045): the added folders in the sidebar, the
 /// folder shown beside them, and Add Location, which opens the document
-/// picker for a folder.
+/// picker for a folder; the same picker connects a folder that could not be
+/// reached again (ADR 0111).
 struct RootView: View {
     let locations: Locations
     @State private var isPickingFolder = false
+    /// The unavailable folder the picker connects again; `nil` while it adds one.
+    @State private var reconnecting: Bookmark?
 
     var body: some View {
         NavigationSplitView {
-            LocationsSidebar(locations: locations, addLocation: { isPickingFolder = true })
+            LocationsSidebar(
+                locations: locations, addLocation: { pick(for: nil) },
+                reconnect: { pick(for: $0) })
         } detail: {
             if let browser = locations.browser {
                 FolderView(browser: browser, settings: locations.settings)
             } else if locations.isLoaded {
-                NoLocationsView(addLocation: { isPickingFolder = true })
+                NoLocationsView(addLocation: { pick(for: nil) })
             }
         }
         .fileImporter(isPresented: $isPickingFolder, allowedContentTypes: [.folder]) { result in
+            let bookmark = reconnecting
+            reconnecting = nil
             guard case .success(let url) = result else { return }
-            Task { await locations.add(url) }
+            Task {
+                if let bookmark {
+                    await locations.reconnect(bookmark, to: url)
+                } else {
+                    await locations.add(url)
+                }
+            }
         }
         .alert(
             "The folder can’t be added.",
@@ -34,5 +48,10 @@ struct RootView: View {
         } message: {
             Text(locations.addFailure ?? "")
         }
+    }
+
+    private func pick(for bookmark: Bookmark?) {
+        reconnecting = bookmark
+        isPickingFolder = true
     }
 }

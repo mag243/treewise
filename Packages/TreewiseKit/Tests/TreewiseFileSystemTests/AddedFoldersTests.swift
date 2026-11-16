@@ -133,6 +133,23 @@ import TreewiseTestSupport
         #expect(paths(await again.folders()) == paths([found]), "only the new one is kept")
     }
 
+    @Test func aForgottenUnavailableFolderStaysGone() async throws {
+        let directory = try TempDirectory()
+        let photos = try directory.makeFolder("Photos")
+        try await folders(in: directory).add(photos)
+        try FileManager.default.removeItem(at: photos)
+        let relaunched = folders(in: directory)
+        await relaunched.load()
+        let gone = try #require(await relaunched.unavailable().first)
+
+        await relaunched.forget(gone)
+
+        #expect(await relaunched.unavailable().isEmpty)
+        let again = folders(in: directory)
+        await again.load()
+        #expect(await again.unavailable().isEmpty)
+    }
+
     @Test func storageWithoutAFileHoldsNoBookmarks() throws {
         let directory = try TempDirectory()
         #expect(FileBookmarkStorage(file: directory.url("missing.json")).load().isEmpty)

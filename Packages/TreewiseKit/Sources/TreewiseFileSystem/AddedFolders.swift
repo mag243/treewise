@@ -91,6 +91,12 @@ public actor AddedFolders {
         }
     }
 
+    /// Forgets a folder that could not be reached.
+    public func forget(_ bookmark: Bookmark) async {
+        missing.removeAll { $0.id == bookmark.id }
+        await store.remove(bookmark)
+    }
+
     private func renew(_ bookmark: Bookmark, for url: URL) async {
         do {
             try await store.renew(bookmark, for: url)

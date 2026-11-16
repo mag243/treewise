@@ -23,6 +23,9 @@ final class Locations {
     private(set) var isLoaded = false
     /// Why the last folder could not be added, for an alert.
     var addFailure: String?
+    /// The added folders that could not be reached at launch, such as one on a drive
+    /// that is not attached, to connect again (ADR 0111).
+    private(set) var unavailable: [Bookmark] = []
 
     let settings = BrowserSettings(store: UserDefaults.standard)
     @ObservationIgnored private let added: AddedFolders
@@ -43,8 +46,30 @@ final class Locations {
     /// launch left it.
     func start() async {
         await added.load()
+        unavailable = await added.unavailable()
         await rebuild(restoring: settings.lastSession)
         isLoaded = true
+    }
+
+    /// Puts a folder the user picked in the place of one that could not be reached,
+    /// and shows it.
+    func reconnect(_ bookmark: Bookmark, to url: URL) async {
+        do {
+            try await added.reconnect(bookmark, to: url)
+        } catch {
+            Self.logger.error("Folder not reconnected: \(error.localizedDescription)")
+            addFailure = error.localizedDescription
+            return
+        }
+        unavailable = await added.unavailable()
+        await rebuild(restoring: nil)
+        await browser?.navigate(pane: 0, to: FileItem.ID(url.standardizedFileURL.path))
+    }
+
+    /// Forgets a folder that could not be reached.
+    func forget(_ bookmark: Bookmark) async {
+        await added.forget(bookmark)
+        unavailable = await added.unavailable()
     }
 
     /// Adds a folder the user picked and shows it.
