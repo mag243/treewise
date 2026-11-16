@@ -42,18 +42,6 @@ final class IPadReviewTests: XCTestCase {
         XCUIDevice.shared.orientation = .landscapeLeft
     }
 
-    @MainActor
-    private func launch(state: String, fixture: Bool, removing: String? = nil) -> XCUIApplication {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "-TreewiseTestState", state, "-TreewiseTestFixture", fixture ? "YES" : "NO",
-            "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
-        ]
-        if let removing { app.launchArguments += ["-TreewiseTestRemove", removing] }
-        app.launch()
-        return app
-    }
-
     // MARK: - Screens
 
     @MainActor

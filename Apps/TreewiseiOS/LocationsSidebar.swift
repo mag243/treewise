@@ -2,6 +2,7 @@ import SwiftUI
 import TreewiseCore
 import TreewiseFileSystem
 import TreewiseUI
+import UniformTypeIdentifiers
 
 /// The sidebar: the added folders, the one holding the folder shown selected,
 /// with Add Location and Remove Location, and greyed below them the folders that
@@ -13,6 +14,7 @@ struct LocationsSidebar: View {
     let locations: Locations
     let addLocation: () -> Void
     let reconnect: (Bookmark) -> Void
+    @Environment(\.undoManager) private var undoManager
 
     var body: some View {
         List(selection: selection) {
@@ -26,6 +28,7 @@ struct LocationsSidebar: View {
                         .swipeActions {
                             removeButton(location)
                         }
+                        .modifier(LocationDrop(location: location, drops: drops))
                 }
                 ForEach(locations.unavailable) { bookmark in
                     unavailableRow(bookmark)
@@ -49,6 +52,12 @@ struct LocationsSidebar: View {
                     Label("Add Location", systemImage: "plus")
                 }
             }
+        }
+    }
+
+    private var drops: ItemDrops? {
+        locations.browser.map {
+            ItemDrops(browser: $0, locations: locations, undoManager: undoManager)
         }
     }
 
@@ -99,5 +108,19 @@ struct LocationsSidebar: View {
                 guard let location, let browser = locations.browser else { return }
                 Task { await browser.navigate(pane: 0, to: location) }
             })
+    }
+}
+
+/// A location that takes items dragged inside Treewise, checked as they land (ADR 0047).
+private struct LocationDrop: ViewModifier {
+    let location: FileItem
+    let drops: ItemDrops?
+
+    func body(content: Content) -> some View {
+        if let drops {
+            content.takesDrops(on: location, with: drops)
+        } else {
+            content
+        }
     }
 }

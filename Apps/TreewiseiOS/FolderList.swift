@@ -1,6 +1,7 @@
 import SwiftUI
 import TreewiseCore
 import TreewiseUI
+import UniformTypeIdentifiers
 
 /// The folder as a list, on a narrow screen: each row the name, with the
 /// date and size beneath it.
@@ -9,6 +10,9 @@ struct FolderList: View {
     let items: [FileItem]
     let settings: BrowserSettings
     let actions: ItemActions
+    let drops: ItemDrops
+    /// The folder shown, which takes a drop on a file's row (PLAN.md §4.1).
+    let folder: FileItem?
 
     private let formats = ItemFormats()
 
@@ -32,6 +36,8 @@ struct FolderList: View {
                         .foregroundStyle(.tertiary)
                 }
             }
+            .onDrag { drops.provider(for: item) }
+            .takesDrops(on: item.isContainer ? item : folder, with: drops)
         }
         .listStyle(.plain)
         .contextMenu(forSelectionType: FileItem.ID.self) { ids in

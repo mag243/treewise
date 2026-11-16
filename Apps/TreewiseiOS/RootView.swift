@@ -21,7 +21,7 @@ struct RootView: View {
                 reconnect: { pick(for: $0) })
         } detail: {
             if let browser = locations.browser {
-                FolderView(browser: browser, settings: locations.settings)
+                FolderView(browser: browser, settings: locations.settings, locations: locations)
             } else if locations.isLoaded {
                 NoLocationsView(addLocation: { pick(for: nil) })
             }
@@ -37,6 +37,14 @@ struct RootView: View {
                     await locations.add(url)
                 }
             }
+        }
+        .alert(
+            locations.dropRefusal ?? "",
+            isPresented: Binding(
+                get: { locations.dropRefusal != nil },
+                set: { if !$0 { locations.dropRefusal = nil } })
+        ) {
+            Button("OK", role: .cancel) {}
         }
         .alert(
             "The folder can’t be added.",

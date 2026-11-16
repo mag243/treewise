@@ -10,12 +10,14 @@ struct FolderView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.locale) private var locale
     @Environment(\.undoManager) private var undoManager
-    @State private var conflicts = ConflictQuestions()
     /// The file Quick Look shows, if any.
     @State private var previewed: URL?
 
     let browser: BrowserState
     let settings: BrowserSettings
+    let locations: Locations
+
+    private var conflicts: ConflictQuestions { locations.conflicts }
 
     private var tab: TabModel { browser.layout.focusedPane.activeTab }
     private var content: TreewiseUI.TabContent { browser.content(of: tab.id) }
@@ -23,7 +25,7 @@ struct FolderView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PathBar(browser: browser, folder: tab.folder)
+            PathBar(browser: browser, folder: tab.folder, drops: drops)
             Divider()
             list
                 .overlay { placeholder }
@@ -52,6 +54,10 @@ struct FolderView: View {
         }
     }
 
+    private var drops: ItemDrops {
+        ItemDrops(browser: browser, locations: locations, undoManager: undoManager)
+    }
+
     private var actions: ItemActions {
         ItemActions(browser: browser, conflicts: conflicts, undoManager: undoManager, open: open)
     }
@@ -73,9 +79,13 @@ struct FolderView: View {
 
     @ViewBuilder private var list: some View {
         if sizeClass == .compact {
-            FolderList(browser: browser, items: items, settings: settings, actions: actions)
+            FolderList(
+                browser: browser, items: items, settings: settings, actions: actions,
+                drops: drops, folder: content.folder)
         } else {
-            FolderTable(browser: browser, items: items, settings: settings, actions: actions)
+            FolderTable(
+                browser: browser, items: items, folder: content.folder, settings: settings,
+                actions: actions, drops: drops)
         }
     }
 

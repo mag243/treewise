@@ -26,11 +26,17 @@ final class Locations {
     /// The added folders that could not be reached at launch, such as one on a drive
     /// that is not attached, to connect again (ADR 0111).
     private(set) var unavailable: [Bookmark] = []
+    /// Asks what to do with a name taken, for every operation of the window.
+    let conflicts = ConflictQuestions()
+    /// Why the last drop was refused as it landed, for an alert (ADR 0047, amended).
+    var dropRefusal: String?
 
     let settings: BrowserSettings
     @ObservationIgnored private let added: AddedFolders
     /// A UI test's run, whose bookmarks and settings are its own (ADR 0114).
     @ObservationIgnored private let testRun: TestRun?
+    /// Reads the added folders, to find the items a drag carries.
+    @ObservationIgnored private var reader: LocalFileSystem?
     @ObservationIgnored private let watcher = DirectoryWatcher()
     @ObservationIgnored private let clipboard = SharedClipboard()
 
@@ -103,6 +109,11 @@ final class Locations {
         for folder in folders { try? await added.add(folder) }
     }
 
+    /// The item at `id` in the added folders as it is now, if it is in them.
+    func item(at id: FileItem.ID) -> FileItem? {
+        try? reader?.currentItem(at: id)
+    }
+
     /// Keeps the folder shown and the sort order for the next launch.
     func save() {
         guard let browser else { return }
@@ -116,6 +127,7 @@ final class Locations {
         let folders = await added.folders()
         let confined = LocalFileSystem.Locations.added(folders, home: URL.homeDirectory)
         let fileSystem = LocalFileSystem(locations: confined)
+        reader = fileSystem
         guard let first = folders.first else {
             browser = nil
             return

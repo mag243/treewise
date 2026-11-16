@@ -1,6 +1,7 @@
 import SwiftUI
 import TreewiseCore
 import TreewiseUI
+import UniformTypeIdentifiers
 
 /// The path of the folder shown, from the added folder it is in: one button
 /// per folder, scrolled to the end.
@@ -9,6 +10,7 @@ struct PathBar: View {
 
     let browser: BrowserState
     let folder: FileItem.ID
+    let drops: ItemDrops
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -25,6 +27,8 @@ struct PathBar: View {
                         }
                         .fontWeight(index == crumbs.count - 1 ? .semibold : .regular)
                         .id(index)
+                        .takesDrops(
+                            on: drops.locations.item(at: FileItem.ID(crumb.path)), with: drops)
                     }
                 }
                 .font(.subheadline)
