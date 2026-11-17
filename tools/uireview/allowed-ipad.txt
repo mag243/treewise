@@ -10,3 +10,27 @@ rename-landscape | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard, 
 # A system menu's shadow reaches above the screen; the menu itself is inside.
 view-menu-landscape | outsideWindow | image ""  # iPadOS's menu shadow
 view-menu-portrait | outsideWindow | image ""  # iPadOS's menu shadow
+# The rename sheet takes the keyboard as it opens (ADR 0130): iPadOS's keys and its bar of
+# shortcuts slide in over the sheet's lower edge while it is looked at.
+rename-landscape | outsideWindow | button "Done"  # iPadOS's keyboard, sliding in
+rename-landscape | overlap | button "Cancel"  # iPadOS's shortcut bar, sliding in
+rename-landscape | overlap | field "name"  # iPadOS's shortcut bar, sliding in
+rename-suggestions-landscape | outsideWindow | button "Done"  # iPadOS's keyboard, sliding in
+rename-suggestions-landscape | outsideWindow | button "shift"  # iPadOS's keyboard, sliding in
+rename-suggestions-landscape | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard
+rename-suggestions-landscape | overlap | button "Cancel"  # iPadOS's shortcut bar, sliding in
+rename-suggestions-landscape | overlap | field "name"  # iPadOS's shortcut bar, sliding in
+# On the newest iOS a sheet's shadow is an image reaching beyond the screen, over the
+# keyboard when one shows; the sheet itself is inside.
+rename-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+rename-landscape-11inch | overlap | image ""  # iPadOS's sheet shadow over the keyboard
+rename-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+rename-portrait-11inch | overlap | image ""  # iPadOS's sheet shadow over the keyboard
+rename-suggestions-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+rename-suggestions-landscape-11inch | overlap | image ""  # iPadOS's sheet shadow
+rename-suggestions-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+rename-suggestions-portrait-11inch | overlap | image ""  # iPadOS's sheet shadow
+settings-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+settings-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+saved-patterns-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+saved-patterns-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
