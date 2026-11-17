@@ -2,6 +2,9 @@ import TreewiseCore
 
 /// What one tab shows: the items of its folder and the user's view of them.
 public struct TabContent: Sendable, Equatable {
+    /// The folder this content was read from, with its items or its failure; another
+    /// than the tab's while the tab still reads the folder it opened (ADR 0121).
+    public internal(set) var readFolder: FileItem.ID?
     /// The folder itself, for the tab's title and the path bar.
     public internal(set) var folder: FileItem?
     /// The folder's items, in no particular order; `BrowserState.visibleItems`

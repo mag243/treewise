@@ -41,9 +41,16 @@ struct PathBar: View {
         }
     }
 
-    /// Each added folder starts a path, as a volume does on the Mac.
-    private var crumbs: [PathComponent] {
+    private var crumbs: [PathComponent] { Self.crumbs(of: folder, in: browser) }
+
+    /// The path of `folder`: each added folder starts one, as a volume does on the Mac.
+    static func crumbs(of folder: FileItem.ID, in browser: BrowserState) -> [PathComponent] {
         let roots = browser.locations.map { MountPoint(path: $0.id.rawValue, name: $0.name) }
         return PathComponents.breadcrumbs(for: folder.rawValue, mountPoints: roots)
+    }
+
+    /// The name the path bar gives `folder`, before the folder itself is read.
+    static func name(of folder: FileItem.ID, in browser: BrowserState) -> String {
+        crumbs(of: folder, in: browser).last?.name ?? ""
     }
 }

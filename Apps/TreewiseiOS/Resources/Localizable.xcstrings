@@ -550,6 +550,22 @@
         }
       }
     },
+    "Reading %@…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ wird gelesen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ wordt gelezen…"
+          }
+        }
+      }
+    },
     "Reconnect…" : {
       "localizations" : {
         "de" : {

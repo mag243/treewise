@@ -25,6 +25,7 @@ extension BrowserState {
             guard latestLoads[tab] == number, layout.tab(tab)?.folder == folder else { return }
             var content = content(of: tab)
             let present = Set(items.map(\.id))
+            content.readFolder = folder
             content.folder = folderItem
             content.items = items
             content.selection = content.selection.intersection(present)
@@ -87,6 +88,7 @@ extension BrowserState {
         var content = TabContent()
         content.query = self.content(of: tab).query
         content.failure = failure
+        content.readFolder = folder
         contents[tab] = content
     }
 

@@ -128,6 +128,13 @@ public final class BrowserState {
         contents[tab] ?? TabContent()
     }
 
+    /// Whether a tab is still reading the folder it opened, whose items it does not
+    /// have yet (ADR 0121); reading the folder it shows again does not count.
+    public func isReading(_ tab: TabModel.ID) -> Bool {
+        guard let folder = layout.tab(tab)?.folder else { return false }
+        return content(of: tab).readFolder != folder
+    }
+
     /// A tab's items as the list shows them: filtered by its search text and sorted.
     public func visibleItems(of tab: TabModel.ID) -> [FileItem] {
         let content = content(of: tab)

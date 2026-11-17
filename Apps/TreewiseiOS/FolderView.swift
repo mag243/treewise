@@ -28,9 +28,10 @@ struct FolderView: View {
             PathBar(browser: browser, folder: tab.folder, drops: drops)
             Divider()
             list
+                .allowsHitTesting(!isReading)
                 .overlay { placeholder }
         }
-        .navigationTitle(content.folder?.name ?? "")
+        .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
         .searchable(
@@ -85,8 +86,19 @@ struct FolderView: View {
             actions: actions, drops: drops, isCompact: sizeClass == .compact)
     }
 
+    /// Whether the folder just opened is still being read; the list then still holds the
+    /// folder left (ADR 0121).
+    private var isReading: Bool { browser.isReading(tab.id) }
+
+    /// The folder's name, from the path while it is being read.
+    private var title: String {
+        isReading ? PathBar.name(of: tab.folder, in: browser) : content.folder?.name ?? ""
+    }
+
     @ViewBuilder private var placeholder: some View {
-        if let failure = content.failure {
+        if isReading {
+            ReadingPlaceholder(name: title)
+        } else if let failure = content.failure {
             ContentUnavailableView(
                 FailureMessage.text(for: failure, locale: locale),
                 systemImage: "exclamationmark.triangle")

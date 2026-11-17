@@ -93,47 +93,6 @@ public struct LocalFileSystem: FileSystemProviding {
         guard isInsideBoundary(id) else { throw FileSystemError.outsideBoundary(id) }
     }
 
-    public func contents(of folder: FileItem.ID) async throws -> [FileItem] {
-        if folder == .computer { return try await locations() }
-        try checkBoundary(folder)
-        if let place = ArchivePath(folder) { return try await archiveContents(of: place) }
-        let urls: [URL]
-        let asksCloudStatus = isInCloudFolder(folder)
-        // In a cloud folder whether a file is only online is read with the listing, not
-        // once more for each file.
-        let keys = asksCloudStatus ? Self.cloudListingKeys : Self.listingKeys
-        do {
-            urls = try FileManager.default.contentsOfDirectory(
-                at: url(of: folder), includingPropertiesForKeys: Array(keys))
-        } catch {
-            throw FileSystemError.mapping(error, for: folder)
-        }
-        let volume = try? url(of: folder).resourceValues(forKeys: [.volumeURLKey]).volume
-        var kindTexts = KindTextCache()
-        // An entry that disappears between listing and reading is left out.
-        return urls.compactMap { child -> FileItem? in
-            let fileName = child.lastPathComponent
-            guard !Self.temporaryPrefixes.contains(where: fileName.hasPrefix) else { return nil }
-            let id = childID(of: folder, named: fileName)
-            guard let values = try? child.resourceValues(forKeys: Self.listingKeys) else {
-                return nil
-            }
-            // A mount point is on a volume of its own: read it in full.
-            if values.isVolume == true { return try? makeItem(id: id) }
-            let kind = kind(of: id, values: values, isVolumeRoot: false)
-            var item = FileItem(
-                id: id, name: name(of: id, kind: kind, values: values), kind: kind,
-                parentID: folder, volume: VolumeID(volume?.path ?? "/"),
-                modified: values.contentModificationDate,
-                size: values.isRegularFile == true ? values.fileSize.map(Int64.init) : nil,
-                kindDescription: kindTexts.text(for: child, values: values),
-                isHidden: values.isHidden ?? fileName.hasPrefix("."))
-            item.isOnlyOnline =
-                asksCloudStatus && !kind.isContainer && locations.isOnlyOnline(child)
-            return item
-        }
-    }
-
     public func item(at id: FileItem.ID) async throws -> FileItem {
         if let place = ArchivePath(id) {
             try checkBoundary(id)
@@ -227,12 +186,11 @@ public struct LocalFileSystem: FileSystemProviding {
         return values.volumeIsEjectable == true || values.volumeIsRemovable == true
     }
 
-    private func childID(of folder: FileItem.ID, named name: String) -> FileItem.ID {
+    func childID(of folder: FileItem.ID, named name: String) -> FileItem.ID {
         FileItem.ID(folder.rawValue == "/" ? "/" + name : folder.rawValue + "/" + name)
     }
 
-    private func kind(of id: FileItem.ID, values: URLResourceValues, isVolumeRoot: Bool) -> ItemKind
-    {
+    func kind(of id: FileItem.ID, values: URLResourceValues, isVolumeRoot: Bool) -> ItemKind {
         if values.isSymbolicLink == true { return .file }
         if values.isPackage == true { return .package }
         guard values.isDirectory == true else { return .file }
@@ -242,7 +200,7 @@ public struct LocalFileSystem: FileSystemProviding {
         return .folder
     }
 
-    private func name(of id: FileItem.ID, kind: ItemKind, values: URLResourceValues) -> String {
+    func name(of id: FileItem.ID, kind: ItemKind, values: URLResourceValues) -> String {
         // An added folder goes by the name the user gave it (ADR 0119), else by the
         // name the Files app shows: iCloud Drive rather than the name of its folder in
         // the container.
