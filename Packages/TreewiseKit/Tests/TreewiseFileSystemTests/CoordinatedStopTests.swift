@@ -8,23 +8,24 @@ import TreewiseTestSupport
 /// Stopping a copy while its coordinated read still waits, as it does while a cloud
 /// provider downloads a file kept only online (ADR 0122).
 @Suite struct CoordinatedStopTests {
-    /// How long the presenter waits for the reader and then holds it at most, so that a
-    /// copy that does not stop fails the test instead of hanging it. Generous, as the copy
-    /// queue is shared with the other tests' copies.
+    /// How long the presenter holds the reader at most, so that a copy that does not stop
+    /// fails the test instead of hanging it. It counts from the reader's arrival, so a copy
+    /// that waits its turn on the shared copy queue does not count against it.
     private static let deadline = DispatchTimeInterval.seconds(10)
 
     /// Presents a file and holds every reader off until it is released or its deadline
-    /// passes, as a provider does until a download ends.
+    /// passes, as a provider does until a download ends; `onReader` runs as a reader
+    /// arrives, before it is held.
     private final class HoldingPresenter: NSObject, NSFilePresenter, Sendable {
         let presentedItemURL: URL?
         let presentedItemOperationQueue = OperationQueue()
-        /// Signalled once a reader asks for the file.
-        private let asked = DispatchSemaphore(value: 0)
+        private let onReader: @Sendable () -> Void
         private let release = DispatchSemaphore(value: 0)
         private let released = Atomic(false)
 
-        init(file: URL) {
+        init(file: URL, onReader: @escaping @Sendable () -> Void) {
             presentedItemURL = file
+            self.onReader = onReader
         }
 
         /// Whether the presenter has let the reader go.
@@ -32,15 +33,10 @@ import TreewiseTestSupport
 
         func letGo() { release.signal() }
 
-        /// Blocks until a reader asks for the file; false when none does in time.
-        func waitForReader() -> Bool {
-            asked.wait(timeout: .now() + CoordinatedStopTests.deadline) == .success
-        }
-
         func relinquishPresentedItem(
             toReader reader: @escaping @Sendable ((@Sendable () -> Void)?) -> Void
         ) {
-            asked.signal()
+            onReader()
             _ = release.wait(timeout: .now() + CoordinatedStopTests.deadline)
             released.store(true, ordering: .sequentiallyConsistent)
             reader(nil)
@@ -51,22 +47,20 @@ import TreewiseTestSupport
         let directory = try TempDirectory()
         try directory.makeFolder("to")
         let file = try directory.makeFile("Online.jpg", contents: "photo")
-        let presenter = HoldingPresenter(file: file)
+        let control = TransferControl()
+        // The user stops the copy while the provider still downloads the file.
+        let presenter = HoldingPresenter(file: file, onReader: { control.stop() })
         NSFileCoordinator.addFilePresenter(presenter)
         defer { NSFileCoordinator.removeFilePresenter(presenter) }
         let runner = FileOperationRunner()
         let item = try await runner.item(at: FileItem.ID(file.path))
-        let control = TransferControl()
 
         let target = FileItem.ID(directory.url("to").path)
 
-        let copying = Task {
+        let result = await Task {
             try await runner.copy(
                 item, into: target, as: "Online.jpg", onFile: { _, _ in }, control: control)
-        }
-        #expect(await Task.detached { presenter.waitForReader() }.value)
-        control.stop()
-        let result = await copying.result
+        }.result
         let stoppedWhileHeld = !presenter.hasReleased
         presenter.letGo()
 
