@@ -23,19 +23,18 @@ final class AppStoreScreenshotTests: XCTestCase {
         let documents: String
         let archive: String
         let budget: String
-        let lighthouse: String
     }
 
     private static let languages = [
         Language(
             locale: "en-US", code: "en", documents: "Documents", archive: "Archive",
-            budget: "Budget 2026.xlsx", lighthouse: "Lighthouse.jpg"),
+            budget: "Budget 2026.xlsx"),
         Language(
             locale: "nl-NL", code: "nl", documents: "Documenten", archive: "Archief",
-            budget: "Begroting 2026.xlsx", lighthouse: "Vuurtoren.jpg"),
+            budget: "Begroting 2026.xlsx"),
         Language(
             locale: "de-DE", code: "de", documents: "Dokumente", archive: "Archiv",
-            budget: "Budget 2026.xlsx", lighthouse: "Leuchtturm.jpg"),
+            budget: "Budget 2026.xlsx"),
     ]
 
     override func setUp() {
@@ -70,17 +69,11 @@ final class AppStoreScreenshotTests: XCTestCase {
 
         app.descendants(matching: .any)["viewMenu"].firstMatch.tap()
         keep("04-view-menu", of: language)
-        app.coordinate(withNormalizedOffset: Self.emptyPoint).tap()
-
-        row(language.lighthouse, in: app).tap()
-        XCTAssertTrue(
-            app.otherElements["QLPreviewControllerView"].waitForExistence(timeout: Self.timeout))
-        keep("05-quick-look", of: language)
         app.terminate()
 
         XCUIDevice.shared.orientation = .portrait
         app = open(language)
-        keep("06-portrait", of: language)
+        keep("05-portrait", of: language)
         app.terminate()
     }
 

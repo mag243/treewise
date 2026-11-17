@@ -4,7 +4,8 @@ import Foundation
 /// apart from the real ones, and a fixture of folders to add, as the test runner cannot make
 /// folders the app may read.
 /// - `-TreewiseTestState <name>`: the run's state, found again by a relaunch with that name.
-/// - `-TreewiseTestFixture YES`: the folders `Documents` and `Work`, added when none are.
+/// - `-TreewiseTestFixture YES`: the folders `Documents` and `Work`, added when none are;
+///   `Projects` holds a second `Budget.txt`, so a drop there asks about the name.
 /// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders (`DemoTree`).
 /// - `-TreewiseTestRemove <folder>`: removes a fixture folder before the locations are read.
 struct TestRun {
@@ -14,7 +15,7 @@ struct TestRun {
     private static let demoArgument = "TreewiseTestDemo"
     /// The fixture's folders and their files.
     private static let fixture: [String: [String]] = [
-        "Documents": ["Notes.md", "Budget.txt", "Projects/"],
+        "Documents": ["Notes.md", "Budget.txt", "Projects/", "Projects/Budget.txt"],
         "Work": ["Report.txt"],
     ]
 

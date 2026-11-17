@@ -39,7 +39,9 @@ struct FolderView: View {
                 set: { browser.setQuery($0, in: tab.id) })
         )
         .refreshable { await browser.refresh(pane: 0) }
-        .safeAreaInset(edge: .bottom) { ProgressBar(browser: browser) }
+        .safeAreaInset(edge: .bottom) {
+            ProgressBar(browser: browser, isAsking: conflicts.question != nil)
+        }
         .quickLookPreview($previewed, in: previewableFiles)
         .modifier(RenameAlert(browser: browser, undoManager: undoManager))
         .sheet(isPresented: isAskingAboutConflict) {

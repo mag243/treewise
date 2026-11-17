@@ -4,18 +4,22 @@ import TreewiseUI
 
 /// The progress of a transfer at the bottom of the folder, with Pause,
 /// Resume and Stop (ADR 0026, ADR 0047). It shows only once the transfer has
-/// run for a second, as on the Mac, so quick operations do not flash it.
+/// run for a second, as on the Mac, so quick operations do not flash it, and
+/// stays away while the transfer waits for the answer to a conflict, when
+/// nothing is moving yet.
 struct ProgressBar: View {
     private static let delay = Duration.seconds(1)
     private static let spacing: CGFloat = 6
 
     let browser: BrowserState
+    /// Whether the conflict sheet asks about a name.
+    let isAsking: Bool
     @Environment(\.locale) private var locale
     @State private var isShown = false
 
     var body: some View {
         Group {
-            if isShown, let progress = browser.progress {
+            if isShown, !isAsking, let progress = browser.progress {
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: Self.spacing) {
                         Text(
