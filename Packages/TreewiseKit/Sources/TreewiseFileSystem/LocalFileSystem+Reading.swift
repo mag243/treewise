@@ -55,8 +55,13 @@ extension LocalFileSystem {
         let fileName = child.lastPathComponent
         guard !Self.temporaryPrefixes.contains(where: fileName.hasPrefix) else { return nil }
         let id = childID(of: reading.folder, named: fileName)
-        guard let values = try? child.resourceValues(forKeys: Self.listingKeys) else {
+        guard var values = try? child.resourceValues(forKeys: Self.listingKeys) else {
             return nil
+        }
+        if values.isDirectory == true {
+            guard let folderValues = try? child.resourceValues(forKeys: Self.folderListingKeys)
+            else { return nil }
+            values = folderValues
         }
         // A mount point is on a volume of its own: read it in full.
         if values.isVolume == true { return try? makeItem(id: id) }

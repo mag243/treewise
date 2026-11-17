@@ -36,7 +36,7 @@ extension LocalFileSystem {
             home: URL, applications: URL,
             mountedVolumes: @escaping @Sendable () -> [URL] = Locations.systemVolumes,
             boundary: [URL]? = nil, addedFolders: [URL] = [],
-            isOnlyOnline: @escaping @Sendable (URL) -> Bool = Locations.systemIsOnlyOnline,
+            isOnlyOnline: @escaping @Sendable (URL) -> Bool = Locations.systemDefaultIsOnlyOnline,
             moveToTrash: @escaping @Sendable (URL) throws -> Void = Locations.systemMoveToTrash
         ) {
             self.home = home
@@ -56,6 +56,25 @@ extension LocalFileSystem {
         /// Where the copies of entries of archives are kept (ADR 0076).
         public var archiveCacheFolder: URL {
             home.appendingPathComponent("Library/Caches/me.m-domain.treewise/Archives")
+        }
+
+        /// How the system tells a file kept only online: on the Mac its download status
+        /// (ADR 0051), on the iPad its dataless flag, which is quick to read (ADR 0126).
+        #if os(macOS)
+            public static let systemDefaultIsOnlyOnline: @Sendable (URL) -> Bool =
+                systemIsOnlyOnline
+        #else
+            public static let systemDefaultIsOnlyOnline: @Sendable (URL) -> Bool =
+                systemIsDataless
+        #endif
+
+        /// Whether a file is dataless: its contents are not on the device, as for a file
+        /// a File Provider keeps only online (ADR 0126). It reads the file's flags with
+        /// `lstat`, without asking the provider, and downloads nothing.
+        public static func systemIsDataless(_ url: URL) -> Bool {
+            var info = stat()
+            guard lstat(url.path, &info) == 0 else { return false }
+            return info.st_flags & UInt32(SF_DATALESS) != 0
         }
 
         /// What macOS reports: a file not downloaded is only online (ADR 0051).

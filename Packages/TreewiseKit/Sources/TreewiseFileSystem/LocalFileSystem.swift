@@ -13,15 +13,25 @@ public struct LocalFileSystem: FileSystemProviding {
 
     /// The resource values read for each item of a folder: the per-file facts,
     /// without the kind text and the volume, which are slow to read per file
-    /// and the same for most items of a folder (ADR 0016).
+    /// and the same for most items of a folder (ADR 0016), and without whether it is a
+    /// package, which only a folder can be and which a cloud provider is slow to
+    /// answer for each file (ADR 0126).
     static let listingKeys: Set<URLResourceKey> = [
-        .isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .isPackageKey, .isVolumeKey,
+        .isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .isVolumeKey,
         .contentModificationDateKey, .fileSizeKey, .isHiddenKey,
     ]
 
-    /// The resource values read for each item of a cloud folder: also whether it is kept
-    /// only online (ADR 0051).
-    static let cloudListingKeys = listingKeys.union([.ubiquitousItemDownloadingStatusKey])
+    /// The resource values read for a folder of a listing: also whether it is a package.
+    static let folderListingKeys = listingKeys.union([.isPackageKey])
+
+    /// The resource values read for each item of a cloud folder: on the Mac also whether
+    /// it is kept only online (ADR 0051); the iPad reads that from the dataless flag
+    /// instead, as the provider is slow to answer for each file (ADR 0126).
+    #if os(macOS)
+        static let cloudListingKeys = listingKeys.union([.ubiquitousItemDownloadingStatusKey])
+    #else
+        static let cloudListingKeys = listingKeys
+    #endif
 
     /// The names Treewise gives its own temporary items: partial copies
     /// (ADR 0018) and inboxes of promised files (ADR 0020). They are never listed.
