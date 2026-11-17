@@ -36,6 +36,9 @@ enum ItemCommands {
                     title: String(localized: "Rename"), symbol: "pencil",
                     isEnabled: item.canBeRenamedOrTrashed, perform: { actions.rename(item) }),
             ])
+            if item.isContainer, !item.id.isInsideArchive {
+                sections.append([favoriteCommand(item, actions)])
+            }
         }
         if actions.canSuggestNames {
             sections.append(namingCommands(items, actions))
@@ -56,6 +59,17 @@ enum ItemCommands {
                 perform: { actions.moveToTrash(items) })
         ])
         return sections
+    }
+
+    /// Add to Favorites, or Remove from Favorites for a favorite (ADR 0131).
+    private static func favoriteCommand(_ folder: FileItem, _ actions: ItemActions) -> ItemCommand {
+        actions.isFavorite(folder)
+            ? ItemCommand(
+                title: String(localized: "Remove from Favorites"), symbol: "star.slash",
+                perform: { actions.removeFavorite(folder) })
+            : ItemCommand(
+                title: String(localized: "Add to Favorites"), symbol: "star",
+                perform: { actions.addFavorite(folder) })
     }
 
     /// The name overview, and for one file Rename with Suggestions (ADR 0130).

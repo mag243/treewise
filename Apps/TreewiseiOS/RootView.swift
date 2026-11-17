@@ -13,12 +13,13 @@ struct RootView: View {
     @State private var isPickingFolder = false
     /// The unavailable folder the picker connects again; `nil` while it adds one.
     @State private var reconnecting: Bookmark?
+    @State private var isShowingSettings = false
 
     var body: some View {
         NavigationSplitView {
             LocationsSidebar(
                 locations: locations, addLocation: { pick(for: nil) },
-                reconnect: { pick(for: $0) })
+                reconnect: { pick(for: $0) }, showSettings: { isShowingSettings = true })
         } detail: {
             if let browser = locations.browser {
                 FolderView(browser: browser, settings: locations.settings, locations: locations)
@@ -37,6 +38,9 @@ struct RootView: View {
                     await locations.add(url)
                 }
             }
+        }
+        .sheet(isPresented: $isShowingSettings) {
+            SettingsSheet(settings: locations.settings)
         }
         .modifier(LocationNameAlert(locations: locations))
         .alert(

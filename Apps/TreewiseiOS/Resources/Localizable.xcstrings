@@ -77,6 +77,22 @@
         }
       }
     },
+    "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein vorgeschlagener Name mit einer E-Mail-Adresse, Telefonnummer, Konto- oder Kartennummer wird markiert. Ein Name, den du selbst eingibst, nicht."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een voorgestelde naam met een e-mailadres, telefoonnummer, bankrekening- of betaalkaartnummer wordt gemarkeerd. Een naam die je zelf typt niet."
+          }
+        }
+      }
+    },
     "Actions" : {
       "localizations" : {
         "de" : {
@@ -105,6 +121,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voeg locatie toe"
+          }
+        }
+      }
+    },
+    "Add Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg patroon toe"
           }
         }
       }
@@ -142,6 +174,22 @@
         }
       }
     },
+    "Add a folder with Add to Favorites in its menu, or drag it here." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge einen Ordner mit „Zu Favoriten hinzufügen“ in seinem Menü hinzu oder ziehe ihn hierher."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg een map toe met Voeg toe aan Favorieten in het menu ervan, of sleep hem hierheen."
+          }
+        }
+      }
+    },
     "Add the top of iCloud Drive, On My iPad or a drive: everything below it comes along." : {
       "localizations" : {
         "de" : {
@@ -154,6 +202,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voeg de bovenste map van iCloud Drive, Op mijn iPad of een schijf toe: alles daaronder komt mee."
+          }
+        }
+      }
+    },
+    "Add to Favorites" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu Favoriten hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg toe aan Favorieten"
           }
         }
       }
@@ -334,6 +398,54 @@
         }
       }
     },
+    "Clear Folder Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnereinstellungen löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wis mapinstellingen"
+          }
+        }
+      }
+    },
+    "Clear Folder Settings…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnereinstellungen löschen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wis mapinstellingen…"
+          }
+        }
+      }
+    },
+    "Clear the settings of every folder?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Einstellungen aller Ordner löschen?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De instellingen van alle mappen wissen?"
+          }
+        }
+      }
+    },
     "Cloud" : {
       "comment" : "A cloud location the user did not name",
       "localizations" : {
@@ -459,6 +571,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datum gewijzigd"
+          }
+        }
+      }
+    },
+    "Default" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standaard"
           }
         }
       }
@@ -591,6 +719,22 @@
         }
       }
     },
+    "Each folder starts again with the add-ons that are on in new folders, and its pattern is recognized again. Saved patterns stay." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeder Ordner beginnt wieder mit den Add-ons, die in neuen Ordnern eingeschaltet sind, und sein Muster wird neu erkannt. Gesicherte Muster bleiben erhalten."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke map begint opnieuw met de add-ons die aan staan in nieuwe mappen, en het patroon wordt opnieuw herkend. Bewaarde patronen blijven."
+          }
+        }
+      }
+    },
     "Enclosing Folder" : {
       "localizations" : {
         "de" : {
@@ -607,6 +751,22 @@
         }
       }
     },
+    "Favorites" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoriten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorieten"
+          }
+        }
+      }
+    },
     "Folders in %@" : {
       "localizations" : {
         "de" : {
@@ -619,6 +779,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mappen in %@"
+          }
+        }
+      }
+    },
+    "For each folder you suggest names in, Treewise keeps which add-ons are on and their patterns. Those of a folder not seen for 30 days go by themselves." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für jeden Ordner, in dem du Namen vorschlagen lässt, merkt sich Treewise, welche Add-ons eingeschaltet sind, und ihre Muster. Die eines Ordners, der 30 Tage nicht gesehen wurde, verschwinden von selbst."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor elke map waarin je namen laat voorstellen, onthoudt Treewise welke add-ons aan staan en hun patronen. Die van een map die 30 dagen niet is gezien, verdwijnen vanzelf."
           }
         }
       }
@@ -687,6 +863,22 @@
         }
       }
     },
+    "Leave out of Approve All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht bei „Alle bestätigen“"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet bij Keur alles goed"
+          }
+        }
+      }
+    },
     "Locations" : {
       "localizations" : {
         "de" : {
@@ -699,6 +891,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Locaties"
+          }
+        }
+      }
+    },
+    "Make Default" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Standard festlegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maak standaard"
           }
         }
       }
@@ -751,6 +959,38 @@
         }
       }
     },
+    "Names" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen"
+          }
+        }
+      }
+    },
+    "Names with personal data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen mit persönlichen Daten"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen met persoonsgegevens"
+          }
+        }
+      }
+    },
     "New Folder" : {
       "localizations" : {
         "de" : {
@@ -763,6 +1003,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nieuwe map"
+          }
+        }
+      }
+    },
+    "New Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Muster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuw patroon"
           }
         }
       }
@@ -880,6 +1136,22 @@
         }
       }
     },
+    "Not available." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht verfügbar."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet beschikbaar."
+          }
+        }
+      }
+    },
     "Not available. Tap to connect it again." : {
       "localizations" : {
         "de" : {
@@ -974,6 +1246,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alleen online"
+          }
+        }
+      }
+    },
+    "Only warn" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur warnen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alleen waarschuwen"
           }
         }
       }
@@ -1186,6 +1474,22 @@
         }
       }
     },
+    "Remove from Favorites" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus Favoriten entfernen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder uit Favorieten"
+          }
+        }
+      }
+    },
     "Rename" : {
       "localizations" : {
         "de" : {
@@ -1314,6 +1618,22 @@
         }
       }
     },
+    "Saved Patterns" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesicherte Muster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaarde patronen"
+          }
+        }
+      }
+    },
     "Select" : {
       "localizations" : {
         "de" : {
@@ -1342,6 +1662,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selecteer alles"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instellingen"
           }
         }
       }

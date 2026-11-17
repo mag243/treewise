@@ -14,9 +14,14 @@ struct LocationsSidebar: View {
     let locations: Locations
     let addLocation: () -> Void
     let reconnect: (Bookmark) -> Void
+    /// Opens Settings (ADR 0130).
+    let showSettings: () -> Void
 
     var body: some View {
         List(selection: selection) {
+            if let browser = locations.browser, let drops {
+                FavoritesSection(browser: browser, drops: drops)
+            }
             Section {
                 ForEach(locations.browser?.locations ?? []) { location in
                     Label(location.name, systemImage: ItemSymbol.name(for: location))
@@ -55,6 +60,13 @@ struct LocationsSidebar: View {
                 Button(action: addLocation) {
                     Label("Add Location", systemImage: "plus")
                 }
+            }
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: showSettings) {
+                    Label("Settings", systemImage: "gearshape")
+                }
+                // The UI tests find it by it.
+                .accessibilityIdentifier("settings")
             }
         }
     }
@@ -104,10 +116,14 @@ struct LocationsSidebar: View {
         }
     }
 
-    /// The location the folder shown is in; choosing one shows it.
+    /// The favorite shown, else the location the folder shown is in; choosing one shows it.
     private var selection: Binding<FileItem.ID?> {
         Binding(
-            get: { locations.browser?.locationShown(in: 0) },
+            get: {
+                guard let browser = locations.browser else { return nil }
+                let folder = browser.layout.focusedPane.activeTab.folder
+                return browser.isFavorite(folder) ? folder : browser.locationShown(in: 0)
+            },
             set: { location in
                 guard let location, let browser = locations.browser else { return }
                 Task { await browser.navigate(pane: 0, to: location) }

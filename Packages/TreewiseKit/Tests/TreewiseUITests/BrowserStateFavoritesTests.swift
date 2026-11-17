@@ -35,6 +35,29 @@ import TreewiseUI
         #expect(browser.favorites.map(\.id).first == "movies")
     }
 
+    @Test func keepsAFavoriteWhoseFolderCannotBeReachedApart() async throws {
+        let browser = await browser()
+        await browser.addFavorite("movies")
+        _ = try await fileSystem.moveToTrash(["movies"])
+
+        await browser.reloadFavorites()
+
+        #expect(!browser.favorites.map(\.id).contains("movies"))
+        #expect(browser.unreachableFavorites == ["movies"])
+        #expect(browser.settings.favoriteFolders?.contains("movies") == true, "still chosen")
+    }
+
+    @Test func removesAFavoriteThatCannotBeReached() async throws {
+        let browser = await browser()
+        await browser.addFavorite("movies")
+        _ = try await fileSystem.moveToTrash(["movies"])
+        await browser.reloadFavorites()
+
+        await browser.removeFavorite("movies")
+
+        #expect(browser.unreachableFavorites.isEmpty)
+    }
+
     @Test func doesNotAddAFile() async {
         let browser = await browser()
         await browser.addFavorite("doc2")

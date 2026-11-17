@@ -35,19 +35,25 @@ extension BrowserState {
     }
 
     /// Reads the rows of Favorites again: the built-in ones until the user
-    /// changed the list, then the folders of the list that are there.
+    /// changed the list, then the folders of the list that are there, and apart
+    /// those that are not.
     public func reloadFavorites() async {
         guard let folders = settings.favoriteFolders else {
             favorites = (try? await fileSystem.favorites()) ?? []
+            unreachableFavorites = []
             return
         }
         var rows: [FileItem] = []
+        var unreachable: [FileItem.ID] = []
         for folder in folders {
             if let item = try? await fileSystem.item(at: folder), item.isContainer {
                 rows.append(item)
+            } else {
+                unreachable.append(folder)
             }
         }
         favorites = rows
+        unreachableFavorites = unreachable
     }
 
     /// Lets the favorites follow folders that were renamed or moved.

@@ -125,6 +125,31 @@ final class IPadReviewTests: XCTestCase {
         }
     }
 
+    /// Settings with its saved patterns, and the sidebar with a favorite (ADR 0130, 0131).
+    @MainActor
+    func testSettings() throws {
+        try eachVariant { variant in
+            let app = launch(state: UUID().uuidString, fixture: true)
+            let projects = app.staticTexts["Projects"].firstMatch
+            XCTAssertTrue(projects.waitForExistence(timeout: Self.timeout))
+            projects.press(forDuration: Self.longPress)
+            app.buttons["Add to Favorites"].firstMatch.tap()
+            review(app, as: "favorites", variant: variant)
+
+            // In portrait the sidebar, with the gear, shows over the folder when asked.
+            if !app.buttons["settings"].firstMatch.isHittable {
+                app.buttons["ToggleSidebar"].firstMatch.tap()
+            }
+            app.buttons["settings"].firstMatch.tap()
+            let saved = app.buttons["savedPatterns"].firstMatch
+            XCTAssertTrue(saved.waitForExistence(timeout: Self.timeout))
+            review(app, as: "settings", variant: variant)
+            saved.tap()
+            review(app, as: "saved-patterns", variant: variant)
+            app.terminate()
+        }
+    }
+
     // MARK: - Looking
 
     @MainActor

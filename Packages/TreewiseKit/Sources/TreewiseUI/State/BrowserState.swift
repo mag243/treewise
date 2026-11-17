@@ -16,6 +16,9 @@ public final class BrowserState {
     public let homeFolder: FileItem.ID
     /// The sidebar's Favorites.
     public internal(set) var favorites: [FileItem] = []
+    /// The chosen favorites whose folders cannot be reached now, in the list's order; the
+    /// iPad shows them greyed (ADR 0131).
+    public internal(set) var unreachableFavorites: [FileItem.ID] = []
     /// The sidebar's Locations.
     public internal(set) var locations: [FileItem] = []
     /// What each tab shows.

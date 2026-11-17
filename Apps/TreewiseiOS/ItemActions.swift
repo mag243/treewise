@@ -76,6 +76,18 @@ struct ItemActions {
         }
     }
 
+    func isFavorite(_ folder: FileItem) -> Bool {
+        browser.isFavorite(folder.id)
+    }
+
+    func addFavorite(_ folder: FileItem) {
+        Task { await browser.addFavorite(folder.id) }
+    }
+
+    func removeFavorite(_ folder: FileItem) {
+        Task { await browser.removeFavorite(folder.id) }
+    }
+
     /// The menu acts on the items it was opened for, which become the selection.
     private func select(_ items: [FileItem]) {
         browser.setSelection(Set(items.map(\.id)), in: browser.layout.focusedPane.activeTabID)
