@@ -17,6 +17,66 @@
         }
       }
     },
+    "%lld files already fit" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Dateien passen bereits"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bestanden passen al"
+          }
+        }
+      }
+    },
+    "%lld files already fit, %lld always skipped" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld Dateien passen bereits, %2$lld immer übersprungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld files already fit, %2$lld always skipped"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld bestanden passen al, %2$lld altijd overgeslagen"
+          }
+        }
+      }
+    },
+    "%lld of %lld approved" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld von %2$lld bestätigt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld approved"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld van %2$lld goedgekeurd"
+          }
+        }
+      }
+    },
     "Actions" : {
       "localizations" : {
         "de" : {
@@ -98,6 +158,38 @@
         }
       }
     },
+    "Already fits" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passt bereits"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past al"
+          }
+        }
+      }
+    },
+    "Always Skip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immer überspringen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sla altijd over"
+          }
+        }
+      }
+    },
     "An item named “%@” already exists in this location." : {
       "localizations" : {
         "de" : {
@@ -126,6 +218,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pas toe op alles"
+          }
+        }
+      }
+    },
+    "Approve" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keur goed"
+          }
+        }
+      }
+    },
+    "Approve All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle bestätigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keur alles goed"
           }
         }
       }
@@ -162,6 +286,22 @@
         }
       }
     },
+    "Back in List" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zurück in die Liste"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terug in lijst"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "de" : {
@@ -174,6 +314,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuleer"
+          }
+        }
+      }
+    },
+    "Choose a Saved Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichertes Muster auswählen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kies een bewaard patroon"
           }
         }
       }
@@ -467,6 +623,22 @@
         }
       }
     },
+    "Found in This Folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In diesem Ordner gefunden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gevonden in deze map"
+          }
+        }
+      }
+    },
     "Keep Both" : {
       "localizations" : {
         "de" : {
@@ -579,6 +751,22 @@
         }
       }
     },
+    "Next" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weiter"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volgende"
+          }
+        }
+      }
+    },
     "No Folders" : {
       "localizations" : {
         "de" : {
@@ -612,6 +800,38 @@
         }
       }
     },
+    "No files to name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Dateien zum Benennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen bestanden om te benoemen"
+          }
+        }
+      }
+    },
+    "No proposal. Type a name." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Vorschlag. Gib einen Namen ein."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen voorstel. Typ een naam."
+          }
+        }
+      }
+    },
     "Not available. Tap to connect it again." : {
       "localizations" : {
         "de" : {
@@ -624,6 +844,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Niet beschikbaar. Tik om opnieuw te verbinden."
+          }
+        }
+      }
+    },
+    "Not for these add-ons. Stays as it is." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht für diese Add-ons. Bleibt unverändert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet voor deze add-ons. Blijft zoals het is."
           }
         }
       }
@@ -726,6 +962,22 @@
         }
       }
     },
+    "Pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patroon"
+          }
+        }
+      }
+    },
     "Pause" : {
       "localizations" : {
         "de" : {
@@ -738,6 +990,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pauzeer"
+          }
+        }
+      }
+    },
+    "Previous" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zurück"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorige"
           }
         }
       }
@@ -770,6 +1038,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ wordt gelezen…"
+          }
+        }
+      }
+    },
+    "Reading the file…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei wird gelesen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestand lezen…"
           }
         }
       }
@@ -818,6 +1102,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wijzig naam"
+          }
+        }
+      }
+    },
+    "Rename %lld Items" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Objekte umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam van %lld onderdelen"
           }
         }
       }
@@ -882,6 +1182,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bewaar"
+          }
+        }
+      }
+    },
+    "Saved" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichert"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaard"
           }
         }
       }
@@ -966,6 +1282,22 @@
         }
       }
     },
+    "Skip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überspringen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sla over"
+          }
+        }
+      }
+    },
     "Sort By" : {
       "localizations" : {
         "de" : {
@@ -994,6 +1326,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stop"
+          }
+        }
+      }
+    },
+    "Suggest Names for Whole Folder…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen für ganzen Ordner vorschlagen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel namen voor de hele map voor…"
+          }
+        }
+      }
+    },
+    "Suggest Names: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen vorschlagen: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel namen voor: %@"
+          }
+        }
+      }
+    },
+    "Suggest Names…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen vorschlagen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel namen voor…"
           }
         }
       }
@@ -1062,6 +1442,22 @@
         }
       }
     },
+    "Try Again" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer opnieuw"
+          }
+        }
+      }
+    },
     "Unavailable Folder" : {
       "localizations" : {
         "de" : {
@@ -1074,6 +1470,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Niet-beschikbare map"
+          }
+        }
+      }
+    },
+    "Undo Skip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überspringen widerrufen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel overslaan"
+          }
+        }
+      }
+    },
+    "Use Your Default: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deinen Standard verwenden: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik je standaard: %@"
           }
         }
       }

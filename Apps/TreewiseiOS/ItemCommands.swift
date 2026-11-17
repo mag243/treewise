@@ -37,6 +37,13 @@ enum ItemCommands {
                     isEnabled: item.canBeRenamedOrTrashed, perform: { actions.rename(item) }),
             ])
         }
+        if actions.canSuggestNames {
+            sections.append([
+                ItemCommand(
+                    title: String(localized: "Suggest Names…"), symbol: "text.badge.star",
+                    perform: { actions.suggestNames(for: items) })
+            ])
+        }
         let movable = items.allSatisfy(\.isMovable)
         sections.append([
             ItemCommand(
@@ -63,6 +70,10 @@ enum ItemCommands {
             ItemCommand(
                 title: String(localized: "Paste"), symbol: "doc.on.clipboard",
                 isEnabled: actions.canPaste, perform: actions.paste),
+            ItemCommand(
+                title: String(localized: "Suggest Names for Whole Folder…"),
+                symbol: "text.badge.star", isEnabled: actions.canSuggestNames,
+                perform: { actions.suggestNames(true) }),
         ]
     }
 }

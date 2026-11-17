@@ -12,6 +12,13 @@ struct ItemActions {
     let undoManager: UndoManager
     /// Opens a folder, or shows a file in Quick Look.
     let open: (FileItem) -> Void
+    /// Opens the name overview of the selection, or of the folder's files (ADR 0129).
+    let suggestNames: (_ wholeFolder: Bool) -> Void
+
+    /// Whether names can be proposed for what the folder shows.
+    var canSuggestNames: Bool {
+        browser.canSuggestNames
+    }
 
     /// Whether Paste has something to put in the folder shown.
     var canPaste: Bool {
@@ -40,6 +47,12 @@ struct ItemActions {
     func moveToTrash(_ items: [FileItem]) {
         select(items)
         Task { await browser.moveSelectionToTrash(undoManager: undoManager) }
+    }
+
+    /// Opens the name overview of `items`, which become the selection.
+    func suggestNames(for items: [FileItem]) {
+        select(items)
+        suggestNames(false)
     }
 
     /// Asks for a new name; the folder view shows the question.

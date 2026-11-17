@@ -1061,22 +1061,6 @@
         }
       }
     },
-    "An add-on gave no answer for some files." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Add-on hat für einige Dateien nicht geantwortet."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een add-on gaf geen antwoord voor sommige bestanden."
-          }
-        }
-      }
-    },
     "An add-on that is off is offered in no folder. Drag to set the order for folders without their own." : {
       "localizations" : {
         "de" : {
@@ -5644,22 +5628,6 @@
         }
       }
     },
-    "The add-ons could not be reached, so no names can be proposed." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Add-ons sind nicht erreichbar, daher können keine Namen vorgeschlagen werden."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De add-ons zijn niet bereikbaar, dus er kunnen geen namen worden voorgesteld."
-          }
-        }
-      }
-    },
     "The default" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5738,22 +5706,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De map kan niet als sjabloon worden bewaard"
-          }
-        }
-      }
-    },
-    "The folder could not be read." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Ordner kann nicht gelesen werden."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De map kan niet worden gelezen."
           }
         }
       }

@@ -43,23 +43,9 @@ final class NameReviewProblemBar {
     }
 
     private func update() {
-        let problem = Self.text(model.startProblem, moduleFailed: model.moduleFailed)
+        let problem = NameReviewText.text(model.startProblem, moduleFailed: model.moduleFailed)
         text.stringValue = problem ?? ""
         row.isHidden = problem == nil
-    }
-
-    /// What the bar says; nil when nothing is wrong. A problem at the start wins, as
-    /// without the folder or the add-ons no add-on is asked at all.
-    static func text(_ problem: NameReviewModel.StartProblem?, moduleFailed: Bool) -> String? {
-        switch problem {
-        case .folderUnreadable:
-            String(localized: "The folder could not be read.")
-        case .addOnsUnavailable:
-            String(localized: "The add-ons could not be reached, so no names can be proposed.")
-        case nil:
-            moduleFailed
-                ? String(localized: "An add-on gave no answer for some files.") : nil
-        }
     }
 
     private func tryAgain() {

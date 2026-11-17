@@ -13,6 +13,8 @@ struct FolderView: View {
     @State private var previewed: URL?
     /// Whether the user is selecting, when a tap selects instead of opening (ADR 0124).
     @State private var isSelecting = false
+    /// The name overview shown, if any (ADR 0129).
+    @State private var review: NameReviewShown?
 
     let browser: BrowserState
     let settings: BrowserSettings
@@ -57,6 +59,9 @@ struct FolderView: View {
             }
         }
         .modifier(PermanentDeleteAlert(browser: browser, failureText: failureText))
+        .fullScreenCover(item: $review) { shown in
+            NameReviewSheet(model: shown.model, browser: browser, undoManager: undoManager)
+        }
     }
 
     private var drops: ItemDrops {
@@ -64,7 +69,9 @@ struct FolderView: View {
     }
 
     private var actions: ItemActions {
-        ItemActions(browser: browser, conflicts: conflicts, undoManager: undoManager, open: open)
+        ItemActions(
+            browser: browser, conflicts: conflicts, undoManager: undoManager, open: open,
+            suggestNames: suggestNames)
     }
 
     private var isAskingAboutConflict: Binding<Bool> {
@@ -178,6 +185,21 @@ struct FolderView: View {
             Task { await browser.navigate(pane: 0, to: item.id) }
         } else {
             previewed = URL(fileURLWithPath: item.id.rawValue)
+        }
+    }
+
+    /// Opens the name overview of the selection, or of the folder's files.
+    private func suggestNames(wholeFolder: Bool) {
+        Task {
+            let host = NameServices.moduleHost
+            let store = NameServices.folderSettings
+            let made =
+                wholeFolder
+                ? await browser.makeFolderNameReview(host: host, store: store)
+                : await browser.makeNameReview(host: host, store: store)
+            guard let made else { return }
+            review = NameReviewShown(model: made)
+            await made.start()
         }
     }
 }

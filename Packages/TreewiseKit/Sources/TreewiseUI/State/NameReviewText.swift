@@ -119,4 +119,23 @@ public enum NameReviewText {
         case .phoneNumber: String(localized: "This name contains a phone number", bundle: .module)
         }
     }
+
+    /// What the overview's problem bar says; nil when nothing is wrong. A problem at the
+    /// start wins, as without the folder or the add-ons no add-on is asked at all.
+    public static func text(_ problem: NameReviewModel.StartProblem?, moduleFailed: Bool)
+        -> String?
+    {
+        switch problem {
+        case .folderUnreadable:
+            String(localized: "The folder could not be read.", bundle: .module)
+        case .addOnsUnavailable:
+            String(
+                localized: "The add-ons could not be reached, so no names can be proposed.",
+                bundle: .module)
+        case nil:
+            moduleFailed
+                ? String(localized: "An add-on gave no answer for some files.", bundle: .module)
+                : nil
+        }
+    }
 }
