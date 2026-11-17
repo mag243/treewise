@@ -71,6 +71,8 @@ public final class BrowserState {
     /// Whether `stop()` ended the watches; a reading after it, as at the end of a transfer
     /// that outlives the window, starts none again.
     @ObservationIgnored var isStopped = false
+    /// Whether `pauseWatching()` stopped the watches while the app is in the background.
+    @ObservationIgnored var isWatchingPaused = false
     /// The transfer that runs, which `cancelOperation()` stops.
     @ObservationIgnored var runningTransfer: Task<OperationResult?, Never>?
     /// The last transfer that waits its turn, or runs; the next one waits for it.

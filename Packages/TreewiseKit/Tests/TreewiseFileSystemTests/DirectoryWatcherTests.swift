@@ -116,6 +116,18 @@ import TreewiseTestSupport
             try await reportsChange(in: directory) { try FileManager.default.removeItem(at: file) })
     }
 
+    /// Changes that arrive while the list still reads the folder wait as one reading,
+    /// not one each, so a busy folder is not read over and over (ADR 0120).
+    @Test func aBurstOfChangesWaitsAsOne() async throws {
+        let directory = try TempDirectory()
+        let events = DirectoryWatcher().changes(of: FileItem.ID(directory.path))
+        for index in 1...5 { try directory.makeFile("\(index).txt") }
+        try await Task.sleep(for: Self.deadline / 2)
+
+        #expect(await Self.firstEvent(of: events), "the burst")
+        #expect(!(await Self.firstEvent(of: events)), "and nothing more waiting")
+    }
+
     @Test func finishesAtOnceForAMissingFolder() async throws {
         let directory = try TempDirectory()
         let events = DirectoryWatcher().changes(of: FileItem.ID(directory.path + "/missing"))

@@ -69,6 +69,33 @@ import TreewiseUI
         #expect(await eventually { browser.focusedNames.contains("Desktop") })
     }
 
+    /// An app in the background stops watching its folders (ADR 0120).
+    @Test func pausesWatchingTheFoldersInTheBackground() async {
+        let watcher = ManualFolderWatcher()
+        let browser = await makeBrowser(watcher: watcher)
+        #expect(await eventually { watcher.watchedFolders.contains("documents") })
+
+        browser.pauseWatching()
+
+        #expect(await eventually { !watcher.watchedFolders.contains("documents") })
+    }
+
+    /// Back in the foreground, what changed meanwhile shows, and the folders are
+    /// watched again (ADR 0120).
+    @Test func readsTheFoldersAgainWhenWatchingResumes() async {
+        let fileSystem = ChangingFileSystem()
+        let watcher = ManualFolderWatcher()
+        let browser = await makeBrowser(fileSystem: fileSystem, watcher: watcher)
+        browser.pauseWatching()
+        fileSystem.add(
+            FileItem(id: "new", name: "New.txt", kind: .file, parentID: "documents", volume: "hd"))
+
+        await browser.resumeWatching()
+
+        #expect(browser.focusedNames.contains("New.txt"))
+        #expect(await eventually { watcher.watchedFolders.contains("documents") })
+    }
+
     @Test func reportsTheItemCountAndFreeSpaceForTheStatusBar() async {
         let browser = await makeBrowser()
         let tab = browser.layout.focusedPane.activeTabID

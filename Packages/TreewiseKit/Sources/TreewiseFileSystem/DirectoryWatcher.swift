@@ -7,7 +7,10 @@ import TreewiseCore
 /// milliseconds; content changes and subfolders do not. This Mac follows the
 /// kernel's mount table instead (ADR 0046). `O_EVTONLY` keeps a watched
 /// volume free to eject. A folder `watchesFileChanges` names also reports its
-/// files changing, such as a download that ends (ADR 0051).
+/// files changing, such as a download that ends (ADR 0051). On iOS a file
+/// presenter listens too, as a cloud provider reports its changes through file
+/// coordination (ADR 0120). Changes that arrive while the last one is still being
+/// handled wait as one, so a busy folder is not read once for each.
 public struct DirectoryWatcher: FolderWatching {
     private let mountTableChanges: @Sendable () -> AsyncStream<Void>
     private let watchesFileChanges: @Sendable (FileItem.ID) -> Bool
@@ -28,7 +31,7 @@ public struct DirectoryWatcher: FolderWatching {
             if let place = ArchivePath(folder) { return changes(ofArchive: place.archive) }
         #endif
         let path = folder.rawValue
-        return AsyncStream { continuation in
+        return AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
             let descriptor = open(path, O_EVTONLY)
             guard descriptor >= 0 else {
                 continuation.finish()
@@ -47,9 +50,11 @@ public struct DirectoryWatcher: FolderWatching {
             }
             source.setCancelHandler { close(descriptor) }
             let stopFileEvents = fileEvents(of: folder) { continuation.yield() }
+            let stopPresenting = present(path) { continuation.yield() }
             continuation.onTermination = { _ in
                 source.cancel()
                 stopFileEvents?()
+                stopPresenting?()
             }
             source.resume()
         }
@@ -82,6 +87,20 @@ public struct DirectoryWatcher: FolderWatching {
             }
         }
     #endif
+
+    /// Listens as a file presenter of the folder on iOS; returns what stops it.
+    private func present(_ path: String, onChange: @escaping @Sendable () -> Void)
+        -> (@Sendable () -> Void)?
+    {
+        #if os(iOS)
+            let presenter = FolderPresenter(
+                folder: URL(fileURLWithPath: path), onChange: onChange)
+            NSFileCoordinator.addFilePresenter(presenter)
+            return { NSFileCoordinator.removeFilePresenter(presenter) }
+        #else
+            return nil
+        #endif
+    }
 
     private func fileEvents(
         of folder: FileItem.ID, onChange: @escaping @Sendable () -> Void

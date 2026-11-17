@@ -50,10 +50,11 @@ extension BrowserState {
         shownArchives = shown
     }
 
-    /// Watches exactly the folders the panes' active tabs show; nothing once stopped.
+    /// Watches exactly the folders the panes' active tabs show; nothing once stopped, or
+    /// while paused.
     func updateWatches() {
         releaseArchivesNoLongerShown()
-        guard !isStopped else { return }
+        guard !isStopped, !isWatchingPaused else { return }
         let shown = Dictionary(
             layout.panes.map { ($0.activeTabID, $0.activeTab.folder) }
         ) { first, _ in first }
@@ -106,6 +107,25 @@ extension BrowserState {
         watches = [:]
         locationsWatch?.cancel()
         locationsWatch = nil
+    }
+
+    /// Stops watching the folders the panes show while the app is in the background, as
+    /// iOS asks of file presenters (ADR 0120); `resumeWatching()` starts again.
+    public func pauseWatching() {
+        isWatchingPaused = true
+        for watch in watches.values { watch.task.cancel() }
+        watches = [:]
+    }
+
+    /// Reads the folders the panes show again, for what changed in the background, and
+    /// watches them again (ADR 0120).
+    public func resumeWatching() async {
+        guard isWatchingPaused else { return }
+        isWatchingPaused = false
+        for pane in layout.panes {
+            await load(pane.activeTabID)
+        }
+        updateWatches()
     }
 
     /// Reads the Locations again whenever a volume is mounted or ejected,
