@@ -1,160 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "“%@” can’t be ejected. %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%1$@“ kann nicht ausgeworfen werden. %2$@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "“%1$@” can’t be ejected. %2$@"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“%1$@” kan niet worden verwijderd. %2$@"
-          }
-        }
-      }
-    },
-    "“%@” can’t be found." : {
-      "comment" : "Message when an operation fails; %@ is the item's name",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ wurde nicht gefunden."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“%@” kan niet worden gevonden."
-          }
-        }
-      }
-    },
-    "“%@” can’t be moved to the Trash because its volume has no Trash." : {
-      "comment" : "Message when an operation fails; %@ is the item's name",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ kann nicht in den Papierkorb gelegt werden, weil das Volume keinen Papierkorb hat."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’ kan niet naar de prullenmand, omdat het volume geen prullenmand heeft."
-          }
-        }
-      }
-    },
-    "“%@” changed since, so this can’t be undone." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ wurde inzwischen geändert, daher kann dies nicht widerrufen werden."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’ is sindsdien gewijzigd, dus dit kan niet ongedaan worden gemaakt."
-          }
-        }
-      }
-    },
-    "“%@” could not be copied completely, so it stayed where it was." : {
-      "comment" : "Message when an operation fails; %@ is the item's name",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ konnte nicht vollständig kopiert werden und ist deshalb geblieben, wo es war."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’ kon niet volledig worden gekopieerd en is daarom gebleven waar het was."
-          }
-        }
-      }
-    },
-    "“%@” is damaged and can’t be extracted." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ ist beschädigt und kann nicht entpackt werden."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’ is beschadigd en kan niet worden uitgepakt."
-          }
-        }
-      }
-    },
-    "“%@” is outside the folders Treewise may use now." : {
-      "comment" : "Message when an operation fails; %@ is the item's name",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ liegt außerhalb der Ordner, die Treewise jetzt verwenden darf."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’ valt buiten de mappen die Treewise nu mag gebruiken."
-          }
-        }
-      }
-    },
-    "“%@” is protected with a password." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ ist mit einem Passwort geschützt."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’ is beveiligd met een wachtwoord."
-          }
-        }
-      }
-    },
-    "“%@” isn’t in a format Treewise can extract." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ hat kein Format, das Treewise entpacken kann."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’ heeft geen formaat dat Treewise kan uitpakken."
-          }
-        }
-      }
-    },
     "%@, %@" : {
       "comment" : "Status bar: the selection, then its total size",
       "shouldTranslate" : false
@@ -252,6 +98,38 @@
         }
       }
     },
+    "A choice between < and > cannot hold another choice, or [ ] with a field" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een keuze tussen < en > kan geen andere keuze bevatten, en geen [ ] met een veld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Auswahl zwischen < und > kann keine andere Auswahl und keine [ ] mit einem Feld enthalten"
+          }
+        }
+      }
+    },
+    "A choice between < and > has an empty part" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een keuze tussen < en > heeft een leeg deel"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Auswahl zwischen < und > hat einen leeren Teil"
+          }
+        }
+      }
+    },
     "A folder can’t go into itself." : {
       "comment" : "Text displayed in a notification when a drag-and-drop action is not allowed because the target is a folder and the dragged items are contained in it.",
       "isCommentAutoGenerated" : true,
@@ -270,6 +148,86 @@
         }
       }
     },
+    "A name cannot hold :" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een naam kan geen : bevatten"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Name darf kein : enthalten"
+          }
+        }
+      }
+    },
+    "A name cannot hold control characters" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een naam kan geen stuurtekens bevatten"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Name darf keine Steuerzeichen enthalten"
+          }
+        }
+      }
+    },
+    "A name starting with a dot would hide the file" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een naam die met een punt begint, verbergt het bestand"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Name, der mit einem Punkt beginnt, würde die Datei ausblenden"
+          }
+        }
+      }
+    },
+    "A pattern cannot hold :" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een patroon kan geen : bevatten"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Muster darf kein : enthalten"
+          }
+        }
+      }
+    },
+    "A pattern needs something that is not optional" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een patroon heeft iets nodig dat niet optioneel is"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Muster braucht etwas, das nicht optional ist"
+          }
+        }
+      }
+    },
     "Add to Template" : {
       "localizations" : {
         "de" : {
@@ -282,6 +240,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voeg toe aan sjabloon"
+          }
+        }
+      }
+    },
+    "After : comes a date format; 4, 2-4, 2,4,6, 5- or 001- after {seq}, with :3 for a width; yy after {year}; a number after {folder}; or lower, upper or title" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na : komt een datumnotatie; 4, 2-4, 2,4,6, 5- of 001- na {seq}, met :3 voor een breedte; yy na {year}; een getal na {folder}; of lower, upper of title"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach : folgt ein Datumsformat; 4, 2-4, 2,4,6, 5- oder 001- nach {seq}, mit :3 für eine Breite; yy nach {year}; eine Zahl nach {folder}; oder lower, upper oder title"
           }
         }
       }
@@ -350,6 +324,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Er staat al een onderdeel met de naam ‘%@’ op deze locatie."
+          }
+        }
+      }
+    },
+    "Another file in this list wants this name" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een ander bestand in deze lijst wil deze naam"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine andere Datei in dieser Liste soll diesen Namen bekommen"
           }
         }
       }
@@ -550,6 +540,54 @@
         }
       }
     },
+    "Every < needs its >" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke < heeft een > nodig"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes < braucht ein >"
+          }
+        }
+      }
+    },
+    "Every [ needs its ]" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke [ heeft een ] nodig"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes [ braucht ein ]"
+          }
+        }
+      }
+    },
+    "Every { needs its }" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke { heeft een } nodig"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes { braucht ein }"
+          }
+        }
+      }
+    },
     "Extract" : {
       "localizations" : {
         "de" : {
@@ -600,6 +638,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uitpakken…"
+          }
+        }
+      }
+    },
+    "Fill in the gap to approve" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vul het gat in om goed te keuren"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fülle die Lücke aus, um zu bestätigen"
+          }
+        }
+      }
+    },
+    "Folder Pattern" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mappatroon"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnermuster"
           }
         }
       }
@@ -672,23 +742,6 @@
         }
       }
     },
-    "Move to ‘%@’" : {
-      "comment" : "Drag badge: dropping moves the items into folder %@",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nach „%@“ bewegen"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verplaats naar ‘%@’"
-          }
-        }
-      }
-    },
     "Move to Trash" : {
       "comment" : "Undoable action, shown as “Undo Move to Trash”",
       "localizations" : {
@@ -702,6 +755,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verplaats naar prullenmand"
+          }
+        }
+      }
+    },
+    "Move to ‘%@’" : {
+      "comment" : "Drag badge: dropping moves the items into folder %@",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach „%@“ bewegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats naar ‘%@’"
           }
         }
       }
@@ -768,6 +838,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geen selectie"
+          }
+        }
+      }
+    },
+    "Optional parts cannot nest" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionele delen kunnen niet in elkaar staan"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionale Teile können nicht verschachtelt werden"
           }
         }
       }
@@ -981,6 +1067,150 @@
         }
       }
     },
+    "This add-on has no field {%@}" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze add-on heeft geen veld {%@}"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Add-on hat kein Feld {%@}"
+          }
+        }
+      }
+    },
+    "This folder already has a file with this name" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze map heeft al een bestand met deze naam"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Ordner enthält bereits eine Datei mit diesem Namen"
+          }
+        }
+      }
+    },
+    "This is the name it already has" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit is de naam die het al heeft"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das ist bereits ihr Name"
+          }
+        }
+      }
+    },
+    "This name contains a bank account number" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een bankrekeningnummer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine Kontonummer"
+          }
+        }
+      }
+    },
+    "This name contains a payment card number" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een betaalkaartnummer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine Kartennummer"
+          }
+        }
+      }
+    },
+    "This name contains a phone number" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een telefoonnummer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine Telefonnummer"
+          }
+        }
+      }
+    },
+    "This name contains an e-mail address" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam bevat een e-mailadres"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name enthält eine E-Mail-Adresse"
+          }
+        }
+      }
+    },
+    "This name is too long" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam is te lang"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name ist zu lang"
+          }
+        }
+      }
+    },
+    "Treewise" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise"
+          }
+        }
+      }
+    },
     "Where" : {
       "localizations" : {
         "de" : {
@@ -1027,6 +1257,294 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Je hebt geen toestemming om ‘%@’ te zien."
+          }
+        }
+      }
+    },
+    "add-on's default" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "standaard van de add-on"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard des Add-ons"
+          }
+        }
+      }
+    },
+    "changed by you" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gewijzigd door jou"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "von dir geändert"
+          }
+        }
+      }
+    },
+    "no pattern recognized in this folder" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "geen patroon herkend in deze map"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kein Muster in diesem Ordner erkannt"
+          }
+        }
+      }
+    },
+    "no pattern yet: a pattern needs at least %lld names" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nog geen patroon: een patroon heeft minstens %lld namen nodig"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "noch kein Muster: ein Muster braucht mindestens %lld Namen"
+          }
+        }
+      }
+    },
+    "recognized from %lld of %lld names" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "recognized from %1$lld of %2$lld names"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herkend uit %1$lld van %2$lld namen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aus %1$lld von %2$lld Namen erkannt"
+          }
+        }
+      }
+    },
+    "recognized in the same folder a year before" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herkend in dezelfde map een jaar eerder"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "im selben Ordner ein Jahr davor erkannt"
+          }
+        }
+      }
+    },
+    "recognized in this folder" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herkend in deze map"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in diesem Ordner erkannt"
+          }
+        }
+      }
+    },
+    "your default, as files were selected" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "jouw standaard, omdat er bestanden geselecteerd waren"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dein Standard, da Dateien ausgewählt waren"
+          }
+        }
+      }
+    },
+    "“%@” can’t be ejected. %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ kann nicht ausgeworfen werden. %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "“%1$@” can’t be ejected. %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” kan niet worden verwijderd. %2$@"
+          }
+        }
+      }
+    },
+    "“%@” can’t be found." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde nicht gefunden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” kan niet worden gevonden."
+          }
+        }
+      }
+    },
+    "“%@” can’t be moved to the Trash because its volume has no Trash." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ kann nicht in den Papierkorb gelegt werden, weil das Volume keinen Papierkorb hat."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ kan niet naar de prullenmand, omdat het volume geen prullenmand heeft."
+          }
+        }
+      }
+    },
+    "“%@” changed since, so this can’t be undone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde inzwischen geändert, daher kann dies nicht widerrufen werden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is sindsdien gewijzigd, dus dit kan niet ongedaan worden gemaakt."
+          }
+        }
+      }
+    },
+    "“%@” could not be copied completely, so it stayed where it was." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ konnte nicht vollständig kopiert werden und ist deshalb geblieben, wo es war."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ kon niet volledig worden gekopieerd en is daarom gebleven waar het was."
+          }
+        }
+      }
+    },
+    "“%@” is damaged and can’t be extracted." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ ist beschädigt und kann nicht entpackt werden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is beschadigd en kan niet worden uitgepakt."
+          }
+        }
+      }
+    },
+    "“%@” is outside the folders Treewise may use now." : {
+      "comment" : "Message when an operation fails; %@ is the item's name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ liegt außerhalb der Ordner, die Treewise jetzt verwenden darf."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ valt buiten de mappen die Treewise nu mag gebruiken."
+          }
+        }
+      }
+    },
+    "“%@” is protected with a password." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ ist mit einem Passwort geschützt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is beveiligd met een wachtwoord."
+          }
+        }
+      }
+    },
+    "“%@” isn’t in a format Treewise can extract." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ hat kein Format, das Treewise entpacken kann."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ heeft geen formaat dat Treewise kan uitpakken."
           }
         }
       }

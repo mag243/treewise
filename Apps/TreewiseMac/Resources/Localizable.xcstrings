@@ -497,38 +497,6 @@
         }
       }
     },
-    "A choice between < and > cannot hold another choice, or [ ] with a field" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eine Auswahl zwischen < und > kann keine andere Auswahl und keine [ ] mit einem Feld enthalten"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een keuze tussen < en > kan geen andere keuze bevatten, en geen [ ] met een veld"
-          }
-        }
-      }
-    },
-    "A choice between < and > has an empty part" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eine Auswahl zwischen < und > hat einen leeren Teil"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een keuze tussen < en > heeft een leeg deel"
-          }
-        }
-      }
-    },
     "A field of the template has no value." : {
       "localizations" : {
         "de" : {
@@ -589,86 +557,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Een map kan niet in zichzelf."
-          }
-        }
-      }
-    },
-    "A name cannot hold :" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Name darf kein : enthalten"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een naam kan geen : bevatten"
-          }
-        }
-      }
-    },
-    "A name cannot hold control characters" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Name darf keine Steuerzeichen enthalten"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een naam kan geen stuurtekens bevatten"
-          }
-        }
-      }
-    },
-    "A name starting with a dot would hide the file" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Name, der mit einem Punkt beginnt, würde die Datei ausblenden"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een naam die met een punt begint, verbergt het bestand"
-          }
-        }
-      }
-    },
-    "A pattern cannot hold :" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Muster darf kein : enthalten"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een patroon kan geen : bevatten"
-          }
-        }
-      }
-    },
-    "A pattern needs something that is not optional" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Muster braucht etwas, das nicht optional ist"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een patroon heeft iets nodig dat niet optioneel is"
           }
         }
       }
@@ -1077,22 +965,6 @@
         }
       }
     },
-    "After : comes a date format; 4, 2-4, 2,4,6, 5- or 001- after {seq}, with :3 for a width; yy after {year}; a number after {folder}; or lower, upper or title" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nach : folgt ein Datumsformat; 4, 2-4, 2,4,6, 5- oder 001- nach {seq}, mit :3 für eine Breite; yy nach {year}; eine Zahl nach {folder}; oder lower, upper oder title"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Na : komt een datumnotatie; 4, 2-4, 2,4,6, 5- of 001- na {seq}, met :3 voor een breedte; yy na {year}; een getal na {folder}; of lower, upper of title"
-          }
-        }
-      }
-    },
     "Already fits" : {
       "localizations" : {
         "de" : {
@@ -1234,22 +1106,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Er staat al een onderdeel met de naam ‘%@’ op deze locatie."
-          }
-        }
-      }
-    },
-    "Another file in this list wants this name" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eine andere Datei in dieser Liste soll diesen Namen bekommen"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een ander bestand in deze lijst wil deze naam"
           }
         }
       }
@@ -2419,38 +2275,6 @@
         }
       }
     },
-    "Every < needs its >" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jedes < braucht ein >"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elke < heeft een > nodig"
-          }
-        }
-      }
-    },
-    "Every [ needs its ]" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jedes [ braucht ein ]"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elke [ heeft een ] nodig"
-          }
-        }
-      }
-    },
     "Every folder is already there." : {
       "localizations" : {
         "de" : {
@@ -2463,22 +2287,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alle mappen zijn er al."
-          }
-        }
-      }
-    },
-    "Every { needs its }" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jedes { braucht ein }"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elke { heeft een } nodig"
           }
         }
       }
@@ -2641,22 +2449,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Past bij %@"
-          }
-        }
-      }
-    },
-    "Folder Pattern" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnermuster"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mappatroon"
           }
         }
       }
@@ -4392,22 +4184,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open in Terminal"
-          }
-        }
-      }
-    },
-    "Optional parts cannot nest" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optionale Teile können nicht verschachtelt werden"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optionele delen kunnen niet in elkaar staan"
           }
         }
       }
@@ -6209,38 +5985,6 @@
         }
       }
     },
-    "This add-on has no field {%@}" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Add-on hat kein Feld {%@}"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze add-on heeft geen veld {%@}"
-          }
-        }
-      }
-    },
-    "This folder already has a file with this name" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Ordner enthält bereits eine Datei mit diesem Namen"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze map heeft al een bestand met deze naam"
-          }
-        }
-      }
-    },
     "This is not a Treewise licence key." : {
       "localizations" : {
         "de" : {
@@ -6253,22 +5997,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dit is geen licentiesleutel van Treewise."
-          }
-        }
-      }
-    },
-    "This is the name it already has" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das ist bereits ihr Name"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dit is de naam die het al heeft"
           }
         }
       }
@@ -6301,86 +6029,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deze naam past al."
-          }
-        }
-      }
-    },
-    "This name contains a bank account number" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Name enthält eine Kontonummer"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze naam bevat een bankrekeningnummer"
-          }
-        }
-      }
-    },
-    "This name contains a payment card number" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Name enthält eine Kartennummer"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze naam bevat een betaalkaartnummer"
-          }
-        }
-      }
-    },
-    "This name contains a phone number" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Name enthält eine Telefonnummer"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze naam bevat een telefoonnummer"
-          }
-        }
-      }
-    },
-    "This name contains an e-mail address" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Name enthält eine E-Mail-Adresse"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze naam bevat een e-mailadres"
-          }
-        }
-      }
-    },
-    "This name is too long" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Name ist zu lang"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze naam is te lang"
           }
         }
       }
@@ -6935,22 +6583,6 @@
         }
       }
     },
-    "add-on's default" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard des Add-ons"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "standaard van de add-on"
-          }
-        }
-      }
-    },
     "all files" : {
       "localizations" : {
         "de" : {
@@ -7015,108 +6647,6 @@
         }
       }
     },
-    "changed by you" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "von dir geändert"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "gewijzigd door jou"
-          }
-        }
-      }
-    },
-    "no pattern recognized in this folder" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "kein Muster in diesem Ordner erkannt"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "geen patroon herkend in deze map"
-          }
-        }
-      }
-    },
-    "no pattern yet: a pattern needs at least %lld names" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "noch kein Muster: ein Muster braucht mindestens %lld Namen"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "nog geen patroon: een patroon heeft minstens %lld namen nodig"
-          }
-        }
-      }
-    },
-    "recognized from %lld of %lld names" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "aus %1$lld von %2$lld Namen erkannt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "recognized from %1$lld of %2$lld names"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "herkend uit %1$lld van %2$lld namen"
-          }
-        }
-      }
-    },
-    "recognized in the same folder a year before" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "im selben Ordner ein Jahr davor erkannt"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "herkend in dezelfde map een jaar eerder"
-          }
-        }
-      }
-    },
-    "recognized in this folder" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "in diesem Ordner erkannt"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "herkend in deze map"
-          }
-        }
-      }
-    },
     "untitled folder" : {
       "localizations" : {
         "de" : {
@@ -7129,22 +6659,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "naamloze map"
-          }
-        }
-      }
-    },
-    "your default, as files were selected" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "dein Standard, da Dateien ausgewählt waren"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "jouw standaard, omdat er bestanden geselecteerd waren"
           }
         }
       }
