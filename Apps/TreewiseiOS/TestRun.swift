@@ -15,7 +15,9 @@ struct TestRun {
     private static let demoArgument = "TreewiseTestDemo"
     /// The fixture's folders and their files.
     private static let fixture: [String: [String]] = [
-        "Documents": ["Notes.md", "Budget.txt", "Projects/", "Projects/Budget.txt"],
+        "Documents": [
+            "Notes.md", "Budget.txt", "Projects/", "Projects/Budget.txt", "Archive/",
+        ],
         "Work": ["Report.txt"],
     ]
 

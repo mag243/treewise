@@ -18,9 +18,9 @@ struct PathBar: View {
                 HStack(spacing: 4) {
                     ForEach(Array(crumbs.enumerated()), id: \.offset) { index, crumb in
                         if index > 0 {
-                            Image(systemName: "chevron.forward")
-                                .font(.caption2)
-                                .foregroundStyle(.tertiary)
+                            SubfolderMenu(
+                                browser: browser, folder: FileItem.ID(crumbs[index - 1].path),
+                                next: FileItem.ID(crumb.path), name: crumbs[index - 1].name)
                         }
                         Button(crumb.name) {
                             Task { await browser.navigate(pane: 0, to: FileItem.ID(crumb.path)) }

@@ -59,6 +59,23 @@ final class LocationsTests: XCTestCase {
     }
 
     @MainActor
+    func testAChevronInThePathOpensAFolderNextToTheOneShown() {
+        let app = launch(state: UUID().uuidString)
+        sidebar(of: app).staticTexts["Documents"].tap()
+        let projects = row("Projects", in: app)
+        XCTAssertTrue(projects.waitForExistence(timeout: Self.timeout))
+        projects.tap()
+        XCTAssertTrue(app.navigationBars["Projects"].waitForExistence(timeout: Self.timeout))
+
+        app.buttons["subfolders"].firstMatch.tap()
+        let archive = app.buttons["Archive"].firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: Self.timeout), "the folders in Documents")
+        archive.tap()
+
+        XCTAssertTrue(app.navigationBars["Archive"].waitForExistence(timeout: Self.timeout))
+    }
+
+    @MainActor
     func testOpeningAFileShowsItInQuickLook() {
         let app = launch(state: UUID().uuidString)
         sidebar(of: app).staticTexts["Work"].tap()
