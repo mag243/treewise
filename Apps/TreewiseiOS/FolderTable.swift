@@ -55,8 +55,9 @@ enum FolderTableColumn: Hashable {
 
     /// The margin before the first column and after the last.
     static let margin: CGFloat = 20
-    /// The room between two columns.
-    static let spacing: CGFloat = 12
+    /// The room between two columns, with the line between their headings in its middle:
+    /// enough on either side that a heading does not touch it, as in Files.
+    static let spacing: CGFloat = 20
     /// The narrowest the name column may be before the folder shows its narrow rows.
     static let minimumNameWidth: CGFloat = 200
     /// The room the headings' column menu takes after the last column, which the rows keep
