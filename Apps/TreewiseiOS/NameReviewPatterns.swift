@@ -30,12 +30,14 @@ private struct PatternBlock: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            TextField("Pattern", text: $typed)
-                .font(.body.monospaced())
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .onSubmit { Task { await model.setTemplate(module.id, to: typed) } }
-                .accessibilityIdentifier("pattern")
+            NameTextField(
+                text: $typed, marks: NameMark.inPattern(typed),
+                style: .init(
+                    font: .monospacedSystemFont(
+                        ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize,
+                        weight: .regular),
+                    placeholder: String(localized: "Pattern"), identifier: "pattern"),
+                onSubmit: { Task { await model.setTemplate(module.id, to: typed) } })
             if let problem = module.templateProblem {
                 Text(NameReviewText.text(for: problem)).font(.caption).foregroundStyle(.red)
             }

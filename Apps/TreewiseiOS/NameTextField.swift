@@ -1,47 +1,81 @@
 import SwiftUI
+import TreewiseUI
 import UIKit
 
-/// A name being typed, in a UIKit field (ADR 0130): it takes ⌥Esc and F5 for proposals and
-/// ↑ and ↓ to move through them, as the Mac's rename does, selects the name without its
-/// extension when it starts, and gives Return to `onSubmit`.
+/// A name or pattern being typed, in a UIKit field (ADR 0130): its parts coloured as on
+/// the Mac, also while it is edited; it takes ⌥Esc and F5 for proposals and ↑ and ↓ to move
+/// through them, as the Mac's rename does, and gives Return to `onSubmit`.
 struct NameTextField: UIViewRepresentable {
-    /// What a key asks of the sheet holding the field.
+    /// What a key asks of the view holding the field.
     enum Key {
         case suggest
         case previous
         case next
     }
 
+    /// How the field looks and starts.
+    struct Style {
+        var font = UIFont.preferredFont(forTextStyle: .body)
+        var textColor = UIColor.label
+        var placeholder = ""
+        var isStruckThrough = false
+        /// Whether the field takes the keyboard when it shows, as a sheet's field does.
+        var focusesOnAppear = false
+        /// Whether the field selects the name without its extension when it first starts,
+        /// as a rename does; else the whole text.
+        var selectsBaseName = false
+        /// The UI tests' name for the field.
+        var identifier = "name"
+    }
+
     @Binding var text: String
-    /// Whether the field selects the name without its extension when it starts, as a
-    /// rename does; a new folder's name is selected whole.
-    var selectsBaseName = true
-    let onKey: (Key) -> Void
-    let onSubmit: () -> Void
+    var marks: [NameMark] = []
+    var style = Style()
+    var isEnabled = true
+    var onKey: (Key) -> Void = { _ in }
+    var onSubmit: () -> Void = {}
 
     func makeUIView(context: Context) -> KeyedTextField {
         let field = KeyedTextField()
-        field.text = text
-        field.font = .preferredFont(forTextStyle: .body)
         field.adjustsFontForContentSizeCategory = true
         field.clearButtonMode = .whileEditing
         field.autocapitalizationType = .none
         field.autocorrectionType = .no
+        field.spellCheckingType = .no
         field.returnKeyType = .done
         field.delegate = context.coordinator
         field.addTarget(
             context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
-        // The UI tests find it by it.
-        field.accessibilityIdentifier = "name"
         field.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        DispatchQueue.main.async { field.becomeFirstResponder() }
+        field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        if style.focusesOnAppear {
+            DispatchQueue.main.async { field.becomeFirstResponder() }
+        }
         return field
     }
 
     func updateUIView(_ field: KeyedTextField, context: Context) {
         context.coordinator.parent = self
         field.onKey = onKey
-        if field.text != text { field.text = text }
+        field.isEnabled = isEnabled
+        field.placeholder = style.placeholder
+        field.accessibilityIdentifier = style.identifier
+        field.typingAttributes = [.font: style.font, .foregroundColor: style.textColor]
+        let shown = NameMarkColors.attributed(
+            text, marks: marks, font: style.font, textColor: style.textColor,
+            isStruckThrough: style.isStruckThrough)
+        guard field.attributedText != shown else { return }
+        // Colouring the text the user types keeps the caret where it is; a text put in from
+        // outside, such as a proposal taken, has the caret after it.
+        let isSameText = field.text == text
+        let selection = field.selectedTextRange
+        field.attributedText = shown
+        if field.isFirstResponder {
+            field.selectedTextRange =
+                isSameText
+                ? selection
+                : field.textRange(from: field.endOfDocument, to: field.endOfDocument)
+        }
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
@@ -58,11 +92,11 @@ struct NameTextField: UIViewRepresentable {
         }
 
         func textFieldDidBeginEditing(_ field: UITextField) {
-            guard !hasSelected else { return }
+            guard parent.style.focusesOnAppear, !hasSelected else { return }
             hasSelected = true
             let text = field.text ?? ""
             let length =
-                parent.selectsBaseName
+                parent.style.selectsBaseName
                 ? (text as NSString).deletingPathExtension.utf16.count : text.utf16.count
             // The field selects only once it shows, so the selection follows a turn.
             DispatchQueue.main.async {
@@ -74,6 +108,7 @@ struct NameTextField: UIViewRepresentable {
 
         func textFieldShouldReturn(_ field: UITextField) -> Bool {
             parent.onSubmit()
+            field.resignFirstResponder()
             return false
         }
     }

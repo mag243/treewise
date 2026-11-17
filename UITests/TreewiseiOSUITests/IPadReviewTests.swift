@@ -97,6 +97,34 @@ final class IPadReviewTests: XCTestCase {
         }
     }
 
+    /// The name overview with its coloured pattern and proposal, and the rename sheet with
+    /// the proposals beneath the name (ADR 0129, 0130).
+    @MainActor
+    func testNames() throws {
+        try eachVariant { variant in
+            let app = launch(state: UUID().uuidString, fixture: true)
+            // The app opens at the first location, Documents; in portrait the sidebar hides.
+            let notes = app.staticTexts["Notes.md"].firstMatch
+            XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
+
+            notes.press(forDuration: Self.longPress)
+            app.buttons["Suggest Names…"].firstMatch.tap()
+            let proposal = app.textFields["proposal-Notes.md"].firstMatch
+            XCTAssertTrue(proposal.waitForExistence(timeout: Self.timeout))
+            review(app, as: "name-overview", variant: variant)
+            app.navigationBars.buttons["Cancel"].firstMatch.tap()
+
+            XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
+            notes.press(forDuration: Self.longPress)
+            app.buttons["Rename with Suggestions…"].firstMatch.tap()
+            XCTAssertTrue(
+                app.buttons["suggestion-0"].waitForExistence(timeout: Self.timeout))
+            app.buttons["suggestion-0"].tap()
+            review(app, as: "rename-suggestions", variant: variant)
+            app.terminate()
+        }
+    }
+
     // MARK: - Looking
 
     @MainActor

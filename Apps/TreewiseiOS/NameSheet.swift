@@ -36,8 +36,9 @@ struct NameSheet: View {
             Form {
                 Section {
                     NameTextField(
-                        text: $name, selectsBaseName: !isNewFolder, onKey: handle,
-                        onSubmit: confirm)
+                        text: $name, marks: proposals.marks(of: name),
+                        style: .init(focusesOnAppear: true, selectsBaseName: !isNewFolder),
+                        onKey: handle, onSubmit: confirm)
                 }
                 if let item = suggestible {
                     NameSheetProposals(

@@ -1,37 +1,38 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// The colours of a pattern's fields, the same in the pattern and in the name they filled
-/// (ADR 0064): Treewise's yellow first, then green, purple, pink, teal and brown, see
-/// through so the text stays readable. Blue and orange are left out, as they mean a gap
-/// and a date to check.
+/// (ADR 0064), drawn from the palette both apps share (`NameColors`, ADR 0130).
 @MainActor
 enum FieldColors {
-    private static let lightOpacity = 0.45
-    private static let darkOpacity = 0.35
-    /// The yellow of Treewise's icon.
-    private static let yellow = NSColor(
-        srgbRed: 247.0 / 255, green: 200.0 / 255, blue: 67.0 / 255, alpha: 1)
-    private static let series: [NSColor] = [
-        yellow, .systemGreen, .systemPurple, .systemPink, .systemTeal, .systemBrown,
-    ]
-
     /// The colour of the field at this place among a pattern's fields.
     static func color(_ index: Int) -> NSColor {
-        let base = series[index % series.count]
+        let base = hue(NameColors.fieldHue(index))
         return NSColor(name: nil) { appearance in
             let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-            return base.withAlphaComponent(isDark ? darkOpacity : lightOpacity)
+            return base.withAlphaComponent(
+                isDark ? NameColors.fieldOpacity.dark : NameColors.fieldOpacity.light)
         }
     }
 
     /// The fields in a pattern's text, each in its colour.
     static func marks(inPattern text: String) -> [ColoredRange] {
-        let order = NameTemplate.fieldOrder(in: text)
-        return NameTemplate.fieldTokens(in: text).map { token in
-            ColoredRange(
-                range: NSRange(token.range, in: text),
-                colorIndex: order.firstIndex(of: token.key) ?? 0)
+        NameMark.inPattern(text).map {
+            ColoredRange(range: NSRange($0.range, in: text), tint: $0.tint)
+        }
+    }
+
+    private static func hue(_ hue: NameColors.Hue) -> NSColor {
+        switch hue {
+        case .treewiseYellow:
+            let yellow = NameColors.treewiseYellow
+            return NSColor(srgbRed: yellow.red, green: yellow.green, blue: yellow.blue, alpha: 1)
+        case .green: return .systemGreen
+        case .purple: return .systemPurple
+        case .pink: return .systemPink
+        case .teal: return .systemTeal
+        case .brown: return .systemBrown
         }
     }
 }
@@ -40,17 +41,7 @@ enum FieldColors {
 /// to look at, as the other rows of the review show them.
 struct ColoredRange: Equatable {
     /// What a stretch is coloured for.
-    enum Tint: Equatable {
-        /// The field at this place in the pattern's order (ADR 0064).
-        case field(Int)
-        /// A gap for the user to fill in.
-        case gap
-        /// A date that comes from the file, to be checked (ADR 0058).
-        case dateToCheck
-    }
-
-    /// How see-through a gap's and a date's colour is, as in the other rows.
-    private static let lookOpacity: CGFloat = 0.25
+    typealias Tint = NameMark.Tint
 
     let range: NSRange
     let tint: Tint
@@ -68,8 +59,8 @@ struct ColoredRange: Equatable {
     @MainActor var color: NSColor {
         switch tint {
         case .field(let index): FieldColors.color(index)
-        case .gap: NSColor.controlAccentColor.withAlphaComponent(Self.lookOpacity)
-        case .dateToCheck: NSColor.systemOrange.withAlphaComponent(Self.lookOpacity)
+        case .gap: NSColor.controlAccentColor.withAlphaComponent(NameColors.lookOpacity)
+        case .dateToCheck: NSColor.systemOrange.withAlphaComponent(NameColors.lookOpacity)
         }
     }
 }

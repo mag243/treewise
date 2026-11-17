@@ -59,20 +59,22 @@ struct NameReviewRow: View {
         }
     }
 
+    /// The proposal, which can be typed over, its parts coloured as the pattern's fields
+    /// and a gap or a date to check as on the Mac (ADR 0130).
     private var proposal: some View {
-        TextField(
-            emptyText,
-            text: Binding(
-                get: { entry.currentName ?? "" },
-                set: { model.edit(entry.id, to: $0) })
-        )
-        .onSubmit { model.finishEditing(entry.id) }
-        // The UI tests find it by it.
-        .accessibilityIdentifier("proposal-\(entry.originalName)")
-        .font(.callout)
-        .foregroundStyle(model.conflicts[entry.id] == nil ? Color.primary : .red)
-        .disabled(entry.isOutOfScope || entry.state == .skipped)
-        .strikethrough(entry.state == .skipped)
+        let name = entry.currentName ?? ""
+        return NameTextField(
+            text: Binding(get: { name }, set: { model.edit(entry.id, to: $0) }),
+            marks: NameMark.fields(model.fieldMarks(of: entry.id))
+                + NameMark.look(in: name, dateFromFile: entry.currentDateSource != nil),
+            style: .init(
+                font: .preferredFont(forTextStyle: .callout),
+                textColor: model.conflicts[entry.id] == nil ? .label : .systemRed,
+                placeholder: emptyText, isStruckThrough: entry.state == .skipped,
+                // The UI tests find it by it.
+                identifier: "proposal-\(entry.originalName)"),
+            isEnabled: !entry.isOutOfScope && entry.state != .skipped,
+            onSubmit: { model.finishEditing(entry.id) })
     }
 
     /// What the proposal says while there is none.

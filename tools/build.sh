@@ -24,7 +24,7 @@
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
 #               on the pinned iPad and a smaller one on the newest iOS (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
-#               build/ui-review-ipad/index.html. Followed by a screen (start or browser),
+#               build/ui-review-ipad/index.html. Followed by a screen (start, browser or names),
 #               `all` for light and dark, and `--show` to watch.
 #   appstorescreenshots  The iPad app's App Store screenshots (ADR 0118) on the pinned
 #               iPad, in English, Dutch and German, in build/appstore/screenshots/, for
@@ -137,7 +137,7 @@ IPAD_REVIEW_TESTS="TreewiseiOSUITests/IPadReviewTests"
 APPSTORE_SCREENSHOT_TESTS="TreewiseiOSUITests/AppStoreScreenshotTests"
 APPSTORE_SCREENSHOT_DIR="$BUILD_DIR/appstore/screenshots"
 IPAD_REVIEW_DIR="$BUILD_DIR/ui-review-ipad"
-IPAD_REVIEW_SCREENS=" start browser "
+IPAD_REVIEW_SCREENS=" start browser names "
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
 declare -a SUMMARY=()
 

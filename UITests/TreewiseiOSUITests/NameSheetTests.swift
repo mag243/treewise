@@ -58,7 +58,12 @@ final class NameSheetTests: XCTestCase {
         let proposed = suggestion.label
 
         suggestion.tap()
-        XCTAssertEqual(app.textFields["name"].value as? String, proposed)
+        let field = app.textFields["name"]
+        XCTAssertEqual(field.value as? String, proposed)
+        // The caret is after the proposal, nothing selected: typing adds to it.
+        field.typeText("x")
+        XCTAssertEqual(field.value as? String, proposed + "x")
+        field.typeText(XCUIKeyboardKey.delete.rawValue)
         app.navigationBars["Rename"].buttons["Rename"].tap()
 
         XCTAssertTrue(row(proposed, in: app).waitForExistence(timeout: Self.timeout), "renamed")

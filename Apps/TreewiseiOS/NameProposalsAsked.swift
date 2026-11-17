@@ -49,6 +49,13 @@ final class NameProposalsAsked {
         return options[index]
     }
 
+    /// The coloured parts of `name` when it is one of the proposals, as the add-ons
+    /// filled them in.
+    func marks(of name: String) -> [NameMark] {
+        guard let option = options.first(where: { $0.name == name }) else { return [] }
+        return NameMark.fields(option.marks) + NameMark.look(in: name, dateFromFile: false)
+    }
+
     func stop() {
         model?.stop()
     }

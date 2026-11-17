@@ -30,7 +30,11 @@ struct NameSheetProposals: View {
                         name = option.name
                     } label: {
                         HStack {
-                            Text(option.name).foregroundStyle(Color.primary)
+                            Text(
+                                NameMarkColors.text(
+                                    option.name, marks: proposals.marks(of: option.name))
+                            )
+                            .foregroundStyle(Color.primary)
                             Spacer(minLength: 0)
                             if index == proposals.highlighted || option.name == name {
                                 Image(systemName: "checkmark").foregroundStyle(.tint)
