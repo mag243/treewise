@@ -26,6 +26,9 @@ public protocol FileOperating: FileSystemProviding {
     ) async throws -> FileItem
     /// Moves an item to the Trash.
     func trash(_ id: FileItem.ID) async throws -> TrashedItem
+    /// Deletes an item for good, a folder with everything in it, as the user confirmed
+    /// where its location has no Trash (ADR 0128). It cannot be undone.
+    func deletePermanently(_ id: FileItem.ID) async throws
     /// Puts an item back from the Trash where it was.
     func restore(_ trashed: TrashedItem) async throws -> FileItem
     /// Creates an empty folder.

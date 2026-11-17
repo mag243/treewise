@@ -7,7 +7,7 @@ import TreewiseCore
 /// in-memory Trash (ADR 0018). Moved items keep their identity; copies, new
 /// folders and trashed items get new ones.
 public final class ChangingFileSystem: FileOperating {
-    private struct State {
+    fileprivate struct State {
         var tree: InMemoryFileSystem
         var trash: [FileItem.ID: [FileItem]] = [:]
         var nextNumber = 1
@@ -27,7 +27,7 @@ public final class ChangingFileSystem: FileOperating {
         }
     }
 
-    private let state: Mutex<State>
+    fileprivate let state: Mutex<State>
 
     /// Creates a file system that starts as `tree`.
     public init(_ tree: InMemoryFileSystem = Fixture.standard) {
@@ -318,5 +318,16 @@ public final class ChangingFileSystem: FileOperating {
     {
         guard let item = tree[id] else { throw FileSystemError.notFound(id) }
         return item
+    }
+}
+
+extension ChangingFileSystem {
+    /// Deletes an item for good (ADR 0128), unless changes fail.
+    public func deletePermanently(_ id: FileItem.ID) async throws {
+        try state.withLock { state in
+            if let failure = state.failure { throw failure }
+            guard !state.tree.subtree(id).isEmpty else { throw FileSystemError.notFound(id) }
+            state.tree = state.tree.removing(id)
+        }
     }
 }

@@ -28,6 +28,9 @@ public final class BrowserState {
     }
     /// Why the last operation failed, for the window to show; `nil` after a success.
     public internal(set) var failure: FileSystemError?
+    /// The items the last Move to Trash could not move as their location has no Trash,
+    /// which the user may delete for good instead (ADR 0128); empty otherwise.
+    public internal(set) var itemsWithoutTrash: [FileItem] = []
     /// How far the running transfer is, or `nil` when none runs.
     public internal(set) var progress: OperationProgress?
     /// Whether the running transfer is paused.
@@ -230,6 +233,7 @@ public final class BrowserState {
     /// Forgets the last failure, once the window has shown it.
     public func clearFailure() {
         failure = nil
+        itemsWithoutTrash = []
     }
 
     /// Gives a pane the focus.

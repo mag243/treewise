@@ -141,6 +141,20 @@ public actor FileOperationRunner: FileOperating {
         }
     }
 
+    /// Removes the item in a coordinated access for deleting, so that a provider such as
+    /// Dropbox hears of it (ADR 0128); never inside an archive or outside the boundary.
+    public func deletePermanently(_ id: FileItem.ID) async throws {
+        try reader.checkBoundary(id)
+        try refuseInsideArchive(id)
+        try await FileCopier.run {
+            try Self.mapping(id) {
+                try FileCoordination.delete(URL(fileURLWithPath: id.rawValue)) {
+                    try FileManager.default.removeItem(at: $0)
+                }
+            }
+        }
+    }
+
     /// The Trash may be outside the boundary, wherever `trashItem` put the
     /// item; the place it goes back to may not.
     public func restore(_ trashed: TrashedItem) async throws -> FileItem {

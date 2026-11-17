@@ -219,10 +219,9 @@ extension BrowserState {
             return
         }
         let trashed = await perform(
-            name: Self.actionName("Move to Trash"), undoManager: undoManager
-        ) {
-            try await $0.moveToTrash(ids)
-        }
+            name: Self.actionName("Move to Trash"), undoManager: undoManager,
+            whenFailing: { offerToDeletePermanently(items, after: $0) },
+            { try await $0.moveToTrash(ids) })
         guard trashed != nil else { return }
         clipboard = clipboard?.removing(Set(ids))
         moveTabs(awayFrom: items)
@@ -231,7 +230,7 @@ extension BrowserState {
 
     /// Takes removed items out of every tab's history; a tab that shows one of
     /// them, or a folder inside one, goes to the folder the item was in.
-    private func moveTabs(awayFrom removed: [FileItem]) {
+    func moveTabs(awayFrom removed: [FileItem]) {
         let ids = Set(removed.map(\.id))
         for tab in layout.panes.flatMap(\.tabs) {
             let ancestry = content(of: tab.id).ancestry
@@ -310,8 +309,12 @@ extension BrowserState {
     /// Runs an operation, registers its undo, reloads what the panes show and
     /// records a failure. Returns `nil` when the operation failed.
     @discardableResult
+    /// Performs an operation, registers its undo and reads the folders shown again; on a
+    /// failure, `whenFailing` runs before the failure shows, so that what an alert offers
+    /// with it is there as the alert is built.
     func perform(
         name: String, undoManager: UndoManager?,
+        whenFailing: (FileSystemError) -> Void = { _ in },
         _ operation: (any FileOperating) async throws -> OperationResult
     ) async -> OperationResult? {
         guard let operations else { return nil }
@@ -322,7 +325,9 @@ extension BrowserState {
             await reloadShownFolders()
             return result
         } catch {
-            failure = FileSystemError(error)
+            let failure = FileSystemError(error)
+            whenFailing(failure)
+            self.failure = failure
             await reloadShownFolders()
             return nil
         }

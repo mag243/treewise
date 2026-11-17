@@ -291,6 +291,70 @@
         }
       }
     },
+    "Delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder"
+          }
+        }
+      }
+    },
+    "Delete %lld items permanently?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Objekte endgültig löschen?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld onderdelen definitief verwijderen?"
+          }
+        }
+      }
+    },
+    "Delete Permanently…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endgültig löschen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder definitief…"
+          }
+        }
+      }
+    },
+    "Delete “%@” permanently?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ endgültig löschen?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” definitief verwijderen?"
+          }
+        }
+      }
+    },
     "Descending" : {
       "localizations" : {
         "de" : {
@@ -946,6 +1010,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De map kan niet worden toegevoegd."
+          }
+        }
+      }
+    },
+    "This location has no Trash, so this can’t be undone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Ort hat keinen Papierkorb, daher kann dies nicht widerrufen werden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze locatie heeft geen Prullenmand, dus dit kan niet ongedaan worden gemaakt."
           }
         }
       }

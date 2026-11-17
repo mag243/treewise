@@ -56,11 +56,7 @@ struct FolderView: View {
                 ConflictSheet(questions: conflicts, name: question.name)
             }
         }
-        .alert(
-            failureText, isPresented: isShowingFailure
-        ) {
-            Button("OK", role: .cancel) {}
-        }
+        .modifier(PermanentDeleteAlert(browser: browser, failureText: failureText))
     }
 
     private var drops: ItemDrops {
@@ -80,10 +76,6 @@ struct FolderView: View {
     /// Why the last operation failed, as the Mac says it.
     private var failureText: String {
         browser.failure.map { FailureMessage.text(for: $0, locale: locale) } ?? ""
-    }
-
-    private var isShowingFailure: Binding<Bool> {
-        Binding(get: { browser.failure != nil }, set: { if !$0 { browser.clearFailure() } })
     }
 
     private var list: some View {
