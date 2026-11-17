@@ -10,6 +10,7 @@ Help
 Zoom
 
 # The word is the same in the language.
+Cloud
 Privacy
 Website
 Computer

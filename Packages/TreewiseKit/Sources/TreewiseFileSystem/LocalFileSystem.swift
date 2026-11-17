@@ -45,6 +45,8 @@ public struct LocalFileSystem: FileSystemProviding {
     /// The paths of the folders the user added, read once: listing a folder asks for
     /// each of its items whether it is one.
     private let addedFolderPaths: Set<String>
+    /// The names the user gave added folders (ADR 0119).
+    private let addedFolderLabels: [FileItem.ID: String]
     /// The paths of the boundary's folders, read once, or nil without a boundary.
     private let boundaryPaths: Set<String>?
 
@@ -55,9 +57,13 @@ public struct LocalFileSystem: FileSystemProviding {
         homeFolder = Self.identity(of: locations.home)
         iCloudDrive = Self.identity(of: locations.iCloudDrive)
         fixedCloudFolders = Set(
-            ([locations.iCloudDrive] + locations.syncFolders).map(Self.identity))
+            ([locations.iCloudDrive] + locations.syncFolders
+                + locations.addedFolders.filter(locations.isInCloud)).map(Self.identity))
         cloudStorage = Self.identity(of: locations.cloudStorage)
         addedFolderPaths = Set(locations.addedFolders.map(\.standardizedFileURL.path))
+        addedFolderLabels = Dictionary(
+            locations.labels.map { (Self.identity(of: $0.key), $0.value) },
+            uniquingKeysWith: { first, _ in first })
         boundaryPaths = locations.boundary.map { Set($0.map(\.standardizedFileURL.path)) }
     }
 
@@ -237,8 +243,10 @@ public struct LocalFileSystem: FileSystemProviding {
     }
 
     private func name(of id: FileItem.ID, kind: ItemKind, values: URLResourceValues) -> String {
-        // An added folder goes by the name the Files app shows: iCloud Drive
-        // rather than the name of its folder in the container.
+        // An added folder goes by the name the user gave it (ADR 0119), else by the
+        // name the Files app shows: iCloud Drive rather than the name of its folder in
+        // the container.
+        if let label = addedFolderLabels[id] { return label }
         if isAddedFolder(id), let localizedName = values.localizedName { return localizedName }
         return switch kind {
         case .volume: values.volumeLocalizedName ?? lastComponent(of: id)

@@ -2,14 +2,17 @@ import TreewiseCore
 import UniformTypeIdentifiers
 
 /// The SF Symbol of an item in the iPad's lists, by its kind and, for a
-/// file, its type.
+/// file, its type. A cloud location shows a cloud, iCloud Drive Apple's own (ADR 0119).
 enum ItemSymbol {
+    /// The name iOS gives iCloud Drive's folder, in every language.
+    private static let iCloudDrive = "iCloud Drive"
+
     static func name(for item: FileItem) -> String {
         switch item.kind {
         case .folder: return "folder"
         case .home: return "house"
         case .volume: return "externaldrive"
-        case .cloud: return "icloud"
+        case .cloud: return item.name == iCloudDrive ? "icloud" : "cloud"
         case .computer: return "ipad"
         case .package: return "shippingbox"
         case .file: return fileSymbol(for: item)

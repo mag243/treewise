@@ -19,7 +19,7 @@ public actor AddedFolders {
     private static let logger = Logger(subsystem: LogSubsystem.name, category: "locations")
 
     private struct Added {
-        let bookmark: Bookmark
+        var bookmark: Bookmark
         let url: URL
         /// Whether `startAccessingSecurityScopedResource()` returned true,
         /// so the scope must be stopped again; a folder that needs no scope,
@@ -39,6 +39,21 @@ public actor AddedFolders {
     /// The added folders that resolved, in the order they were added.
     public func folders() -> [URL] {
         added.map(\.url)
+    }
+
+    /// The bookmark of an added folder, with the name the user gave it.
+    public func bookmark(of url: URL) -> Bookmark? {
+        index(of: url).map { added[$0].bookmark }
+    }
+
+    /// Gives an added folder a name of the user's own; `nil` gives back its own name
+    /// (ADR 0119).
+    public func setLabel(_ label: String?, of url: URL) async {
+        guard let index = index(of: url),
+            let saved = await store.setLabel(label, of: added[index].bookmark.id)
+        else { return }
+        // The store is an actor of its own: the folder may have gone while it saved.
+        if let again = self.index(of: url) { added[again].bookmark = saved }
     }
 
     /// The saved folders that could not be reached at the last `load()`, oldest first.

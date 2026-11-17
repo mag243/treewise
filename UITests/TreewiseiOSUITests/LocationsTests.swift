@@ -107,6 +107,43 @@ final class LocationsTests: XCTestCase {
         XCTAssertTrue(work.waitForNonExistence(timeout: Self.timeout), "and leaves when removed")
     }
 
+    /// A location goes by the name the user gives it, after a relaunch too, while its
+    /// folder keeps its own; an empty name gives the folder's name back (ADR 0119).
+    @MainActor
+    func testARenamedLocationKeepsItsNameAndAnEmptyNameGivesTheFolderBack() {
+        let state = UUID().uuidString
+        let app = launch(state: state)
+        rename(sidebar(of: app).staticTexts["Work"], to: "Office", in: app)
+        XCTAssertTrue(
+            sidebar(of: app).staticTexts["Office"].waitForExistence(timeout: Self.timeout))
+        XCUIDevice.shared.press(.home)
+        app.terminate()
+
+        let again = launch(state: state)
+        let office = sidebar(of: again).staticTexts["Office"]
+        XCTAssertTrue(office.waitForExistence(timeout: Self.timeout), "the name stays")
+        rename(office, to: "", in: again)
+        XCTAssertTrue(
+            sidebar(of: again).staticTexts["Work"].waitForExistence(timeout: Self.timeout),
+            "the folder's own name is back")
+    }
+
+    @MainActor
+    private func rename(_ location: XCUIElement, to name: String, in app: XCUIApplication) {
+        XCTAssertTrue(location.waitForExistence(timeout: Self.timeout))
+        location.press(forDuration: 1)
+        app.buttons["Rename Location…"].firstMatch.tap()
+        let alert = app.alerts["Name Location"]
+        XCTAssertTrue(alert.waitForExistence(timeout: Self.timeout))
+        let field = alert.textFields.firstMatch
+        field.tap()
+        if let typed = field.value as? String, !typed.isEmpty, typed != field.placeholderValue {
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: typed.count))
+        }
+        field.typeText(name)
+        alert.buttons["Save"].tap()
+    }
+
     /// The rename alert finds a new folder that the search hides (audit 2026-11, A21).
     @MainActor
     func testANewFolderIsRenamedWhileASearchHidesIt() {

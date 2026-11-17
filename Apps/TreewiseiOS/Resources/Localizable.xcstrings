@@ -146,6 +146,23 @@
         }
       }
     },
+    "Cloud" : {
+      "comment" : "A cloud location the user did not name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud"
+          }
+        }
+      }
+    },
     "Copy" : {
       "localizations" : {
         "de" : {
@@ -338,6 +355,22 @@
         }
       }
     },
+    "Name Location" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ort benennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geef locatie een naam"
+          }
+        }
+      }
+    },
     "New Folder" : {
       "localizations" : {
         "de" : {
@@ -399,6 +432,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
+          }
+        }
+      }
+    },
+    "On My iPad" : {
+      "comment" : "The location of the iPad's own files",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf meinem iPad"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Op mijn iPad"
+          }
+        }
+      }
+    },
+    "Only online" : {
+      "comment" : "A file's cloud status",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur online"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alleen online"
           }
         }
       }
@@ -531,6 +598,22 @@
         }
       }
     },
+    "Rename Location…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ort umbenennen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam locatie…"
+          }
+        }
+      }
+    },
     "Replace" : {
       "localizations" : {
         "de" : {
@@ -559,6 +642,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ga door"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar"
           }
         }
       }
@@ -671,6 +770,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Treewise toont de mappen die je het geeft. Voeg de bovenste map van iCloud Drive, Op mijn iPad of een schijf toe: alles daaronder komt mee, dus één keer is genoeg."
+          }
+        }
+      }
+    },
+    "Treewise shows this name instead of the folder’s, which keeps its own. iPadOS doesn’t tell Treewise which app a cloud folder belongs to, so name it after the app, such as Dropbox." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt diesen Namen statt des Ordnernamens an; der Ordner behält seinen eigenen. iPadOS teilt Treewise nicht mit, zu welcher App ein Cloud-Ordner gehört, also benenne ihn nach der App, etwa Dropbox."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont deze naam in plaats van die van de map, die zijn eigen naam houdt. iPadOS vertelt Treewise niet bij welke app een cloudmap hoort, dus noem hem naar de app, bijvoorbeeld Dropbox."
           }
         }
       }

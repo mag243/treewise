@@ -22,6 +22,11 @@ struct LocationsSidebar: View {
                     Label(location.name, systemImage: ItemSymbol.name(for: location))
                         .tag(location.id)
                         .contextMenu {
+                            Button {
+                                Task { await locations.rename(location) }
+                            } label: {
+                                Label("Rename Location…", systemImage: "pencil")
+                            }
                             removeButton(location)
                         }
                         .swipeActions {

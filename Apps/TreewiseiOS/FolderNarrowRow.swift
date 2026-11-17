@@ -25,6 +25,7 @@ struct FolderNarrowRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            OnlyOnlineMark(item: item)
             if item.isContainer {
                 Spacer()
                 Image(systemName: "chevron.forward")

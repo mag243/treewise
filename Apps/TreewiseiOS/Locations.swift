@@ -33,6 +33,10 @@ final class Locations {
     /// Why the last drop was refused as it landed, for an alert (ADR 0047, amended).
     var dropRefusal: String?
 
+    /// The location the naming question names: one just added whose folder's name is
+    /// a UUID, or one the user renames (ADR 0119).
+    var naming: LocationNaming?
+
     let settings: BrowserSettings
     @ObservationIgnored private let added: AddedFolders
     /// A UI test's run, whose bookmarks and settings are its own (ADR 0114).
@@ -95,6 +99,22 @@ final class Locations {
         }
         await rebuild(restoring: nil)
         await browser?.navigate(pane: 0, to: FileItem.ID(url.standardizedFileURL.path))
+        if LocationLabel.isMachineMade(url.lastPathComponent) {
+            naming = LocationNaming(folder: url, label: "")
+        }
+    }
+
+    /// Asks for a location's name, filled with the name the user gave it.
+    func rename(_ location: FileItem) async {
+        let url = URL(fileURLWithPath: location.id.rawValue)
+        naming = LocationNaming(folder: url, label: await added.bookmark(of: url)?.label ?? "")
+    }
+
+    /// Gives a location the name typed; an empty name gives the folder its own name
+    /// back (ADR 0119).
+    func name(_ naming: LocationNaming) async {
+        await added.setLabel(LocationLabel.cleaned(naming.label), of: naming.folder)
+        await rebuild(restoring: nil)
     }
 
     /// Forgets an added folder; the browser moves away from it.
@@ -127,7 +147,13 @@ final class Locations {
     /// added folder.
     private func rebuild(restoring session: SessionSnapshot?) async {
         let folders = await added.folders()
-        let confined = LocalFileSystem.Locations.added(folders, home: URL.homeDirectory)
+        var labels: [URL: String] = [:]
+        for folder in folders {
+            labels[folder] =
+                await added.bookmark(of: folder)?.label ?? Self.defaultLabel(of: folder)
+        }
+        let confined = LocalFileSystem.Locations.added(
+            folders, home: URL.homeDirectory, labels: labels)
         let fileSystem = LocalFileSystem(locations: confined)
         reader = fileSystem
         guard let first = folders.first else {
@@ -148,5 +174,17 @@ final class Locations {
         }
         browser = state
         await state.start()
+    }
+
+    /// The name of a location the user did not name, where its folder's own name says
+    /// nothing (ADR 0119): On My iPad, and Cloud for a folder named by a UUID.
+    private static func defaultLabel(of folder: URL) -> String? {
+        if LocalFileSystem.Locations.isOnMyDeviceFolder(folder) {
+            return String(localized: "On My iPad", comment: "The location of the iPad's own files")
+        }
+        if LocationLabel.isMachineMade(folder.lastPathComponent) {
+            return String(localized: "Cloud", comment: "A cloud location the user did not name")
+        }
+        return nil
     }
 }

@@ -143,8 +143,11 @@ struct FolderTableRow: View {
     var body: some View {
         HStack(spacing: FolderTableColumn.spacing) {
             Label {
-                Text(DisplayName.text(for: item, showsExtension: showsExtensions))
-                    .lineLimit(1)
+                HStack {
+                    Text(DisplayName.text(for: item, showsExtension: showsExtensions))
+                        .lineLimit(1)
+                    OnlyOnlineMark(item: item)
+                }
             } icon: {
                 Image(systemName: ItemSymbol.name(for: item))
                     .foregroundStyle(item.isContainer ? Color.accentColor : .secondary)

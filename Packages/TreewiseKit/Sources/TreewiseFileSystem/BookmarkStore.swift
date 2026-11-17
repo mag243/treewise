@@ -13,6 +13,9 @@ public struct Bookmark: Identifiable, Hashable, Sendable, Codable {
     /// The folder's name when it was added, to name it while it cannot be reached; `nil`
     /// for a bookmark saved before names were kept.
     public var name: String?
+    /// The name the user gave the location, shown instead of the folder's own (ADR 0119);
+    /// `nil` when the folder goes by its own name.
+    public var label: String?
 }
 
 /// A bookmark resolved to its folder.
@@ -110,6 +113,18 @@ public actor BookmarkStore {
         Bookmark(
             id: UUID(), data: try resolver.bookmarkData(for: url), refreshCount: 0,
             name: url.lastPathComponent)
+    }
+
+    /// Gives a bookmark's location a name of the user's own; `nil` gives back the folder's
+    /// own name (ADR 0119).
+    ///
+    /// - Returns: the bookmark as saved, or `nil` when the store does not hold it.
+    @discardableResult
+    public func setLabel(_ label: String?, of id: UUID) -> Bookmark? {
+        guard let index = saved.firstIndex(where: { $0.id == id }) else { return nil }
+        saved[index].label = label
+        storage.save(saved)
+        return saved[index]
     }
 
     /// Forgets a bookmark.

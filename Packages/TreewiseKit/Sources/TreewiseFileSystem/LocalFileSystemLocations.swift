@@ -21,6 +21,11 @@ extension LocalFileSystem {
         /// (ADR 0045), listed as Locations after the volumes; each has no
         /// enclosing folder.
         public var addedFolders: [URL]
+        /// The names the user gave added folders, shown instead of their own (ADR 0119).
+        public var labels: [URL: String] = [:]
+        /// Whether an added folder is kept by a cloud service, which makes it a cloud
+        /// location whose files are asked whether they are only online (ADR 0119).
+        public var isInCloud: @Sendable (URL) -> Bool = Locations.systemIsInCloud
         /// Whether a file is kept only online; asked only inside a cloud folder.
         public var isOnlyOnline: @Sendable (URL) -> Bool
         /// What moves the original of a changed archive to the Trash (ADR 0078).
@@ -62,11 +67,32 @@ extension LocalFileSystem {
 
         /// Only the folders the user added (ADR 0045): they are the Locations
         /// and the boundary, without volumes; `home` gives no favorites, as
-        /// it is outside them.
-        public static func added(_ folders: [URL], home: URL) -> Locations {
-            Locations(
+        /// it is outside them. `labels` names the folders the user named (ADR 0119).
+        public static func added(_ folders: [URL], home: URL, labels: [URL: String] = [:])
+            -> Locations
+        {
+            var locations = Locations(
                 home: home, applications: home.appendingPathComponent("Applications"),
                 mountedVolumes: { [] }, boundary: folders, addedFolders: folders)
+            locations.labels = labels
+            return locations
+        }
+
+        /// What iOS reports: a folder of iCloud Drive or of a File Provider app such as
+        /// Dropbox is a ubiquitous item (ADR 0119).
+        public static func systemIsInCloud(_ url: URL) -> Bool {
+            (try? url.resourceValues(forKeys: [.isUbiquitousItemKey]))?.isUbiquitousItem == true
+        }
+
+        /// Whether a folder is the top of On My iPad as the document picker hands it over:
+        /// `File Provider Storage` in a shared app group, which the Files app shows under
+        /// that name (ADR 0119).
+        public static func isOnMyDeviceFolder(_ url: URL) -> Bool {
+            let components = url.standardizedFileURL.pathComponents
+            guard components.last == "File Provider Storage", components.count >= 3 else {
+                return false
+            }
+            return Array(components.suffix(4).prefix(2)) == ["Shared", "AppGroup"]
         }
 
         /// The real home folder, Applications and mounted volumes.

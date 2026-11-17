@@ -38,6 +38,7 @@ struct RootView: View {
                 }
             }
         }
+        .modifier(LocationNameAlert(locations: locations))
         .alert(
             locations.dropRefusal ?? "",
             isPresented: Binding(
