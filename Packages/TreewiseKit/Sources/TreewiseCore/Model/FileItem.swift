@@ -37,6 +37,10 @@ public struct FileItem: Identifiable, Hashable, Sendable {
     /// Whether `modified` holds a time; an old entry of an archive is known
     /// by its day alone (ADR 0076).
     public var modifiedHasTime = true
+    /// When the item was made, if known (ADR 0127).
+    public var created: Date?
+    /// When the item came into the folder it is in, if known (ADR 0127).
+    public var added: Date?
     /// The size in bytes; `nil` for containers and when unknown.
     public var size: Int64?
     /// The human-readable kind from the provider (`PDF document`), if it has one.

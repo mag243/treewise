@@ -25,4 +25,20 @@ import TreewiseTestSupport
 
         #expect(!LocalFileSystem.Locations.systemIsDataless(file))
     }
+
+    @Test func readsWhenAFileWasMadeAndAddedToItsFolder() async throws {
+        let directory = try TempDirectory()
+        try directory.makeFolder("Folder")
+        try directory.makeFile("Folder/Notes.md")
+        let fileSystem = LocalFileSystem()
+
+        let listed = try #require(
+            try await fileSystem.contents(of: FileItem.ID(directory.url("Folder").path)).first)
+        let read = try await fileSystem.item(at: listed.id)
+
+        #expect(listed.created != nil)
+        #expect(listed.added != nil)
+        #expect(read.created == listed.created)
+        #expect(read.added == listed.added)
+    }
 }

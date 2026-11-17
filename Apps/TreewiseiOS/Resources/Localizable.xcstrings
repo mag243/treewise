@@ -243,6 +243,38 @@
         }
       }
     },
+    "Date Added" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzugefügt am"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum toegevoegd"
+          }
+        }
+      }
+    },
+    "Date Created" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellungsdatum"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum aangemaakt"
+          }
+        }
+      }
+    },
     "Date Modified" : {
       "localizations" : {
         "de" : {

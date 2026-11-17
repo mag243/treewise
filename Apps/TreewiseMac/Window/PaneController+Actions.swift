@@ -20,6 +20,7 @@ extension PaneController {
                         preferred: browser.settings.doubleClickOpensIn))
             },
             sort: { browser.sort(by: $0) },
+            toggleColumn: { browser.settings.tableColumns.toggle($0) },
             focus: { browser.focusPane(paneIndex) },
             cut: clipboard.cut, copy: clipboard.copy, paste: clipboard.paste,
             canPaste: { clipboard.canPaste },

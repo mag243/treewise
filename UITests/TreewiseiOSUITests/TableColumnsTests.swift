@@ -38,6 +38,18 @@ final class TableColumnsTests: XCTestCase {
     }
 
     @MainActor
+    func testTheDateCreatedShowsOnlyOnceChosen() {
+        let app = openDocuments(UUID().uuidString)
+        XCTAssertFalse(app.buttons["Date Created"].firstMatch.exists, "hidden at first")
+
+        app.buttons["columns"].firstMatch.tap()
+        app.buttons["Date Created"].firstMatch.tap()
+
+        XCTAssertTrue(
+            app.buttons["Date Created"].firstMatch.waitForExistence(timeout: Self.timeout))
+    }
+
+    @MainActor
     func testDraggingTheLineBeforeAColumnToTheLeftWidensItAndADoubleTapGivesItsWidthBack() {
         let app = openDocuments(UUID().uuidString)
         // Without Kind the name has room to give; a column widens no further than that.

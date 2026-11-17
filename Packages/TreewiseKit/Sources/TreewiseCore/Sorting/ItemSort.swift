@@ -6,6 +6,10 @@ public enum SortColumn: String, Sendable, Hashable, CaseIterable {
     case name
     /// When the item last changed.
     case dateModified
+    /// When the item was made (ADR 0127).
+    case dateCreated
+    /// When the item came into its folder (ADR 0127).
+    case dateAdded
     /// The item's size in bytes.
     case size
     /// The item's kind as the Kind column shows it.
@@ -57,6 +61,10 @@ public struct ItemSort: Sendable, Hashable {
             .orderedSame
         case .dateModified:
             compare(first.modified ?? .distantPast, second.modified ?? .distantPast)
+        case .dateCreated:
+            compare(first.created ?? .distantPast, second.created ?? .distantPast)
+        case .dateAdded:
+            compare(first.added ?? .distantPast, second.added ?? .distantPast)
         case .size:
             compare(first.size ?? 0, second.size ?? 0)
         case .kind:

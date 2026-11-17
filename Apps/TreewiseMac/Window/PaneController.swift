@@ -94,7 +94,8 @@ final class PaneController: NSViewController {
             list.update(
                 with: FileTableContent(
                     folder: content.folder, items: items, selection: content.selection,
-                    sort: browser.sort, isActive: isActive, cutItems: cutItems,
+                    sort: browser.sort, columns: browser.settings.tableColumns,
+                    isActive: isActive, cutItems: cutItems,
                     renameRequest: renameRequest, revealRequest: revealRequest,
                     downloads: downloads, showsExtensions: browser.settings.showsExtensions,
                     rowHeight: browser.settings.rowDensity.rowHeight, actions: actions))

@@ -18,6 +18,12 @@ public struct ItemFormats {
         dates.string(forModifiedOf: item, relativeTo: now)
     }
 
+    /// Another of the item's dates, such as when it was made, written as `date(of:)`
+    /// writes the date it was changed (ADR 0127); `--` when unknown.
+    public func date(_ date: Date?, relativeTo now: Date = .now) -> String {
+        dates.string(for: date, relativeTo: now)
+    }
+
     public func size(of item: FileItem) -> String {
         sizes.string(for: item)
     }

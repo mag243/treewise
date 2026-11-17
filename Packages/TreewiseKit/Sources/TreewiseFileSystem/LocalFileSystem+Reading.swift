@@ -73,6 +73,8 @@ extension LocalFileSystem {
             size: values.isRegularFile == true ? values.fileSize.map(Int64.init) : nil,
             kindDescription: reading.kindTexts.text(for: child, values: values),
             isHidden: values.isHidden ?? fileName.hasPrefix("."))
+        item.created = values.creationDate
+        item.added = values.addedToDirectoryDate
         if reading.asksCloudStatus, !kind.isContainer {
             let clock = ContinuousClock()
             let started = clock.now

@@ -80,9 +80,7 @@ enum FolderTableColumn: Hashable {
     var sortColumn: SortColumn {
         switch self {
         case .name: .name
-        case .detail(.dateModified): .dateModified
-        case .detail(.size): .size
-        case .detail(.kind): .kind
+        case .detail(let column): column.sortColumn
         }
     }
 
@@ -96,6 +94,8 @@ enum FolderTableColumn: Hashable {
     static func title(of column: FolderColumn) -> String {
         switch column {
         case .dateModified: String(localized: "Date Modified")
+        case .dateCreated: String(localized: "Date Created")
+        case .dateAdded: String(localized: "Date Added")
         case .size: String(localized: "Size")
         case .kind: String(localized: "Kind")
         }
@@ -161,6 +161,8 @@ struct FolderTableRow: View {
     private func text(of column: FolderColumn) -> String {
         switch column {
         case .dateModified: formats.date(of: item)
+        case .dateCreated: formats.date(item.created)
+        case .dateAdded: formats.date(item.added)
         case .size: formats.size(of: item)
         case .kind: formats.kind(of: item)
         }

@@ -44,6 +44,26 @@ import TreewiseTestSupport
         #expect(names(items, ItemSort(column: .dateModified)) == ["unknown", "old", "new"])
     }
 
+    @Test func sortsByDateCreatedWithUnknownDatesFirst() {
+        var new = item("new", date: "2020-01-01 09:00")
+        new.created = Fixture.date("2026-10-25 18:00")
+        var old = item("old", date: "2026-10-30 09:00")
+        old.created = Fixture.date("2026-01-01 09:00")
+        let items = [new, item("unknown"), old]
+
+        #expect(names(items, ItemSort(column: .dateCreated)) == ["unknown", "old", "new"])
+    }
+
+    @Test func sortsByDateAddedWithUnknownDatesFirst() {
+        var new = item("new")
+        new.added = Fixture.date("2026-10-25 18:00")
+        var old = item("old")
+        old.added = Fixture.date("2026-01-01 09:00")
+        let items = [new, item("unknown"), old]
+
+        #expect(names(items, ItemSort(column: .dateAdded)) == ["unknown", "old", "new"])
+    }
+
     @Test func sortsBySize() {
         let items = [item("big", size: 3_000), item("small", size: 10), item("medium", size: 500)]
         #expect(names(items, ItemSort(column: .size)) == ["small", "medium", "big"])

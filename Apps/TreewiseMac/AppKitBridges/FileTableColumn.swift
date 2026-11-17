@@ -1,9 +1,23 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
-/// The list's columns, in order.
+/// The list's columns, in order; which of them beside the name show is the user's choice
+/// (ADR 0127).
 enum FileTableColumn: String, CaseIterable {
-    case name, dateModified, size, kind
+    case name, dateModified, dateCreated, dateAdded, size, kind
+
+    /// The column the user shows or hides; `nil` for the name, which always shows.
+    var folderColumn: FolderColumn? {
+        switch self {
+        case .name: nil
+        case .dateModified: .dateModified
+        case .dateCreated: .dateCreated
+        case .dateAdded: .dateAdded
+        case .size: .size
+        case .kind: .kind
+        }
+    }
 
     /// The column's identifier in the table view.
     var identifier: NSUserInterfaceItemIdentifier { NSUserInterfaceItemIdentifier(rawValue) }
@@ -13,6 +27,8 @@ enum FileTableColumn: String, CaseIterable {
         switch self {
         case .name: .name
         case .dateModified: .dateModified
+        case .dateCreated: .dateCreated
+        case .dateAdded: .dateAdded
         case .size: .size
         case .kind: .kind
         }
@@ -23,6 +39,8 @@ enum FileTableColumn: String, CaseIterable {
         switch self {
         case .name: String(localized: "Name", comment: "List column")
         case .dateModified: String(localized: "Date Modified", comment: "List column")
+        case .dateCreated: String(localized: "Date Created", comment: "List column")
+        case .dateAdded: String(localized: "Date Added", comment: "List column")
         case .size: String(localized: "Size", comment: "List column")
         case .kind: String(localized: "Kind", comment: "List column")
         }
@@ -32,7 +50,7 @@ enum FileTableColumn: String, CaseIterable {
     var initialWidth: CGFloat {
         switch self {
         case .name: 280
-        case .dateModified: 170
+        case .dateModified, .dateCreated, .dateAdded: 170
         case .size: 80
         case .kind: 150
         }
@@ -43,7 +61,7 @@ enum FileTableColumn: String, CaseIterable {
     var minimumWidth: CGFloat {
         switch self {
         case .name: 120
-        case .dateModified: 110
+        case .dateModified, .dateCreated, .dateAdded: 110
         case .size: 60
         case .kind: 80
         }
@@ -54,6 +72,8 @@ enum FileTableColumn: String, CaseIterable {
             switch column {
             case .name: .name
             case .dateModified: .dateModified
+            case .dateCreated: .dateCreated
+            case .dateAdded: .dateAdded
             case .size: .size
             case .kind: .kind
             }

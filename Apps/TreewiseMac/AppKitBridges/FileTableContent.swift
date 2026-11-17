@@ -1,5 +1,6 @@
 import AppKit
 import TreewiseCore
+import TreewiseUI
 
 /// What the list reports back to its pane.
 struct FileTableActions {
@@ -7,6 +8,8 @@ struct FileTableActions {
     /// Opens an item; the modifiers held decide where (ADR 0022).
     var open: (FileItem, _ command: Bool, _ option: Bool) -> Void
     var sort: (SortColumn) -> Void
+    /// Shows or hides a column, chosen from the headers' menu (ADR 0127).
+    var toggleColumn: (FolderColumn) -> Void
     var focus: () -> Void
     var cut: () -> Void
     var copy: () -> Void
@@ -40,6 +43,8 @@ struct FileTableContent {
     var items: [FileItem]
     var selection: Set<FileItem.ID>
     var sort: ItemSort
+    /// Which columns beside the name show (ADR 0127).
+    var columns: TableColumnLayout
     var isActive: Bool
     /// Items cut to the clipboard, shown dimmed.
     var cutItems: Set<FileItem.ID>

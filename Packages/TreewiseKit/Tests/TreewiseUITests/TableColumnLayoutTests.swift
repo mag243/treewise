@@ -13,6 +13,24 @@ import TreewiseUI
         #expect(layout.width(of: .dateModified) == FolderColumn.dateModified.defaultWidth)
     }
 
+    @Test func showsTheDatesCreatedAndAddedOnlyWhenChosen() {
+        var layout = TableColumnLayout()
+        #expect(!layout.isShown(.dateCreated))
+        #expect(!layout.isShown(.dateAdded))
+
+        layout.toggle(.dateAdded)
+
+        #expect(layout.shown == [.dateModified, .dateAdded, .size, .kind])
+    }
+
+    @Test func keepsAChoiceKeptBeforeTheDatesCreatedAndAdded() throws {
+        let kept = Data(#"{"hidden":["kind"],"widths":[]}"#.utf8)
+
+        let layout = try JSONDecoder().decode(TableColumnLayout.self, from: kept)
+
+        #expect(layout.shown == [.dateModified, .size])
+    }
+
     @Test func hidesAndShowsAColumnInItsPlace() {
         var layout = TableColumnLayout()
 

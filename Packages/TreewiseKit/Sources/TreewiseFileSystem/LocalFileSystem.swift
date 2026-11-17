@@ -7,7 +7,8 @@ public struct LocalFileSystem: FileSystemProviding {
     /// The resource values every item is read with.
     static let resourceKeys: Set<URLResourceKey> = [
         .isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .isPackageKey,
-        .localizedTypeDescriptionKey, .contentModificationDateKey, .fileSizeKey, .volumeURLKey,
+        .localizedTypeDescriptionKey, .contentModificationDateKey, .creationDateKey,
+        .addedToDirectoryDateKey, .fileSizeKey, .volumeURLKey,
         .volumeLocalizedNameKey, .isHiddenKey, .localizedNameKey,
     ]
 
@@ -18,7 +19,8 @@ public struct LocalFileSystem: FileSystemProviding {
     /// answer for each file (ADR 0126).
     static let listingKeys: Set<URLResourceKey> = [
         .isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .isVolumeKey,
-        .contentModificationDateKey, .fileSizeKey, .isHiddenKey,
+        .contentModificationDateKey, .creationDateKey, .addedToDirectoryDateKey, .fileSizeKey,
+        .isHiddenKey,
     ]
 
     /// The resource values read for a folder of a listing: also whether it is a package.
@@ -173,6 +175,8 @@ public struct LocalFileSystem: FileSystemProviding {
             size: values.isRegularFile == true ? values.fileSize.map(Int64.init) : nil,
             kindDescription: values.localizedTypeDescription,
             isHidden: values.isHidden ?? lastComponent(of: id).hasPrefix("."))
+        item.created = values.creationDate
+        item.added = values.addedToDirectoryDate
         item.isEjectable = kind == .volume && Self.isEjectable(url)
         item.isOnlyOnline = !kind.isContainer && isInCloudFolder(id) && locations.isOnlyOnline(url)
         return item

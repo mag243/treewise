@@ -1852,6 +1852,40 @@
         }
       }
     },
+    "Date Added" : {
+      "comment" : "List column",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzugefügt am"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum toegevoegd"
+          }
+        }
+      }
+    },
+    "Date Created" : {
+      "comment" : "List column",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellungsdatum"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum aangemaakt"
+          }
+        }
+      }
+    },
     "Date Modified" : {
       "comment" : "List column",
       "localizations" : {

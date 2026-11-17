@@ -32,6 +32,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         for column in FileTableColumn.allCases {
             table.addTableColumn(column.makeTableColumn())
         }
+        attachColumnsMenu(to: table)
         table.usesAlternatingRowBackgroundColors = true
         table.allowsMultipleSelection = true
         table.style = .fullWidth
@@ -75,10 +76,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             showDownloads(in: table)
         }
         if table.rowHeight != view.rowHeight { table.rowHeight = view.rowHeight }
-        let column = FileTableColumn(view.sort.column)
-        table.sortDescriptors = [
-            NSSortDescriptor(key: column.rawValue, ascending: view.sort.ascending)
-        ]
+        showColumns(view.columns, sortedBy: view.sort, in: table)
         let rows = IndexSet(items.indices.filter { view.selection.contains(items[$0].id) })
         if table.selectedRowIndexes != rows {
             table.selectRowIndexes(rows, byExtendingSelection: false)
@@ -183,6 +181,15 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         DisplayName.text(for: item, showsExtension: showsExtensions)
     }
 
+    /// Shows the columns chosen and the sort in the headers.
+    private func showColumns(
+        _ columns: TableColumnLayout, sortedBy sort: ItemSort, in table: NSTableView
+    ) {
+        showColumns(columns, in: table)
+        let column = FileTableColumn(sort.column)
+        table.sortDescriptors = [NSSortDescriptor(key: column.rawValue, ascending: sort.ascending)]
+    }
+
     @objc private func openClickedRow() {
         guard let table, items.indices.contains(table.clickedRow) else { return }
         let flags = NSApp.currentEvent?.modifierFlags ?? []
@@ -193,6 +200,8 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         switch column {
         case .name: shownName(of: item)
         case .dateModified: formats.date(of: item)
+        case .dateCreated: formats.date(item.created)
+        case .dateAdded: formats.date(item.added)
         case .size: formats.size(of: item)
         case .kind: formats.kind(of: item)
         }
