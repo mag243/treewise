@@ -21,6 +21,7 @@ struct FolderNarrowRow: View {
             VStack(alignment: .leading) {
                 Text(DisplayName.text(for: item, showsExtension: showsExtensions))
                     .lineLimit(1)
+                    .truncationMode(.middle)
                 Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)

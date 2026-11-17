@@ -18,6 +18,7 @@ public final class BrowserSettings {
         static let lastSession = "lastSession"
         static let favoriteFolders = "favoriteFolders"
         static let sidebarWidth = "sidebarWidth"
+        static let tableColumns = "tableColumns"
         static let terminalApp = "terminalApp"
         static let checksSpellingWhileTyping = "checksSpellingWhileTyping"
         /// The single default pattern kept before the saved patterns, read when there
@@ -161,6 +162,11 @@ public final class BrowserSettings {
         didSet { store.setSetting(sidebarWidth.map { String($0) }, for: Key.sidebarWidth) }
     }
 
+    /// Which of the iPad table's columns show and how wide they are (ADR 0125).
+    public var tableColumns: TableColumnLayout {
+        didSet { store.setSetting(Self.json(tableColumns), for: Key.tableColumns) }
+    }
+
     /// The windows and tabs, for the next launch to restore (ADR 0038); kept
     /// as JSON, and not observed, as it changes with every folder shown. A
     /// session without windows is not kept, so the one before it stays.
@@ -208,6 +214,9 @@ public final class BrowserSettings {
         favoriteFolders = Self.decoded([String].self, at: Key.favoriteFolders, in: store)?
             .map { FileItem.ID($0) }
         sidebarWidth = store.setting(Key.sidebarWidth).flatMap(Double.init)
+        tableColumns =
+            Self.decoded(TableColumnLayout.self, at: Key.tableColumns, in: store)
+            ?? TableColumnLayout()
         offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
     }
 

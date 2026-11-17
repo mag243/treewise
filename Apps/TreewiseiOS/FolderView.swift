@@ -141,6 +141,12 @@ struct FolderView: View {
                 Label("Enclosing Folder", systemImage: "arrow.up")
             }
             .disabled(!browser.canGoUp(pane: 0))
+            Button(action: locations.undo.undo) {
+                Label(locations.undo.undoTitle, systemImage: "arrow.uturn.backward")
+            }
+            .disabled(!locations.undo.canUndo)
+            // The UI tests find it by it.
+            .accessibilityIdentifier("undo")
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
             if isSelecting {

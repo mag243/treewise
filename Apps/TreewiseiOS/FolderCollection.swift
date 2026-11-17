@@ -83,7 +83,9 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
             }
         } else {
             cell.contentConfiguration = UIHostingConfiguration {
-                FolderTableRow(item: item, showsExtensions: showsExtensions)
+                FolderTableRow(
+                    item: item, showsExtensions: showsExtensions,
+                    layout: content?.settings.tableColumns ?? TableColumnLayout())
             }
             .margins(.horizontal, FolderTableColumn.margin)
         }
