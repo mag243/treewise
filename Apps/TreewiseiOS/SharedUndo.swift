@@ -14,6 +14,10 @@ final class SharedUndo {
     private(set) var canUndo = false
     /// The menu title for what Undo would undo, such as "Undo Move".
     private(set) var undoTitle = ""
+    /// Whether there is something to redo.
+    private(set) var canRedo = false
+    /// The menu title for what Redo would redo, such as "Redo Move".
+    private(set) var redoTitle = ""
     @ObservationIgnored private var following: [Task<Void, Never>] = []
 
     /// The notifications after which what Undo undoes may have changed.
@@ -35,12 +39,22 @@ final class SharedUndo {
 
     /// Undoes the last operation.
     func undo() {
+        guard manager.canUndo else { return }
         manager.undo()
+        follow()
+    }
+
+    /// Redoes the last operation undone.
+    func redo() {
+        guard manager.canRedo else { return }
+        manager.redo()
         follow()
     }
 
     private func follow() {
         canUndo = manager.canUndo
         undoTitle = manager.undoMenuItemTitle
+        canRedo = manager.canRedo
+        redoTitle = manager.redoMenuItemTitle
     }
 }

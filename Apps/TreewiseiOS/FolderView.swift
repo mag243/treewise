@@ -141,10 +141,18 @@ struct FolderView: View {
                 Label("Enclosing Folder", systemImage: "arrow.up")
             }
             .disabled(!browser.canGoUp(pane: 0))
-            Button(action: locations.undo.undo) {
+            // A tap undoes; a long press offers Redo, as in Pages (ADR 0125).
+            Menu {
+                Button(action: locations.undo.redo) {
+                    Label(locations.undo.redoTitle, systemImage: "arrow.uturn.forward")
+                }
+                .disabled(!locations.undo.canRedo)
+            } label: {
                 Label(locations.undo.undoTitle, systemImage: "arrow.uturn.backward")
+            } primaryAction: {
+                locations.undo.undo()
             }
-            .disabled(!locations.undo.canUndo)
+            .disabled(!locations.undo.canUndo && !locations.undo.canRedo)
             // The UI tests find it by it.
             .accessibilityIdentifier("undo")
         }

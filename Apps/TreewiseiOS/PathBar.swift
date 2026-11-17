@@ -22,8 +22,11 @@ struct PathBar: View {
                                 browser: browser, folder: FileItem.ID(crumbs[index - 1].path),
                                 next: FileItem.ID(crumb.path), name: crumbs[index - 1].name)
                         }
-                        Button(crumb.name) {
+                        Button {
                             Task { await browser.navigate(pane: 0, to: FileItem.ID(crumb.path)) }
+                        } label: {
+                            Label(crumb.name, systemImage: symbol(of: FileItem.ID(crumb.path)))
+                                .labelStyle(.titleAndIcon)
                         }
                         .fontWeight(index == crumbs.count - 1 ? .semibold : .regular)
                         .id(index)
@@ -42,6 +45,12 @@ struct PathBar: View {
     }
 
     private var crumbs: [PathComponent] { Self.crumbs(of: folder, in: browser) }
+
+    /// A folder's symbol, as in the sidebar and the list: a location's own, such as a
+    /// cloud, else a folder's (ADR 0123).
+    private func symbol(of folder: FileItem.ID) -> String {
+        browser.locations.first { $0.id == folder }.map(ItemSymbol.name(for:)) ?? "folder"
+    }
 
     /// The path of `folder`: each added folder starts one, as a volume does on the Mac.
     static func crumbs(of folder: FileItem.ID, in browser: BrowserState) -> [PathComponent] {

@@ -62,7 +62,7 @@ final class TableColumnsTests: XCTestCase {
     }
 
     @MainActor
-    func testUndoInTheToolbarTurnsARenameBack() {
+    func testUndoInTheToolbarTurnsARenameBackAndItsLongPressRedoesIt() {
         let app = openDocuments(UUID().uuidString)
         let undo = app.buttons["undo"].firstMatch
         XCTAssertFalse(undo.isEnabled, "nothing to undo yet")
@@ -83,5 +83,11 @@ final class TableColumnsTests: XCTestCase {
         XCTAssertTrue(app.eventually { undo.isEnabled })
         undo.tap()
         XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout), "undone")
+
+        undo.press(forDuration: 1)
+        let redo = app.buttons["Redo Rename"].firstMatch
+        XCTAssertTrue(redo.waitForExistence(timeout: Self.timeout), "a long press offers Redo")
+        redo.tap()
+        XCTAssertTrue(row("Memo.md", in: app).waitForExistence(timeout: Self.timeout), "redone")
     }
 }
