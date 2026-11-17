@@ -29,7 +29,7 @@
     /// keeps page images as raw bytes.
     enum ModuleWire {
         /// The most templates sent and taken for one folder, on both sides of the connection.
-        static let maximumTemplates = 5
+        static let maximumTemplates = AddOnLimits.maximumTemplates
 
         /// A folder's names and its name, for recognizing a template.
         struct NamesOfFolder: Codable {
