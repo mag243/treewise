@@ -66,6 +66,29 @@ extension BrowserState {
         return result?.items.first
     }
 
+    /// Makes a folder named `name` in the folder of an archive the focused pane shows.
+    func newFolderInArchive(
+        at place: ArchivePath, named name: String, undoManager: UndoManager?
+    ) async -> FileItem? {
+        guard let operations else { return nil }
+        guard FileName.isValid(name) else {
+            failure = .invalidName(name)
+            return nil
+        }
+        let key = ConflictResolver.comparisonKey(name)
+        let items = (try? await operations.itemsByName(in: place.id).values).map(Array.init) ?? []
+        if let taken = items.first(where: { ConflictResolver.comparisonKey($0.name) == key }) {
+            failure = .alreadyExists(taken.id)
+            return nil
+        }
+        let target = place.child(name)
+        let result = await changeArchive(
+            place.archive, name: Self.actionName("New Folder"), undoManager: undoManager,
+            edit: .newFolder(target.entry), produces: Self.entry(at: target, kind: .folder))
+        selectInFocusedTab(result?.items ?? [])
+        return result?.items.first
+    }
+
     /// Removes entries from the archive they are in, which undo brings back.
     func removeFromArchive(_ places: [ArchivePath], undoManager: UndoManager?) async -> Bool {
         guard let archive = places.first?.archive else { return false }

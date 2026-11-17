@@ -200,6 +200,23 @@ import TreewiseUI
         #expect(fileSystem.appliedEdits == [.newFolder("2024/untitled folder")])
     }
 
+    @Test func aNamedNewFolderGoesInTheFolderShown() async throws {
+        let browser = try await browser(at: Self.inner.id)
+
+        _ = await browser.newFolder(named: "Receipts", undoManager: nil)
+
+        #expect(fileSystem.appliedEdits == [.newFolder("2024/Receipts")])
+    }
+
+    @Test func aNamedNewFolderRefusesANameTakenInTheArchive() async throws {
+        let browser = try await browser(at: Self.inner.id)
+
+        #expect(await browser.newFolder(named: "Beach.JPG", undoManager: nil) == nil)
+
+        #expect(fileSystem.appliedEdits.isEmpty)
+        #expect(browser.failure != nil)
+    }
+
     @Test func deletingRemovesEntriesInOneChange() async throws {
         let browser = try await browser(at: Self.top.id)
         select([Self.inner.id, Self.top.child("Other").id], in: browser)

@@ -105,6 +105,26 @@ extension FileOperating {
         return OperationResult(items: [created], undo: .trash([created.id]))
     }
 
+    /// Creates a folder named `name` in `folder`, as the user typed it before it was made
+    /// (ADR 0130).
+    ///
+    /// - Throws: `invalidName` for a name `FileName` rejects, `alreadyExists` when an item
+    ///   in `folder` has the name.
+    @discardableResult
+    public func createFolder(named name: String, in folder: FileItem.ID) async throws
+        -> OperationResult
+    {
+        guard FileName.isValid(name) else { throw FileSystemError.invalidName(name) }
+        let key = ConflictResolver.comparisonKey(name)
+        if let taken = try await itemsByName(in: folder).values.first(where: {
+            ConflictResolver.comparisonKey($0.name) == key
+        }) {
+            throw FileSystemError.alreadyExists(taken.id)
+        }
+        let created = try await createFolder(in: folder, named: name)
+        return OperationResult(items: [created], undo: .trash([created.id]))
+    }
+
     /// Moves items to the Trash.
     @discardableResult
     public func moveToTrash(_ ids: [FileItem.ID]) async throws -> OperationResult {
