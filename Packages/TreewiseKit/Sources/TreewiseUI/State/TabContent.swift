@@ -5,6 +5,9 @@ public struct TabContent: Sendable, Equatable {
     /// The folder this content was read from, with its items or its failure; another
     /// than the tab's while the tab still reads the folder it opened (ADR 0121).
     public internal(set) var readFolder: FileItem.ID?
+    /// Whether the folder the tab opened has been read for longer than
+    /// `BrowserState.readingNoticeDelay`, so the tab says it is reading (ADR 0121).
+    var isReadingNoticed = false
     /// The folder itself, for the tab's title and the path bar.
     public internal(set) var folder: FileItem?
     /// The folder's items, in no particular order; `BrowserState.visibleItems`

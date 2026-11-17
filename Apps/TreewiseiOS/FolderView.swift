@@ -107,8 +107,10 @@ struct FolderView: View {
     }
 
     @ViewBuilder private var placeholder: some View {
-        if isReading {
+        if browser.isReadingSlowly(tab.id) {
             ReadingPlaceholder(name: title)
+        } else if isReading {
+            EmptyView()
         } else if let failure = content.failure {
             ContentUnavailableView(
                 FailureMessage.text(for: failure, locale: locale),

@@ -64,8 +64,12 @@ struct NameReviewSheet: View {
     }
 
     @ViewBuilder private var placeholder: some View {
-        if model.rows.isEmpty, model.readingCount == 0, model.startProblem == nil {
-            if model.session != nil {
+        if model.rows.isEmpty, model.startProblem == nil, !model.moduleFailed {
+            if model.session == nil || model.readingCount > 0 {
+                // The files are still being read, as from a cloud provider.
+                ProgressView { Text("Reading the files…") }
+                    .accessibilityIdentifier("reading")
+            } else {
                 ContentUnavailableView(
                     String(localized: "No files to name"), systemImage: "doc.text")
             }

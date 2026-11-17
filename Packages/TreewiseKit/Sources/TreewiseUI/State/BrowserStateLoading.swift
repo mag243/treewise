@@ -15,6 +15,7 @@ extension BrowserState {
         guard let folder = layout.tab(tab)?.folder else { return }
         let number = (latestLoads[tab] ?? 0) + 1
         latestLoads[tab] = number
+        noticeReading(tab, number: number)
         // Watched before it is read, so that a change during the reading is heard.
         updateWatches()
         do {
@@ -38,6 +39,18 @@ extension BrowserState {
             await recover(tab, folder: folder, from: error)
         }
         updateWatches()
+    }
+
+    /// Marks a tab's reading as noticed once it has gone on for `readingNoticeDelay`,
+    /// when it is still reading the folder it opened.
+    private func noticeReading(_ tab: TabModel.ID, number: Int) {
+        guard isReading(tab) else { return }
+        let delay = readingNoticeDelay
+        Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            guard let self, latestLoads[tab] == number, isReading(tab) else { return }
+            contents[tab, default: TabContent()].isReadingNoticed = true
+        }
     }
 
     /// Lets go of what is kept of archives no tab shows any more, also of a

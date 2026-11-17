@@ -67,6 +67,9 @@ public final class BrowserState {
     @ObservationIgnored var watches: [TabModel.ID: Watch] = [:]
     /// The number of each tab's latest reading; only that reading may show.
     @ObservationIgnored var latestLoads: [TabModel.ID: Int] = [:]
+    /// How long a tab reads a folder it opened before it says it is reading, so a folder
+    /// read quickly does not flash the notice (ADR 0121).
+    @ObservationIgnored public var readingNoticeDelay = Duration.milliseconds(500)
     /// The archives a tab shows, whose listing and copies are kept (ADR 0076).
     @ObservationIgnored var shownArchives: Set<FileItem.ID> = []
     /// The watch on This Mac, which keeps the Locations current (ADR 0044).
@@ -136,6 +139,12 @@ public final class BrowserState {
     public func isReading(_ tab: TabModel.ID) -> Bool {
         guard let folder = layout.tab(tab)?.folder else { return false }
         return content(of: tab).readFolder != folder
+    }
+
+    /// Whether a tab has been reading the folder it opened for longer than
+    /// `readingNoticeDelay`, so it says it is reading (ADR 0121).
+    public func isReadingSlowly(_ tab: TabModel.ID) -> Bool {
+        isReading(tab) && content(of: tab).isReadingNoticed
     }
 
     /// A tab's items as the list shows them: filtered by its search text and sorted.

@@ -1042,6 +1042,22 @@
         }
       }
     },
+    "Reading the files…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien werden gelesen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestanden lezen…"
+          }
+        }
+      }
+    },
     "Reading the file…" : {
       "localizations" : {
         "de" : {

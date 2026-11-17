@@ -35,4 +35,36 @@ import TreewiseUI
         fileSystem.releaseListings()
         await refreshing.value
     }
+
+    @Test func saysAFolderIsReadSlowlyOnceTheNoticeDelayPasses() async {
+        let fileSystem = ChangingFileSystem()
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        browser.readingNoticeDelay = .zero
+        let tab = browser.layout.focusedPane.activeTabID
+        fileSystem.holdNextListing()
+
+        let opening = Task { await browser.navigate(pane: 0, to: "downloads") }
+        #expect(await eventually { fileSystem.heldListingCount == 1 })
+
+        #expect(await eventually { browser.isReadingSlowly(tab) })
+        fileSystem.releaseListings()
+        await opening.value
+        #expect(!browser.isReadingSlowly(tab))
+    }
+
+    @Test func aFolderReadBeforeTheNoticeDelayIsNotSaidToBeSlow() async {
+        let fileSystem = ChangingFileSystem()
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        browser.readingNoticeDelay = .seconds(60)
+        let tab = browser.layout.focusedPane.activeTabID
+        fileSystem.holdNextListing()
+
+        let opening = Task { await browser.navigate(pane: 0, to: "downloads") }
+        #expect(await eventually { fileSystem.heldListingCount == 1 })
+
+        #expect(!browser.isReadingSlowly(tab))
+        fileSystem.releaseListings()
+        await opening.value
+        #expect(!browser.isReadingSlowly(tab))
+    }
 }
