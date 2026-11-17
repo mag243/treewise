@@ -94,9 +94,9 @@ public actor FileOperationRunner: FileOperating {
         #endif
         let (source, target) = (url(item.id), url(folder).appendingPathComponent(name))
         let copy = try await FileCopier.run(control: control) {
-            try FileCoordination.read(source, andWrite: target) { source, target in
+            try FileCoordination.read(source, andWrite: target, control: control) {
                 try FileCopier.copyCompletely(
-                    source, into: target.deletingLastPathComponent(), as: name, onFile: onFile,
+                    $0, into: $1.deletingLastPathComponent(), as: name, onFile: onFile,
                     control: control)
             }
         }
@@ -192,9 +192,9 @@ public actor FileOperationRunner: FileOperating {
         try await FileCopier.run(control: control) {
             let target = folder.appendingPathComponent(name)
             do {
-                try FileCoordination.read(source, andWrite: target) { source, target in
+                try FileCoordination.read(source, andWrite: target, control: control) {
                     _ = try FileCopier.copyCompletely(
-                        source, into: target.deletingLastPathComponent(), as: name,
+                        $0, into: $1.deletingLastPathComponent(), as: name,
                         onFile: onFile, control: control, verifying: FileCopier.footprint(of:))
                 }
             } catch FileSystemError.verificationFailed {

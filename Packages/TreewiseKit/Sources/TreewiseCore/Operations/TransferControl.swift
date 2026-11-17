@@ -12,6 +12,8 @@ public final class TransferControl: @unchecked Sendable {
     private var stopped = false
     /// The tasks in `untilResumed()`, resumed once the transfer is resumed or stopped.
     private var waiters: [CheckedContinuation<Void, Never>] = []
+    /// What `whileRunning(onStop:run:)` runs on a stop, by the call that is running.
+    private var stopActions: [UUID: @Sendable () -> Void] = [:]
 
     /// Creates a control for a transfer that runs.
     public init() {}
@@ -43,12 +45,32 @@ public final class TransferControl: @unchecked Sendable {
 
     /// Stops the transfer, also while it is paused.
     public func stop() {
-        let waiting = condition.withLock {
+        let (waiting, actions) = condition.withLock {
             stopped = true
             condition.broadcast()
-            return takeWaiters()
+            return (takeWaiters(), Array(stopActions.values))
         }
         for waiter in waiting { waiter.resume() }
+        for action in actions { action() }
+    }
+
+    /// Runs `body`, and `onStop` once if the transfer is stopped while it runs: at once
+    /// when it already was. It is for a wait the transfer cannot check itself, such as a
+    /// file coordinator waiting for a provider's download (ADR 0122). `onStop` runs on the
+    /// thread that stops, outside the control's lock; a stop as `body`
+    /// ends may still run it, so it must be harmless then.
+    @discardableResult
+    public func whileRunning<Value>(
+        onStop: @escaping @Sendable () -> Void, run body: () throws -> Value
+    ) rethrows -> Value {
+        let key = UUID()
+        let isStopped = condition.withLock {
+            if !stopped { stopActions[key] = onStop }
+            return stopped
+        }
+        if isStopped { onStop() }
+        defer { _ = condition.withLock { stopActions.removeValue(forKey: key) } }
+        return try body()
     }
 
     /// Hands out the waiting tasks and empties the list. Precondition: `condition` is locked.

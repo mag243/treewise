@@ -67,4 +67,35 @@ import os
         control.stop()
         #expect(!(await control.untilResumed()))
     }
+
+    @Test func runsTheStopActionWhenStoppedWhileTheBodyRuns() {
+        let control = TransferControl()
+        let stops = OSAllocatedUnfairLock(initialState: 0)
+
+        control.whileRunning(
+            onStop: { stops.withLock { $0 += 1 } }, run: { control.stop() })
+
+        #expect(stops.withLock { $0 } == 1)
+    }
+
+    @Test func runsTheStopActionAtOnceWhenAlreadyStopped() {
+        let control = TransferControl()
+        control.stop()
+        let stops = OSAllocatedUnfairLock(initialState: 0)
+
+        let ranFirst = control.whileRunning(
+            onStop: { stops.withLock { $0 += 1 } }, run: { stops.withLock { $0 } == 1 })
+
+        #expect(ranFirst)
+    }
+
+    @Test func forgetsTheStopActionOnceTheBodyEnds() {
+        let control = TransferControl()
+        let stops = OSAllocatedUnfairLock(initialState: 0)
+
+        control.whileRunning(onStop: { stops.withLock { $0 += 1 } }, run: {})
+        control.stop()
+
+        #expect(stops.withLock { $0 } == 0)
+    }
 }

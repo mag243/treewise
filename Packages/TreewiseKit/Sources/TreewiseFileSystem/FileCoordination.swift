@@ -1,5 +1,6 @@
 import Foundation
 import Synchronization
+import TreewiseCore
 
 /// Coordinates each access to a file with the processes that present it
 /// (ADR 0047): iCloud Drive and File Provider apps download a file before it
@@ -28,6 +29,36 @@ enum FileCoordination {
             readingItemAt: source, options: [], writingItemAt: target, options: .forReplacing,
             error: &error
         ) { source, target in result = Result { try body(source, target) } }
+        return try outcome(result, error)
+    }
+
+    /// Reads `source` and writes `target` in one coordinated access, as
+    /// `read(_:andWrite:_:)` does, for a transfer `control` can stop while the access
+    /// still waits, such as for a provider downloading a file kept only online
+    /// (ADR 0122).
+    ///
+    /// - Throws: `FileSystemError.cancelled` when it was stopped before `body` ran.
+    static func read<Value>(
+        _ source: URL, andWrite target: URL, control: TransferControl,
+        _ body: (URL, URL) throws -> Value
+    ) throws -> Value {
+        // `cancel()` reaches only an access that waits already: a stop just before it
+        // waits is caught by `body`, which checks the control before each file.
+        guard !control.isStopped else { throw FileSystemError.cancelled }
+        // Not marked Sendable, but `cancel()` may be called from any thread, as the
+        // header says; it is all the stop does with it (ADR 0122).
+        nonisolated(unsafe) let coordinator = NSFileCoordinator(filePresenter: nil)
+        var result: Result<Value, any Error>?
+        var error: NSError?
+        control.whileRunning(
+            onStop: { coordinator.cancel() },
+            run: {
+                coordinator.coordinate(
+                    readingItemAt: source, options: [], writingItemAt: target,
+                    options: .forReplacing, error: &error
+                ) { source, target in result = Result { try body(source, target) } }
+            })
+        if result == nil, control.isStopped { throw FileSystemError.cancelled }
         return try outcome(result, error)
     }
 
