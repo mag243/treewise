@@ -20,8 +20,10 @@ rename-suggestions-landscape | outsideWindow | button "shift"  # iPadOS's keyboa
 rename-suggestions-landscape | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard
 rename-suggestions-landscape | overlap | button "Cancel"  # iPadOS's shortcut bar, sliding in
 rename-suggestions-landscape | overlap | field "name"  # iPadOS's shortcut bar, sliding in
-# On the newest iOS a sheet's shadow is an image reaching beyond the screen, over the
-# keyboard when one shows; the sheet itself is inside.
+# A sheet's shadow is an image reaching beyond the screen, over the keyboard when one
+# shows; the sheet itself is inside.
+rename-landscape | outsideWindow | image ""  # iPadOS's sheet shadow
+rename-suggestions-landscape | outsideWindow | image ""  # iPadOS's sheet shadow
 rename-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 rename-landscape-11inch | overlap | image ""  # iPadOS's sheet shadow over the keyboard
 rename-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
@@ -34,3 +36,9 @@ settings-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 settings-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 saved-patterns-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 saved-patterns-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+# The simulator of iPadOS 27 brings in the on-screen keyboard with a context menu, in
+# Apple's apps too (ADR 0115); its keys cover the menu's lower items.
+context-menu-landscape-11inch | overlap | button "Rename with Suggestions…"  # iPadOS 27's keyboard
+context-menu-landscape-11inch | overlap | button "Cut"  # iPadOS 27's keyboard with a menu
+context-menu-landscape-11inch | overlap | button "Copy"  # iPadOS 27's keyboard with a menu
+context-menu-landscape-11inch | overlap | button "Move to Trash"  # iPadOS 27's keyboard

@@ -12,7 +12,9 @@ final class IPadReviewTests: XCTestCase {
     /// How long a press opens a row's context menu.
     private static let longPress: TimeInterval = 1
     /// A point of the screen with nothing on it to tap, which closes a menu.
-    private static let emptyPoint = CGVector(dx: 0.5, dy: 0.97)
+    /// Above the on-screen keyboard iPadOS 27's simulator brings in with a menu, and beside
+    /// the menus.
+    private static let emptyPoint = CGVector(dx: 0.3, dy: 0.5)
 
     private static let orientations: [(name: String, orientation: UIDeviceOrientation)] = [
         ("landscape", .landscapeLeft), ("portrait", .portrait),
@@ -75,12 +77,10 @@ final class IPadReviewTests: XCTestCase {
             review(app, as: "browser", variant: variant)
 
             app.buttons["View"].firstMatch.tap()
+            let descending = app.buttons["Descending"].firstMatch
+            XCTAssertTrue(descending.waitForExistence(timeout: Self.timeout), "the View menu")
             review(app, as: "view-menu", variant: variant)
-            closeMenu(in: app)
-
-            notes.press(forDuration: Self.longPress)
-            review(app, as: "context-menu", variant: variant)
-            closeMenu(in: app)
+            closeMenu(showing: descending, in: app)
 
             app.buttons["New Folder"].firstMatch.tap()
             let sheet = app.navigationBars["New Folder"]
@@ -94,6 +94,19 @@ final class IPadReviewTests: XCTestCase {
                     timeout: Self.timeout))
             review(app, as: "quick-look", variant: variant)
             app.terminate()
+
+            // On iPadOS 27 an app is not reported idle while a row's menu is open, Apple's own
+            // too, and each step waits a minute (ADR 0115): this is the walk's one context
+            // menu, looked at last in a run of its own, which ends without closing it.
+            let menuApp = launch(state: state, fixture: true, removing: "Work")
+            let row = menuApp.staticTexts["Notes.md"].firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: Self.timeout))
+            row.press(forDuration: Self.longPress)
+            XCTAssertTrue(
+                menuApp.buttons["Rename"].firstMatch.waitForExistence(timeout: Self.timeout),
+                "the row's menu")
+            review(menuApp, as: "context-menu", variant: variant)
+            menuApp.terminate()
         }
     }
 
@@ -107,16 +120,15 @@ final class IPadReviewTests: XCTestCase {
             let notes = app.staticTexts["Notes.md"].firstMatch
             XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
 
-            notes.press(forDuration: Self.longPress)
-            app.buttons["Suggest Names…"].firstMatch.tap()
+            perform("Suggest Names…", on: "Notes.md", in: app)
             let proposal = app.textFields["proposal-Notes.md"].firstMatch
             XCTAssertTrue(proposal.waitForExistence(timeout: Self.timeout))
             review(app, as: "name-overview", variant: variant)
             app.navigationBars.buttons["Cancel"].firstMatch.tap()
+            toolbarButton("Done", in: app).tap()
 
             XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
-            notes.press(forDuration: Self.longPress)
-            app.buttons["Rename with Suggestions…"].firstMatch.tap()
+            perform("Rename with Suggestions…", on: "Notes.md", in: app)
             XCTAssertTrue(
                 app.buttons["suggestion-0"].waitForExistence(timeout: Self.timeout))
             app.buttons["suggestion-0"].tap()
@@ -132,8 +144,8 @@ final class IPadReviewTests: XCTestCase {
             let app = launch(state: UUID().uuidString, fixture: true)
             let projects = app.staticTexts["Projects"].firstMatch
             XCTAssertTrue(projects.waitForExistence(timeout: Self.timeout))
-            projects.press(forDuration: Self.longPress)
-            app.buttons["Add to Favorites"].firstMatch.tap()
+            perform("Add to Favorites", on: "Projects", in: app)
+            toolbarButton("Done", in: app).tap()
             review(app, as: "favorites", variant: variant)
 
             // In portrait the sidebar, with the gear, shows over the folder when asked.
@@ -152,10 +164,38 @@ final class IPadReviewTests: XCTestCase {
 
     // MARK: - Looking
 
+    /// Closes the menu that shows `item`, and checks it is gone.
     @MainActor
-    private func closeMenu(in app: XCUIApplication) {
+    private func closeMenu(showing item: XCUIElement, in app: XCUIApplication) {
         app.coordinate(withNormalizedOffset: Self.emptyPoint).tap()
+        XCTAssertTrue(app.eventually { !item.exists }, "the menu closed")
         settleScreen()
+    }
+
+    /// Performs a row's command as Select and the toolbar's Actions menu offer it, with the
+    /// same commands as the row's context menu (ADR 0115). Selecting starts here; the caller
+    /// ends it with Done.
+    @MainActor
+    private func perform(_ command: String, on name: String, in app: XCUIApplication) {
+        toolbarButton("Select", in: app).tap()
+        let row = app.staticTexts[name].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: Self.timeout))
+        row.tap()
+        toolbarButton("Actions", in: app).tap()
+        let item = app.buttons[command].firstMatch
+        XCTAssertTrue(item.waitForExistence(timeout: Self.timeout), "\(command) in Actions")
+        item.tap()
+    }
+
+    /// A button of the folder's toolbar, from its overflow menu where the toolbar has no room
+    /// for it, as on the 11-inch iPad in portrait.
+    @MainActor
+    private func toolbarButton(_ label: String, in app: XCUIApplication) -> XCUIElement {
+        let button = app.buttons[label].firstMatch
+        if button.exists { return button }
+        app.buttons["OverflowBarButtonItem"].firstMatch.tap()
+        XCTAssertTrue(button.waitForExistence(timeout: Self.timeout), "\(label) in the overflow")
+        return button
     }
 
     /// Keeps a screenshot of the screen and what the checks found on it, both named

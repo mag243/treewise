@@ -599,18 +599,30 @@ cmd_iosreview() {
   mkdir -p "$IPAD_REVIEW_DIR"
   local exported="$IPAD_REVIEW_DIR/attachments"
   only=(-only-testing:"$IPAD_REVIEW_TESTS${screen:+/test${screen^}}")
-  # The pinned iPad, and a smaller one on the newest iOS whose screens are named "11inch".
-  local -x TEST_RUNNER_UIREVIEW_DEVICE device name udid bundle
+  # The pinned iPad, and a smaller one on the newest iOS whose screens are named "11inch":
+  # built once, then walked on both at the same time, each into its own log and results.
+  xcode iosreview-build -scheme "$IOS_SCHEME" -destination "generic/platform=iOS Simulator" \
+    build-for-testing
+  local -x TEST_RUNNER_UIREVIEW_DEVICE
+  local device name udid bundle pids=() failed=0 pid
   for device in "" 11inch; do
     name="$IOS_SIMULATOR_NAME"
     [[ -n "$device" ]] && name="$IOS_REVIEW_SIMULATOR_NAME"
-    TEST_RUNNER_UIREVIEW_DEVICE="$device"
     udid="$(ipad_simulator "$show" "$name")"
     bundle="$(result_bundle "IPadReview${device:+-$device}")"
     info "On $name"
-    xcode iosreview -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
-      "${only[@]}" test
-    xcrun xcresulttool export attachments --path "$bundle" \
+    (
+      TEST_RUNNER_UIREVIEW_DEVICE="$device"
+      xcode "iosreview${device:+-$device}" -scheme "$IOS_SCHEME" -destination "id=$udid" \
+        -resultBundlePath "$bundle" "${only[@]}" test-without-building
+    ) &
+    pids+=("$!")
+  done
+  for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
+  ((failed == 0)) || fail "The iPad UI review's walk failed; logs: build/logs/iosreview*.log"
+  for device in "" 11inch; do
+    xcrun xcresulttool export attachments \
+      --path "$REPORT_DIR/IPadReview${device:+-$device}.xcresult" \
       --output-path "$exported/${device:-pinned}" >/dev/null
   done
   local rc=0
