@@ -110,6 +110,8 @@ install_simulators() {
   install_simulator "$IOS_SIMULATOR_OS" "$IOS_SIMULATOR_DEVICE_TYPE" "$IOS_SIMULATOR_NAME"
   install_simulator "$IOS_REVIEW_SIMULATOR_OS" "$IOS_REVIEW_SIMULATOR_DEVICE_TYPE" \
     "$IOS_REVIEW_SIMULATOR_NAME"
+  install_simulator "$IOS_IPHONE_SIMULATOR_OS" "$IOS_IPHONE_SIMULATOR_DEVICE_TYPE" \
+    "$IOS_IPHONE_SIMULATOR_NAME"
 }
 
 # Installs the runtime of iOS [1] when missing and creates the simulator [3] of device type [2].

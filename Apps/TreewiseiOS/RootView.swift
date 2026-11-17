@@ -14,12 +14,16 @@ struct RootView: View {
     /// The unavailable folder the picker connects again; `nil` while it adds one.
     @State private var reconnecting: Bookmark?
     @State private var isShowingSettings = false
+    /// The screen shown where the sidebar and the folder are one stack, as on the iPhone
+    /// (ADR 0132): the folder, until the user goes back to the locations.
+    @State private var compactColumn = NavigationSplitViewColumn.detail
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(preferredCompactColumn: $compactColumn) {
             LocationsSidebar(
                 locations: locations, addLocation: { pick(for: nil) },
-                reconnect: { pick(for: $0) }, showSettings: { isShowingSettings = true })
+                reconnect: { pick(for: $0) }, showSettings: { isShowingSettings = true },
+                showFolder: { compactColumn = .detail })
         } detail: {
             if let browser = locations.browser {
                 FolderView(browser: browser, settings: locations.settings, locations: locations)

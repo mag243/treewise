@@ -17,27 +17,7 @@ struct SelectionButtons: View {
     private var isAllSelected: Bool { !items.isEmpty && selected.count == items.count }
 
     var body: some View {
-        Menu {
-            ForEach(
-                Array(ItemCommands.sections(for: selected, actions: actions).enumerated()),
-                id: \.offset
-            ) { _, section in
-                Section {
-                    ForEach(section) { command in
-                        Button(
-                            role: command.isDestructive ? .destructive : nil,
-                            action: command.perform
-                        ) {
-                            Label(command.title, systemImage: command.symbol)
-                        }
-                        .disabled(!command.isEnabled)
-                    }
-                }
-            }
-        } label: {
-            Label("Actions", systemImage: "ellipsis.circle")
-        }
-        .disabled(selected.isEmpty)
+        SelectionActionsMenu(selected: selected, actions: actions)
         Button(isAllSelected ? "Deselect All" : "Select All") {
             browser.setSelection(isAllSelected ? [] : Set(items.map(\.id)), in: tab)
         }

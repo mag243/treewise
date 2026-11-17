@@ -4,8 +4,8 @@ import TreewiseCore
 import TreewiseUI
 
 /// The folder the browser shows: its path above its table, with Back, Forward
-/// and Enclosing Folder. Opening
-/// a folder goes into it; opening a file shows it in Quick Look.
+/// and Enclosing Folder; where the width is compact, as on the iPhone, Files' layout
+/// instead (ADR 0132). Opening a folder goes into it; opening a file shows it in Quick Look.
 struct FolderView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.locale) private var locale
@@ -31,8 +31,10 @@ struct FolderView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PathBar(browser: browser, folder: tab.folder, drops: drops)
-            Divider()
+            if !isCompact {
+                PathBar(browser: browser, folder: tab.folder, drops: drops)
+                Divider()
+            }
             list
                 .allowsHitTesting(!isReading)
                 .overlay { placeholder }
@@ -40,6 +42,13 @@ struct FolderView: View {
         .navigationTitle(isSelecting ? selectedTitle : title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
+        .modifier(EnclosingFolderButton.TitleMenu(browser: browser, isShown: isCompact))
+        // The enclosing folder takes the back button's place below a location's top, as
+        // the button that selects every item does while the user selects.
+        .navigationBarBackButtonHidden(
+            isCompact
+                && (isSelecting || !EnclosingFolderButton.enclosing(in: browser).isEmpty)
+        )
         .searchable(
             text: Binding(
                 get: { content.query },
@@ -95,9 +104,12 @@ struct FolderView: View {
     private var list: some View {
         FolderTable(
             browser: browser, items: items, folder: content.folder, settings: settings,
-            actions: actions, drops: drops, isCompact: sizeClass == .compact,
+            actions: actions, drops: drops, isCompact: isCompact,
             isSelecting: $isSelecting)
     }
+
+    /// Whether the width is compact, as on the iPhone (ADR 0132).
+    private var isCompact: Bool { sizeClass == .compact }
 
     /// Whether the folder just opened is still being read; the list then still holds the
     /// folder left (ADR 0121).
@@ -130,6 +142,16 @@ struct FolderView: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        if isCompact {
+            CompactFolderToolbar(
+                browser: browser, settings: settings, undo: locations.undo, actions: actions,
+                items: items, isSelecting: $isSelecting)
+        } else {
+            regularToolbar
+        }
+    }
+
+    @ToolbarContentBuilder private var regularToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .topBarLeading) {
             Button {
                 Task { await browser.goBack(pane: 0) }

@@ -16,6 +16,8 @@ struct LocationsSidebar: View {
     let reconnect: (Bookmark) -> Void
     /// Opens Settings (ADR 0130).
     let showSettings: () -> Void
+    /// Shows the folder chosen, where the sidebar is a screen of its own (ADR 0132).
+    var showFolder: () -> Void = {}
 
     var body: some View {
         List(selection: selection) {
@@ -126,6 +128,7 @@ struct LocationsSidebar: View {
             },
             set: { location in
                 guard let location, let browser = locations.browser else { return }
+                showFolder()
                 Task { await browser.navigate(pane: 0, to: location) }
             })
     }

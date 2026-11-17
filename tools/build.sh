@@ -21,7 +21,8 @@
 #   iosuitest   The iPad app's UI tests on the pinned iOS Simulator (ADR 0114), out of
 #               sight. Followed by a filter, as apptest; `iosuitest --show [filter]` opens
 #               the Simulator app first, to watch; `--11inch` runs them on the UI review's
-#               smaller iPad on the newest iOS instead.
+#               smaller iPad on the newest iOS instead, and `--iphone` runs the iPhone's
+#               UI tests (IPhoneTests) on the pinned iPhone (ADR 0132).
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
 #               on the pinned iPad and a smaller one on the newest iOS (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
@@ -135,6 +136,8 @@ UIREVIEW_DIR="$BUILD_DIR/ui-review"
 UIREVIEW_CATEGORIES=" settings browser templates names dialogs "
 # The iPad's UI review (ADR 0115).
 IPAD_REVIEW_TESTS="TreewiseiOSUITests/IPadReviewTests"
+# The iPhone's UI tests, which run on the iPhone only (ADR 0132).
+IPHONE_TESTS="TreewiseiOSUITests/IPhoneTests"
 APPSTORE_SCREENSHOT_TESTS="TreewiseiOSUITests/AppStoreScreenshotTests"
 APPSTORE_SCREENSHOT_DIR="$BUILD_DIR/appstore/screenshots"
 IPAD_REVIEW_DIR="$BUILD_DIR/ui-review-ipad"
@@ -555,14 +558,19 @@ ipad_simulator() {
 
 # The iPad app's UI tests on the pinned simulator (ADR 0114), or only those of the filter,
 # as Class or Class/testName separated by commas; --show first opens the Simulator app, and
-# --11inch runs them on the UI review's smaller iPad on the newest iOS.
+# --11inch runs them on the UI review's smaller iPad on the newest iOS, and --iphone runs
+# the iPhone's (IPhoneTests, ADR 0132) on the pinned iPhone, which the iPads' runs skip.
 cmd_iosuitest() {
   local show="" filter="" name="$IOS_SIMULATOR_NAME" os="$IOS_SIMULATOR_OS" only=() tests=()
-  local word test
+  local word test skip=(-skip-testing:"$IPHONE_TESTS")
   for word in "$@"; do
     case "$word" in
       --show) show=--show ;;
       --11inch) name="$IOS_REVIEW_SIMULATOR_NAME" os="$IOS_REVIEW_SIMULATOR_OS" ;;
+      --iphone)
+        name="$IOS_IPHONE_SIMULATOR_NAME" os="$IOS_IPHONE_SIMULATOR_OS"
+        skip=() filter="${filter:-IPhoneTests}"
+        ;;
       *) filter="$word" ;;
     esac
   done
@@ -573,7 +581,8 @@ cmd_iosuitest() {
   IFS=, read -ra tests <<<"$filter"
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseiOSUITests/$test"); done
   xcode iosuitest -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
-    -skip-testing:"$IPAD_REVIEW_TESTS" -skip-testing:"$APPSTORE_SCREENSHOT_TESTS" "${only[@]}" test
+    -skip-testing:"$IPAD_REVIEW_TESTS" -skip-testing:"$APPSTORE_SCREENSHOT_TESTS" "${skip[@]}" \
+    "${only[@]}" test
   ok "iPad app UI tests passed on iOS $os. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
@@ -1124,7 +1133,8 @@ while (($#)); do
     # word is a command.
     run_command "$c" "$1"; shift
   elif [[ "$c" == iosuitest ]]; then
-    # iosuitest takes --show, --11inch and a filter as its next words, a word that is no command.
+    # iosuitest takes --show, --11inch, --iphone and a filter as its next words, a word that is
+    # no command.
     words=()
     while (($#)) && [[ "$1" == --show || "$COMMANDS" != *" $1 "* ]]; do
       words+=("$1"); shift
