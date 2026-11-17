@@ -8,7 +8,8 @@ public enum FolderColumn: String, CaseIterable, Codable, Sendable {
     /// The column's width until the user gives it one, in points.
     public var defaultWidth: Double {
         switch self {
-        case .dateModified, .dateCreated, .dateAdded: 170
+        // Room for the longest date with its time, such as `Nov 14, 2026 at 11:36 AM`.
+        case .dateModified, .dateCreated, .dateAdded: 220
         case .size: 90
         case .kind: 160
         }
