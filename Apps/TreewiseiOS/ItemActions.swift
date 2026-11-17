@@ -16,6 +16,9 @@ struct ItemActions {
     let suggestNames: (_ wholeFolder: Bool) -> Void
     /// Asks for a name in the folder view's sheet (ADR 0130).
     let askName: (NameSheetRequest) -> Void
+    /// Asks for the folder to move or copy items to, where the width is compact and no
+    /// second folder shows (ADR 0132); `nil` elsewhere.
+    var moveTo: ((MoveToRequest) -> Void)?
 
     /// Whether names can be proposed for what the folder shows.
     var canSuggestNames: Bool {

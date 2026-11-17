@@ -87,10 +87,11 @@ struct ItemDrops {
         land(items, on: target)
     }
 
-    /// Drops items on `target`, or says why they may not, as a drop checked as it lands.
-    func land(_ items: [FileItem], on target: FileItem) {
+    /// Drops items on `target`, or says why they may not, as a drop checked as it lands;
+    /// `modifiers` force a move or a copy as ⌘ and ⌥ do, as Move to… and Copy to… ask.
+    func land(_ items: [FileItem], on target: FileItem, modifiers: DropModifiers = []) {
         if let reason = session(of: items).landingRefusalText(
-            over: target, modifiers: [], locale: .autoupdatingCurrent)
+            over: target, modifiers: modifiers, locale: .autoupdatingCurrent)
         {
             locations.dropRefusal = reason
             return
@@ -98,7 +99,8 @@ struct ItemDrops {
         let resolver = locations.conflicts.resolver()
         Task {
             await browser.drop(
-                items, onto: target, modifiers: [], resolver: resolver, undoManager: undoManager)
+                items, onto: target, modifiers: modifiers, resolver: resolver,
+                undoManager: undoManager)
         }
     }
 

@@ -66,4 +66,28 @@ final class IPhoneTests: XCTestCase {
         app.buttons["moreMenu"].firstMatch.tap()
         XCTAssertTrue(app.buttons["Paste"].firstMatch.isEnabled, "the copy can be pasted")
     }
+
+    @MainActor
+    func testMoveToMovesTheSelectionIntoTheFolderBrowsedTo() {
+        let app = openDocuments()
+        app.buttons["moreMenu"].firstMatch.tap()
+        app.buttons["Select"].firstMatch.tap()
+        row("Notes.md", in: app).tap()
+        app.toolbars.buttons["Actions"].firstMatch.tap()
+        app.buttons["Move to…"].firstMatch.tap()
+        let sheet = app.navigationBars["Move to Folder"]
+        XCTAssertTrue(sheet.waitForExistence(timeout: Self.timeout))
+        XCTAssertFalse(app.buttons["moveToConfirm"].firstMatch.isEnabled, "no folder yet")
+
+        app.buttons["Work"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Work"].waitForExistence(timeout: Self.timeout))
+        app.buttons["moveToConfirm"].firstMatch.tap()
+
+        let notes = row("Notes.md", in: app)
+        XCTAssertTrue(app.eventually { !notes.exists }, "moved away")
+        app.buttons["Done"].firstMatch.tap()
+        app.navigationBars["Documents"].buttons.firstMatch.tap()
+        sidebar(of: app).staticTexts["Work"].tap()
+        XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
+    }
 }

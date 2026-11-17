@@ -17,6 +17,8 @@ struct FolderView: View {
     @State private var review: NameReviewShown?
     /// The name asked for, if any: a rename, or a new folder's (ADR 0130).
     @State private var naming: NameSheetRequest?
+    /// The folder asked for to move or copy items to, if any (ADR 0132).
+    @State private var movingTo: MoveToRequest?
 
     let browser: BrowserState
     let settings: BrowserSettings
@@ -69,6 +71,9 @@ struct FolderView: View {
                 request: request, browser: browser, undoManager: undoManager,
                 openOverview: { actions.suggestNames(for: [$0]) })
         }
+        .sheet(item: $movingTo) { request in
+            MoveToSheet(request: request, browser: browser, drops: drops)
+        }
         .sheet(isPresented: isAskingAboutConflict) {
             if let question = conflicts.question {
                 ConflictSheet(questions: conflicts, name: question.name)
@@ -87,7 +92,8 @@ struct FolderView: View {
     private var actions: ItemActions {
         ItemActions(
             browser: browser, conflicts: conflicts, undoManager: undoManager, open: open,
-            suggestNames: suggestNames, askName: { naming = $0 })
+            suggestNames: suggestNames, askName: { naming = $0 },
+            moveTo: isCompact ? { movingTo = $0 } : nil)
     }
 
     private var isAskingAboutConflict: Binding<Bool> {

@@ -44,14 +44,15 @@ enum ItemCommands {
             sections.append(namingCommands(items, actions))
         }
         let movable = items.allSatisfy(\.isMovable)
-        sections.append([
-            ItemCommand(
-                title: String(localized: "Cut"), symbol: "scissors", isEnabled: movable,
-                perform: { actions.cut(items) }),
-            ItemCommand(
-                title: String(localized: "Copy"), symbol: "doc.on.doc", isEnabled: movable,
-                perform: { actions.copy(items) }),
-        ])
+        sections.append(
+            [
+                ItemCommand(
+                    title: String(localized: "Cut"), symbol: "scissors", isEnabled: movable,
+                    perform: { actions.cut(items) }),
+                ItemCommand(
+                    title: String(localized: "Copy"), symbol: "doc.on.doc", isEnabled: movable,
+                    perform: { actions.copy(items) }),
+            ] + moveToCommands(items, actions, isEnabled: movable))
         sections.append([
             ItemCommand(
                 title: String(localized: "Move to Trash"), symbol: "trash", isDestructive: true,
@@ -59,6 +60,23 @@ enum ItemCommands {
                 perform: { actions.moveToTrash(items) })
         ])
         return sections
+    }
+
+    /// Move to… and Copy to…, where the width is compact and no second folder shows
+    /// (ADR 0132).
+    private static func moveToCommands(
+        _ items: [FileItem], _ actions: ItemActions, isEnabled: Bool
+    ) -> [ItemCommand] {
+        guard let moveTo = actions.moveTo else { return [] }
+        return [
+            ItemCommand(
+                title: String(localized: "Move to…"), symbol: "folder", isEnabled: isEnabled,
+                perform: { moveTo(MoveToRequest(items: items, purpose: .move)) }),
+            ItemCommand(
+                title: String(localized: "Copy to…"), symbol: "doc.on.doc.fill",
+                isEnabled: isEnabled,
+                perform: { moveTo(MoveToRequest(items: items, purpose: .copy)) }),
+        ]
     }
 
     /// Add to Favorites, or Remove from Favorites for a favorite (ADR 0131).
