@@ -11,10 +11,10 @@ struct FolderTableHeadings: View {
 
     let browser: BrowserState
     let settings: BrowserSettings
+    /// The chosen columns that fit (ADR 0125).
+    let layout: TableColumnLayout
     /// The room the name has beyond its minimum, which a column may take as it widens.
     let spareWidth: CGFloat
-
-    private var layout: TableColumnLayout { settings.tableColumns }
 
     var body: some View {
         let columns = FolderTableColumn.shown(in: layout)
@@ -59,10 +59,16 @@ struct FolderTableHeadings: View {
         Menu {
             ForEach(FolderColumn.allCases, id: \.self) { column in
                 Toggle(
-                    FolderTableColumn.title(of: column),
                     isOn: Binding(
                         get: { layout.isShown(column) },
-                        set: { _ in settings.tableColumns.toggle(column) }))
+                        set: { _ in settings.tableColumns.toggle(column) })
+                ) {
+                    Text(FolderTableColumn.title(of: column))
+                    // A chosen column the table has no room for says so, as it is missing.
+                    if layout.isCrowdedOut(column) {
+                        Text("No room in this width")
+                    }
+                }
             }
         } label: {
             Image(systemName: "ellipsis")

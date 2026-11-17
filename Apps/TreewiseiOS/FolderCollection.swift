@@ -15,6 +15,8 @@ struct FolderCollection: UIViewRepresentable {
     let undoManager: UndoManager
     /// Whether the rows are a narrow folder's: the name with the date and size beneath it.
     let isNarrow: Bool
+    /// The columns that fit, as the headings show them (ADR 0125).
+    let layout: TableColumnLayout
     let items: [FileItem]
     let folder: FileItem?
     let settings: BrowserSettings
@@ -85,7 +87,7 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
             cell.contentConfiguration = UIHostingConfiguration {
                 FolderTableRow(
                     item: item, showsExtensions: showsExtensions,
-                    layout: content?.settings.tableColumns ?? TableColumnLayout())
+                    layout: content?.layout ?? TableColumnLayout())
             }
             .margins(.horizontal, FolderTableColumn.margin)
         }

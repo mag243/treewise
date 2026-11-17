@@ -41,12 +41,35 @@ final class TableColumnsTests: XCTestCase {
     func testTheDateCreatedShowsOnlyOnceChosen() {
         let app = openDocuments(UUID().uuidString)
         XCTAssertFalse(app.buttons["Date Created"].firstMatch.exists, "hidden at first")
+        // Without Kind there is room for it beside the date modified on every iPad.
+        app.buttons["columns"].firstMatch.tap()
+        app.buttons["Kind"].firstMatch.tap()
+        XCTAssertTrue(app.eventually { !app.buttons["Kind"].firstMatch.exists })
 
         app.buttons["columns"].firstMatch.tap()
         app.buttons["Date Created"].firstMatch.tap()
 
         XCTAssertTrue(
             app.buttons["Date Created"].firstMatch.waitForExistence(timeout: Self.timeout))
+    }
+
+    /// Every column takes more room than a 13-inch iPad's folder beside the sidebar has: the
+    /// table keeps its headings, the dates created and added give way, and they stay chosen
+    /// (ADR 0125).
+    @MainActor
+    func testChosenColumnsWithoutRoomGiveWayAndStayChosen() {
+        let app = openDocuments(UUID().uuidString)
+        for column in ["Date Created", "Date Added"] {
+            app.buttons["columns"].firstMatch.tap()
+            app.buttons[column].firstMatch.tap()
+        }
+
+        XCTAssertTrue(app.buttons["Kind"].firstMatch.waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(app.buttons["Date Modified"].firstMatch.exists, "the headings stay")
+        XCTAssertFalse(app.buttons["Date Added"].firstMatch.exists, "the date added gives way")
+        app.buttons["columns"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["Date Added"].firstMatch.waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(app.buttons["Date Added"].firstMatch.isSelected, "still chosen")
     }
 
     @MainActor

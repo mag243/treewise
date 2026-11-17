@@ -20,22 +20,32 @@ struct FolderTable: View {
 
     @State private var width: CGFloat = 0
 
+    /// The chosen columns that fit beside a name of `minimumNameWidth` (ADR 0125).
+    private var layout: TableColumnLayout {
+        settings.tableColumns.fitted(
+            into: Double(FolderTableColumn.roomForColumns(in: width)),
+            spacing: Double(FolderTableColumn.spacing))
+    }
+
+    /// Whether the rows are narrow: on a compact screen, and where not even the column
+    /// that gives way last fits beside the name.
     private var isNarrow: Bool {
-        isCompact || width < FolderTableColumn.minimumTableWidth(for: settings.tableColumns)
+        isCompact || FolderTableColumn.roomForColumns(in: width) < 0
+            || (layout.shown.isEmpty && !settings.tableColumns.shown.isEmpty)
     }
 
     var body: some View {
         VStack(spacing: 0) {
             if !isNarrow {
                 FolderTableHeadings(
-                    browser: browser, settings: settings,
-                    spareWidth: max(
-                        width - FolderTableColumn.minimumTableWidth(for: settings.tableColumns), 0))
+                    browser: browser, settings: settings, layout: layout,
+                    spareWidth: max(width - FolderTableColumn.minimumTableWidth(for: layout), 0))
                 Divider()
             }
             FolderCollection(
                 browser: browser, undoManager: actions.undoManager, isNarrow: isNarrow,
-                items: items, folder: folder, settings: settings, actions: actions, drops: drops,
+                layout: layout, items: items, folder: folder, settings: settings, actions: actions,
+                drops: drops,
                 isSelecting: isSelecting, beginSelecting: { isSelecting = true })
         }
         .frame(maxWidth: .infinity)
@@ -67,6 +77,12 @@ enum FolderTableColumn: Hashable {
     /// The columns `layout` shows, the name first.
     static func shown(in layout: TableColumnLayout) -> [FolderTableColumn] {
         [.name] + layout.shown.map(FolderTableColumn.detail)
+    }
+
+    /// The room a table `width` wide leaves for the columns beside a name of
+    /// `minimumNameWidth`, each taking its width and `spacing`.
+    static func roomForColumns(in width: CGFloat) -> CGFloat {
+        width - margin * 2 - menuWidth - spacing - minimumNameWidth
     }
 
     /// The width the columns of `layout` need, with a name of `minimumNameWidth`.

@@ -24,6 +24,10 @@ public enum FolderColumn: String, CaseIterable, Codable, Sendable {
         }
     }
 
+    /// The order in which columns give way where the table has too little room: the least
+    /// telling first, the date modified last (ADR 0125).
+    static let givingWay: [FolderColumn] = [.dateAdded, .dateCreated, .kind, .size, .dateModified]
+
     /// The sort column it stands for.
     public var sortColumn: SortColumn {
         switch self {
@@ -51,6 +55,8 @@ public struct TableColumnLayout: Codable, Equatable, Sendable {
     /// means the same now.
     private var flipped: Set<FolderColumn> = []
     private var widths: [FolderColumn: Double] = [:]
+    /// The chosen columns left out for want of room, by `fitted(into:spacing:)`; not kept.
+    private var crowdedOut: Set<FolderColumn> = []
 
     private enum CodingKeys: String, CodingKey {
         case flipped = "hidden"
@@ -60,14 +66,34 @@ public struct TableColumnLayout: Codable, Equatable, Sendable {
     /// Every column showing at its default width.
     public init() {}
 
-    /// The columns that show, in the table's order.
+    /// The columns that show, in the table's order: those chosen, less those left out for
+    /// want of room.
     public var shown: [FolderColumn] {
-        FolderColumn.allCases.filter(isShown)
+        FolderColumn.allCases.filter { isShown($0) && !crowdedOut.contains($0) }
     }
 
-    /// Whether `column` shows.
+    /// Whether `column` is chosen to show.
     public func isShown(_ column: FolderColumn) -> Bool {
         column.isShownByDefault != flipped.contains(column)
+    }
+
+    /// Whether `column` is chosen but left out, as the table has too little room for it.
+    public func isCrowdedOut(_ column: FolderColumn) -> Bool {
+        crowdedOut.contains(column)
+    }
+
+    /// The layout with the chosen columns that fit in `room` points, each column taking its
+    /// width and `spacing`; columns give way in `FolderColumn.givingWay`'s order.
+    public func fitted(into room: Double, spacing: Double) -> TableColumnLayout {
+        var fitted = self
+        fitted.crowdedOut = []
+        var needed = FolderColumn.allCases.filter(isShown).map { width(of: $0) + spacing }
+            .reduce(0, +)
+        for column in FolderColumn.givingWay where needed > room && fitted.isShown(column) {
+            fitted.crowdedOut.insert(column)
+            needed -= width(of: column) + spacing
+        }
+        return fitted
     }
 
     /// Hides `column` when it shows, else shows it in its place.

@@ -864,6 +864,22 @@
         }
       }
     },
+    "No room in this width" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Platz in dieser Breite"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen ruimte in deze breedte"
+          }
+        }
+      }
+    },
     "Not available. Tap to connect it again." : {
       "localizations" : {
         "de" : {

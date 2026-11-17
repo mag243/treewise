@@ -72,4 +72,50 @@ import TreewiseUI
         #expect(again.shown == [.dateModified, .size])
         #expect(again.width(of: .dateModified) == 222)
     }
+
+    // MARK: - Fitting the room there is
+
+    /// Every column chosen, the dates 220 wide, the size 90 and the kind 160: with 20
+    /// between columns they take 1,010 points.
+    private var everyColumn: TableColumnLayout {
+        var layout = TableColumnLayout()
+        layout.toggle(.dateCreated)
+        layout.toggle(.dateAdded)
+        return layout
+    }
+
+    @Test func keepsEveryChosenColumnWhereThereIsRoom() {
+        let fitted = everyColumn.fitted(into: 1_010, spacing: 20)
+
+        #expect(fitted.shown == [.dateModified, .dateCreated, .dateAdded, .size, .kind])
+    }
+
+    @Test func leavesOutTheDateAddedFirstWhereThereIsTooLittleRoom() {
+        let fitted = everyColumn.fitted(into: 800, spacing: 20)
+
+        #expect(fitted.shown == [.dateModified, .dateCreated, .size, .kind])
+        #expect(fitted.isCrowdedOut(.dateAdded))
+        #expect(fitted.isShown(.dateAdded), "still chosen")
+    }
+
+    @Test func keepsTheDateModifiedLongest() {
+        let fitted = everyColumn.fitted(into: 500, spacing: 20)
+
+        #expect(fitted.shown == [.dateModified, .size])
+    }
+
+    @Test func showsNoColumnWhereEvenTheDateModifiedHasNoRoom() {
+        let fitted = everyColumn.fitted(into: 100, spacing: 20)
+
+        #expect(fitted.shown.isEmpty)
+    }
+
+    @Test func aColumnLeftOutIsNotKept() throws {
+        let fitted = everyColumn.fitted(into: 100, spacing: 20)
+
+        let kept = try JSONDecoder().decode(
+            TableColumnLayout.self, from: try JSONEncoder().encode(fitted))
+
+        #expect(kept == everyColumn)
+    }
 }
