@@ -11,6 +11,8 @@ struct FolderView: View {
     @Environment(\.locale) private var locale
     /// The file Quick Look shows, if any.
     @State private var previewed: URL?
+    /// Whether the user is selecting, when a tap selects instead of opening (ADR 0124).
+    @State private var isSelecting = false
 
     let browser: BrowserState
     let settings: BrowserSettings
@@ -31,7 +33,7 @@ struct FolderView: View {
                 .allowsHitTesting(!isReading)
                 .overlay { placeholder }
         }
-        .navigationTitle(title)
+        .navigationTitle(isSelecting ? selectedTitle : title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
         .searchable(
@@ -40,6 +42,10 @@ struct FolderView: View {
                 set: { browser.setQuery($0, in: tab.id) })
         )
         .refreshable { await browser.refresh(pane: 0) }
+        .onChange(of: tab.folder) { isSelecting = false }
+        .onChange(of: isSelecting) {
+            if !isSelecting { browser.setSelection([], in: tab.id) }
+        }
         .safeAreaInset(edge: .bottom) {
             ProgressBar(browser: browser, isAsking: conflicts.question != nil)
         }
@@ -83,12 +89,18 @@ struct FolderView: View {
     private var list: some View {
         FolderTable(
             browser: browser, items: items, folder: content.folder, settings: settings,
-            actions: actions, drops: drops, isCompact: sizeClass == .compact)
+            actions: actions, drops: drops, isCompact: sizeClass == .compact,
+            isSelecting: $isSelecting)
     }
 
     /// Whether the folder just opened is still being read; the list then still holds the
     /// folder left (ADR 0121).
     private var isReading: Bool { browser.isReading(tab.id) }
+
+    /// How many items are selected, while the user selects.
+    private var selectedTitle: String {
+        String(localized: "\(content.selection.count) Selected")
+    }
 
     /// The folder's name, from the path while it is being read.
     private var title: String {
@@ -131,15 +143,22 @@ struct FolderView: View {
             .disabled(!browser.canGoUp(pane: 0))
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
-            Button(action: actions.paste) {
-                Label("Paste", systemImage: "doc.on.clipboard")
+            if isSelecting {
+                SelectionButtons(
+                    browser: browser, actions: actions, items: items, isSelecting: $isSelecting)
+            } else {
+                Button(action: actions.paste) {
+                    Label("Paste", systemImage: "doc.on.clipboard")
+                }
+                .disabled(!actions.canPaste)
+                Button(action: actions.newFolder) {
+                    Label("New Folder", systemImage: "folder.badge.plus")
+                }
+                .disabled(!actions.canAddItems)
+                ViewMenu(browser: browser, settings: settings)
+                Button("Select") { isSelecting = true }
+                    .disabled(items.isEmpty)
             }
-            .disabled(!actions.canPaste)
-            Button(action: actions.newFolder) {
-                Label("New Folder", systemImage: "folder.badge.plus")
-            }
-            .disabled(!actions.canAddItems)
-            ViewMenu(browser: browser, settings: settings)
         }
     }
 

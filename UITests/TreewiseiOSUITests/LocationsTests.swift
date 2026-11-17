@@ -76,6 +76,27 @@ final class LocationsTests: XCTestCase {
     }
 
     @MainActor
+    func testSelectLetsATapSelectInsteadOfOpeningUntilDone() {
+        let app = launch(state: UUID().uuidString)
+        sidebar(of: app).staticTexts["Documents"].tap()
+        XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
+
+        app.buttons["Select"].firstMatch.tap()
+        row("Notes.md", in: app).tap()
+        row("Projects", in: app).tap()
+        XCTAssertTrue(
+            app.navigationBars["2 Selected"].waitForExistence(timeout: Self.timeout),
+            "a file and a folder selected, neither opened")
+
+        app.buttons["Done"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Documents"].waitForExistence(timeout: Self.timeout))
+        row("Projects", in: app).tap()
+        XCTAssertTrue(
+            app.navigationBars["Projects"].waitForExistence(timeout: Self.timeout),
+            "a tap opens again")
+    }
+
+    @MainActor
     func testOpeningAFileShowsItInQuickLook() {
         let app = launch(state: UUID().uuidString)
         sidebar(of: app).staticTexts["Work"].tap()

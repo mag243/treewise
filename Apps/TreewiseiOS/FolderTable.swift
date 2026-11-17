@@ -18,6 +18,8 @@ struct FolderTable: View {
     let drops: ItemDrops
     /// Whether the screen is compact, where the folder is always narrow.
     let isCompact: Bool
+    /// Whether the user is selecting (ADR 0124).
+    @Binding var isSelecting: Bool
 
     @State private var width: CGFloat = 0
 
@@ -33,7 +35,8 @@ struct FolderTable: View {
             }
             FolderCollection(
                 browser: browser, undoManager: actions.undoManager, isNarrow: isNarrow,
-                items: items, folder: folder, settings: settings, actions: actions, drops: drops)
+                items: items, folder: folder, settings: settings, actions: actions, drops: drops,
+                isSelecting: isSelecting, beginSelecting: { isSelecting = true })
         }
         .frame(maxWidth: .infinity)
         .onGeometryChange(for: CGFloat.self) {

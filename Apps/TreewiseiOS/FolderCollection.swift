@@ -20,6 +20,10 @@ struct FolderCollection: UIViewRepresentable {
     let settings: BrowserSettings
     let actions: ItemActions
     let drops: ItemDrops
+    /// Whether the user is selecting, when a tap selects instead of opening (ADR 0124).
+    let isSelecting: Bool
+    /// Starts selecting, as a two-finger swipe over the rows does.
+    let beginSelecting: () -> Void
 
     func makeCoordinator() -> FolderCollectionCoordinator {
         FolderCollectionCoordinator()
@@ -66,10 +70,12 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         view.dropDelegate = self
         view.dragInteractionEnabled = true
         view.allowsMultipleSelection = true
+        view.allowsMultipleSelectionDuringEditing = true
     }
 
     private func configure(_ cell: UICollectionViewListCell, for id: FileItem.ID) {
         guard let item = itemsByID[id] else { return }
+        cell.accessories = [.multiselect(displayed: .whenEditing)]
         let showsExtensions = content?.settings.showsExtensions ?? true
         if content?.isNarrow == true {
             cell.contentConfiguration = UIHostingConfiguration {
@@ -95,6 +101,11 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         let shown = Set(dataSource?.snapshot().itemIdentifiers ?? [])
         snapshot.reconfigureItems(content.items.map(\.id).filter(shown.contains))
         dataSource?.apply(snapshot, animatingDifferences: !isFirst)
+        if view.isEditing != content.isSelecting {
+            isApplyingState = true
+            view.isEditing = content.isSelecting
+            isApplyingState = false
+        }
         showSelection(of: content, in: view)
     }
 
@@ -134,6 +145,25 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         guard !isApplyingState, let browser = content?.browser else { return }
         let ids = (view.indexPathsForSelectedItems ?? []).compactMap { item(at: $0)?.id }
         browser.setSelection(Set(ids), in: browser.layout.focusedPane.activeTabID)
+    }
+
+    /// While the user selects, a tap selects and opens nothing (ADR 0124).
+    func collectionView(
+        _ view: UICollectionView, canPerformPrimaryActionForItemAt indexPath: IndexPath
+    ) -> Bool {
+        !view.isEditing
+    }
+
+    func collectionView(
+        _ view: UICollectionView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath
+    ) -> Bool {
+        true
+    }
+
+    func collectionView(
+        _ view: UICollectionView, didBeginMultipleSelectionInteractionAt indexPath: IndexPath
+    ) {
+        content?.beginSelecting()
     }
 
     func collectionView(
