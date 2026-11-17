@@ -81,15 +81,11 @@ final class TableColumnsTests: XCTestCase {
 
         row("Notes.md", in: app).press(forDuration: 1)
         app.buttons["Rename"].firstMatch.tap()
-        let alert = app.alerts["Rename"]
-        XCTAssertTrue(alert.waitForExistence(timeout: Self.timeout))
-        let field = alert.textFields.firstMatch
-        field.tap()
-        if let typed = field.value as? String, !typed.isEmpty {
-            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: typed.count))
-        }
-        field.typeText("Memo.md")
-        alert.buttons["Rename"].tap()
+        let sheet = app.navigationBars["Rename"]
+        XCTAssertTrue(sheet.waitForExistence(timeout: Self.timeout))
+        // The name is selected without its extension, as on the Mac.
+        app.textFields["name"].typeText("Memo")
+        sheet.buttons["Rename"].tap()
         XCTAssertTrue(row("Memo.md", in: app).waitForExistence(timeout: Self.timeout))
 
         XCTAssertTrue(app.eventually { undo.isEnabled })

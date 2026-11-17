@@ -38,11 +38,7 @@ enum ItemCommands {
             ])
         }
         if actions.canSuggestNames {
-            sections.append([
-                ItemCommand(
-                    title: String(localized: "Suggest Names…"), symbol: "text.badge.star",
-                    perform: { actions.suggestNames(for: items) })
-            ])
+            sections.append(namingCommands(items, actions))
         }
         let movable = items.allSatisfy(\.isMovable)
         sections.append([
@@ -60,6 +56,25 @@ enum ItemCommands {
                 perform: { actions.moveToTrash(items) })
         ])
         return sections
+    }
+
+    /// The name overview, and for one file Rename with Suggestions (ADR 0130).
+    private static func namingCommands(_ items: [FileItem], _ actions: ItemActions)
+        -> [ItemCommand]
+    {
+        var commands = [
+            ItemCommand(
+                title: String(localized: "Suggest Names…"), symbol: "text.badge.star",
+                perform: { actions.suggestNames(for: items) })
+        ]
+        if let item = items.first, items.count == 1, actions.canSuggestName(for: item) {
+            commands.append(
+                ItemCommand(
+                    title: String(localized: "Rename with Suggestions…"),
+                    symbol: "character.cursor.ibeam",
+                    perform: { actions.rename(item, suggests: true) }))
+        }
+        return commands
     }
 
     private static func folderCommands(_ actions: ItemActions) -> [ItemCommand] {

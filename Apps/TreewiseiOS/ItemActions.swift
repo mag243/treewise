@@ -14,6 +14,8 @@ struct ItemActions {
     let open: (FileItem) -> Void
     /// Opens the name overview of the selection, or of the folder's files (ADR 0129).
     let suggestNames: (_ wholeFolder: Bool) -> Void
+    /// Asks for a name in the folder view's sheet (ADR 0130).
+    let askName: (NameSheetRequest) -> Void
 
     /// Whether names can be proposed for what the folder shows.
     var canSuggestNames: Bool {
@@ -55,14 +57,23 @@ struct ItemActions {
         suggestNames(false)
     }
 
-    /// Asks for a new name; the folder view shows the question.
-    func rename(_ item: FileItem) {
-        browser.renameRequest = item.id
+    /// Asks for a new name; with `suggests`, with the add-ons' proposals asked at once.
+    func rename(_ item: FileItem, suggests: Bool = false) {
+        askName(NameSheetRequest(purpose: .rename(item), name: item.name, suggests: suggests))
     }
 
-    /// Creates "untitled folder" and asks for its name.
+    /// Whether the add-ons can propose a name for `item` while it is renamed.
+    func canSuggestName(for item: FileItem) -> Bool {
+        browser.canSuggestName(for: item)
+    }
+
+    /// Asks for the new folder's name, "untitled folder" filled in; Create makes it and
+    /// Cancel makes nothing (ADR 0130).
     func newFolder() {
-        Task { await browser.newFolder(undoManager: undoManager) }
+        Task {
+            guard let name = await browser.proposedNewFolderName() else { return }
+            askName(NameSheetRequest(purpose: .newFolder, name: name))
+        }
     }
 
     /// The menu acts on the items it was opened for, which become the selection.

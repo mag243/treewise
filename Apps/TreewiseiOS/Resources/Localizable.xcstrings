@@ -383,6 +383,22 @@
         }
       }
     },
+    "Create" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maak aan"
+          }
+        }
+      }
+    },
     "Cut" : {
       "localizations" : {
         "de" : {
@@ -816,6 +832,22 @@
         }
       }
     },
+    "No proposal." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Vorschlag."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen voorstel."
+          }
+        }
+      }
+    },
     "No proposal. Type a name." : {
       "localizations" : {
         "de" : {
@@ -844,6 +876,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Niet beschikbaar. Tik om opnieuw te verbinden."
+          }
+        }
+      }
+    },
+    "Not for these add-ons." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht für diese Add-ons."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet voor deze add-ons."
           }
         }
       }
@@ -926,6 +974,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open"
+          }
+        }
+      }
+    },
+    "Open Name Overview…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namensübersicht öffnen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open naamoverzicht…"
           }
         }
       }
@@ -1154,6 +1218,22 @@
         }
       }
     },
+    "Rename with Suggestions…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Vorschlägen umbenennen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam met voorstellen…"
+          }
+        }
+      }
+    },
     "Replace" : {
       "localizations" : {
         "de" : {
@@ -1282,6 +1362,22 @@
         }
       }
     },
+    "Show Suggestions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschläge zeigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon voorstellen"
+          }
+        }
+      }
+    },
     "Size" : {
       "localizations" : {
         "de" : {
@@ -1394,6 +1490,22 @@
         }
       }
     },
+    "Suggestions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschläge"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorstellen"
+          }
+        }
+      }
+    },
     "The folder can’t be added." : {
       "localizations" : {
         "de" : {
@@ -1422,6 +1534,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deze locatie heeft geen Prullenmand, dus dit kan niet ongedaan worden gemaakt."
+          }
+        }
+      }
+    },
+    "This name already fits." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Name passt bereits."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze naam past al."
           }
         }
       }
@@ -1550,6 +1678,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Breedte van %@"
+          }
+        }
+      }
+    },
+    "With a keyboard: ⌥Esc or F5 shows them, ↑ and ↓ choose." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit einer Tastatur: ⌥Esc oder F5 zeigt sie, ↑ und ↓ wählen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Met een toetsenbord: ⌥Esc of F5 toont ze, ↑ en ↓ kiezen."
           }
         }
       }

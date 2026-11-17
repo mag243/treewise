@@ -182,9 +182,9 @@ final class LocationsTests: XCTestCase {
         alert.buttons["Save"].tap()
     }
 
-    /// The rename alert finds a new folder that the search hides (audit 2026-11, A21).
+    /// New Folder asks for the name while a search is typed (audit 2026-11, A21; ADR 0130).
     @MainActor
-    func testANewFolderIsRenamedWhileASearchHidesIt() {
+    func testNewFolderAsksANameWhileASearchIsTyped() {
         let app = launch(state: UUID().uuidString)
         sidebar(of: app).staticTexts["Documents"].tap()
         XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
@@ -193,7 +193,8 @@ final class LocationsTests: XCTestCase {
         search.typeText("Notes")
         app.buttons["New Folder"].firstMatch.tap()
         XCTAssertTrue(
-            app.alerts["Rename"].waitForExistence(timeout: Self.timeout), "the alert asks a name")
+            app.navigationBars["New Folder"].waitForExistence(timeout: Self.timeout),
+            "the sheet asks a name")
     }
 }
 

@@ -83,10 +83,10 @@ final class IPadReviewTests: XCTestCase {
             closeMenu(in: app)
 
             app.buttons["New Folder"].firstMatch.tap()
-            let alert = app.alerts["Rename"]
-            XCTAssertTrue(alert.waitForExistence(timeout: Self.timeout))
+            let sheet = app.navigationBars["New Folder"]
+            XCTAssertTrue(sheet.waitForExistence(timeout: Self.timeout))
             review(app, as: "rename", variant: variant)
-            alert.buttons["Cancel"].tap()
+            sheet.buttons["Cancel"].tap()
 
             notes.tap()
             XCTAssertTrue(

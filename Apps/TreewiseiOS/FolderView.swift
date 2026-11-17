@@ -15,6 +15,8 @@ struct FolderView: View {
     @State private var isSelecting = false
     /// The name overview shown, if any (ADR 0129).
     @State private var review: NameReviewShown?
+    /// The name asked for, if any: a rename, or a new folder's (ADR 0130).
+    @State private var naming: NameSheetRequest?
 
     let browser: BrowserState
     let settings: BrowserSettings
@@ -52,7 +54,12 @@ struct FolderView: View {
             ProgressBar(browser: browser, isAsking: conflicts.question != nil)
         }
         .quickLookPreview($previewed, in: previewableFiles)
-        .modifier(RenameAlert(browser: browser, undoManager: undoManager))
+        .onChange(of: browser.renameRequest, initial: true) { askNameForRenameRequest() }
+        .sheet(item: $naming) { request in
+            NameSheet(
+                request: request, browser: browser, undoManager: undoManager,
+                openOverview: { actions.suggestNames(for: [$0]) })
+        }
         .sheet(isPresented: isAskingAboutConflict) {
             if let question = conflicts.question {
                 ConflictSheet(questions: conflicts, name: question.name)
@@ -71,7 +78,7 @@ struct FolderView: View {
     private var actions: ItemActions {
         ItemActions(
             browser: browser, conflicts: conflicts, undoManager: undoManager, open: open,
-            suggestNames: suggestNames)
+            suggestNames: suggestNames, askName: { naming = $0 })
     }
 
     private var isAskingAboutConflict: Binding<Bool> {
@@ -188,6 +195,16 @@ struct FolderView: View {
         } else {
             previewed = URL(fileURLWithPath: item.id.rawValue)
         }
+    }
+
+    /// Asks for the name of the item `BrowserState.renameRequest` names, found among all
+    /// the folder's items, as a search may hide it.
+    private func askNameForRenameRequest() {
+        guard let item = browser.renameTarget else { return }
+        naming = NameSheetRequest(
+            purpose: .rename(item), name: item.name, suggests: browser.renameSuggests)
+        browser.renameRequest = nil
+        browser.renameSuggests = false
     }
 
     /// Opens the name overview of the selection, or of the folder's files.
