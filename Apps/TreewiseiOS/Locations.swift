@@ -177,10 +177,14 @@ final class Locations {
     }
 
     /// The name of a location the user did not name, where its folder's own name says
-    /// nothing (ADR 0119): On My iPad, and Cloud for a folder named by a UUID.
+    /// nothing (ADR 0119): On My iPad or On My iPhone, and Cloud for a folder named by a
+    /// UUID.
     private static func defaultLabel(of folder: URL) -> String? {
         if LocalFileSystem.Locations.isOnMyDeviceFolder(folder) {
-            return String(localized: "On My iPad", comment: "The location of the iPad's own files")
+            return DeviceKind.isPhone
+                ? String(
+                    localized: "On My iPhone", comment: "The location of the iPhone's own files")
+                : String(localized: "On My iPad", comment: "The location of the iPad's own files")
         }
         if LocationLabel.isMachineMade(folder.lastPathComponent) {
             return String(localized: "Cloud", comment: "A cloud location the user did not name")

@@ -24,7 +24,7 @@
 #               smaller iPad on the newest iOS instead, and `--iphone` runs the iPhone's
 #               UI tests (IPhoneTests) on the pinned iPhone (ADR 0132).
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
-#               on the pinned iPad and a smaller one on the newest iOS (versions.env),
+#               on the pinned iPad, a smaller one on the newest iOS and the iPhone (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
 #               build/ui-review-ipad/index.html. Followed by a screen (start, browser, names or settings),
 #               `all` for light and dark, and `--show` to watch.
@@ -138,6 +138,8 @@ UIREVIEW_CATEGORIES=" settings browser templates names dialogs "
 IPAD_REVIEW_TESTS="TreewiseiOSUITests/IPadReviewTests"
 # The iPhone's UI tests, which run on the iPhone only (ADR 0132).
 IPHONE_TESTS="TreewiseiOSUITests/IPhoneTests"
+# The iPhone's UI review (ADR 0115, 0132).
+IPHONE_REVIEW_TESTS="TreewiseiOSUITests/IPhoneReviewTests"
 APPSTORE_SCREENSHOT_TESTS="TreewiseiOSUITests/AppStoreScreenshotTests"
 APPSTORE_SCREENSHOT_DIR="$BUILD_DIR/appstore/screenshots"
 IPAD_REVIEW_DIR="$BUILD_DIR/ui-review-ipad"
@@ -581,7 +583,8 @@ cmd_iosuitest() {
   IFS=, read -ra tests <<<"$filter"
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseiOSUITests/$test"); done
   xcode iosuitest -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
-    -skip-testing:"$IPAD_REVIEW_TESTS" -skip-testing:"$APPSTORE_SCREENSHOT_TESTS" "${skip[@]}" \
+    -skip-testing:"$IPAD_REVIEW_TESTS" -skip-testing:"$IPHONE_REVIEW_TESTS" \
+    -skip-testing:"$APPSTORE_SCREENSHOT_TESTS" "${skip[@]}" \
     "${only[@]}" test
   ok "iPad app UI tests passed on iOS $os. Results: ${bundle#"$ROOT_DIR"/}"
 }
@@ -602,21 +605,24 @@ cmd_iosreview() {
   done
   local -x TEST_RUNNER_UIREVIEW_APPEARANCES=""
   [[ " $* " == *" all "* ]] && TEST_RUNNER_UIREVIEW_APPEARANCES="light,dark"
-  step "iPad UI review${screen:+ of $screen}${TEST_RUNNER_UIREVIEW_APPEARANCES:+ (light and dark)}"
+  step "iPad and iPhone UI review${screen:+ of $screen}${TEST_RUNNER_UIREVIEW_APPEARANCES:+ (light and dark)}"
   require_project
   rm -rf "$IPAD_REVIEW_DIR"
   mkdir -p "$IPAD_REVIEW_DIR"
   local exported="$IPAD_REVIEW_DIR/attachments"
-  only=(-only-testing:"$IPAD_REVIEW_TESTS${screen:+/test${screen^}}")
-  # The pinned iPad, and a smaller one on the newest iOS whose screens are named "11inch":
-  # built once, then walked on both at the same time, each into its own log and results.
+  # The pinned iPad, a smaller one on the newest iOS whose screens are named "11inch", and
+  # the iPhone's, named "iphone" (ADR 0132): built once, then walked on all at the same time,
+  # each into its own log and results.
   xcode iosreview-build -scheme "$IOS_SCHEME" -destination "generic/platform=iOS Simulator" \
     build-for-testing
   local -x TEST_RUNNER_UIREVIEW_DEVICE
   local device name udid bundle pids=() failed=0 pid
-  for device in "" 11inch; do
-    name="$IOS_SIMULATOR_NAME"
-    [[ -n "$device" ]] && name="$IOS_REVIEW_SIMULATOR_NAME"
+  local walk
+  for device in "" 11inch iphone; do
+    name="$IOS_SIMULATOR_NAME" walk="$IPAD_REVIEW_TESTS"
+    [[ "$device" == 11inch ]] && name="$IOS_REVIEW_SIMULATOR_NAME"
+    [[ "$device" == iphone ]] && name="$IOS_IPHONE_SIMULATOR_NAME" walk="$IPHONE_REVIEW_TESTS"
+    only=(-only-testing:"$walk${screen:+/test${screen^}}")
     udid="$(ipad_simulator "$show" "$name")"
     bundle="$(result_bundle "IPadReview${device:+-$device}")"
     info "On $name"
@@ -629,7 +635,7 @@ cmd_iosreview() {
   done
   for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
   ((failed == 0)) || fail "The iPad UI review's walk failed; logs: build/logs/iosreview*.log"
-  for device in "" 11inch; do
+  for device in "" 11inch iphone; do
     xcrun xcresulttool export attachments \
       --path "$REPORT_DIR/IPadReview${device:+-$device}.xcresult" \
       --output-path "$exported/${device:-pinned}" >/dev/null

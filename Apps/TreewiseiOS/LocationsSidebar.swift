@@ -47,7 +47,11 @@ struct LocationsSidebar: View {
             } header: {
                 Text("Locations")
             } footer: {
-                if shownLocations < Self.locationsBeforeHint {
+                if shownLocations < Self.locationsBeforeHint, DeviceKind.isPhone {
+                    Text(
+                        "Add the top of iCloud Drive, On My iPhone or a drive: everything below it comes along."
+                    )
+                } else if shownLocations < Self.locationsBeforeHint {
                     Text(
                         "Add the top of iCloud Drive, On My iPad or a drive: everything below it comes along."
                     )

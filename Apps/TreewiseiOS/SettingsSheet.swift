@@ -8,6 +8,7 @@ import TreewiseUI
 struct SettingsSheet: View {
     let settings: BrowserSettings
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isAskingToClear = false
 
     var body: some View {
@@ -33,6 +34,7 @@ struct SettingsSheet: View {
                             PersonalDataInNames.leaveOutOfApproveAll)
                         Text("Only warn").tag(PersonalDataInNames.onlyWarn)
                     }
+                    .modifier(ChoicesAsRows(isShown: sizeClass == .compact))
                 } header: {
                     Text("Names")
                 } footer: {
@@ -67,6 +69,20 @@ struct SettingsSheet: View {
                     "Each folder starts again with the add-ons that are on in new folders, and its pattern is recognized again. Saved patterns stay."
                 )
             }
+        }
+    }
+}
+
+/// A picker's choices as rows with a check, where the width is compact and a menu's chosen
+/// text would be cut off beside a long label (ADR 0132).
+private struct ChoicesAsRows: ViewModifier {
+    let isShown: Bool
+
+    func body(content: Content) -> some View {
+        if isShown {
+            content.pickerStyle(.inline)
+        } else {
+            content
         }
     }
 }

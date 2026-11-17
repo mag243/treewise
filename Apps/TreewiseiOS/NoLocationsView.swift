@@ -16,9 +16,17 @@ struct NoLocationsView: View {
         ContentUnavailableView {
             Label("Add a Location", systemImage: "folder.badge.plus")
         } description: {
-            Text(
-                "Treewise shows the folders you give it. Add the top of iCloud Drive, On My iPad or a drive: everything below it comes along, so once is enough."
-            )
+            Group {
+                if DeviceKind.isPhone {
+                    Text(
+                        "Treewise shows the folders you give it. Add the top of iCloud Drive, On My iPhone or a drive: everything below it comes along, so once is enough."
+                    )
+                } else {
+                    Text(
+                        "Treewise shows the folders you give it. Add the top of iCloud Drive, On My iPad or a drive: everything below it comes along, so once is enough."
+                    )
+                }
+            }
             .frame(maxWidth: Self.readableWidth)
         } actions: {
             Button("Add Location", action: addLocation)

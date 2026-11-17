@@ -95,6 +95,9 @@ enum UIReviewChecks {
         found += emptyRows(placed)
         found += offCentre(placed)
         found += cutShortWithRoom(placed)
+        #if canImport(UIKit)
+            found += cutShort(placed)
+        #endif
         found += offTitleLine(placed)
         found += withoutScroller(lists)
         found += twiceInAList(lists)

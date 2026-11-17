@@ -42,3 +42,23 @@ context-menu-landscape-11inch | overlap | button "Rename with Suggestions…"  #
 context-menu-landscape-11inch | overlap | button "Cut"  # iPadOS 27's keyboard with a menu
 context-menu-landscape-11inch | overlap | button "Copy"  # iPadOS 27's keyboard with a menu
 context-menu-landscape-11inch | overlap | button "Move to Trash"  # iPadOS 27's keyboard
+# The iPhone (ADR 0132). A system menu's shadow reaches beyond the screen, and in landscape
+# the folder's long menu scrolls, its last items below the screen's edge.
+more-menu-landscape-iphone | outsideWindow | image ""  # iOS's menu shadow
+more-menu-portrait-iphone | outsideWindow | image ""  # iOS's menu shadow
+more-menu-landscape-iphone | outsideWindow | button "Kind"  # iOS's menu, scrolled
+# The keyboard is still sliding in when the rename sheet is looked at in landscape.
+rename-suggestions-landscape-iphone | outsideWindow | button "Emoji"  # iOS's keyboard
+rename-suggestions-landscape-iphone | outsideWindow | button "dictation"  # iOS's keyboard
+rename-suggestions-landscape-iphone | outsideWindow | button "Done"  # iOS's keyboard
+rename-suggestions-landscape-iphone | overlap | field "name"  # iOS's keyboard sliding in
+rename-suggestions-landscape-iphone | overlap | text "SUGGESTIONS"  # iOS's keyboard
+# A menu's button lies over its label, and a labelled row reports its label twice; neither
+# shows.
+name-overview-landscape-iphone | overlap | button "Choose a Saved Pattern"  # a menu's label
+name-overview-landscape-iphone | overlap | button ""  # the menu over its label
+settings-portrait-iphone | overlap | text "Saved Patterns"  # a row's label, reported twice
+# ContentUnavailableView reports its symbol's frame over its title; they show apart.
+start-landscape-iphone | overlap | image "folder.badge.plus"  # the view's own frames
+# Settings scrolls in the iPhone's landscape: its last footer starts at the screen's edge.
+settings-landscape-iphone | outsideWindow | text "For each folder you suggest names in, Treewise keeps which a"  # scrolls

@@ -206,6 +206,22 @@
         }
       }
     },
+    "Add the top of iCloud Drive, On My iPhone or a drive: everything below it comes along." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge den obersten Ordner von iCloud Drive, Auf meinem iPhone oder einem Laufwerk hinzu: Alles darunter kommt mit."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg de bovenste map van iCloud Drive, Op mijn iPhone of een schijf toe: alles daaronder komt mee."
+          }
+        }
+      }
+    },
     "Add to Favorites" : {
       "localizations" : {
         "de" : {
@@ -491,6 +507,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kopieer"
+          }
+        }
+      }
+    },
+    "Copy to Folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Ordner kopieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieer naar map"
+          }
+        }
+      }
+    },
+    "Copy to…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieren nach…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieer naar…"
           }
         }
       }
@@ -927,6 +975,38 @@
         }
       }
     },
+    "Move" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats"
+          }
+        }
+      }
+    },
+    "Move to Folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Ordner bewegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats naar map"
+          }
+        }
+      }
+    },
     "Move to Trash" : {
       "localizations" : {
         "de" : {
@@ -939,6 +1019,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verplaats naar Prullenmand"
+          }
+        }
+      }
+    },
+    "Move to…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegen nach…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats naar…"
           }
         }
       }
@@ -1245,6 +1341,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Op mijn iPad"
+          }
+        }
+      }
+    },
+    "On My iPhone" : {
+      "comment" : "The location of the iPhone's own files",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf meinem iPhone"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Op mijn iPhone"
           }
         }
       }
@@ -1934,6 +2047,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Treewise toont de mappen die je het geeft. Voeg de bovenste map van iCloud Drive, Op mijn iPad of een schijf toe: alles daaronder komt mee, dus één keer is genoeg."
+          }
+        }
+      }
+    },
+    "Treewise shows the folders you give it. Add the top of iCloud Drive, On My iPhone or a drive: everything below it comes along, so once is enough." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise zeigt die Ordner, die du ihm gibst. Füge den obersten Ordner von iCloud Drive, Auf meinem iPhone oder einem Laufwerk hinzu: Alles darunter kommt mit, einmal genügt also."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treewise toont de mappen die je het geeft. Voeg de bovenste map van iCloud Drive, Op mijn iPhone of een schijf toe: alles daaronder komt mee, dus één keer is genoeg."
           }
         }
       }
