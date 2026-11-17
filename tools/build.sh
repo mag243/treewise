@@ -20,7 +20,8 @@
 #               the shared code is tested on iOS too (M6a).
 #   iosuitest   The iPad app's UI tests on the pinned iOS Simulator (ADR 0114), out of
 #               sight. Followed by a filter, as apptest; `iosuitest --show [filter]` opens
-#               the Simulator app first, to watch.
+#               the Simulator app first, to watch; `--11inch` runs them on the UI review's
+#               smaller iPad on the newest iOS instead.
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
 #               on the pinned iPad and a smaller one on the newest iOS (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
@@ -553,21 +554,27 @@ ipad_simulator() {
 }
 
 # The iPad app's UI tests on the pinned simulator (ADR 0114), or only those of the filter,
-# as Class or Class/testName separated by commas; --show first opens the Simulator app.
+# as Class or Class/testName separated by commas; --show first opens the Simulator app, and
+# --11inch runs them on the UI review's smaller iPad on the newest iOS.
 cmd_iosuitest() {
-  local show="" filter="" only=() tests=() test
+  local show="" filter="" name="$IOS_SIMULATOR_NAME" os="$IOS_SIMULATOR_OS" only=() tests=()
+  local word test
   for word in "$@"; do
-    if [[ "$word" == --show ]]; then show=--show; else filter="$word"; fi
+    case "$word" in
+      --show) show=--show ;;
+      --11inch) name="$IOS_REVIEW_SIMULATOR_NAME" os="$IOS_REVIEW_SIMULATOR_OS" ;;
+      *) filter="$word" ;;
+    esac
   done
-  step "iPad app UI tests${filter:+ ($filter)}"
+  step "iPad app UI tests${filter:+ ($filter)} on $name"
   require_project
-  local udid; udid="$(ipad_simulator "$show")"
+  local udid; udid="$(ipad_simulator "$show" "$name")"
   local bundle; bundle="$(result_bundle "TreewiseiOS-UI")"
   IFS=, read -ra tests <<<"$filter"
   for test in "${tests[@]}"; do only+=(-only-testing:"TreewiseiOSUITests/$test"); done
   xcode iosuitest -scheme "$IOS_SCHEME" -destination "id=$udid" -resultBundlePath "$bundle" \
     -skip-testing:"$IPAD_REVIEW_TESTS" -skip-testing:"$APPSTORE_SCREENSHOT_TESTS" "${only[@]}" test
-  ok "iPad app UI tests passed on iOS $IOS_SIMULATOR_OS. Results: ${bundle#"$ROOT_DIR"/}"
+  ok "iPad app UI tests passed on iOS $os. Results: ${bundle#"$ROOT_DIR"/}"
 }
 
 # The iPad's UI review (ADR 0115): a screen, `all` for light and dark, and --show.
@@ -1105,7 +1112,7 @@ while (($#)); do
     # word is a command.
     run_command "$c" "$1"; shift
   elif [[ "$c" == iosuitest ]]; then
-    # iosuitest takes --show and a filter as its next words, a word that is no command.
+    # iosuitest takes --show, --11inch and a filter as its next words, a word that is no command.
     words=()
     while (($#)) && [[ "$1" == --show || "$COMMANDS" != *" $1 "* ]]; do
       words+=("$1"); shift
