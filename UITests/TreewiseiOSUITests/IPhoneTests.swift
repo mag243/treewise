@@ -20,6 +20,15 @@ final class IPhoneTests: XCTestCase {
     }
 
     @MainActor
+    func testTheStartNamesTheIPhonesOwnFiles() {
+        let app = launch(state: UUID().uuidString, fixture: false)
+        let hint = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'On My iPhone'")
+        ).firstMatch
+        XCTAssertTrue(hint.waitForExistence(timeout: Self.timeout), "not On My iPad")
+    }
+
+    @MainActor
     func testBackFromALocationShowsTheLocationsAndAnotherOneOpens() {
         let app = openDocuments()
 
