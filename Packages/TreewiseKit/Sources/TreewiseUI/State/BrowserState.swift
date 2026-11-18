@@ -242,6 +242,12 @@ public final class BrowserState {
         try await fileSystem.item(at: id)
     }
 
+    /// Empties the clipboard of every window without pasting, so cut items show undimmed,
+    /// as the iPhone's paste bar does (ADR 0132).
+    public func emptyClipboard() {
+        clipboard = nil
+    }
+
     /// Forgets the last failure, once the window has shown it.
     public func clearFailure() {
         failure = nil

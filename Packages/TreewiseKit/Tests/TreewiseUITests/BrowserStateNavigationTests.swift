@@ -30,6 +30,28 @@ import TreewiseUI
         #expect(browser.focusedFolder == "documents", "it stays in the folder")
     }
 
+    @Test func recentFoldersAreTheOnesShownBeforeLastFirst() async {
+        let browser = await makeBrowser()
+        await browser.navigate(pane: 0, to: "invoices")
+        await browser.navigate(pane: 0, to: "projects")
+
+        let recent = await browser.recentFolders()
+
+        #expect(recent.map(\.id) == ["invoices", "documents"])
+    }
+
+    @Test func recentFoldersLeaveOutOnesThatAreGone() async {
+        let fileSystem = ChangingFileSystem()
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        await browser.navigate(pane: 0, to: "invoices")
+        await browser.navigate(pane: 0, to: "projects")
+        fileSystem.remove("invoices")
+
+        let recent = await browser.recentFolders()
+
+        #expect(recent.map(\.id) == ["documents"])
+    }
+
     @Test func goesBackForwardAndUp() async {
         let browser = await makeBrowser()
         await browser.navigate(pane: 0, to: "invoices")

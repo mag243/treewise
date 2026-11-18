@@ -24,6 +24,19 @@ public struct NavigationHistory: Sendable, Hashable {
     /// Whether there is a folder to go forward to.
     public var canGoForward: Bool { !forwardStack.isEmpty }
 
+    /// The folders shown before, for Move to… (ADR 0132): the back stack's last first,
+    /// then the folders gone back from, each once and without the current folder.
+    ///
+    /// Postcondition: at most `limit` folders, none equal to `current`.
+    public func recentFolders(limit: Int) -> [FileItem.ID] {
+        var seen: Set<FileItem.ID> = [current]
+        var recent: [FileItem.ID] = []
+        for folder in backStack.reversed() + forwardStack where recent.count < limit {
+            if seen.insert(folder).inserted { recent.append(folder) }
+        }
+        return recent
+    }
+
     /// Shows `folder` and forgets the forward stack; does nothing when the tab
     /// already shows it.
     public mutating func navigate(to folder: FileItem.ID) {
