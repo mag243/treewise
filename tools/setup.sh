@@ -98,7 +98,13 @@ install_homebrew_tools() {
 ios_runtime_id() {
   xcrun simctl list runtimes available 2>/dev/null |
     grep -E "^iOS ${1//./\\.} " |
-    grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+' | head -n 1 || true
+    grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9]+(-[0-9]+)*$' | head -n 1 || true
+}
+
+# The runtime of identifier [1] when it is installed and available.
+ios_own_runtime() {
+  xcrun simctl list runtimes available 2>/dev/null |
+    grep -oE "${1//./\\.}\$" | head -n 1 || true
 }
 
 install_simulators() {
@@ -112,13 +118,23 @@ install_simulators() {
     "$IOS_REVIEW_SIMULATOR_NAME"
   install_simulator "$IOS_IPHONE_SIMULATOR_OS" "$IOS_IPHONE_SIMULATOR_DEVICE_TYPE" \
     "$IOS_IPHONE_SIMULATOR_NAME"
+  install_simulator "$IOS_DUO_SIMULATOR_OS" "$IOS_DUO_SIMULATOR_DEVICE_TYPE" \
+    "$IOS_DUO_SIMULATOR_NAME" "$IOS_DUO_SIMULATOR_RUNTIME"
 }
 
-# Installs the runtime of iOS [1] when missing and creates the simulator [3] of device type [2].
+# Installs the runtime of iOS [1] when missing and creates the simulator [3] of device type [2],
+# on the runtime of identifier [4] when the device has one of its own, as the iPhone Duo does.
 install_simulator() {
-  local os="$1" type="$2" name="$3"
+  local os="$1" type="$2" name="$3" own="${4:-}"
   step "iOS Simulator $os ($type)"
-  local runtime; runtime="$(ios_runtime_id "$os")"
+  local runtime
+  if [[ -n "$own" ]]; then
+    runtime="$(ios_own_runtime "$own")"
+    [[ -n "$runtime" ]] ||
+      fail "Runtime $own missing: install the $type's iOS $os from Xcode > Settings > Components"
+  else
+    runtime="$(ios_runtime_id "$os")"
+  fi
   if [[ -n "$runtime" ]]; then
     ok "Runtime $runtime"
   else

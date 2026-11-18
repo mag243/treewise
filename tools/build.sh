@@ -22,7 +22,8 @@
 #               sight. Followed by a filter, as apptest; `iosuitest --show [filter]` opens
 #               the Simulator app first, to watch; `--11inch` runs them on the UI review's
 #               smaller iPad on the newest iOS instead, and `--iphone` runs the iPhone's
-#               UI tests (IPhoneTests) on the pinned iPhone (ADR 0132).
+#               UI tests (IPhoneTests) on the pinned iPhone (ADR 0132), and `--duo` the
+#               iPhone Duo's (DuoTests) on the pinned Duo (ADR 0133).
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
 #               on the pinned iPad, a smaller one on the newest iOS and the iPhone (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
@@ -138,6 +139,8 @@ UIREVIEW_CATEGORIES=" settings browser templates names dialogs "
 IPAD_REVIEW_TESTS="TreewiseiOSUITests/IPadReviewTests"
 # The iPhone's UI tests, which run on the iPhone only (ADR 0132).
 IPHONE_TESTS="TreewiseiOSUITests/IPhoneTests"
+# The iPhone Duo's UI tests, which run on the Duo only (ADR 0133).
+DUO_TESTS="TreewiseiOSUITests/DuoTests"
 # The iPhone's UI review (ADR 0115, 0132).
 IPHONE_REVIEW_TESTS="TreewiseiOSUITests/IPhoneReviewTests"
 APPSTORE_SCREENSHOT_TESTS="TreewiseiOSUITests/AppStoreScreenshotTests"
@@ -560,11 +563,12 @@ ipad_simulator() {
 
 # The iPad app's UI tests on the pinned simulator (ADR 0114), or only those of the filter,
 # as Class or Class/testName separated by commas; --show first opens the Simulator app, and
-# --11inch runs them on the UI review's smaller iPad on the newest iOS, and --iphone runs
-# the iPhone's (IPhoneTests, ADR 0132) on the pinned iPhone, which the iPads' runs skip.
+# --11inch runs them on the UI review's smaller iPad on the newest iOS, --iphone runs the
+# iPhone's (IPhoneTests, ADR 0132) on the pinned iPhone and --duo the iPhone Duo's
+# (DuoTests, ADR 0133) on the pinned Duo; the iPads' runs skip both.
 cmd_iosuitest() {
   local show="" filter="" name="$IOS_SIMULATOR_NAME" os="$IOS_SIMULATOR_OS" only=() tests=()
-  local word test skip=(-skip-testing:"$IPHONE_TESTS")
+  local word test skip=(-skip-testing:"$IPHONE_TESTS" -skip-testing:"$DUO_TESTS")
   for word in "$@"; do
     case "$word" in
       --show) show=--show ;;
@@ -572,6 +576,10 @@ cmd_iosuitest() {
       --iphone)
         name="$IOS_IPHONE_SIMULATOR_NAME" os="$IOS_IPHONE_SIMULATOR_OS"
         skip=() filter="${filter:-IPhoneTests}"
+        ;;
+      --duo)
+        name="$IOS_DUO_SIMULATOR_NAME" os="$IOS_DUO_SIMULATOR_OS"
+        skip=() filter="${filter:-DuoTests}"
         ;;
       *) filter="$word" ;;
     esac
@@ -1139,7 +1147,7 @@ while (($#)); do
     # word is a command.
     run_command "$c" "$1"; shift
   elif [[ "$c" == iosuitest ]]; then
-    # iosuitest takes --show, --11inch, --iphone and a filter as its next words, a word that is
+    # iosuitest takes --show, --11inch, --iphone, --duo and a filter as its next words, a word that is
     # no command.
     words=()
     while (($#)) && [[ "$1" == --show || "$COMMANDS" != *" $1 "* ]]; do
