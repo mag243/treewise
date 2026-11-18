@@ -11,6 +11,7 @@ struct LocationsSidebar: View {
     /// Below this many locations, the sidebar says that one top folder is enough.
     private static let locationsBeforeHint = 2
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
     let locations: Locations
     let addLocation: () -> Void
     let reconnect: (Bookmark) -> Void
@@ -61,6 +62,8 @@ struct LocationsSidebar: View {
         // The UI tests find the sidebar by it (ADR 0114).
         .accessibilityIdentifier("locations")
         .navigationTitle(Text(verbatim: "Treewise"))
+        // A screen of its own where the width is compact, titled as Files is (ADR 0132).
+        .navigationBarTitleDisplayMode(sizeClass == .compact ? .large : .automatic)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(action: addLocation) {

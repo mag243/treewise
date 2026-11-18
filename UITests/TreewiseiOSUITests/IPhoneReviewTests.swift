@@ -38,7 +38,12 @@ final class IPhoneReviewTests: XCTestCase {
             select.tap()
             row("Notes.md", in: app).tap()
             review(app, as: "selecting", variant: variant)
+            app.toolbars.buttons["Copy"].firstMatch.tap()
             app.buttons["Done"].firstMatch.tap()
+            let emptyClipboard = app.toolbars.buttons["emptyClipboard"].firstMatch
+            XCTAssertTrue(emptyClipboard.waitForExistence(timeout: Self.timeout))
+            review(app, as: "paste-bar", variant: variant)
+            emptyClipboard.tap()
 
             row("Projects", in: app).tap()
             let up = app.buttons["enclosingFolder"].firstMatch
@@ -72,6 +77,26 @@ final class IPhoneReviewTests: XCTestCase {
             let proposal = app.textFields["proposal-Notes.md"].firstMatch
             XCTAssertTrue(proposal.waitForExistence(timeout: Self.timeout))
             review(app, as: "name-overview", variant: variant)
+            app.terminate()
+        }
+    }
+
+    /// Move to… with a recent folder above the favorites and the locations (ADR 0132).
+    @MainActor
+    func testMoveTo() throws {
+        try eachReviewVariant { variant in
+            let app = launch(state: UUID().uuidString)
+            XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
+            row("Projects", in: app).tap()
+            let up = app.buttons["enclosingFolder"].firstMatch
+            XCTAssertTrue(up.waitForExistence(timeout: Self.timeout))
+            up.tap()
+            XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
+
+            perform("Move to…", on: "Notes.md", in: app)
+            XCTAssertTrue(
+                app.buttons["recent-Projects"].firstMatch.waitForExistence(timeout: Self.timeout))
+            review(app, as: "move-to", variant: variant)
             app.terminate()
         }
     }

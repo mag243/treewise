@@ -12,6 +12,7 @@ Zoom
 # The word is the same in the language.
 Cloud
 Privacy
+Recent
 Website
 Computer
 Details

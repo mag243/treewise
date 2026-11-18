@@ -52,7 +52,8 @@ enum ItemCommands {
                 ItemCommand(
                     title: String(localized: "Copy"), symbol: "doc.on.doc", isEnabled: movable,
                     perform: { actions.copy(items) }),
-            ] + moveToCommands(items, actions, isEnabled: movable))
+            ] + moveToCommands(items, actions, isEnabled: movable)
+                + shareCommands(items, actions))
         sections.append([
             ItemCommand(
                 title: String(localized: "Move to Trash"), symbol: "trash", isDestructive: true,
@@ -76,6 +77,20 @@ enum ItemCommands {
                 title: String(localized: "Copy to…"), symbol: "doc.on.doc.fill",
                 isEnabled: isEnabled,
                 perform: { moveTo(MoveToRequest(items: items, purpose: .copy)) }),
+        ]
+    }
+
+    /// Share…, where the width is compact (ADR 0132); an item inside an archive has no
+    /// file of its own to share.
+    private static func shareCommands(_ items: [FileItem], _ actions: ItemActions)
+        -> [ItemCommand]
+    {
+        guard let share = actions.share else { return [] }
+        return [
+            ItemCommand(
+                title: String(localized: "Share…"), symbol: "square.and.arrow.up",
+                isEnabled: !items.contains { $0.id.isInsideArchive },
+                perform: { share(items) })
         ]
     }
 

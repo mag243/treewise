@@ -19,6 +19,9 @@ struct ItemActions {
     /// Asks for the folder to move or copy items to, where the width is compact and no
     /// second folder shows (ADR 0132); `nil` elsewhere.
     var moveTo: ((MoveToRequest) -> Void)?
+    /// Offers items to the system's share sheet, in the same layout (ADR 0132); `nil`
+    /// elsewhere.
+    var share: (([FileItem]) -> Void)?
 
     /// Whether names can be proposed for what the folder shows.
     var canSuggestNames: Bool {

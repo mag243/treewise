@@ -17,8 +17,17 @@ struct RootView: View {
     /// The screen shown where the sidebar and the folder are one stack, as on the iPhone
     /// (ADR 0132): the folder, until the user goes back to the locations.
     @State private var compactColumn = NavigationSplitViewColumn.detail
+    @Environment(\.horizontalSizeClass) private var widthClass
+    @Environment(\.verticalSizeClass) private var heightClass
 
     var body: some View {
+        splitView
+            // Where only the height is compact, as on a Pro Max in landscape, the
+            // iPhone's layout stays (ADR 0132); an iPad's height is never compact.
+            .environment(\.horizontalSizeClass, heightClass == .compact ? .compact : widthClass)
+    }
+
+    private var splitView: some View {
         NavigationSplitView(preferredCompactColumn: $compactColumn) {
             LocationsSidebar(
                 locations: locations, addLocation: { pick(for: nil) },

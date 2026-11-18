@@ -19,6 +19,8 @@ struct FolderView: View {
     @State private var naming: NameSheetRequest?
     /// The folder asked for to move or copy items to, if any (ADR 0132).
     @State private var movingTo: MoveToRequest?
+    /// The items offered to the share sheet, if any (ADR 0132).
+    @State private var sharing: ShareRequest?
 
     let browser: BrowserState
     let settings: BrowserSettings
@@ -74,6 +76,10 @@ struct FolderView: View {
         .sheet(item: $movingTo) { request in
             MoveToSheet(request: request, browser: browser, drops: drops)
         }
+        .sheet(item: $sharing) { request in
+            ShareSheet(request: request)
+                .presentationDetents([.medium, .large])
+        }
         .sheet(isPresented: isAskingAboutConflict) {
             if let question = conflicts.question {
                 ConflictSheet(questions: conflicts, name: question.name)
@@ -93,7 +99,8 @@ struct FolderView: View {
         ItemActions(
             browser: browser, conflicts: conflicts, undoManager: undoManager, open: open,
             suggestNames: suggestNames, askName: { naming = $0 },
-            moveTo: isCompact ? { movingTo = $0 } : nil)
+            moveTo: isCompact ? { movingTo = $0 } : nil,
+            share: isCompact ? { sharing = ShareRequest(items: $0) } : nil)
     }
 
     private var isAskingAboutConflict: Binding<Bool> {

@@ -4,7 +4,8 @@ import TreewiseUI
 
 /// The folder's toolbar where the width is compact, as on the iPhone, modelled on Files
 /// (ADR 0132): the enclosing folder to go up to, one menu with the folder's commands, and
-/// while selecting, Select All and Done above and the selection's commands below.
+/// while selecting, Select All and Done above and the selection's commands below, and else
+/// while items are cut or copied, Paste below.
 struct CompactFolderToolbar: ToolbarContent {
     let browser: BrowserState
     let settings: BrowserSettings
@@ -36,7 +37,34 @@ struct CompactFolderToolbar: ToolbarContent {
                 EnclosingFolderButton(browser: browser)
             }
             ToolbarItem(placement: .topBarTrailing) { moreMenu }
+            if let clipboard = browser.clipboard {
+                ToolbarItemGroup(placement: .bottomBar) { pasteBar(clipboard) }
+            }
         }
+    }
+
+    /// While items are cut or copied: Paste, named after what it puts here, and a button
+    /// that empties the clipboard (ADR 0132).
+    @ViewBuilder private func pasteBar(_ clipboard: ClipboardModel) -> some View {
+        Button(role: .cancel, action: browser.emptyClipboard) {
+            Label("Empty Clipboard", systemImage: "xmark.circle")
+        }
+        // The UI tests find it by it.
+        .accessibilityIdentifier("emptyClipboard")
+        Spacer()
+        Button(Self.pasteTitle(clipboard), action: actions.paste)
+            .fontWeight(.semibold)
+            .disabled(!actions.canPaste)
+            // The UI tests find it by it.
+            .accessibilityIdentifier("pasteBar")
+    }
+
+    /// Paste “Notes.md” for one item, Paste 3 Items for more.
+    private static func pasteTitle(_ clipboard: ClipboardModel) -> String {
+        if let item = clipboard.items.first, clipboard.items.count == 1 {
+            return String(localized: "Paste “\(item.name)”")
+        }
+        return String(localized: "Paste \(clipboard.items.count) Items")
     }
 
     /// Cut, Copy and Move to Trash for the selection, and the rest of its commands.
