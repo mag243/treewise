@@ -60,7 +60,7 @@ The toolbar has Back, Forward, Enclosing Folder, Refresh and search. Under the t
 
 ## Building from source
 
-- macOS with Xcode 27.1 (the exact version is pinned in [`tools/versions.env`](tools/versions.env))
+- macOS with Xcode 27.2 (the exact version is pinned in [`tools/versions.env`](tools/versions.env))
 - [Homebrew](https://brew.sh)
 
 ```sh
