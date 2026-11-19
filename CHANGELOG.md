@@ -6,10 +6,18 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-19
+
+Suggest Names leaves names that already fit alone, and the name add-ons get names that say what they do.
+
+### New
+- **Date Created and Date Added columns.** Right-click the list's column headers to show them, and sort by either.
+
 ### Improved
-- **The name add-ons are called File Name Patterns** and Advanced File Name Patterns, as they name files. Your patterns, settings and licence carry over.
-- **Suggest Names on a folder** proposes names for the files in it, not a new name for the folder.
 - **Suggest Names on selected files** keeps a name that already fits the pattern; what the add-ons propose for it is still there with the arrows.
+- **Suggest Names on a folder** proposes names for the files in it, not a new name for the folder.
+- **The name add-ons are called File Name Patterns** and Advanced File Name Patterns, as they name files. Your patterns, settings and licence carry over.
+- **Stop ends a copy that waits for a file kept only online** to download, leaving nothing behind.
 
 ### Fixed
 - **⌘-click selects several items** in the list view again; it kept only the item clicked last.
