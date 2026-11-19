@@ -13,6 +13,7 @@ struct LocationsSidebar: View {
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     let locations: Locations
+    let window: BrowserWindow
     let addLocation: () -> Void
     let reconnect: (Bookmark) -> Void
     /// Opens Settings (ADR 0130).
@@ -22,16 +23,16 @@ struct LocationsSidebar: View {
 
     var body: some View {
         List(selection: selection) {
-            if let browser = locations.browser, let drops {
+            if let browser = window.browser, let drops {
                 FavoritesSection(browser: browser, drops: drops)
             }
             Section {
-                ForEach(locations.browser?.locations ?? []) { location in
+                ForEach(window.browser?.locations ?? []) { location in
                     Label(location.name, systemImage: ItemSymbol.name(for: location))
                         .tag(location.id)
                         .contextMenu {
                             Button {
-                                Task { await locations.rename(location) }
+                                Task { await locations.rename(location, in: window) }
                             } label: {
                                 Label("Rename Location…", systemImage: "pencil")
                             }
@@ -81,13 +82,15 @@ struct LocationsSidebar: View {
     }
 
     private var drops: ItemDrops? {
-        locations.browser.map {
-            ItemDrops(browser: $0, locations: locations, undoManager: locations.undo.manager)
+        window.browser.map {
+            ItemDrops(
+                browser: $0, locations: locations, window: window,
+                undoManager: locations.undo.manager)
         }
     }
 
     private var shownLocations: Int {
-        (locations.browser?.locations.count ?? 0) + locations.unavailable.count
+        (window.browser?.locations.count ?? 0) + locations.unavailable.count
     }
 
     /// A folder that could not be reached: greyed, connected again by a tap or its menu.
@@ -129,12 +132,12 @@ struct LocationsSidebar: View {
     private var selection: Binding<FileItem.ID?> {
         Binding(
             get: {
-                guard let browser = locations.browser else { return nil }
+                guard let browser = window.browser else { return nil }
                 let folder = browser.layout.focusedPane.activeTab.folder
                 return browser.isFavorite(folder) ? folder : browser.locationShown(in: 0)
             },
             set: { location in
-                guard let location, let browser = locations.browser else { return }
+                guard let location, let browser = window.browser else { return }
                 showFolder()
                 Task { await browser.navigate(pane: 0, to: location) }
             })

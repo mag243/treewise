@@ -26,19 +26,7 @@ enum ItemCommands {
     {
         var sections: [[ItemCommand]] = []
         if let item = items.first, items.count == 1 {
-            sections.append([
-                ItemCommand(
-                    title: item.isContainer
-                        ? String(localized: "Open") : String(localized: "Quick Look"),
-                    symbol: item.isContainer ? "folder" : "eye",
-                    perform: { actions.open(item) }),
-                ItemCommand(
-                    title: String(localized: "Rename"), symbol: "pencil",
-                    isEnabled: item.canBeRenamedOrTrashed, perform: { actions.rename(item) }),
-            ])
-            if item.isContainer, !item.id.isInsideArchive {
-                sections.append([favoriteCommand(item, actions)])
-            }
+            sections += singleItemCommands(item, actions)
         }
         if actions.canSuggestNames {
             sections.append(namingCommands(items, actions))
@@ -60,6 +48,35 @@ enum ItemCommands {
                 isEnabled: items.allSatisfy(\.canBeRenamedOrTrashed),
                 perform: { actions.moveToTrash(items) })
         ])
+        return sections
+    }
+
+    /// Open, Open in New Window where the device shows several windows (ADR 0134), Rename,
+    /// and a folder's favorite.
+    private static func singleItemCommands(_ item: FileItem, _ actions: ItemActions)
+        -> [[ItemCommand]]
+    {
+        var opening = [
+            ItemCommand(
+                title: item.isContainer
+                    ? String(localized: "Open") : String(localized: "Quick Look"),
+                symbol: item.isContainer ? "folder" : "eye",
+                perform: { actions.open(item) })
+        ]
+        if item.isContainer, let openInNewWindow = actions.openInNewWindow {
+            opening.append(
+                ItemCommand(
+                    title: String(localized: "Open in New Window"),
+                    symbol: "macwindow.badge.plus", perform: { openInNewWindow(item) }))
+        }
+        opening.append(
+            ItemCommand(
+                title: String(localized: "Rename"), symbol: "pencil",
+                isEnabled: item.canBeRenamedOrTrashed, perform: { actions.rename(item) }))
+        var sections = [opening]
+        if item.isContainer, !item.id.isInsideArchive {
+            sections.append([favoriteCommand(item, actions)])
+        }
         return sections
     }
 

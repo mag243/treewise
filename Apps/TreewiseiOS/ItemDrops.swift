@@ -16,6 +16,8 @@ struct ItemDrops {
 
     let browser: BrowserState
     let locations: Locations
+    /// The window dropped on, which asks about names taken and says why a drop is refused.
+    let window: BrowserWindow
     let undoManager: UndoManager?
 
     /// What a dragged row carries: its item, named as the item, and its file, which
@@ -46,7 +48,7 @@ struct ItemDrops {
             Self.logger.error("No inbox for a drop from another app")
             return
         }
-        let resolver = locations.conflicts.resolver()
+        let resolver = window.conflicts.resolver()
         Task {
             let arrived = await ProvidedFiles.receive(providers, into: inbox)
             let items = arrived.compactMap {
@@ -93,10 +95,10 @@ struct ItemDrops {
         if let reason = session(of: items).landingRefusalText(
             over: target, modifiers: modifiers, locale: .autoupdatingCurrent)
         {
-            locations.dropRefusal = reason
+            window.dropRefusal = reason
             return
         }
-        let resolver = locations.conflicts.resolver()
+        let resolver = window.conflicts.resolver()
         Task {
             await browser.drop(
                 items, onto: target, modifiers: modifiers, resolver: resolver,

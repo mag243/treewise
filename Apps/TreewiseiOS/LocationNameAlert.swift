@@ -10,26 +10,27 @@ struct LocationNaming {
     var label: String
 }
 
-/// Asks for the name of the location `Locations.naming` names (ADR 0119). The name is
+/// Asks in a window for the name of the location its `naming` names (ADR 0119). The name is
 /// Treewise's own: the folder itself keeps its name.
 struct LocationNameAlert: ViewModifier {
     let locations: Locations
+    let window: BrowserWindow
     @State private var label = ""
-    /// The folder asked about, kept apart from `Locations.naming`, which the alert
+    /// The folder asked about, kept apart from the window's `naming`, which the alert
     /// clears as it closes.
     @State private var folder: URL?
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: locations.naming?.folder, initial: true) {
-                label = locations.naming?.label ?? ""
-                folder = locations.naming?.folder ?? folder
+            .onChange(of: window.naming?.folder, initial: true) {
+                label = window.naming?.label ?? ""
+                folder = window.naming?.folder ?? folder
             }
             .alert(
                 "Name Location",
                 isPresented: Binding(
-                    get: { locations.naming != nil },
-                    set: { if !$0 { locations.naming = nil } })
+                    get: { window.naming != nil },
+                    set: { if !$0 { window.naming = nil } })
             ) {
                 TextField("Name", text: $label)
                 Button("Save") { save() }

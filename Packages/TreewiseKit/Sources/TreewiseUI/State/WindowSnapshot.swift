@@ -34,6 +34,15 @@ public struct WindowSnapshot: Codable, Equatable, Sendable {
         self.viewMode = viewMode
     }
 
+    /// The window at `folder` alone, in one pane with one tab, with this window's sort
+    /// order and view, as a window a folder opens in shows it (ADR 0134).
+    public func showing(_ folder: FileItem.ID) -> WindowSnapshot {
+        var shown = self
+        shown.panes = [Pane(folders: [folder.rawValue], activeTab: 0)]
+        shown.focusedPane = 0
+        return shown
+    }
+
     /// The layout, sort order and view to restore, with only the tabs whose folder
     /// `isUsable`, and only panes that keep a tab; `nil` when none does. An
     /// active tab or focused pane that is left out falls back to the first.

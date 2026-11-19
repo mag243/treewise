@@ -6,17 +6,20 @@ struct TreewiseiOSApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
-        WindowGroup {
-            RootView(locations: locations)
-                .task { await locations.start() }
+        // Every window presents a request of its own, which iPadOS keeps with the window
+        // to restore it; a window the system opens gets a new one (ADR 0134).
+        WindowGroup(for: WindowRequest.self) { $request in
+            RootView(locations: locations, request: $request)
+        } defaultValue: {
+            WindowRequest()
         }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { locations.save() }
             // In the background the folders are not watched, as iOS asks of file
             // presenters; back in front, what changed meanwhile is read (ADR 0120).
             switch phase {
-            case .background: locations.browser?.pauseWatching()
-            case .active: Task { await locations.browser?.resumeWatching() }
+            case .background: locations.pauseWatching()
+            case .active: Task { await locations.resumeWatching() }
             default: break
             }
         }

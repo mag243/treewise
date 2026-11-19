@@ -9,6 +9,8 @@ import TreewiseUI
 struct FolderView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.locale) private var locale
+    @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+    @Environment(\.openWindow) private var openWindow
     /// The file Quick Look shows, if any.
     @State private var previewed: URL?
     /// Whether the user is selecting, when a tap selects instead of opening (ADR 0124).
@@ -25,8 +27,9 @@ struct FolderView: View {
     let browser: BrowserState
     let settings: BrowserSettings
     let locations: Locations
+    let window: BrowserWindow
 
-    private var conflicts: ConflictQuestions { locations.conflicts }
+    private var conflicts: ConflictQuestions { window.conflicts }
     private var undoManager: UndoManager { locations.undo.manager }
 
     private var tab: TabModel { browser.layout.focusedPane.activeTab }
@@ -92,7 +95,8 @@ struct FolderView: View {
     }
 
     private var drops: ItemDrops {
-        ItemDrops(browser: browser, locations: locations, undoManager: undoManager)
+        ItemDrops(
+            browser: browser, locations: locations, window: window, undoManager: undoManager)
     }
 
     private var actions: ItemActions {
@@ -100,7 +104,8 @@ struct FolderView: View {
             browser: browser, conflicts: conflicts, undoManager: undoManager, open: open,
             suggestNames: suggestNames, askName: { naming = $0 },
             moveTo: isCompact ? { movingTo = $0 } : nil,
-            share: isCompact ? { sharing = ShareRequest(items: $0) } : nil)
+            share: isCompact ? { sharing = ShareRequest(items: $0) } : nil,
+            openInNewWindow: supportsMultipleWindows ? { openInNewWindow($0) } : nil)
     }
 
     private var isAskingAboutConflict: Binding<Bool> {
@@ -217,6 +222,12 @@ struct FolderView: View {
                     .disabled(items.isEmpty)
             }
         }
+    }
+
+    /// Opens `folder` in a new window, with this window's sort order and view (ADR 0134).
+    private func openInNewWindow(_ folder: FileItem) {
+        openWindow(
+            value: WindowRequest(showing: browser.snapshot.showing(folder.id)))
     }
 
     /// The files of the folder, for Quick Look to page through.

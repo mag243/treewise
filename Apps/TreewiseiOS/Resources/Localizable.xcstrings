@@ -1443,6 +1443,22 @@
         }
       }
     },
+    "Open in New Window" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In neuem Fenster öffnen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in nieuw venster"
+          }
+        }
+      }
+    },
     "Order" : {
       "localizations" : {
         "de" : {

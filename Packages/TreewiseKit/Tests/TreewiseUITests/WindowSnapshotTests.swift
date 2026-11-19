@@ -43,6 +43,17 @@ import TreewiseUI
         #expect(layout.focusedPaneIndex == 0)
     }
 
+    @Test func aWindowAtAnotherFolderShowsOnlyItKeepingTheSortOrderAndView() throws {
+        let snapshot = WindowSnapshot(
+            layout: splitLayout(), sort: ItemSort(column: .size, ascending: false),
+            viewMode: .icons)
+
+        let window = try #require(snapshot.showing("archive").restored { _ in true })
+        #expect(window.layout.panes.map { $0.tabs.map(\.folder) } == [["archive"]])
+        #expect(window.sort == ItemSort(column: .size, ascending: false))
+        #expect(window.viewMode == .icons)
+    }
+
     @Test func restoresNothingWhenNoFolderCanBeShown() {
         let snapshot = WindowSnapshot(layout: splitLayout(), sort: ItemSort(), viewMode: .list)
         #expect(snapshot.restored { _ in false } == nil)

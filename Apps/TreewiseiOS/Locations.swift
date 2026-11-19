@@ -5,10 +5,10 @@ import TreewiseFileSystem
 import TreewiseUI
 import os
 
-/// The folders the user added and the browser over them (ADR 0045). The
-/// browser's provider is confined to the added folders, so adding or removing
-/// one makes a new browser, at the folder the old one showed when it is still
-/// reachable.
+/// The folders the user added and every window's browser over them (ADR 0045, 0134).
+/// A browser's provider is confined to the added folders, so adding or removing one
+/// makes every window a new browser, at the folder the old one showed when it is still
+/// reachable. The clipboard and undo are shared by every window.
 @MainActor
 @Observable
 final class Locations {
@@ -16,26 +16,17 @@ final class Locations {
     /// The file in Application Support that keeps the bookmarks.
     private static let bookmarksFile = "Treewise/Locations.json"
 
-    /// The browser over the added folders; `nil` while none is added.
-    private(set) var browser: BrowserState?
+    /// The windows shown, by the identity of their `WindowRequest`; a view observes its
+    /// window itself, which it may ask for while it draws.
+    @ObservationIgnored private var windows: [UUID: BrowserWindow] = [:]
     /// Whether the saved folders were resolved, so the empty state is not
     /// shown for a moment at launch.
     private(set) var isLoaded = false
-    /// Why the last folder could not be added, for an alert.
-    var addFailure: String?
     /// The added folders that could not be reached at launch, such as one on a drive
     /// that is not attached, to connect again (ADR 0111).
     private(set) var unavailable: [Bookmark] = []
-    /// Asks what to do with a name taken, for every operation of the window.
-    let conflicts = ConflictQuestions()
     /// The app's one undo history (ADR 0047).
     let undo = SharedUndo()
-    /// Why the last drop was refused as it landed, for an alert (ADR 0047, amended).
-    var dropRefusal: String?
-
-    /// The location the naming question names: one just added whose folder's name is
-    /// a UUID, or one the user renames (ADR 0119).
-    var naming: LocationNaming?
 
     let settings: BrowserSettings
     @ObservationIgnored private let added: AddedFolders
@@ -43,8 +34,15 @@ final class Locations {
     @ObservationIgnored private let testRun: TestRun?
     /// Reads the added folders, to find the items a drag carries.
     @ObservationIgnored private var reader: LocalFileSystem?
-    @ObservationIgnored private let watcher = DirectoryWatcher()
     @ObservationIgnored private let clipboard = SharedClipboard()
+    /// The added folders confined, for a window's browser; `nil` until they are read.
+    @ObservationIgnored private var confined: LocalFileSystem.Locations?
+    /// The first added folder, where a window opens that has nowhere else to go.
+    @ObservationIgnored private var firstFolder: URL?
+    /// Reads the saved folders once, for whichever window asks first.
+    @ObservationIgnored private var loading: Task<Void, Never>?
+    /// The window the user was last in, whose folder the next launch starts at.
+    @ObservationIgnored private var lastActive: UUID?
 
     init(testRun: TestRun? = .current) {
         let support =
@@ -56,30 +54,69 @@ final class Locations {
         added = AddedFolders(store: BookmarkStore(storage: FileBookmarkStorage(file: file)))
     }
 
-    /// Resolves the saved folders and opens the browser where the last
-    /// launch left it.
-    func start() async {
+    /// The window that `request` presents; made the first time it is asked for.
+    func window(for request: WindowRequest) -> BrowserWindow {
+        if let window = windows[request.id] { return window }
+        let window = BrowserWindow(opening: request.opening)
+        windows[request.id] = window
+        return window
+    }
+
+    /// Resolves the saved folders, once, and gives the window of `request` its browser.
+    func open(_ request: WindowRequest) async {
+        if loading == nil {
+            loading = Task { await load() }
+        }
+        await loading?.value
+        let window = window(for: request)
+        guard window.browser == nil else { return }
+        await rebuild(window)
+    }
+
+    /// Forgets a window the user closed; its browser stops watching.
+    func close(_ request: WindowRequest) {
+        windows.removeValue(forKey: request.id)?.browser?.stop()
+        if lastActive == request.id { lastActive = nil }
+    }
+
+    /// Notes the window the user is in, whose folder the next launch starts at.
+    func activate(_ request: WindowRequest) {
+        lastActive = request.id
+    }
+
+    /// Stops watching every window's folders while the app is in the background
+    /// (ADR 0120).
+    func pauseWatching() {
+        for window in windows.values { window.browser?.pauseWatching() }
+    }
+
+    /// Reads every window's folders again and watches them again (ADR 0120).
+    func resumeWatching() async {
+        for window in windows.values { await window.browser?.resumeWatching() }
+    }
+
+    private func load() async {
         try? testRun?.removeAskedFolder()
         await added.load()
         await addFixtureIfEmpty()
         unavailable = await added.unavailable()
-        await rebuild(restoring: settings.lastSession)
+        await readFolders()
         isLoaded = true
     }
 
     /// Puts a folder the user picked in the place of one that could not be reached,
     /// and shows it.
-    func reconnect(_ bookmark: Bookmark, to url: URL) async {
+    func reconnect(_ bookmark: Bookmark, to url: URL, in window: BrowserWindow) async {
         do {
             try await added.reconnect(bookmark, to: url)
         } catch {
             Self.logger.error("Folder not reconnected: \(error.localizedDescription)")
-            addFailure = error.localizedDescription
+            window.addFailure = error.localizedDescription
             return
         }
         unavailable = await added.unavailable()
-        await rebuild(restoring: nil)
-        await browser?.navigate(pane: 0, to: FileItem.ID(url.standardizedFileURL.path))
+        await rebuildAll()
+        await window.browser?.navigate(pane: 0, to: FileItem.ID(url.standardizedFileURL.path))
     }
 
     /// Forgets a folder that could not be reached.
@@ -89,38 +126,39 @@ final class Locations {
     }
 
     /// Adds a folder the user picked and shows it.
-    func add(_ url: URL) async {
+    func add(_ url: URL, in window: BrowserWindow) async {
         do {
             try await added.add(url)
         } catch {
             Self.logger.error("Folder not added: \(error.localizedDescription)")
-            addFailure = error.localizedDescription
+            window.addFailure = error.localizedDescription
             return
         }
-        await rebuild(restoring: nil)
-        await browser?.navigate(pane: 0, to: FileItem.ID(url.standardizedFileURL.path))
+        await rebuildAll()
+        await window.browser?.navigate(pane: 0, to: FileItem.ID(url.standardizedFileURL.path))
         if LocationLabel.isMachineMade(url.lastPathComponent) {
-            naming = LocationNaming(folder: url, label: "")
+            window.naming = LocationNaming(folder: url, label: "")
         }
     }
 
-    /// Asks for a location's name, filled with the name the user gave it.
-    func rename(_ location: FileItem) async {
+    /// Asks in `window` for a location's name, filled with the name the user gave it.
+    func rename(_ location: FileItem, in window: BrowserWindow) async {
         let url = URL(fileURLWithPath: location.id.rawValue)
-        naming = LocationNaming(folder: url, label: await added.bookmark(of: url)?.label ?? "")
+        window.naming = LocationNaming(
+            folder: url, label: await added.bookmark(of: url)?.label ?? "")
     }
 
     /// Gives a location the name typed; an empty name gives the folder its own name
     /// back (ADR 0119).
     func name(_ naming: LocationNaming) async {
         await added.setLabel(LocationLabel.cleaned(naming.label), of: naming.folder)
-        await rebuild(restoring: nil)
+        await rebuildAll()
     }
 
-    /// Forgets an added folder; the browser moves away from it.
+    /// Forgets an added folder; every window showing it moves away from it.
     func remove(_ location: FileItem) async {
         await added.remove(URL(fileURLWithPath: location.id.rawValue))
-        await rebuild(restoring: nil)
+        await rebuildAll()
     }
 
     /// Adds a UI test's fixture folders when its run has no locations yet (ADR 0114).
@@ -136,43 +174,60 @@ final class Locations {
         try? reader?.currentItem(at: id)
     }
 
-    /// Keeps the folder shown and the sort order for the next launch.
+    /// Keeps the folder shown and the sort order of the window the user was last in, for
+    /// the next launch and for a new window.
     func save() {
-        guard let browser else { return }
+        let window = lastActive.flatMap { windows[$0] } ?? windows.values.first
+        guard let browser = window?.browser else { return }
         settings.lastSession = SessionSnapshot(window: browser.snapshot)
     }
 
-    /// Makes a browser over the added folders, at the folder `session` or the
-    /// current browser shows when it is still reachable, else at the first
-    /// added folder.
-    private func rebuild(restoring session: SessionSnapshot?) async {
+    /// Reads the added folders and confines a provider to them.
+    private func readFolders() async {
         let folders = await added.folders()
         var labels: [URL: String] = [:]
         for folder in folders {
             labels[folder] =
                 await added.bookmark(of: folder)?.label ?? Self.defaultLabel(of: folder)
         }
-        let confined = LocalFileSystem.Locations.added(
+        let locations = LocalFileSystem.Locations.added(
             folders, home: URL.homeDirectory, labels: labels)
-        let fileSystem = LocalFileSystem(locations: confined)
-        reader = fileSystem
-        guard let first = folders.first else {
-            browser = nil
+        confined = locations
+        firstFolder = folders.first
+        reader = LocalFileSystem(locations: locations)
+    }
+
+    /// Reads the added folders again and makes every window a new browser.
+    private func rebuildAll() async {
+        await readFolders()
+        for window in windows.values { await rebuild(window) }
+    }
+
+    /// Makes `window` a browser over the added folders, at the folder its browser shows,
+    /// or the one it opens at, or the last window's, when that is still reachable, else at
+    /// the first added folder.
+    private func rebuild(_ window: BrowserWindow) async {
+        let previous = window.browser
+        previous?.stop()
+        guard let confined, let first = firstFolder, let reader else {
+            window.browser = nil
             return
         }
-        let isUsable = { (id: FileItem.ID) in (try? fileSystem.currentItem(at: id)) != nil }
-        let previous = session ?? browser.map { SessionSnapshot(window: $0.snapshot) }
-        let restored = previous?.restored(isUsable: isUsable).first.map {
-            $0.tabs[$0.selectedTab]
-        }
+        let isUsable = { (id: FileItem.ID) in (try? reader.currentItem(at: id)) != nil }
+        let snapshot =
+            previous?.snapshot ?? window.opening
+            ?? settings.lastSession?.groups.first.map {
+                $0.tabs[$0.selectedTab]
+            }
         let state = BrowserState(
-            fileSystem: FileOperationRunner(locations: confined), watcher: watcher,
-            startFolder: FileItem.ID(first.standardizedFileURL.path), settings: settings,
-            clipboard: clipboard)
-        if let restored {
+            fileSystem: FileOperationRunner(locations: confined),
+            watcher: DirectoryWatcher(), startFolder: FileItem.ID(first.standardizedFileURL.path),
+            settings: settings, clipboard: clipboard)
+        if let restored = snapshot?.restored(isUsable: isUsable) {
             state.restore(restored.layout, sort: restored.sort, viewMode: restored.viewMode)
         }
-        browser = state
+        window.opening = nil
+        window.browser = state
         await state.start()
     }
 

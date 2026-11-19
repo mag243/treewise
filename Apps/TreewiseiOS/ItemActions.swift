@@ -22,6 +22,9 @@ struct ItemActions {
     /// Offers items to the system's share sheet, in the same layout (ADR 0132); `nil`
     /// elsewhere.
     var share: (([FileItem]) -> Void)?
+    /// Opens a folder in a window of its own, where the device shows several (ADR 0134);
+    /// `nil` elsewhere.
+    var openInNewWindow: ((FileItem) -> Void)?
 
     /// Whether names can be proposed for what the folder shows.
     var canSuggestNames: Bool {
