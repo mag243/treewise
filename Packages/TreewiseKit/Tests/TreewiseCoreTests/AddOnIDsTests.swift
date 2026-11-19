@@ -24,6 +24,11 @@ import TreewiseCore
         #expect(AddOnIDs.current("com.example.invoices") == "com.example.invoices")
     }
 
+    @Test func anAddOnKnowsItsFormerIDs() {
+        #expect(AddOnIDs.formerIDs(of: Self.newPaid) == [Self.oldPaid])
+        #expect(AddOnIDs.formerIDs(of: "com.example.invoices").isEmpty)
+    }
+
     @Test func aTextWithAFormerIDIsFound() {
         #expect(AddOnIDs.holdsFormerID(#"{"enabledModules":["\#(Self.oldPaid)"]}"#))
         #expect(!AddOnIDs.holdsFormerID(#"{"enabledModules":["\#(Self.newFree)"]}"#))

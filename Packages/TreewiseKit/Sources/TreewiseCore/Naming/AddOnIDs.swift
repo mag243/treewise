@@ -15,6 +15,11 @@ public enum AddOnIDs {
         former[id] ?? id
     }
 
+    /// The ids the add-on with the id `id` had before, as a licence key may name it.
+    public static func formerIDs(of id: String) -> Set<String> {
+        Set(former.filter { $0.value == id }.keys)
+    }
+
     /// Whether `text`, as a stored file, holds a former id, so it is to be saved again.
     public static func holdsFormerID(_ text: String) -> Bool {
         former.keys.contains { text.contains("\"\($0)\"") }
