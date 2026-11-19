@@ -91,6 +91,9 @@
 #               eject` detaches them. Try file operations with tools/build.sh run sandbox.
 #   icon        Render the app icons from tools/icon/treewise-icon.svg into the
 #               AppIcon sets of both apps.
+#   downloads   How often each release was downloaded from GitHub, per file: the .dmg
+#               by hand from the download page, the .zip by Sparkle's updates and Homebrew.
+#               The owner's own downloads count too. Uses the gh login.
 #   clean       Remove build/.
 #
 # Commands run in the order given. The script stops at the first failure and
@@ -126,7 +129,7 @@ LOG_DIR="$BUILD_DIR/logs"
 REPORT_DIR="$BUILD_DIR/reports"
 EXPORT_OPTIONS="$TOOLS_DIR/ExportOptions-mac.plist"
 MAC_DESTINATION="platform=macOS,arch=$(uname -m)"
-COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest iosreview run package export appstorescreenshots fixture sandbox icon publish screenshots sandboxtest uireview official run-official quick verify ci all clean help "
+COMMANDS=" check format test crossvolume benchmark probe coverage build apptest iostest iosuitest iosreview run package export appstorescreenshots fixture sandbox icon publish screenshots sandboxtest uireview official run-official downloads quick verify ci all clean help "
 # The UI tests that make the download page's screenshots, not run by apptest (ADR 0041).
 SCREENSHOT_TESTS="TreewiseMacUITests/ScreenshotTests"
 BENCHMARK_TESTS="TreewiseMacUITests/BenchmarkTests"
@@ -148,6 +151,8 @@ APPSTORE_SCREENSHOT_DIR="$BUILD_DIR/appstore/screenshots"
 IPAD_REVIEW_DIR="$BUILD_DIR/ui-review-ipad"
 IPAD_REVIEW_SCREENS=" start browser names settings "
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
+# Where the releases are published (tools/publish.sh).
+RELEASES_REPOSITORY="mag243/treewise"
 declare -a SUMMARY=()
 
 usage() { sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; }
@@ -1091,6 +1096,32 @@ require_paid_module() {
   ok "The catalog lists $(grep -c . <<<"$catalog") modules, a paid one among them"
 }
 
+cmd_downloads() {
+  step "Downloads of $RELEASES_REPOSITORY"
+  command -v gh >/dev/null || fail "gh is missing; run tools/setup.sh"
+  local releases
+  releases="$(gh api --paginate "repos/$RELEASES_REPOSITORY/releases?per_page=100")" \
+    || fail "GitHub did not answer; is gh logged in (gh auth status)?"
+  python3 -I -c '
+import json, sys
+releases = json.loads(sys.argv[1])
+row = "    %-10s%6s%6s  %s"
+total = {"dmg": 0, "zip": 0}
+print(row % ("Version", "dmg", "zip", "Published"))
+for release in releases:
+    counts = {"dmg": 0, "zip": 0}
+    for asset in release["assets"]:
+        kind = asset["name"].rsplit(".", 1)[-1]
+        if kind in counts:
+            counts[kind] += asset["download_count"]
+            total[kind] += asset["download_count"]
+    date = (release.get("published_at") or "")[:10]
+    print(row % (release["tag_name"], counts["dmg"], counts["zip"], date))
+print((row % ("Total", total["dmg"], total["zip"], "")).rstrip())
+' "$releases"
+  info "dmg: downloaded by hand; zip: mostly Sparkle updates and Homebrew."
+}
+
 cmd_clean() {
   step "Clean"
   if [[ -d "$SANDBOX_DIR" ]]; then cmd_sandbox eject; fi
@@ -1123,6 +1154,7 @@ run_command() {
     sandbox) timed sandbox cmd_sandbox "${2:-}" ;;
     icon) timed icon cmd_icon ;;
     clean) timed clean cmd_clean ;;
+    downloads) timed downloads cmd_downloads ;;
     official) timed official cmd_official ;;
     quick) run_command check; run_command test ;;
     verify) run_command check; run_command test; run_command build ;;
