@@ -28,6 +28,8 @@ extension NameProposalSession {
         /// Which of the options is current.
         enum Selection: Hashable, Sendable {
             case none
+            /// The name the item has, the first option of a name that fits (ADR 0138).
+            case original
             case proposal(key: String)
             case edit
         }
@@ -80,16 +82,25 @@ extension NameProposalSession {
         /// The name currently chosen, or nil before there is one.
         public var currentName: String? {
             switch selection {
-            case .none: nil
+            case .none, .original: nil
             case .edit: edit
             case .proposal(let key): proposals.first { Self.key($0.name) == key }?.name
             }
         }
 
-        /// Whether the item fits a template and nothing else is proposed, so it
-        /// needs no decision.
+        /// Whether the item fits a template and keeps its own name, so it needs no
+        /// decision. Its proposals stay options to step to (ADR 0138).
         public var restsFitting: Bool {
-            !fittingModuleIDs.isEmpty && proposals.isEmpty && edit == nil
+            fits && edit == nil && (selection == .original || selection == .none)
+        }
+
+        /// Whether the name fits a template, which makes it the first option.
+        var fits: Bool { !fittingModuleIDs.isEmpty }
+
+        /// The proposal currently chosen, or nil when another option is.
+        public var currentProposal: Option? {
+            guard case .proposal(let key) = selection else { return nil }
+            return proposals.first { Self.key($0.name) == key }
         }
 
         /// Why the current name cannot be approved, or nil when it can.
@@ -102,8 +113,7 @@ extension NameProposalSession {
 
         /// Where the current name's date comes from, or nil when it has no suggested date.
         public var currentDateSource: NameProposal.DateSource? {
-            guard case .proposal(let key) = selection else { return nil }
-            return proposals.first { Self.key($0.name) == key }?.dateSource
+            currentProposal?.dateSource
         }
 
         /// The personal data in the chosen proposal (ADR 0060). A name the user typed is
@@ -119,22 +129,23 @@ extension NameProposalSession {
             return Position(index: index, count: optionCount)
         }
 
-        private var optionCount: Int { proposals.count + (edit == nil ? 0 : 1) }
+        /// The options in order: the name the item has when it fits, the proposals, and
+        /// the user's edit.
+        private var options: [Selection] {
+            (fits ? [.original] : []) + proposals.map { .proposal(key: Self.key($0.name)) }
+                + (edit == nil ? [] : [.edit])
+        }
+
+        private var optionCount: Int { options.count }
 
         private var selectedIndex: Int? {
-            switch selection {
-            case .none: nil
-            case .edit: proposals.count
-            case .proposal(let key): proposals.firstIndex { Self.key($0.name) == key }
-            }
+            selection == .none ? nil : options.firstIndex(of: selection)
         }
 
         /// Moves to the next or previous option, wrapping around.
         mutating func step(by direction: StepDirection) {
             guard let index = selectedIndex, optionCount > 0 else { return }
-            let next = (index + direction.offset + optionCount) % optionCount
-            selection =
-                next < proposals.count ? .proposal(key: Self.key(proposals[next].name)) : .edit
+            selection = options[(index + direction.offset + optionCount) % optionCount]
             state = .pending
             isSteppedTo = true
         }

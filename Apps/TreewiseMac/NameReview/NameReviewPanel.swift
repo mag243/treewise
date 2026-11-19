@@ -102,9 +102,10 @@ final class NameReviewPanel: NSObject {
     }
 
     private func from(_ entry: NameProposalSession.Entry) -> String? {
-        guard let index = entry.position?.index else { return nil }
-        guard index < entry.proposals.count else { return String(localized: "You") }
-        return NameReviewText.names(ofModules: entry.proposals[index].moduleIDs, in: model)
+        if let proposal = entry.currentProposal {
+            return NameReviewText.names(ofModules: proposal.moduleIDs, in: model)
+        }
+        return entry.currentName == nil ? nil : String(localized: "You")
     }
 
     private func neighbours() -> NSView {

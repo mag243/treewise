@@ -88,9 +88,7 @@ public struct NameProposalSession: Hashable, Sendable {
     /// Records which modules' templates the item's name fits.
     public mutating func setFit(_ id: FileItem.ID, moduleIDs: [String]) {
         let order = moduleOrder
-        update(id) { entry in
-            entry.fittingModuleIDs = order.filter(moduleIDs.contains)
-        }
+        update(id) { $0.setFit(moduleIDs, moduleOrder: order) }
     }
 
     /// Records whether no module that is on handles the item.

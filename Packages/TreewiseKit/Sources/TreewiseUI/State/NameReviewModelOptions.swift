@@ -28,10 +28,8 @@ extension NameReviewModel {
     /// them while it is edited: what a module or the series filled in, not fixed text or the
     /// folder's name. A name the user typed has none.
     public func fieldMarks(of id: FileItem.ID) -> [NameFieldMark] {
-        guard let entry = session?.entry(id), let name = entry.currentName,
-            let index = entry.position?.index, index < entry.proposals.count
-        else { return [] }
-        return marks(in: name, from: entry.proposals[index].moduleIDs.first)
+        guard let proposal = session?.entry(id)?.currentProposal else { return [] }
+        return marks(in: proposal.name, from: proposal.moduleIDs.first)
     }
 
     /// An item's proposed names, in the order of its options.

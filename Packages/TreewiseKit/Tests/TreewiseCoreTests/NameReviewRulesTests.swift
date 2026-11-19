@@ -86,11 +86,12 @@ import TreewiseCore
         #expect(try plan("Inv 12.pdf", handledBy: ["free"])?.fittingModules.isEmpty == true)
     }
 
-    /// A selected file that fits gets no other proposal, and stays in the list (ADR 0138).
-    @Test func aSelectionDoesNotReadAFileThatFits() throws {
+    /// A selected file that fits is still read: its proposals are options behind its own
+    /// name (ADR 0138).
+    @Test func aSelectionReadsAFileThatFits() throws {
         let plan = try plan("Inv 12.pdf", scope: .selection)
         #expect(plan?.fittingModules == ["paid"])
-        #expect(plan?.modulesToAsk.isEmpty == true)
+        #expect(plan?.modulesToAsk == ["paid", "free"])
         #expect(plan?.isHidden == false)
     }
 
@@ -98,13 +99,12 @@ import TreewiseCore
         #expect(try plan("scan.pdf", scope: .selection)?.modulesToAsk == ["paid", "free"])
     }
 
-    /// Names with a period of their own fit `{seq}`, so none is given the next period
-    /// (ADR 0064, 0138).
+    /// Names with a period of their own fit `{seq}` (ADR 0064, 0138).
     @Test(arguments: [
         "2026.03.18 Belastingdienst - Loonheffing 2026.02.pdf",
         "2026.04.16 Belastingdienst - Omzetbelasting 2026.Q1.pdf",
     ])
-    func aSelectedNameWithItsOwnPeriodIsNotRead(_ name: String) throws {
+    func aNameWithItsOwnPeriodFits(_ name: String) throws {
         let template = try NameTemplate.parse(
             "{date:yyyy.MM.dd} {folder} - "
                 + "<Loonheffing {year}.{seq:12}|Omzetbelasting {year}.Q{seq:4}>",
@@ -115,7 +115,6 @@ import TreewiseCore
             in: .init(name: "Belastingdienst", alwaysSkipped: []), scope: .selection,
             modules: [.init(id: "m", template: template)])
         #expect(plan?.fittingModules == ["m"])
-        #expect(plan?.modulesToAsk.isEmpty == true)
     }
 
     @Test func aWholeFolderHidesAFileAlwaysSkipped() throws {

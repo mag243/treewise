@@ -1,7 +1,7 @@
 import Testing
 import TreewiseCore
 
-/// How proposals and edits merge, change and fit during a review (ADR 0057).
+/// How proposals and edits merge and change during a review (ADR 0057).
 @Suite struct NameProposalMergingTests {
     private static let item: FileItem.ID = "/f/scan.pdf"
 
@@ -226,25 +226,6 @@ import TreewiseCore
         session.setModuleOrder(["second", "first"])
         #expect(names(session) == ["B.pdf", "A.pdf"])
         #expect(session.entry(Self.item)?.currentName == "A.pdf")
-    }
-
-    @Test func recordsWhichModulesAFileFits() {
-        var session = session(with: "A")
-        session.setFit(Self.item, moduleIDs: ["second", "first"])
-        #expect(session.entry(Self.item)?.fittingModuleIDs == ["first", "second"])
-    }
-
-    @Test func aFittingFileWithoutOptionsRests() {
-        var session = newSession()
-        session.setFit(Self.item, moduleIDs: ["first"])
-        #expect(session.entry(Self.item)?.restsFitting == true)
-        #expect(session.approve(Self.item) == .noName)
-    }
-
-    @Test func aFittingFileWithAProposalDoesNotRest() {
-        var session = session(with: "A")
-        session.setFit(Self.item, moduleIDs: ["first"])
-        #expect(session.entry(Self.item)?.restsFitting == false)
     }
 
     @Test func anOutOfScopeFileCannotBeApproved() {

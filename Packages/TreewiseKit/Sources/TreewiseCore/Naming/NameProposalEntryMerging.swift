@@ -106,9 +106,22 @@ extension NameProposalSession.Entry {
         if state == .pending, !isSteppedTo, case .proposal = selection { selection = .none }
     }
 
-    private mutating func selectBestIfNone() {
-        if selection == .none, let best = proposals.first {
+    /// Chooses the name the item has when it fits (ADR 0138), else the best proposal.
+    mutating func selectBestIfNone() {
+        if selection == .original, !fits { selection = .none }
+        guard selection == .none else { return }
+        if fits {
+            selection = .original
+        } else if let best = proposals.first {
             selection = .proposal(key: Self.key(best.name))
         }
+    }
+
+    /// Records the modules whose templates the name fits. A row that waits and that the
+    /// user did not step through follows: a name that fits keeps itself as the choice.
+    mutating func setFit(_ moduleIDs: [String], moduleOrder: [String]) {
+        fittingModuleIDs = moduleOrder.filter(moduleIDs.contains)
+        if fits, state == .pending, !isSteppedTo, case .proposal = selection { selection = .none }
+        selectBestIfNone()
     }
 }

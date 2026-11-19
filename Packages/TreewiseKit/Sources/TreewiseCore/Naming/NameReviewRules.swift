@@ -96,8 +96,7 @@ public enum NameReviewRules {
         }
         let skipped = scope == .wholeFolder && folder.alwaysSkipped.contains(name)
         let hidden = scope == .wholeFolder && (skipped || !fitting.isEmpty)
-        // A name that fits gets no other proposal, in a selection too (ADR 0138).
-        let waits = hidden || !fitting.isEmpty || (scope == .wholeFolder && repair != nil)
+        let waits = hidden || (scope == .wholeFolder && repair != nil)
         return Plan(
             fittingModules: fitting, modulesToAsk: waits ? [] : handling.map(\.id),
             isOutOfScope: handling.isEmpty, isHidden: hidden, isAlwaysSkipped: skipped,

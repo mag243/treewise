@@ -8,7 +8,7 @@ extension NameReviewRowView {
     func sideViews(_ entry: NameProposalSession.Entry, _ isSelected: Bool) -> [NSView] {
         let model = model
         let id = id
-        let steps = isSelected && entry.proposals.count + (entry.edit == nil ? 0 : 1) > 1
+        let steps = isSelected && (entry.position?.count ?? 0) > 1
         var views: [NSView] = []
         if steps {
             views.append(Self.arrow("chevron.left") { model.step(id, by: .previous) })
