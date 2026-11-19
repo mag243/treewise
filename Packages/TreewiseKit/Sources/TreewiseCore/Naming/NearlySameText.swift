@@ -14,8 +14,8 @@ public enum NearlySameText {
 
     /// Whether `text` is nearly `expected`.
     ///
-    /// - A typo is a character added, removed or replaced: one for text of at least 5
-    ///   characters, two from 10 on. Digits have to be the same, as a different digit
+    /// - A typo is a character added, removed or replaced, or two side by side swapped:
+    ///   one for text of at least 5 characters, two from 10 on. Digits have to be the same, as a different digit
     ///   usually means another year or number.
     /// - A cut-off is the start of `expected`, of at least 4 characters, ending where a
     ///   word of it ends or with at most 2 characters missing.
@@ -43,6 +43,12 @@ public enum NearlySameText {
         return expected.count - text.count <= mostMissing || !(next.isLetter || next.isNumber)
     }
 
+    /// Whether `text` is `expected` with a typo or two, as `matches` counts them, without
+    /// a cut-off start. Case counts: lower both first where it should not.
+    static func isTypo(_ text: String, of expected: String) -> Bool {
+        isTypo(Array(text), of: Array(expected))
+    }
+
     private static func isTypo(_ text: [Character], of expected: [Character]) -> Bool {
         guard expected.count >= shortestWithTypo,
             text.filter(\.isNumber) == expected.filter(\.isNumber)
@@ -51,22 +57,31 @@ public enum NearlySameText {
         return distance(text, expected, atMost: allowed) <= allowed
     }
 
-    /// The fewest characters to add, remove or replace to make one text the other,
-    /// counted up to one more than `limit`.
+    /// The fewest characters to add, remove or replace, or pairs side by side to swap, to
+    /// make one text the other (optimal string alignment), counted up to one more than
+    /// `limit`.
     private static func distance(_ one: [Character], _ other: [Character], atMost limit: Int)
         -> Int
     {
         guard abs(one.count - other.count) <= limit else { return limit + 1 }
+        var beforePrevious: [Int] = []
         var previous = Array(0...other.count)
         for (row, character) in one.enumerated() {
             var current = [row + 1]
             for (column, otherCharacter) in other.enumerated() {
-                current.append(
-                    Swift.min(
-                        previous[column + 1] + 1, current[column] + 1,
-                        previous[column] + (character == otherCharacter ? 0 : 1)))
+                var cell = Swift.min(
+                    previous[column + 1] + 1, current[column] + 1,
+                    previous[column] + (character == otherCharacter ? 0 : 1))
+                if row > 0, column > 0, character == other[column - 1],
+                    one[row - 1] == otherCharacter
+                {
+                    cell = Swift.min(cell, beforePrevious[column - 1] + 1)
+                }
+                current.append(cell)
             }
-            if current.min() ?? 0 > limit { return limit + 1 }
+            // A swap reaches back two rows, so only two rows above the limit end the count.
+            if current.min() ?? 0 > limit, previous.min() ?? 0 > limit { return limit + 1 }
+            beforePrevious = previous
             previous = current
         }
         return previous[other.count]

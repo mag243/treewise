@@ -15,6 +15,9 @@ import TreewiseCore
         ("Invoce", "Invoice", true),
         ("Inovce", "Invoice", false),
         ("Tag", "Tax", false),
+        // Two characters side by side swapped are one typo (ADR 0067, amended).
+        ("Fatcuur", "Factuur", true),
+        ("Fatcuur 2026", "Factuur 2026", true),
         // A different digit is no typo.
         ("Holiday 2025", "Holiday 2026", false),
         ("Holiday 20266", "Holiday 2026", false),
