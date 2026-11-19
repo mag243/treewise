@@ -36,7 +36,7 @@ final class TemplateNamesLine: NSObject {
         view.isHidden = false
     }
 
-    /// `Names: Advanced Folder Pattern “{year} Invoice {seq}”`: each add-on that is on, in
+    /// `Names: Advanced File Name Patterns “{year} Invoice {seq}”`: each add-on that is on, in
     /// its order, with its pattern when it has one of its own.
     static func text(for names: FolderNameSettings, addOnNames: [String: String]) -> String {
         let addOns = names.enabledModules.map { id in

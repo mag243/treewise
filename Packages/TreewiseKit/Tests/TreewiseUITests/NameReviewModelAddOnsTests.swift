@@ -53,7 +53,7 @@ extension NameReviewModelTests {
     }
 }
 
-/// A module that replaces the free one, as the advanced folder pattern module does (ADR 0067).
+/// A module that replaces the free one, as the advanced file name patterns module does (ADR 0067).
 extension NameReviewModelTests {
     static let advancedDescription = AddOnDescription(
         id: "advanced", contentTypes: ["public.item"], neededContent: [],

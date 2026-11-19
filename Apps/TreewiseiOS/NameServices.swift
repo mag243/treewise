@@ -1,6 +1,6 @@
 import Foundation
+import TreewiseFileNamePatternsModule
 import TreewiseFileSystem
-import TreewiseFolderPatternModule
 import TreewiseModuleInterface
 
 /// What the name proposals and folder templates share across the app (ADR 0129): the free
@@ -10,7 +10,7 @@ import TreewiseModuleInterface
 enum NameServices {
     /// The free module and no other: the iPad links it directly, not the catalog an
     /// official build fills with the paid ones too.
-    static let moduleHost = InProcessModuleHost(modules: [FolderPatternModule()])
+    static let moduleHost = InProcessModuleHost(modules: [FileNamePatternsModule()])
     static let folderSettings = FolderSettingsStore(directory: directory)
     static let templates = FolderTemplateStore(
         directory: directory.appendingPathComponent("Templates", isDirectory: true))

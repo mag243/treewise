@@ -31,6 +31,8 @@ public struct AddOnPreferences: Hashable, Sendable, Codable {
         order = try container.decodeIfPresent([String].self, forKey: .order) ?? []
         yearBeforeTurnedOff =
             try container.decodeIfPresent(Bool.self, forKey: .yearBeforeTurnedOff) ?? false
+        // Choices kept under an add-on's former id belong to its current one (ADR 0140).
+        AddOnIDs.convert { handOver(from: $0, to: $1) }
     }
 
     /// Whether an add-on that asks is given the names in the same folder a year before

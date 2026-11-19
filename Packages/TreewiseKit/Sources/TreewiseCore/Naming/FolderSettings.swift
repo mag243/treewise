@@ -149,6 +149,8 @@ public struct FolderSettings: Hashable, Sendable, Codable {
             try container.decodeIfPresent(Set<[String]>.self, forKey: .missingFoldersClosed) ?? []
         offersNoMissingFolders =
             try container.decodeIfPresent(Bool.self, forKey: .offersNoMissingFolders) ?? false
+        // Settings kept under an add-on's former id belong to its current one (ADR 0140).
+        AddOnIDs.convert { handOver(from: $0, to: $1) }
     }
 
     /// Decides how a folder relates to the record of the id on it.

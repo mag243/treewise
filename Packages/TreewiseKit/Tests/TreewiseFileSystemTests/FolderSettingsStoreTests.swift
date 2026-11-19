@@ -34,6 +34,24 @@ import TreewiseTestSupport
         #expect(await restarted.settings(forFolderAt: path) == settings)
     }
 
+    /// Settings kept under an add-on's former id are read with its current one, and the
+    /// file is saved so at once (ADR 0140).
+    @Test func savesSettingsKeptUnderAFormerIDUnderTheCurrentOne() async throws {
+        let (old, new) = (
+            "me.m-domain.treewise.folder-pattern",
+            AddOnIDs.current(
+                "me.m-domain.treewise.folder-pattern")
+        )
+        let path = try root.makeFolder("A").path
+        await store.save(
+            FolderSettings(enabledModules: [old], templates: [old: "{year} Tax"]),
+            forFolderAt: path)
+        let restarted = FolderSettingsStore(directory: root.url("private"))
+        #expect(await restarted.settings(forFolderAt: path)?.templates == [new: "{year} Tax"])
+        let file = root.url("private").appendingPathComponent(FolderSettingsStore.fileName)
+        #expect(!AddOnIDs.holdsFormerID(try String(contentsOf: file, encoding: .utf8)))
+    }
+
     @Test func putsNothingButARandomIDOnTheFolder() async throws {
         let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)

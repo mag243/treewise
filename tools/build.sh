@@ -72,7 +72,7 @@
 #   sandboxtest The overview of proposed names from start to end on sandbox volumes made
 #               afresh (PLAN.md M7). Takes the screen, as ci does.
 #   benchmark   How long the add-ons take for a folder of 100 files (M7): the free
-#               module in the package, Advanced Folder Pattern in treewise-modules when
+#               module in the package, Advanced File Name Patterns in treewise-modules when
 #               it is beside this folder, and Suggest Names… in the app from the menu to
 #               the last proposal. The package's medians fail over their targets (ADR 0073);
 #               the app's, which includes the UI test's own driving, is shown without a
@@ -372,12 +372,12 @@ cmd_benchmark() {
   TREEWISE_BENCHMARK=1 swift test --package-path "$PACKAGE_DIR" "${SWIFT_TEST_FLAGS[@]}" \
     --filter Benchmarks --attachments-path "$out" >"$LOG_DIR/benchmark.log" 2>&1 || rc=$?
   ((rc == 0)) || fail "Package benchmarks failed; log: build/logs/benchmark.log"
-  package="$MODULES_DIR/Packages/TreewiseFolderPatternAdvancedModule"
+  package="$MODULES_DIR/Packages/TreewiseFileNamePatternsAdvancedModule"
   if [[ -d "$package" ]]; then
     (cd "$package" && TREEWISE_BENCHMARK=1 swift test --scratch-path "$BUILD_DIR/official/benchmark" \
       "${SWIFT_TEST_FLAGS[@]}" --filter Benchmarks --attachments-path "$out" \
       >"$LOG_DIR/benchmark-advanced.log" 2>&1) \
-      || fail "Advanced Folder Pattern's benchmarks failed; log: build/logs/benchmark-advanced.log"
+      || fail "Advanced File Name Patterns's benchmarks failed; log: build/logs/benchmark-advanced.log"
   fi
   local file
   for file in "$out"/*.txt; do [[ -f "$file" ]] && info "$(cat "$file")"; done

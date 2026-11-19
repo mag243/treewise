@@ -4,7 +4,7 @@ import TreewiseModuleInterface
 /// The words the overview uses for what the model knows.
 @MainActor
 public enum NameReviewText {
-    /// A module's name. The folder pattern module's is here; a paid module brings its own later.
+    /// A module's name. The file name patterns module's is here; a paid module brings its own later.
     public static func name(of module: NameReviewModule) -> String {
         module.description.name ?? name(ofModule: module.id)
     }
@@ -17,7 +17,7 @@ public enum NameReviewText {
     /// The name of the add-on with this id.
     public static func name(ofModule id: String) -> String {
         id == AddOnDescription.defaultModuleID
-            ? String(localized: "Folder Pattern", bundle: .module)
+            ? String(localized: "File Name Patterns", bundle: .module)
             : id.components(separatedBy: ".").last ?? id
     }
 

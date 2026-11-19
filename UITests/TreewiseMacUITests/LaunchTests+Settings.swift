@@ -44,10 +44,11 @@ extension LaunchTests {
             tab.appeared(timeout: Self.launchTimeout), "Settings has an Add-ons tab")
         tab.click()
         XCTAssertTrue(
-            settings.staticTexts["Folder Pattern"].appeared(timeout: Self.launchTimeout),
+            settings.staticTexts["File Name Patterns"].appeared(timeout: Self.launchTimeout),
             "the free add-on is listed")
         XCTAssertFalse(
-            settings.switches["Folder Pattern"].exists || settings.staticTexts["Always on"].exists,
+            settings.switches["File Name Patterns"].exists
+                || settings.staticTexts["Always on"].exists,
             "the only add-on offers no on or off: it stays on (ADR 0070, ADR 0092)")
         XCTAssertTrue(
             settings.staticTexts.matching(
@@ -95,7 +96,7 @@ extension LaunchTests {
         }
     }
 
-    /// Needs two add-ons, as the official build has with Advanced Folder Pattern not tried.
+    /// Needs two add-ons, as the official build has with Advanced File Name Patterns not tried.
     @MainActor
     func testSettingsOpensTheAddOnCardSelected() throws {
         let app = try launchApp()
@@ -107,8 +108,8 @@ extension LaunchTests {
         XCTAssertTrue(tab.appeared(timeout: Self.launchTimeout))
         tab.click()
         XCTAssertTrue(
-            settings.staticTexts["Folder Pattern"].appeared(timeout: Self.launchTimeout))
-        let advanced = settings.staticTexts["Advanced Folder Pattern"]
+            settings.staticTexts["File Name Patterns"].appeared(timeout: Self.launchTimeout))
+        let advanced = settings.staticTexts["Advanced File Name Patterns"]
         try XCTSkipUnless(advanced.exists, "the open build has one add-on")
         let recognizes = settings.staticTexts.matching(identifier: "Recognizes")
         let tryIt = settings.buttons["Try for 14 Days"]
@@ -119,7 +120,7 @@ extension LaunchTests {
         XCTAssertEqual(recognizes.count, 1, "the card before folds")
         XCTAssertTrue(tryIt.isHittable, "the card opened shows whole, not cut off")
         XCTAssertLessThan(
-            advanced.frame.minY - settings.staticTexts["Folder Pattern"].frame.minY,
+            advanced.frame.minY - settings.staticTexts["File Name Patterns"].frame.minY,
             settings.frame.height / 4, "the card folded takes no more room than a folded card")
     }
 

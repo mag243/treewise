@@ -37,6 +37,16 @@ import TreewiseUI
         #expect(keeper.context().keys == ["TW1-abc.def"])
     }
 
+    /// A trial started under an add-on's former id is its current one's, and is kept so
+    /// (ADR 0140).
+    @Test func aTrialStartedUnderAFormerIDCountsForTheCurrentOne() {
+        let old = "me.m-domain.treewise.folder-pattern-advanced"
+        let new = AddOnIDs.current(old)
+        keeper().startTrial(of: old)
+        #expect(keeper().context().trialStart(of: new) == Self.start)
+        #expect(secure.value(for: LicenceKeeper.trialStartsKey)?.contains(old) == false)
+    }
+
     /// Each add-on has one trial, started when the user asks (ADR 0088).
     @Test func startsAnAddOnsTrialOnceInBothPlaces() {
         keeper().startTrial(of: "paid")

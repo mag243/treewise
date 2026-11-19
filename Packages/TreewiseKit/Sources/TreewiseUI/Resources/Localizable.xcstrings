@@ -658,6 +658,22 @@
         }
       }
     },
+    "File Name Patterns" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateinamenmuster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestandsnaampatronen"
+          }
+        }
+      }
+    },
     "Fill in the gap to approve" : {
       "localizations" : {
         "de" : {
@@ -670,22 +686,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vul het gat in om goed te keuren"
-          }
-        }
-      }
-    },
-    "Folder Pattern" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnermuster"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mappatroon"
           }
         }
       }

@@ -7,6 +7,7 @@ the smallest, is in the commits.
 ## [Unreleased]
 
 ### Improved
+- **The name add-ons are called File Name Patterns** and Advanced File Name Patterns, as they name files. Your patterns, settings and licence carry over.
 - **Suggest Names on a folder** proposes names for the files in it, not a new name for the folder.
 - **Suggest Names on selected files** keeps a name that already fits the pattern; what the add-ons propose for it is still there with the arrows.
 

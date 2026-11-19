@@ -2,7 +2,7 @@ import Testing
 import TreewiseCore
 import TreewiseModuleInterface
 
-/// A module that replaces another, as the advanced folder pattern module replaces the
+/// A module that replaces another, as the advanced file name patterns module replaces the
 /// free one (ADR 0067).
 @Suite struct NameModuleReplacingTests {
     private static func module(_ id: String, replaces: Set<String> = []) -> AddOnDescription {

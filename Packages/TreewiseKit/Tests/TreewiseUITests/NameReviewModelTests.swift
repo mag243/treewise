@@ -112,7 +112,7 @@ import TreewiseUI
         #expect(model.rows.map(\.id) == [item.id])
     }
 
-    @Test func aNewFolderHasOnlyTheFolderPatternModuleOn() async {
+    @Test func aNewFolderHasOnlyTheFileNamePatternsModuleOn() async {
         _ = addFile("scan.pdf")
         let model = await model(host(modules: [Self.paidDescription, Self.freeDescription]))
         #expect(model.modules.map(\.isOn) == [false, true])

@@ -195,9 +195,9 @@ final class UIReviewTests: XCTestCase {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let year = """
             {"format": 1, "name": "Household Year", "root": {"name": "{year}", "folders": [
-              {"name": "Tax", "names": {"enabledModules": ["me.m-domain.treewise.folder-pattern"],
+              {"name": "Tax", "names": {"enabledModules": ["me.m-domain.treewise.file-name-patterns"],
                 "moduleOrder": [], "patterns": {
-                  "me.m-domain.treewise.folder-pattern": "{year} Tax {seq}"}}},
+                  "me.m-domain.treewise.file-name-patterns": "{year} Tax {seq}"}}},
               {"name": "Receipts"}, {"name": "Insurance"}]}}
             """
         let client = """

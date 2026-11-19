@@ -80,7 +80,7 @@ tools/build.sh --help   # every command
 | Path | Contents |
 |---|---|
 | `Apps/TreewiseMac`, `Apps/TreewiseiOS` | The app shells |
-| `Packages/TreewiseKit` | The shared modules: `TreewiseCore`, `TreewiseFileSystem`, `TreewiseUI`, `TreewiseTestSupport`, the add-on interface `TreewiseModuleInterface` and its XPC connection `TreewiseModuleXPC`, and the free add-on `TreewiseFolderPatternModule` |
+| `Packages/TreewiseKit` | The shared modules: `TreewiseCore`, `TreewiseFileSystem`, `TreewiseUI`, `TreewiseTestSupport`, the add-on interface `TreewiseModuleInterface` and its XPC connection `TreewiseModuleXPC`, and the free add-on `TreewiseFileNamePatternsModule` |
 | `Apps/TreewiseModuleHost`, `Packages/TreewiseModuleCatalog` | The service that runs the add-ons, and the list of add-ons it holds |
 | `UITests/` | XCUITest smoke tests for the macOS app |
 | `tools/` | Setup, build, and check scripts, pinned versions, git hooks |

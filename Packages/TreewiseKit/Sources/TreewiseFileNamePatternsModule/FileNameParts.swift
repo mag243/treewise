@@ -1,6 +1,6 @@
 import Foundation
 
-/// Takes file names apart, for the folder pattern module.
+/// Takes file names apart, for the file name patterns module.
 enum FileNameParts {
     /// A way of writing a date at the start of a name.
     struct DateFormat: Sendable {

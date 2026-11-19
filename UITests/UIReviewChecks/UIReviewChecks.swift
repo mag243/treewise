@@ -10,7 +10,7 @@ import XCTest
 struct UIReviewFinding: Codable, Hashable {
     /// The check that found it, as `outsideParent`.
     let check: String
-    /// The element, as `staticText "Folder Pattern"`.
+    /// The element, as `staticText "File Name Patterns"`.
     let element: String
     /// What is wrong, with the sizes.
     let detail: String

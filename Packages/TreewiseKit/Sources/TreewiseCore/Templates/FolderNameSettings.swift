@@ -32,6 +32,15 @@ public struct FolderNameSettings: Codable, Hashable, Sendable {
         enabledModules = try container.decode([String].self, forKey: .enabledModules)
         moduleOrder = try container.decodeIfPresent([String].self, forKey: .moduleOrder) ?? []
         patterns = try container.decodeIfPresent([String: String].self, forKey: .patterns) ?? [:]
+        // A template saved or exported with an add-on's former id holds its current one
+        // (ADR 0140); a pattern under the current id wins.
+        AddOnIDs.convert { old, new in
+            enabledModules = UserOrder.replacing(old, with: new, in: enabledModules)
+            moduleOrder = UserOrder.replacing(old, with: new, in: moduleOrder)
+            if let pattern = patterns.removeValue(forKey: old), patterns[new] == nil {
+                patterns[new] = pattern
+            }
+        }
     }
 
     /// The settings a folder made from the template gets, with only the add-ons `catalog`

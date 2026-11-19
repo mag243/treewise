@@ -245,9 +245,9 @@ extension LaunchTests {
         addTeardownBlock { try? FileManager.default.removeItem(at: settings) }
         let template = """
             {"format": 1, "name": "Named Year", "root": {"name": "{year}", "folders": [
-              {"name": "Tax", "names": {"enabledModules": ["me.m-domain.treewise.folder-pattern"],
+              {"name": "Tax", "names": {"enabledModules": ["me.m-domain.treewise.file-name-patterns"],
                 "moduleOrder": [], "patterns": {
-                  "me.m-domain.treewise.folder-pattern": "{year} Tax {seq}"}}}]}}
+                  "me.m-domain.treewise.file-name-patterns": "{year} Tax {seq}"}}}]}}
             """
         try Data(template.utf8).write(to: folder.appendingPathComponent("named.json"))
     }

@@ -12,7 +12,8 @@ let package = Package(
         .library(name: "TreewiseTestSupport", targets: ["TreewiseTestSupport"]),
         .library(name: "TreewiseModuleInterface", targets: ["TreewiseModuleInterface"]),
         .library(name: "TreewiseModuleXPC", targets: ["TreewiseModuleXPC"]),
-        .library(name: "TreewiseFolderPatternModule", targets: ["TreewiseFolderPatternModule"]),
+        .library(
+            name: "TreewiseFileNamePatternsModule", targets: ["TreewiseFileNamePatternsModule"]),
     ],
     targets: [
         .target(name: "TreewiseCore", resources: [.process("Resources")]),
@@ -42,13 +43,13 @@ let package = Package(
             dependencies: ["TreewiseModuleXPC"]
         ),
         .target(
-            name: "TreewiseFolderPatternModule",
+            name: "TreewiseFileNamePatternsModule",
             dependencies: ["TreewiseCore", "TreewiseModuleInterface"]
         ),
         .testTarget(
-            name: "TreewiseFolderPatternModuleTests",
+            name: "TreewiseFileNamePatternsModuleTests",
             dependencies: [
-                "TreewiseFolderPatternModule", "TreewiseCore", "TreewiseModuleInterface",
+                "TreewiseFileNamePatternsModule", "TreewiseCore", "TreewiseModuleInterface",
             ]
         ),
         .testTarget(

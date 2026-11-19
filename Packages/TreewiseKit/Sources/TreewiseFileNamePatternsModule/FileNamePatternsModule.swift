@@ -6,7 +6,7 @@ import TreewiseModuleInterface
 /// (ADR 0055, ADR 0057). It fills in the date the file suggests and what the current name
 /// says, leaving out the folder's name; the next number of a series is Treewise's `{seq}`
 /// (ADR 0067).
-public struct FolderPatternModule: NameModule {
+public struct FileNamePatternsModule: NameModule {
     /// The fields it can fill.
     public static let fields = [
         NameTemplate.Field(name: "date", kind: .date),

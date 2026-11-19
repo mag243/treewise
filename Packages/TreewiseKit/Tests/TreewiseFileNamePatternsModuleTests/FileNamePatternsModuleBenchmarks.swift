@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import TreewiseCore
-import TreewiseFolderPatternModule
+import TreewiseFileNamePatternsModule
 import TreewiseModuleInterface
 
 extension Tag {
@@ -18,7 +18,7 @@ extension Tag {
     .enabled(
         if: ProcessInfo.processInfo.environment["TREEWISE_BENCHMARK"] == "1",
         "set TREEWISE_BENCHMARK=1 (tools/build.sh benchmark)"))
-struct FolderPatternModuleBenchmarks {
+struct FileNamePatternsModuleBenchmarks {
     /// The files of the folder, of which most follow its pattern.
     private static let fileCount = 100
     private static let fittingCount = 60
@@ -30,7 +30,7 @@ struct FolderPatternModuleBenchmarks {
     private static let valuesTarget = Duration.seconds(1)
     private static let folder = "Holiday"
 
-    private let module = FolderPatternModule()
+    private let module = FileNamePatternsModule()
 
     /// Most names dated with the folder's name and a place, the rest as a camera names them.
     private static let names: [String] = (0..<fileCount).map { index in

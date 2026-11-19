@@ -1,11 +1,11 @@
 import Testing
 import TreewiseCore
-import TreewiseFolderPatternModule
+import TreewiseFileNamePatternsModule
 import TreewiseModuleInterface
 
-/// The folder pattern module fills in what it knows without reading contents (ADR 0057).
-@Suite struct FolderPatternModuleTests {
-    private let module = FolderPatternModule()
+/// The file name patterns module fills in what it knows without reading contents (ADR 0057).
+@Suite struct FileNamePatternsModuleTests {
+    private let module = FileNamePatternsModule()
 
     private func request(
         _ name: String, date: SuggestedDate? = nil, siblings: [String] = [],
@@ -23,7 +23,7 @@ import TreewiseModuleInterface
 
     /// Settings says what it does, in English, Dutch and German (ADR 0088).
     @Test func saysWhatItDoesInEnglishDutchAndGerman() {
-        let module = FolderPatternModule()
+        let module = FileNamePatternsModule()
         #expect(Set(module.description.summaries.keys) == ["en", "nl", "de"])
         #expect(module.description.summary(preferring: ["de-DE"])?.isEmpty == false)
     }
@@ -31,7 +31,7 @@ import TreewiseModuleInterface
     /// What it finds in a folder's names, as Settings shows it (ADR 0088).
     @Test func saysWhatItRecognizes() {
         #expect(
-            FolderPatternModule().description.recognizes == [
+            FileNamePatternsModule().description.recognizes == [
                 "{date}", "{text}", "{folder}", "{seq}",
             ])
     }

@@ -65,10 +65,10 @@ imports_besides() {
 
 report "TreewiseModuleXPC may import only Foundation, Synchronization, os, TreewiseCore and TreewiseModuleInterface" \
   "$(imports_besides "$SOURCES/TreewiseModuleXPC" 'Foundation|Synchronization|os|TreewiseCore|TreewiseModuleInterface')"
-report "TreewiseFolderPatternModule may import only Foundation, TreewiseCore and TreewiseModuleInterface" \
-  "$(imports_besides "$SOURCES/TreewiseFolderPatternModule" 'Foundation|TreewiseCore|TreewiseModuleInterface')"
-report "The module catalog may import only TreewiseModuleInterface and TreewiseFolderPatternModule" \
-  "$(imports_besides "$ROOT_DIR/Packages/TreewiseModuleCatalog/Sources" 'TreewiseModuleInterface|TreewiseFolderPatternModule')"
+report "TreewiseFileNamePatternsModule may import only Foundation, TreewiseCore and TreewiseModuleInterface" \
+  "$(imports_besides "$SOURCES/TreewiseFileNamePatternsModule" 'Foundation|TreewiseCore|TreewiseModuleInterface')"
+report "The module catalog may import only TreewiseModuleInterface and TreewiseFileNamePatternsModule" \
+  "$(imports_besides "$ROOT_DIR/Packages/TreewiseModuleCatalog/Sources" 'TreewiseModuleInterface|TreewiseFileNamePatternsModule')"
 # TreewiseCore and TreewiseModuleInterface are for the probe build's module (tools/build.sh probe).
 report "The modules' service may import only Foundation, TreewiseCore, the interface, the catalog and TreewiseModuleXPC" \
   "$(imports_besides "$ROOT_DIR/Apps/TreewiseModuleHost" 'Foundation|TreewiseCore|TreewiseModuleInterface|TreewiseModuleCatalog|TreewiseModuleXPC')"

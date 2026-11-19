@@ -14,8 +14,8 @@ public struct AddOnDescription: Hashable, Sendable, Codable {
         case folderStructure
     }
 
-    /// The id of the folder pattern module, the one that is on in a new folder.
-    public static let defaultModuleID = "me.m-domain.treewise.folder-pattern"
+    /// The id of the file name patterns module, the one that is on in a new folder.
+    public static let defaultModuleID = "me.m-domain.treewise.file-name-patterns"
 
     /// The add-on's id.
     public let id: String

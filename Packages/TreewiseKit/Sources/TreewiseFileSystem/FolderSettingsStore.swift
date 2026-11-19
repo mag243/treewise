@@ -182,6 +182,11 @@ public actor FolderSettingsStore: FolderSettingsStoring {
             let decoder = JSONDecoder()
             decoder.userInfo[Record.readingTime] = now()
             records = try decoder.decode([String: Record].self, from: data)
+            // The settings were read with the add-ons' current ids; the file is saved with
+            // them once, so it holds no former id (ADR 0140).
+            if String(bytes: data, encoding: .utf8).map(AddOnIDs.holdsFormerID) == true {
+                persist()
+            }
         } catch {
             // Patterns can be recognized again, so a damaged file does not stop anything.
             Self.logger.error("Folder settings unreadable: \(error.localizedDescription)")

@@ -37,7 +37,7 @@ import TreewiseCore
         #expect(place(recordedPath: "/old", idAtRecordedPath: "id") == .copy)
     }
 
-    @Test func aNewFolderHasOnlyTheFolderPatternModuleOn() {
+    @Test func aNewFolderHasOnlyTheFileNamePatternsModuleOn() {
         #expect(FolderSettings.new(defaultModuleID: "free").enabledModules == ["free"])
     }
 

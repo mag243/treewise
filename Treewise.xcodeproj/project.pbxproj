@@ -16,7 +16,7 @@
 		B1000000000000000000B007 /* TreewiseModuleXPC in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D007 /* TreewiseModuleXPC */; };
 		B1000000000000000000B008 /* TreewiseModuleHost.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = F1000000000000000000F004 /* TreewiseModuleHost.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B1000000000000000000B009 /* TreewiseModuleXPC in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D008 /* TreewiseModuleXPC */; };
-		B1000000000000000000B00A /* TreewiseFolderPatternModule in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D009 /* TreewiseFolderPatternModule */; };
+		B1000000000000000000B00A /* TreewiseFileNamePatternsModule in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000D009 /* TreewiseFileNamePatternsModule */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,7 +116,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B1000000000000000000B002 /* TreewiseUI in Frameworks */,
-				B1000000000000000000B00A /* TreewiseFolderPatternModule in Frameworks */,
+				B1000000000000000000B00A /* TreewiseFileNamePatternsModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,7 +239,7 @@
 			name = TreewiseiOS;
 			packageProductDependencies = (
 				D1000000000000000000D002 /* TreewiseUI */,
-				D1000000000000000000D009 /* TreewiseFolderPatternModule */,
+				D1000000000000000000D009 /* TreewiseFileNamePatternsModule */,
 			);
 			productName = TreewiseiOS;
 			productReference = F1000000000000000000F002 /* Treewise.app */;
@@ -918,9 +918,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = TreewiseModuleXPC;
 		};
-		D1000000000000000000D009 /* TreewiseFolderPatternModule */ = {
+		D1000000000000000000D009 /* TreewiseFileNamePatternsModule */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = TreewiseFolderPatternModule;
+			productName = TreewiseFileNamePatternsModule;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

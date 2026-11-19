@@ -94,6 +94,7 @@ public final class LicenceKeeper {
     /// add-on has one trial (ADR 0088). Gives the context after.
     @discardableResult
     public func startTrial(of moduleID: String) -> LicenceContext {
+        let moduleID = AddOnIDs.current(moduleID)
         var starts = keptStarts()
         if starts[moduleID] == nil {
             starts[moduleID] = now()
@@ -118,7 +119,10 @@ public final class LicenceKeeper {
         let both = [settings.licenceTrialStarts, inSecure ?? [:]].map {
             $0.compactMapValues { date($0) }
         }
-        return both[0].merging(both[1], uniquingKeysWith: min)
+        // A trial kept under an add-on's former id is its current one's (ADR 0140).
+        return Dictionary(
+            both[0].merging(both[1], uniquingKeysWith: min).map { (AddOnIDs.current($0), $1) },
+            uniquingKeysWith: min)
     }
 
     private func keep(_ starts: [String: Date]) {
