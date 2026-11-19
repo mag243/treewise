@@ -25,6 +25,11 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
     /// Set while the table is brought in line with the state, so its own
     /// notifications are not sent back as user actions.
     private var isApplyingState = false
+    /// The selection the table last took from the state or gave to it. The state's selection
+    /// is shown only when it changes or the rows do: an update that comes while the mouse is
+    /// still down, such as the pane taking the focus on a ⌘-click, must not put back the
+    /// selection AppKit has not reported yet.
+    private var shownSelection: Set<FileItem.ID> = []
     private let formats = ItemFormats()
 
     func attach(to table: PaneTableView) {
@@ -63,7 +68,8 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         folder = view.folder
         isApplyingState = true
         defer { isApplyingState = false }
-        if items != view.items || cutItems != view.cutItems
+        let itemsChanged = items != view.items
+        if itemsChanged || cutItems != view.cutItems
             || showsExtensions != view.showsExtensions
         {
             items = view.items
@@ -77,10 +83,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         }
         if table.rowHeight != view.rowHeight { table.rowHeight = view.rowHeight }
         showColumns(view.columns, sortedBy: view.sort, in: table)
-        let rows = IndexSet(items.indices.filter { view.selection.contains(items[$0].id) })
-        if table.selectedRowIndexes != rows {
-            table.selectRowIndexes(rows, byExtendingSelection: false)
-        }
+        if itemsChanged || view.selection != shownSelection { show(view.selection, in: table) }
         table.isActivePane = view.isActive
         if view.isActive { PaneFocus.follow(table) }
         if let request = view.revealRequest, let row = items.firstIndex(where: { $0.id == request })
@@ -94,6 +97,15 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             DispatchQueue.main.async { [weak self] in
                 self?.beginRename(row: row, suggests: suggests)
             }
+        }
+    }
+
+    /// Selects the rows of `selection`, as the state has it.
+    private func show(_ selection: Set<FileItem.ID>, in table: NSTableView) {
+        shownSelection = selection
+        let rows = IndexSet(items.indices.filter { selection.contains(items[$0].id) })
+        if table.selectedRowIndexes != rows {
+            table.selectRowIndexes(rows, byExtendingSelection: false)
         }
     }
 
@@ -148,6 +160,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         let ids = table.selectedRowIndexes.compactMap {
             items.indices.contains($0) ? items[$0].id : nil
         }
+        shownSelection = Set(ids)
         actions?.select(Set(ids))
         QuickLookSource.shared.follow { [weak self] in await self?.selectedURLs() ?? [] }
     }
