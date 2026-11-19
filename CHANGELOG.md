@@ -6,6 +6,9 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+### Improved
+- **Suggest Names on a folder** proposes names for the files in it, not a new name for the folder.
+
 ### Fixed
 - **⌘-click selects several items** in the list view again; it kept only the item clicked last.
 

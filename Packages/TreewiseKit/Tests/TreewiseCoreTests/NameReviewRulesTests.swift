@@ -50,8 +50,9 @@ import TreewiseCore
         #expect(try plan("App.app", kind: .package) != nil)
     }
 
-    @Test func aSelectionTakesAFolder() throws {
-        #expect(try plan("Sub", kind: .folder, scope: .selection) != nil)
+    /// Suggest Names names files; a folder in a selection is left out (ADR 0137).
+    @Test func aSelectionLeavesAFolderOut() throws {
+        #expect(try plan("Sub", kind: .folder, scope: .selection) == nil)
     }
 
     @Test func aFileThatDoesNotFitGoesToEveryModuleThatHandlesIt() throws {

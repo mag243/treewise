@@ -7,11 +7,18 @@ extension BrowserState {
     /// Whether names can be suggested for what the focused pane shows.
     public var canSuggestNames: Bool { operations != nil && canAddItems && shownArchive == nil }
 
-    /// A review of the selection, or of the focused folder's files when nothing is selected.
+    /// A review of the selection's files, or of the focused folder's files when nothing is
+    /// selected; with only folders selected, of the first one's files (ADR 0137).
     public func makeNameReview(
         host: any AddOnHosting, store: any FolderSettingsStoring
     ) async -> NameReviewModel? {
-        await makeNameReview(of: selectedItems, host: host, store: store)
+        let selected = selectedItems
+        if !selected.isEmpty, let folder = selected.first(where: \.isContainer),
+            selected.allSatisfy(\.isContainer)
+        {
+            return await makeNameReview(of: [], in: folder, host: host, store: store)
+        }
+        return await makeNameReview(of: selected, host: host, store: store)
     }
 
     /// A review of the focused folder's files, whatever is selected: in a full folder a
@@ -39,9 +46,16 @@ extension BrowserState {
     private func makeNameReview(
         of selection: [FileItem], host: any AddOnHosting, store: any FolderSettingsStoring
     ) async -> NameReviewModel? {
-        guard let operations,
-            let folder = try? await fileSystem.item(at: layout.focusedPane.activeTab.folder)
+        guard let folder = try? await fileSystem.item(at: layout.focusedPane.activeTab.folder)
         else { return nil }
+        return await makeNameReview(of: selection, in: folder, host: host, store: store)
+    }
+
+    private func makeNameReview(
+        of selection: [FileItem], in folder: FileItem, host: any AddOnHosting,
+        store: any FolderSettingsStoring
+    ) async -> NameReviewModel? {
+        guard let operations else { return nil }
         let builder = NameRequestBuilder()
         return NameReviewModel(
             folder: folder, scope: selection.isEmpty ? .wholeFolder : .selection,

@@ -81,7 +81,8 @@ public enum NameReviewRules {
         for item: Item, in folder: Folder, scope: Scope, modules: [Module]
     ) -> Plan? {
         let (name, kind) = (item.name, item.kind)
-        if scope == .wholeFolder, kind.isContainer { return nil }
+        // Suggest Names names files: a folder is left out of a selection too (ADR 0137).
+        if kind.isContainer { return nil }
         let shown = ProposedName.shownName(fromDisk: name)
         let handling = modules.filter { item.handledBy.contains($0.id) }
         let fixed = NameTemplate.folderValues([folder.name] + folder.foldersAbove)

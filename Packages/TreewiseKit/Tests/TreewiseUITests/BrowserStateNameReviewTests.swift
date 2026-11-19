@@ -25,6 +25,21 @@ import TreewiseUI
         #expect(review?.scope == .selection)
     }
 
+    /// Suggest Names on one folder reviews the files in it (ADR 0137).
+    @Test func oneSelectedFolderReviewsItsFiles() async throws {
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        let parent = try await fileSystem.item(at: "documents")
+        let sub = FileItem(
+            id: "documents/sub", name: "sub", kind: .folder, parentID: parent.id,
+            volume: parent.volume)
+        fileSystem.add(sub)
+        await browser.refresh(pane: 0)
+        browser.setSelection([sub.id], in: browser.layout.focusedPane.activeTabID)
+        let review = await browser.makeNameReview(host: host, store: MemoryFolderSettings())
+        #expect(review?.scope == .wholeFolder)
+        #expect(review?.folder.id == sub.id)
+    }
+
     @Test func theWholeFolderIsReviewedDespiteASelection() async throws {
         let browser = await makeBrowser(fileSystem: fileSystem)
         browser.setSelection(["doc2"], in: browser.layout.focusedPane.activeTabID)
