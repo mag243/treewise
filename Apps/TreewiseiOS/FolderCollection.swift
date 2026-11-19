@@ -67,6 +67,10 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
     private var isApplyingState = false
     /// Where the arrow keys move the selection from (ADR 0135).
     var keyboard = KeyboardSelection()
+    /// The selection and anchor of the pointer's last click (ADR 0136).
+    var pointer = PointerSelection()
+    /// The selection a rectangle dragged with the pointer started from.
+    var bandStart: PointerSelection?
     private(set) weak var view: UICollectionView?
 
     func attach(to view: UICollectionView) {
@@ -91,11 +95,14 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         // arrows, Space and ⌘↑ for scrolling first.
         view.allowsKeyboardScrolling = false
         view.selectionFollowsFocus = false
+        attachPointer(to: view)
     }
 
     private func configure(_ cell: UICollectionViewListCell, for id: FileItem.ID) {
         guard let item = itemsByID[id] else { return }
         cell.accessories = [.multiselect(displayed: .whenEditing)]
+        // The row under the pointer is highlighted (ADR 0136).
+        cell.hoverStyle = UIHoverStyle(shape: .rect)
         let showsExtensions = content?.settings.showsExtensions ?? true
         if content?.isNarrow == true {
             cell.contentConfiguration = UIHostingConfiguration {
@@ -180,7 +187,8 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
     func collectionView(
         _ view: UICollectionView, canPerformPrimaryActionForItemAt indexPath: IndexPath
     ) -> Bool {
-        !view.isEditing
+        // A click selects; a double click opens (ADR 0136).
+        !view.isEditing && !isPointerTouch(in: view)
     }
 
     func collectionView(
@@ -207,6 +215,9 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let actions = content?.actions else { return nil }
+        if indexPaths.count == 1, let row = item(at: indexPaths.first)?.id {
+            rightClicked(row, in: view)
+        }
         let items = indexPaths.compactMap { item(at: $0) }
         return UIContextMenuConfiguration(actionProvider: { _ in
             UIMenu(

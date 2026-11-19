@@ -6,6 +6,10 @@ import UIKit
 /// reach it (ADR 0135): its own keys, and the menu's commands sent down the responder chain.
 final class FolderCollectionView: UICollectionView {
     var sharedUndo: UndoManager?
+    /// Whether the last touch was the pointer's, a click, rather than a finger's (ADR 0136).
+    private(set) var isPointerTouch = false
+    /// The keys held with the last touch.
+    private(set) var pointerModifiers: UIKeyModifierFlags = []
     /// Carries out the keyboard's commands.
     weak var keys: FolderCollectionCoordinator?
 
@@ -21,6 +25,8 @@ final class FolderCollectionView: UICollectionView {
     /// A touch in the table takes the keyboard back, as an alert or the search field may
     /// have held it, so Undo reaches the app's history again.
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        isPointerTouch = touches.first?.type == .indirectPointer
+        pointerModifiers = event?.modifierFlags ?? []
         if !isFirstResponder { becomeFirstResponder() }
         super.touchesBegan(touches, with: event)
     }
