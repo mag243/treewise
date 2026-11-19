@@ -97,3 +97,8 @@ rename-landscape | outsideWindow | button "Keyboard"  # iPadOS's bar for a hardw
 rename-landscape | outsideWindow | button "assistantDictation"  # iPadOS's bar for a hardware keyboard
 rename-suggestions-landscape | outsideWindow | button "Keyboard"  # iPadOS's bar for a hardware keyboard
 rename-suggestions-landscape | outsideWindow | button "assistantDictation"  # iPadOS's bar for a hardware keyboard
+# The iPhone's one menu holds Suggest Names for the whole folder too; in landscape the system
+# scrolls it, and Size starts below the screen.
+more-menu-landscape-iphone | outsideWindow | button "Size"  # iPadOS's menu, scrolled
+# Quick Look's own bar: its search and action buttons' frames touch while the preview loads.
+quick-look-landscape-11inch | overlap | button "QLTextItemViewControllerBarSearchRightButtonAccessibilityIde"  # Quick Look's own buttons
