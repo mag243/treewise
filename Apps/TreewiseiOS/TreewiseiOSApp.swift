@@ -13,6 +13,7 @@ struct TreewiseiOSApp: App {
         } defaultValue: {
             WindowRequest()
         }
+        .commands { TreewiseCommands() }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { locations.save() }
             // In the background the folders are not watched, as iOS asks of file

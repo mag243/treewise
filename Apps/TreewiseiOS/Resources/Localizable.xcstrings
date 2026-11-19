@@ -895,6 +895,22 @@
         }
       }
     },
+    "Go" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gehe zu"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ga"
+          }
+        }
+      }
+    },
     "Keep Both" : {
       "localizations" : {
         "de" : {
@@ -1003,6 +1019,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verplaats"
+          }
+        }
+      }
+    },
+    "Move Item Here" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt hierher bewegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats onderdeel hierheen"
           }
         }
       }
@@ -1147,6 +1179,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nieuw patroon"
+          }
+        }
+      }
+    },
+    "New Window" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Fenster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuw venster"
           }
         }
       }

@@ -26,6 +26,15 @@ struct FolderCollection: UIViewRepresentable {
     let isSelecting: Bool
     /// Starts selecting, as a two-finger swipe over the rows does.
     let beginSelecting: () -> Void
+    /// Stops selecting, as Esc does (ADR 0135).
+    let endSelecting: () -> Void
+    /// Gives the search field the keyboard, as Find does (ADR 0135).
+    let find: () -> Void
+    /// Shows or hides the sidebar, as Show Sidebar does (ADR 0135).
+    let toggleSidebar: () -> Void
+    /// Whether the window shows a sheet or an alert, when the keyboard acts on nothing
+    /// behind it (ADR 0135).
+    let isPresenting: Bool
 
     func makeCoordinator() -> FolderCollectionCoordinator {
         FolderCollectionCoordinator()
@@ -56,6 +65,9 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
     private var itemsByID: [FileItem.ID: FileItem] = [:]
     /// Set while the view follows the state, so its own selection is not sent back.
     private var isApplyingState = false
+    /// Where the arrow keys move the selection from (ADR 0135).
+    var keyboard = KeyboardSelection()
+    private(set) weak var view: UICollectionView?
 
     func attach(to view: UICollectionView) {
         typealias Registration = UICollectionView.CellRegistration<
@@ -67,12 +79,18 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         dataSource = UICollectionViewDiffableDataSource(collectionView: view) { view, path, id in
             view.dequeueConfiguredReusableCell(using: registration, for: path, item: id)
         }
+        self.view = view
+        (view as? FolderCollectionView)?.keys = self
         view.delegate = self
         view.dragDelegate = self
         view.dropDelegate = self
         view.dragInteractionEnabled = true
         view.allowsMultipleSelection = true
         view.allowsMultipleSelectionDuringEditing = true
+        // The list's own keys move the selection (ADR 0135); the scroll view would take the
+        // arrows, Space and ⌘↑ for scrolling first.
+        view.allowsKeyboardScrolling = false
+        view.selectionFollowsFocus = false
     }
 
     private func configure(_ cell: UICollectionViewListCell, for id: FileItem.ID) {
@@ -95,6 +113,13 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
 
     func update(with content: FolderCollection, in view: UICollectionView) {
         let isFirst = self.content == nil
+        // The list takes the keyboard when it shows another folder, as a tap in the sidebar
+        // leaves it there, and as a sheet or an alert closes (ADR 0135).
+        let isAnotherFolder = self.content?.folder?.id != content.folder?.id
+        let isUncovered = self.content?.isPresenting == true && !content.isPresenting
+        if isAnotherFolder || isUncovered {
+            DispatchQueue.main.async { view.becomeFirstResponder() }
+        }
         self.content = content
         itemsByID = Dictionary(content.items.map { ($0.id, $0) }) { first, _ in first }
         var snapshot = NSDiffableDataSourceSnapshot<Int, FileItem.ID>()
@@ -199,28 +224,5 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
             title: command.title, image: UIImage(systemName: command.symbol),
             attributes: attributes
         ) { _ in command.perform() }
-    }
-}
-
-/// The table's collection view: the first responder in its window, so the system's Undo and
-/// Redo, from the keyboard, the menu bar and the three-finger swipe, take from the app's one
-/// history rather than the window's own (ADR 0047).
-final class FolderCollectionView: UICollectionView {
-    var sharedUndo: UndoManager?
-
-    override var undoManager: UndoManager? { sharedUndo }
-
-    override var canBecomeFirstResponder: Bool { true }
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        if window != nil { becomeFirstResponder() }
-    }
-
-    /// A touch in the table takes the keyboard back, as an alert or the search field may
-    /// have held it, so Undo reaches the app's history again.
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if !isFirstResponder { becomeFirstResponder() }
-        super.touchesBegan(touches, with: event)
     }
 }

@@ -30,6 +30,11 @@ struct RootView: View {
             // Where only the height is compact, as on a Pro Max in landscape, the
             // iPhone's layout stays (ADR 0132); an iPad's height is never compact.
             .environment(\.horizontalSizeClass, heightClass == .compact ? .compact : widthClass)
+            // The menus' commands act on the window in front (ADR 0135).
+            .focusedSceneValue(\.browserWindow, window)
+            .onChange(of: isPickingFolder || isShowingSettings) { _, isPresenting in
+                window.isShellPresenting = isPresenting
+            }
             .task { await locations.open(request) }
             .onDisappear { locations.close(request) }
             .onChange(of: scenePhase, initial: true) { _, phase in
@@ -42,7 +47,10 @@ struct RootView: View {
     }
 
     private var splitView: some View {
-        NavigationSplitView(preferredCompactColumn: $compactColumn) {
+        NavigationSplitView(
+            columnVisibility: Bindable(window).columnVisibility,
+            preferredCompactColumn: $compactColumn
+        ) {
             LocationsSidebar(
                 locations: locations, window: window, addLocation: { pick(for: nil) },
                 reconnect: { pick(for: $0) }, showSettings: { isShowingSettings = true },

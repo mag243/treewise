@@ -17,6 +17,12 @@ struct FolderTable: View {
     let isCompact: Bool
     /// Whether the user is selecting (ADR 0124).
     @Binding var isSelecting: Bool
+    /// Whether the window shows a sheet or an alert (ADR 0135).
+    let isPresenting: Bool
+    /// Gives the search field the keyboard (ADR 0135).
+    let find: () -> Void
+    /// Shows or hides the sidebar (ADR 0135).
+    let toggleSidebar: () -> Void
 
     @State private var width: CGFloat = 0
 
@@ -46,7 +52,9 @@ struct FolderTable: View {
                 browser: browser, undoManager: actions.undoManager, isNarrow: isNarrow,
                 layout: layout, items: items, folder: folder, settings: settings, actions: actions,
                 drops: drops,
-                isSelecting: isSelecting, beginSelecting: { isSelecting = true })
+                isSelecting: isSelecting, beginSelecting: { isSelecting = true },
+                endSelecting: { isSelecting = false }, find: find,
+                toggleSidebar: toggleSidebar, isPresenting: isPresenting)
         }
         .frame(maxWidth: .infinity)
         .onGeometryChange(for: CGFloat.self) {

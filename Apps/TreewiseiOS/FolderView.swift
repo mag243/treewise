@@ -23,6 +23,8 @@ struct FolderView: View {
     @State private var movingTo: MoveToRequest?
     /// The items offered to the share sheet, if any (ADR 0132).
     @State private var sharing: ShareRequest?
+    /// Whether the search field has the keyboard, which Find gives it (ADR 0135).
+    @FocusState private var isSearchFocused: Bool
 
     let browser: BrowserState
     let settings: BrowserSettings
@@ -61,7 +63,13 @@ struct FolderView: View {
                 get: { content.query },
                 set: { browser.setQuery($0, in: tab.id) })
         )
+        .searchFocused($isSearchFocused)
+        .onChange(of: window.findRequests) {
+            isSearchFocused = true
+        }
         .refreshable { await browser.refresh(pane: 0) }
+        .onChange(of: isPresenting, initial: true) { window.isFolderPresenting = isPresenting }
+        .onAppear { window.newFolder = { actions.newFolder() } }
         .onChange(of: tab.folder) { isSelecting = false }
         .onChange(of: isSelecting) {
             if !isSelecting { browser.setSelection([], in: tab.id) }
@@ -123,7 +131,18 @@ struct FolderView: View {
         FolderTable(
             browser: browser, items: items, folder: content.folder, settings: settings,
             actions: actions, drops: drops, isCompact: isCompact,
-            isSelecting: $isSelecting)
+            isSelecting: $isSelecting, isPresenting: window.isPresenting,
+            find: { window.findRequests += 1 },
+            toggleSidebar: {
+                window.columnVisibility =
+                    window.columnVisibility == .detailOnly ? .all : .detailOnly
+            })
+    }
+
+    /// Whether the folder view shows a sheet, an alert or Quick Look (ADR 0135).
+    private var isPresenting: Bool {
+        naming != nil || review != nil || movingTo != nil || sharing != nil || previewed != nil
+            || browser.failure != nil
     }
 
     /// Whether the width is compact, as on the iPhone (ADR 0132).

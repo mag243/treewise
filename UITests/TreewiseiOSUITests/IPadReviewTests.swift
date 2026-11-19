@@ -115,7 +115,10 @@ final class IPadReviewTests: XCTestCase {
 
             // In portrait the sidebar, with the gear, shows over the folder when asked.
             if !app.buttons["settings"].firstMatch.isHittable {
-                app.buttons["ToggleSidebar"].firstMatch.tap()
+                // The system's button: named ToggleSidebar on iOS 18, only labelled on 27.
+                app.buttons.matching(
+                    NSPredicate(format: "identifier == 'ToggleSidebar' OR label == 'Show Sidebar'")
+                ).firstMatch.tap()
             }
             app.buttons["settings"].firstMatch.tap()
             let saved = app.buttons["savedPatterns"].firstMatch

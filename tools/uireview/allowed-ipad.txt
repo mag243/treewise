@@ -65,3 +65,35 @@ settings-portrait-iphone | overlap | text "Saved Patterns"  # a row's label, rep
 start-landscape-iphone | overlap | image "folder.badge.plus"  # the view's own frames
 # Settings scrolls in the iPhone's landscape: its last footer starts at the screen's edge.
 settings-landscape-iphone | outsideWindow | text "For each folder you suggest names in, Treewise keeps which a"  # scrolls
+
+# Once a test has pressed keys (ADR 0135), the 11-inch simulator keeps iPadOS's on-screen
+# keyboard hidden below the screen while a menu shows, and the 13-inch shows the bar iPadOS
+# gives a hardware keyboard below a sheet; both are iPadOS's, not Treewise's layout.
+context-menu-landscape-11inch | outsideWindow | button "tab"  # iPadOS's keyboard, hidden below the screen
+context-menu-landscape-11inch | outsideWindow | button "Return"  # iPadOS's keyboard, hidden below the screen
+context-menu-landscape-11inch | outsideWindow | button "shift"  # iPadOS's keyboard, hidden below the screen
+context-menu-landscape-11inch | outsideWindow | button "emoji"  # iPadOS's keyboard, hidden below the screen
+context-menu-landscape-11inch | outsideWindow | button "dictation"  # iPadOS's keyboard, hidden below the screen
+context-menu-landscape-11inch | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard, hidden below the screen
+context-menu-portrait-11inch | outsideWindow | button "tab"  # iPadOS's keyboard, hidden below the screen
+context-menu-portrait-11inch | outsideWindow | button "Return"  # iPadOS's keyboard, hidden below the screen
+context-menu-portrait-11inch | outsideWindow | button "shift"  # iPadOS's keyboard, hidden below the screen
+context-menu-portrait-11inch | outsideWindow | button "emoji"  # iPadOS's keyboard, hidden below the screen
+context-menu-portrait-11inch | outsideWindow | button "dictation"  # iPadOS's keyboard, hidden below the screen
+context-menu-portrait-11inch | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard, hidden below the screen
+view-menu-landscape-11inch | outsideWindow | button "tab"  # iPadOS's keyboard, hidden below the screen
+view-menu-landscape-11inch | outsideWindow | button "Return"  # iPadOS's keyboard, hidden below the screen
+view-menu-landscape-11inch | outsideWindow | button "shift"  # iPadOS's keyboard, hidden below the screen
+view-menu-landscape-11inch | outsideWindow | button "emoji"  # iPadOS's keyboard, hidden below the screen
+view-menu-landscape-11inch | outsideWindow | button "dictation"  # iPadOS's keyboard, hidden below the screen
+view-menu-landscape-11inch | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard, hidden below the screen
+view-menu-portrait-11inch | outsideWindow | button "tab"  # iPadOS's keyboard, hidden below the screen
+view-menu-portrait-11inch | outsideWindow | button "Return"  # iPadOS's keyboard, hidden below the screen
+view-menu-portrait-11inch | outsideWindow | button "shift"  # iPadOS's keyboard, hidden below the screen
+view-menu-portrait-11inch | outsideWindow | button "emoji"  # iPadOS's keyboard, hidden below the screen
+view-menu-portrait-11inch | outsideWindow | button "dictation"  # iPadOS's keyboard, hidden below the screen
+view-menu-portrait-11inch | outsideWindow | button "Hide keyboard"  # iPadOS's keyboard, hidden below the screen
+rename-landscape | outsideWindow | button "Keyboard"  # iPadOS's bar for a hardware keyboard
+rename-landscape | outsideWindow | button "assistantDictation"  # iPadOS's bar for a hardware keyboard
+rename-suggestions-landscape | outsideWindow | button "Keyboard"  # iPadOS's bar for a hardware keyboard
+rename-suggestions-landscape | outsideWindow | button "assistantDictation"  # iPadOS's bar for a hardware keyboard
