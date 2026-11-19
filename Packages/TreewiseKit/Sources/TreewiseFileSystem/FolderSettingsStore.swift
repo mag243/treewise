@@ -49,6 +49,9 @@ public actor FolderSettingsStore: FolderSettingsStoring {
 
     private let file: URL
     private var records: [String: Record]?
+    /// Whether the file is there but could not be read: then it is never written, so the
+    /// settings of every folder in it are not lost; changes last until the app quits.
+    private var isFileUnreadable = false
 
     /// When a folder is seen, as its settings are read or saved.
     private let now: @Sendable () -> Date
@@ -174,7 +177,16 @@ public actor FolderSettingsStore: FolderSettingsStoring {
 
     private func loadIfNeeded() {
         guard records == nil else { return }
-        guard let data = try? Data(contentsOf: file) else {
+        let data: Data
+        do {
+            data = try Data(contentsOf: file)
+        } catch CocoaError.fileReadNoSuchFile {
+            records = [:]
+            return
+        } catch {
+            Self.logger.error(
+                "Folder settings unreadable, left as they are: \(error.localizedDescription)")
+            isFileUnreadable = true
             records = [:]
             return
         }
@@ -195,6 +207,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     }
 
     private func persist() {
+        guard !isFileUnreadable else { return }
         do {
             try FileManager.default.createDirectory(
                 at: file.deletingLastPathComponent(), withIntermediateDirectories: true)

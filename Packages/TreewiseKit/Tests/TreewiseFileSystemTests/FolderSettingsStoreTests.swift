@@ -52,6 +52,25 @@ import TreewiseTestSupport
         #expect(!AddOnIDs.holdsFormerID(try String(contentsOf: file, encoding: .utf8)))
     }
 
+    /// A file that is there but cannot be read, as without permission, is never written
+    /// over as if it were empty: the settings of every folder in it would be lost.
+    @Test func leavesAFileItCannotReadAsItIs() async throws {
+        let first = try root.makeFolder("A").path
+        await store.save(settings, forFolderAt: first)
+        let file = root.url("private").appendingPathComponent(FolderSettingsStore.fileName)
+        let kept = try Data(contentsOf: file)
+        try FileManager.default.setAttributes([.posixPermissions: 0o200], ofItemAtPath: file.path)
+        defer {
+            try? FileManager.default.setAttributes(
+                [.posixPermissions: 0o600], ofItemAtPath: file.path)
+        }
+        let restarted = FolderSettingsStore(directory: root.url("private"))
+        await restarted.save(settings, forFolderAt: try root.makeFolder("B").path)
+        await restarted.dropSettingsOfUnseenFolders(now: Date())
+        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
+        #expect(try Data(contentsOf: file) == kept)
+    }
+
     @Test func putsNothingButARandomIDOnTheFolder() async throws {
         let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)

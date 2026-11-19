@@ -26,14 +26,31 @@ public struct FileBookmarkStorage: BookmarkStorage {
         }
     }
 
-    /// Saves the bookmarks, replacing the file atomically.
+    /// Saves the bookmarks, replacing the file atomically. A file that is there but cannot
+    /// be read is left as it is, as `load()` gave none of its bookmarks.
     public func save(_ bookmarks: [Bookmark]) {
+        guard !Self.isUnreadable(file) else {
+            Self.logger.error("Bookmarks not saved: their file cannot be read")
+            return
+        }
         do {
             try FileManager.default.createDirectory(
                 at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
             try JSONEncoder().encode(bookmarks).write(to: file, options: .atomic)
         } catch {
             Self.logger.error("Bookmarks not saved: \(error.localizedDescription)")
+        }
+    }
+
+    /// Whether a file is there and cannot be read; a missing one can be written.
+    private static func isUnreadable(_ file: URL) -> Bool {
+        do {
+            try FileHandle(forReadingFrom: file).close()
+            return false
+        } catch CocoaError.fileReadNoSuchFile, CocoaError.fileNoSuchFile {
+            return false
+        } catch {
+            return true
         }
     }
 }
