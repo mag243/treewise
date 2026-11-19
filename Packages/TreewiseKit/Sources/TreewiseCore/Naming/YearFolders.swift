@@ -38,6 +38,19 @@ public enum YearFolders {
         return FileItem.ID(parts.joined(separator: "/"))
     }
 
+    /// The year's own folder a folder is in, its nearest, and the folder's path below it, as
+    /// `["Q1", "Tax"]` for `…/2026/Q1/Tax`; nil for a year's own folder and a folder in no
+    /// year (ADR 0139).
+    public static func place(of folder: FileItem.ID) -> (year: FileItem.ID, path: [String])? {
+        guard let (index, _) = yearComponent(of: folder) else { return nil }
+        let parts = folder.rawValue.split(separator: "/", omittingEmptySubsequences: false)
+            .map(String.init)
+        guard index < parts.count - 1 else { return nil }
+        return (
+            FileItem.ID(parts[...index].joined(separator: "/")), Array(parts[(index + 1)...])
+        )
+    }
+
     private static func yearComponent(of folder: FileItem.ID) -> (index: Int, year: Int)? {
         guard !folder.isInsideArchive else { return nil }
         let parts = folder.rawValue.split(separator: "/", omittingEmptySubsequences: false)
