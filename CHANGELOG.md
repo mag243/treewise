@@ -8,6 +8,7 @@ the smallest, is in the commits.
 
 ### Improved
 - **Suggest Names on a folder** proposes names for the files in it, not a new name for the folder.
+- **Suggest Names on selected files** proposes nothing for a name that already fits the pattern, as it does for the whole folder.
 
 ### Fixed
 - **⌘-click selects several items** in the list view again; it kept only the item clicked last.
