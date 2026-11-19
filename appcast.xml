@@ -3,6 +3,28 @@
     <channel>
         <title>Treewise</title>
         <item>
+            <title>0.9.1</title>
+            <pubDate>Thu, 19 Nov 2026 18:18:42 +0100</pubDate>
+            <sparkle:version>2026.1119.181602</sparkle:version>
+            <sparkle:shortVersionString>0.9.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[Suggest Names leaves names that already fit alone, and the name add-ons get names that say what they do.
+
+### New
+- **Date Created and Date Added columns.** Right-click the list's column headers to show them, and sort by either.
+
+### Improved
+- **Suggest Names on selected files** keeps a name that already fits the pattern; what the add-ons propose for it is still there with the arrows.
+- **Suggest Names on a folder** proposes names for the files in it, not a new name for the folder.
+- **The name add-ons are called File Name Patterns** and Advanced File Name Patterns, as they name files. Your patterns, settings and licence carry over.
+- **Stop ends a copy that waits for a file kept only online** to download, leaving nothing behind.
+
+### Fixed
+- **⌘-click selects several items** in the list view again; it kept only the item clicked last.
+]]></description>
+            <enclosure url="https://github.com/mag243/treewise/releases/download/v0.9.1/Treewise-0.9.1-2026.1119.181602.zip" length="6104902" type="application/octet-stream" sparkle:edSignature="2WvErF96qCYgyU9rXTrERLVenzpRJ8NtY/WARLQIliaMBPdI2fu8QerzML6kOY/ElgQOcAepFeRP0nmJdB3YAw=="/>
+        </item>
+        <item>
             <title>0.9.0</title>
             <pubDate>Mon, 16 Nov 2026 11:54:49 +0100</pubDate>
             <sparkle:version>2026.1116.115202</sparkle:version>
