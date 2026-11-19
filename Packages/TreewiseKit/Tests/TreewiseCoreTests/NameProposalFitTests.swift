@@ -86,4 +86,35 @@ import TreewiseCore
         session.setFit(Self.item, moduleIDs: ["first"])
         #expect(session.entry(Self.item)?.currentName == "B.pdf")
     }
+
+    /// Typing another name for a fitting file starts from the name it has (ADR 0138).
+    @Test func aFittingFileIsEditedFromItsOwnName() {
+        var session = session(with: "A")
+        session.setFit(Self.item, moduleIDs: ["first"])
+        #expect(session.entry(Self.item)?.nameToEdit == "scan.pdf")
+    }
+
+    @Test func aProposalIsEditedFromItself() {
+        let session = session(with: "A")
+        #expect(session.entry(Self.item)?.nameToEdit == "A.pdf")
+    }
+
+    @Test func anEditOfAFittingFileNeedsAnApproval() {
+        var session = newSession()
+        session.setFit(Self.item, moduleIDs: ["first"])
+        session.edit(Self.item, to: "scan 2.pdf")
+        session.finishEditing(Self.item)
+        #expect(session.entry(Self.item)?.restsFitting == false)
+        #expect(session.approve(Self.item) == nil)
+    }
+
+    @Test func anEditBackToTheFittingNameRestsAgain() {
+        var session = newSession()
+        session.setFit(Self.item, moduleIDs: ["first"])
+        session.edit(Self.item, to: "scan 2.pdf")
+        session.edit(Self.item, to: "scan.pdf")
+        session.finishEditing(Self.item)
+        #expect(session.entry(Self.item)?.restsFitting == true)
+        #expect(session.entry(Self.item)?.edit == nil)
+    }
 }

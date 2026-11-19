@@ -48,10 +48,13 @@ extension NameProposalSession.Entry {
         add([], moduleOrder: moduleOrder)
     }
 
-    /// Ends an edit: an empty one goes away, and one equal to a proposal merges with it.
+    /// Ends an edit: an empty one goes away, as does one that is the name a fitting item
+    /// has (ADR 0138), and one equal to a proposal merges with it.
     mutating func finishEditing() {
         guard let text = edit else { return }
-        if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || (fits && text == ProposedName.shownName(fromDisk: originalName))
+        {
             discardEdit()
         } else {
             mergeEdit()

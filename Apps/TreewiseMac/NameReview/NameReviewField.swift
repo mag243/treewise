@@ -45,9 +45,13 @@ final class NameReviewField: NSObject, NSTextFieldDelegate {
         field.mark((hasTyped ? [] : marks) + lookMarks)
     }
 
-    /// Gives the field the keyboard focus.
-    func startEditing() {
+    /// Gives the field the keyboard focus. With `selectingStem`, the name before its
+    /// extension is selected, as renaming in Finder does (ADR 0138).
+    func startEditing(selectingStem: Bool = false) {
         field.window?.makeFirstResponder(field)
+        guard selectingStem, let editor = field.currentEditor() else { return }
+        let stem = ProposedName.stem(of: field.stringValue)
+        editor.selectedRange = NSRange(location: 0, length: (stem as NSString).length)
     }
 
     func controlTextDidChange(_ notification: Notification) {

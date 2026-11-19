@@ -109,7 +109,8 @@ final class NameReviewRowView: NSView {
         iconHeight.constant = side
         original.stringValue = entry.originalName
         names.setViews(
-            entry.restsFitting ? [original] : [original, newNameView(entry, isSelected)],
+            entry.restsFitting && !isSelected
+                ? [original] : [original, newNameView(entry, isSelected)],
             in: .leading)
         self.side.setViews(sideViews(entry, isSelected), in: .leading)
     }
@@ -151,7 +152,8 @@ final class NameReviewRowView: NSView {
     // MARK: - The new name
 
     private func newNameView(_ entry: NameProposalSession.Entry, _ isSelected: Bool) -> NSView {
-        let name = entry.currentName ?? ""
+        // A name that fits is edited from itself (ADR 0138).
+        let name = entry.nameToEdit ?? ""
         if isSelected, !entry.isOutOfScope {
             nameField.show(
                 name, placeholder: emptyText(entry),

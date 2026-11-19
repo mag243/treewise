@@ -114,9 +114,11 @@ final class NameReviewList: NSObject, NSOutlineViewDataSource, NSOutlineViewDele
         edit(id)
     }
 
-    /// Gives the name of `id` the keyboard focus, once its row shows the field.
+    /// Gives the name of `id` the keyboard focus, once its row shows the field. A name that
+    /// fits starts with its stem selected, to type another (ADR 0138).
     private func edit(_ id: FileItem.ID) {
-        Task { @MainActor [nameField] in nameField.startEditing() }
+        let fits = model.session?.entry(id)?.restsFitting == true
+        Task { @MainActor [nameField] in nameField.startEditing(selectingStem: fits) }
     }
 
     /// The overview's keys while the list has the focus: Return edits the name and Space
@@ -128,8 +130,7 @@ final class NameReviewList: NSObject, NSOutlineViewDataSource, NSOutlineViewDele
         else { return false }
         switch event.keyCode {
         case KeyCode.returnKey:
-            guard let entry = model.session?.entry(id), !entry.isOutOfScope, !entry.restsFitting
-            else { return false }
+            guard let entry = model.session?.entry(id), !entry.isOutOfScope else { return false }
             edit(id)
             return true
         case KeyCode.space:

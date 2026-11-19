@@ -62,7 +62,8 @@ struct NameReviewRow: View {
     /// The proposal, which can be typed over, its parts coloured as the pattern's fields
     /// and a gap or a date to check as on the Mac (ADR 0130).
     private var proposal: some View {
-        let name = entry.currentName ?? ""
+        // A name that fits is edited from itself (ADR 0138).
+        let name = entry.nameToEdit ?? ""
         return NameTextField(
             text: Binding(get: { name }, set: { model.edit(entry.id, to: $0) }),
             marks: NameMark.fields(model.fieldMarks(of: entry.id))

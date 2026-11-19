@@ -88,6 +88,12 @@ extension NameProposalSession {
             }
         }
 
+        /// The name an edit starts from: the current one, or the name the item has while it
+        /// rests fitting (ADR 0138); nil when there is none yet.
+        public var nameToEdit: String? {
+            currentName ?? (restsFitting ? ProposedName.shownName(fromDisk: originalName) : nil)
+        }
+
         /// Whether the item fits a template and keeps its own name, so it needs no
         /// decision. Its proposals stay options to step to (ADR 0138).
         public var restsFitting: Bool {
