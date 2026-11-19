@@ -18,9 +18,16 @@ public actor FileOperationRunner: FileOperating {
         let archiveVersions: ArchiveVersions
     #endif
 
-    /// Creates a runner that reads and writes the local disk.
-    public init(locations: LocalFileSystem.Locations = .system) {
+    /// Where folders keep their settings, told of every folder moved (ADR 0057).
+    private let folderSettings: FolderSettingsStore?
+
+    /// Creates a runner that reads and writes the local disk, telling `folderSettings` of
+    /// the folders it moves.
+    public init(
+        locations: LocalFileSystem.Locations = .system, folderSettings: FolderSettingsStore? = nil
+    ) {
         reader = LocalFileSystem(locations: locations)
+        self.folderSettings = folderSettings
         #if os(macOS)
             archiveCache = ArchiveCache(in: locations.archiveCacheFolder)
             archiveVersions = ArchiveVersions(locations: locations)
@@ -125,6 +132,7 @@ public actor FileOperationRunner: FileOperating {
             try await moveAcrossVolumes(
                 item, into: url(folder), as: name, onFile: onFile, control: control)
         }
+        await folderSettings?.folderMoved(from: item.id.rawValue, to: destination.path)
         return try await reader.item(at: FileItem.ID(destination.path))
     }
 

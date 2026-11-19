@@ -76,6 +76,21 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         return String(bytes: bytes, encoding: .utf8)
     }
 
+    /// Moves the settings kept by path of the folder at `old`, and of every folder in it,
+    /// to `new`, as Treewise moved or renamed it there.
+    /// A folder that carries its id needs none of this: the id finds it wherever it is.
+    public func folderMoved(from old: String, to new: String) {
+        loadIfNeeded()
+        let inside = old + "/"
+        var moved = false
+        for (id, record) in records ?? [:] where !record.isOnFolder {
+            guard record.path == old || record.path.hasPrefix(inside) else { continue }
+            records?[id]?.path = new + record.path.dropFirst(old.count)
+            moved = true
+        }
+        if moved { persist() }
+    }
+
     /// The settings of a folder, or nil when it has none. This follows a folder that
     /// moved, and gives a copy an id and settings of its own.
     public func settings(forFolderAt path: String) -> FolderSettings? {

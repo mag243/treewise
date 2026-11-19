@@ -220,7 +220,8 @@ final class Locations {
                 $0.tabs[$0.selectedTab]
             }
         let state = BrowserState(
-            fileSystem: FileOperationRunner(locations: confined),
+            fileSystem: FileOperationRunner(
+                locations: confined, folderSettings: NameServices.folderSettings),
             watcher: DirectoryWatcher(), startFolder: FileItem.ID(first.standardizedFileURL.path),
             settings: settings, clipboard: clipboard)
         if let restored = snapshot?.restored(isUsable: isUsable) {

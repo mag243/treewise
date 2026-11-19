@@ -69,7 +69,8 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
             lookUp($0)?.isContainer == true ? $0 : nil
         }
         let browser = BrowserState(
-            fileSystem: FileOperationRunner(locations: LaunchOptions.locations),
+            fileSystem: FileOperationRunner(
+                locations: LaunchOptions.locations, folderSettings: AppServices.folderSettings),
             watcher: DirectoryWatcher(watchesFileChanges: reader.isInCloudFolder),
             startFolder: requested ?? settings.startFolder(home: home, lookUp: lookUp),
             homeFolder: home, settings: settings, clipboard: AppServices.clipboard)
