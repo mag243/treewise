@@ -6,6 +6,10 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-11-19
+
+Change a name that already fits from where it is.
+
 ### Improved
 - **Another name for a file that already fits** starts from the name it has, as renaming in Finder does: press Return in Suggest Names and change what you need.
 
