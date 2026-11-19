@@ -92,8 +92,8 @@ struct CompactFolderToolbar: ToolbarContent {
         SelectionActionsMenu(selected: selected, actions: actions)
     }
 
-    /// The folder's one menu: Select, New Folder and Paste, Undo and Redo, and the View
-    /// menu's sorting and showing.
+    /// The folder's one menu: Select, New Folder, Paste and Suggest Names for the whole
+    /// folder, Undo and Redo, and the View menu's sorting and showing.
     private var moreMenu: some View {
         Menu {
             Section {
@@ -111,6 +111,7 @@ struct CompactFolderToolbar: ToolbarContent {
                     Label("Paste", systemImage: "doc.on.clipboard")
                 }
                 .disabled(!actions.canPaste)
+                WholeFolderNamesButton(actions: actions)
             }
             Section {
                 Button(action: undo.undo) {

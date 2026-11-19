@@ -236,7 +236,7 @@ struct FolderView: View {
                     Label("New Folder", systemImage: "folder.badge.plus")
                 }
                 .disabled(!actions.canAddItems)
-                ViewMenu(browser: browser, settings: settings)
+                ViewMenu(browser: browser, settings: settings, actions: actions)
                 Button("Select") { isSelecting = true }
                     .disabled(items.isEmpty)
             }

@@ -37,4 +37,21 @@ final class NameReviewTests: XCTestCase {
         app.buttons["undo"].firstMatch.tap()
         XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout), "undone")
     }
+
+    /// The whole folder's overview from the View menu, also where no empty space is left below
+    /// the rows for the folder's own menu.
+    @MainActor
+    func testTheViewMenuSuggestsNamesForTheWholeFolder() {
+        let app = launch(state: UUID().uuidString)
+        sidebar(of: app).staticTexts["Documents"].tap()
+        XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
+
+        app.buttons["viewMenu"].firstMatch.tap()
+        app.buttons["Suggest Names for Whole Folder…"].firstMatch.tap()
+        XCTAssertTrue(
+            app.textFields["proposal-Notes.md"].firstMatch.waitForExistence(
+                timeout: Self.timeout),
+            "the overview shows the folder's files")
+        XCTAssertTrue(app.textFields["proposal-Budget.txt"].firstMatch.exists)
+    }
 }
