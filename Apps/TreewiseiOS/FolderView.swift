@@ -23,8 +23,8 @@ struct FolderView: View {
     @State private var movingTo: MoveToRequest?
     /// The items offered to the share sheet, if any (ADR 0132).
     @State private var sharing: ShareRequest?
-    /// Save as Template… or New Folders from Template, if asked for (ADR 0091).
-    @State private var structure: FolderStructureRequest?
+    /// What Folder Structure ▸ asked for, if anything (ADR 0091).
+    @State private var structureAsked = FolderStructureAsked()
     /// Whether the search field has the keyboard, which Find gives it (ADR 0135).
     @FocusState private var isSearchFocused: Bool
 
@@ -93,17 +93,10 @@ struct FolderView: View {
             ShareSheet(request: request)
                 .presentationDetents([.medium, .large])
         }
-        .sheet(item: $structure) { request in
-            switch request {
-            case .save(let folder):
-                SaveTemplateSheet(folder: folder, browser: browser)
-            case .make(let template, let folder):
-                NewFoldersFromTemplateSheet(
-                    template: template, folder: folder, browser: browser,
-                    undoManager: undoManager)
-            }
-        }
-        .task { await NameServices.templateList.load() }
+        .modifier(
+            FolderStructureSheets(
+                asked: structureAsked, browser: browser, undoManager: undoManager)
+        )
         .sheet(isPresented: isAskingAboutConflict) {
             if let question = conflicts.question {
                 ConflictSheet(questions: conflicts, name: question.name)
@@ -127,7 +120,7 @@ struct FolderView: View {
             moveTo: isCompact ? { movingTo = $0 } : nil,
             share: isCompact ? { sharing = ShareRequest(items: $0) } : nil,
             openInNewWindow: supportsMultipleWindows ? { openInNewWindow($0) } : nil,
-            folderStructure: { structure = $0 })
+            folderStructure: { structureAsked.ask($0, browser: browser) })
     }
 
     private var isAskingAboutConflict: Binding<Bool> {

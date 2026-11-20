@@ -2,12 +2,16 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// New Folders from Template (ADR 0091, ADR 0095 to ADR 0097) over the Mac's model: the
-/// fields the template holds, with what Treewise proposes, and the folders they make, each
-/// new, already there or left out. A template rooted at `{year}` chosen on a year's folder
-/// fills that folder itself. The folder made remembers its template (ADR 0141).
+/// New Folders from Template and Paste Structure… (ADR 0091, ADR 0095 to ADR 0097, ADR 0099)
+/// over the Mac's model: the fields the tree holds, with what Treewise proposes, and the
+/// folders they make, each new, already there or left out. A template rooted at `{year}`
+/// chosen on a year's folder fills that folder itself, and the folder made remembers its
+/// template (ADR 0141); a structure pasted is made inside, from no template.
 struct NewFoldersFromTemplateSheet: View {
-    let template: FolderTemplate
+    let title: String
+    let tree: FolderTree
+    /// The saved template the folders come from; nil for a structure pasted.
+    let template: FolderTemplate?
     let folder: FileItem.ID
     let browser: BrowserState
     let undoManager: UndoManager
@@ -25,7 +29,7 @@ struct NewFoldersFromTemplateSheet: View {
                     ProgressView()
                 }
             }
-            .navigationTitle(Text("New Folders from “\(template.name)”"))
+            .navigationTitle(Text(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -52,14 +56,14 @@ struct NewFoldersFromTemplateSheet: View {
     private func start() async {
         let item = try? await browser.fileSystem.item(at: folder)
         let place: FolderTemplateSheetModel.Place
-        if let item, template.yearOfFolderItFills(named: item.name) != nil {
+        if let item, let template, template.yearOfFolderItFills(named: item.name) != nil {
             place = .filling(item)
         } else {
             place = .inside(folder)
         }
         let parts = Calendar.current.dateComponents([.year, .month, .day], from: .now)
         let started = FolderTemplateSheetModel(
-            template: template.root, place: place, fileSystem: browser.fileSystem,
+            template: tree, place: place, fileSystem: browser.fileSystem,
             currentYear: parts.year ?? 0,
             today: FolderTemplateValues.Day(
                 year: parts.year ?? 0, month: parts.month ?? 1, day: parts.day ?? 1))
@@ -72,9 +76,11 @@ struct NewFoldersFromTemplateSheet: View {
             let outcome = await browser.createFolders(
                 making: tree, in: madeIn, undoManager: undoManager)
         else { return }
-        let root = FileItem.ID(madeIn.rawValue + "/" + tree.name)
-        await NameServices.templateOrigins(for: browser).remember(
-            made: root, from: template.id, yearBefore: nil)
+        if let template {
+            let root = FileItem.ID(madeIn.rawValue + "/" + tree.name)
+            await NameServices.templateOrigins(for: browser).remember(
+                made: root, from: template.id, yearBefore: nil)
+        }
         if outcome.leftOut.isEmpty {
             dismiss()
         } else {

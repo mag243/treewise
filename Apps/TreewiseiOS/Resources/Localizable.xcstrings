@@ -617,6 +617,22 @@
         }
       }
     },
+    "Copy Structure" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Struktur kopieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieer structuur"
+          }
+        }
+      }
+    },
     "Copy to Folder" : {
       "localizations" : {
         "de" : {
@@ -1959,6 +1975,38 @@
         }
       }
     },
+    "Paste Structure…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Struktur einsetzen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plak structuur…"
+          }
+        }
+      }
+    },
+    "Paste the Structure of “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Struktur von „%@“ einsetzen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plak de structuur van ‘%@’"
+          }
+        }
+      }
+    },
     "Paste “%@”" : {
       "localizations" : {
         "de" : {
@@ -2771,6 +2819,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De mappen erin, op elke diepte. Bestanden worden niet bewaard."
+          }
+        }
+      }
+    },
+    "The folder’s structure cannot be copied" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Struktur des Ordners kann nicht kopiert werden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De structuur van de map kan niet worden gekopieerd"
           }
         }
       }

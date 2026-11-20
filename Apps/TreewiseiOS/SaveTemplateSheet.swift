@@ -2,20 +2,6 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// What a folder's Folder Structure ▸ asks for (ADR 0091): to save the folder's structure as
-/// a template, or to make a template's folders in it.
-enum FolderStructureRequest: Identifiable {
-    case save(FileItem.ID)
-    case make(FolderTemplate, in: FileItem.ID)
-
-    var id: String {
-        switch self {
-        case .save(let folder): "save " + folder.rawValue
-        case .make(let template, let folder): "make \(template.id) " + folder.rawValue
-        }
-    }
-}
-
 /// Save as Template… (ADR 0091, ADR 0099): the folder's tree read, its name proposed, and
 /// what is saved shown before Save. A name another template has asks to replace it. Saved as
 /// it is, its names as written, as the iPad has no add-on to write a year as `{year}`.

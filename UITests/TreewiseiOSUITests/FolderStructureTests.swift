@@ -1,7 +1,8 @@
 import XCTest
 
-/// A folder's Folder Structure ▸ on the iPad (ADR 0091, ADR 0142): its structure saved as a
-/// template, and a template's folders made in it.
+/// A folder's Folder Structure ▸ on the iPad (ADR 0091, ADR 0099, ADR 0142): its structure
+/// saved as a template, a template's folders made in it, and its structure copied and pasted
+/// into another folder.
 final class FolderStructureTests: XCTestCase {
     private static let timeout: TimeInterval = 10
 
@@ -62,5 +63,28 @@ final class FolderStructureTests: XCTestCase {
         year.tap()
         XCTAssertTrue(
             row("Tax", in: app).waitForExistence(timeout: Self.timeout), "with its folders")
+    }
+
+    @MainActor
+    func testAFoldersStructureIsCopiedAndPastedIntoAnother() {
+        let app = openDocuments()
+        openFolderStructure(of: "Archive", in: app)
+        XCTAssertFalse(
+            app.buttons["Paste Structure…"].firstMatch.exists, "nothing is copied yet")
+        app.buttons["Copy Structure"].firstMatch.tap()
+
+        openFolderStructure(of: "Projects", in: app)
+        let paste = app.buttons["Paste Structure…"].firstMatch
+        XCTAssertTrue(paste.waitForExistence(timeout: Self.timeout), "once one is copied")
+        paste.tap()
+        let create = app.buttons["Create Folders"].firstMatch
+        XCTAssertTrue(create.waitForExistence(timeout: Self.timeout), "the sheet opens")
+        XCTAssertTrue(app.staticTexts["Makes 1 folder."].firstMatch.exists, "what it makes")
+        create.tap()
+
+        row("Projects", in: app).tap()
+        XCTAssertTrue(
+            row("Archive", in: app).waitForExistence(timeout: Self.timeout),
+            "the structure is made inside")
     }
 }

@@ -34,6 +34,11 @@ struct ItemActions {
         NameServices.templateList.templates
     }
 
+    /// The structure Copy Structure copied, for Paste Structure… (ADR 0099).
+    var copiedStructure: FolderTree? {
+        NameServices.templateState.copiedStructure
+    }
+
     /// The folder shown, unless it is no folder on disk, as a place inside an archive.
     var shownFolder: FileItem.ID? {
         let folder = browser.layout.focusedPane.activeTab.folder
