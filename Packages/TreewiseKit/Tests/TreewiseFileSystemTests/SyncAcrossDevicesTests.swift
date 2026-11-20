@@ -1,5 +1,4 @@
 import Foundation
-import Synchronization
 import Testing
 import TreewiseCore
 import TreewiseTestSupport
@@ -9,70 +8,22 @@ import TreewiseTestSupport
 /// Two devices syncing through one drive (ADR 0144, M11's acceptance): each with its own
 /// stores, sharing only the drive's folder.
 @Suite struct SyncAcrossDevicesTests {
-    /// One device: its support folder, stores and session; the shared drive's root.
-    private struct Device {
-        let folders: FolderSettingsStore
-        let templates: FolderTemplateStore
-        let session: SyncSession
-        let clock: Clock
-        /// Kept so its folder lasts as long as the device.
-        let support: TempDirectory
-
-        init(_ id: String, drive: URL, support: TempDirectory, clock: Clock) {
-            self.support = support
-            folders = FolderSettingsStore(directory: support.url)
-            templates = FolderTemplateStore(directory: support.url.appending(path: "Templates"))
-            self.clock = clock
-            let sync = SettingsSync(device: SyncDevice(id: id, name: id), now: { clock.now })
-            session = SyncSession(sync: sync, folders: folders, templates: templates)
-        }
-    }
-
-    /// A clock the test moves on.
-    private final class Clock: Sendable {
-        private let time = Mutex(Date(timeIntervalSince1970: 2_000_000_000))
-        var now: Date { time.withLock { $0 } }
-        func advance(_ seconds: TimeInterval = 60) {
-            time.withLock { $0 = $0.addingTimeInterval(seconds) }
-        }
-    }
-
-    private static func settings(_ module: String) -> FolderSettings {
-        FolderSettings(enabledModules: [module], templates: [:])
-    }
-
-    /// Two devices and their drive.
-    private struct Pair {
-        let mac: Device
-        let ipad: Device
-        let drive: TempDirectory
-    }
-
-    private static func pair() throws -> Pair {
-        let drive = try TempDirectory()
-        let clock = Clock()
-        return Pair(
-            mac: Device("a-mac", drive: drive.url, support: try TempDirectory(), clock: clock),
-            ipad: Device("b-ipad", drive: drive.url, support: try TempDirectory(), clock: clock),
-            drive: drive)
-    }
-
     @Test func aFolderSettingMadeOnOneDeviceIsThereOnTheOther() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients/2026").path
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
         _ = await ipad.session.start(drives: [drive.url], patterns: nil)
 
-        await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
+        await mac.folders.save(SyncTestPair.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
         await ipad.session.refresh()
 
-        #expect(await ipad.folders.settings(forFolderAt: folder) == Self.settings("dates"))
+        #expect(await ipad.folders.settings(forFolderAt: folder) == SyncTestPair.settings("dates"))
     }
 
     @Test func aTemplateMadeOnOneDeviceIsThereOnTheOther() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
         _ = await ipad.session.start(drives: [drive.url], patterns: nil)
@@ -82,16 +33,16 @@ import TreewiseTestSupport
         await mac.session.settle()
         await ipad.session.refresh()
 
-        #expect(await ipad.templates.templates() == [template])
+        #expect(await ipad.templates.templates() == [template.withFolderIDs()])
     }
 
     @Test func aRemovalOnOneDeviceRemovesOnTheOther() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
         _ = await ipad.session.start(drives: [drive.url], patterns: nil)
-        await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
+        await mac.folders.save(SyncTestPair.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
         await ipad.session.refresh()
 
@@ -104,34 +55,34 @@ import TreewiseTestSupport
     }
 
     @Test func changesOnBothAtOnceKeepTheNewerAndMakeNoConflictFile() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
         _ = await ipad.session.start(drives: [drive.url], patterns: nil)
 
-        await mac.folders.save(Self.settings("older"), forFolderAt: folder)
+        await mac.folders.save(SyncTestPair.settings("older"), forFolderAt: folder)
         mac.clock.advance()
-        await ipad.folders.save(Self.settings("newer"), forFolderAt: folder)
+        await ipad.folders.save(SyncTestPair.settings("newer"), forFolderAt: folder)
         await mac.session.settle()
         await ipad.session.settle()
         await mac.session.refresh()
         await ipad.session.refresh()
 
-        #expect(await mac.folders.settings(forFolderAt: folder) == Self.settings("newer"))
-        #expect(await ipad.folders.settings(forFolderAt: folder) == Self.settings("newer"))
+        #expect(await mac.folders.settings(forFolderAt: folder) == SyncTestPair.settings("newer"))
+        #expect(await ipad.folders.settings(forFolderAt: folder) == SyncTestPair.settings("newer"))
         let files = try FileManager.default.contentsOfDirectory(
             atPath: drive.url.appending(path: ".treewise/devices").path)
         #expect(Set(files) == ["a-mac.json", "b-ipad.json"])
     }
 
     @Test func aChangeTakenOverIsNotRecordedAgain() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
         _ = await ipad.session.start(drives: [drive.url], patterns: nil)
-        await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
+        await mac.folders.save(SyncTestPair.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
 
         await ipad.session.refresh()
@@ -143,29 +94,29 @@ import TreewiseTestSupport
     }
 
     @Test func aDeviceLateToStartDoesNotOverwriteNewerChanges() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
-        await ipad.folders.save(Self.settings("stale"), forFolderAt: folder)
+        await ipad.folders.save(SyncTestPair.settings("stale"), forFolderAt: folder)
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
-        await mac.folders.save(Self.settings("fresh"), forFolderAt: folder)
+        await mac.folders.save(SyncTestPair.settings("fresh"), forFolderAt: folder)
         await mac.session.settle()
 
         mac.clock.advance()
         _ = await ipad.session.start(drives: [drive.url], patterns: nil)
         await mac.session.refresh()
 
-        #expect(await ipad.folders.settings(forFolderAt: folder) == Self.settings("fresh"))
-        #expect(await mac.folders.settings(forFolderAt: folder) == Self.settings("fresh"))
+        #expect(await ipad.folders.settings(forFolderAt: folder) == SyncTestPair.settings("fresh"))
+        #expect(await mac.folders.settings(forFolderAt: folder) == SyncTestPair.settings("fresh"))
     }
 
     @Test func aMoveByTreewiseTakesTheSettingsAlong() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let old = try drive.makeFolder("Clients/Acme").path
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
         _ = await ipad.session.start(drives: [drive.url], patterns: nil)
-        await mac.folders.save(Self.settings("dates"), forFolderAt: old)
+        await mac.folders.save(SyncTestPair.settings("dates"), forFolderAt: old)
         await mac.session.settle()
         await ipad.session.refresh()
 
@@ -175,28 +126,28 @@ import TreewiseTestSupport
         await mac.session.settle()
         await ipad.session.refresh()
 
-        #expect(await ipad.folders.settings(forFolderAt: new) == Self.settings("dates"))
+        #expect(await ipad.folders.settings(forFolderAt: new) == SyncTestPair.settings("dates"))
     }
 
     @Test func withSyncOffNothingIsWrittenInTheDrive() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, drive) = (pair.mac, pair.drive)
         let folder = try drive.makeFolder("Clients").path
         _ = await mac.session.start(drives: [drive.url], patterns: nil)
         await mac.session.stop()
 
-        await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
+        await mac.folders.save(SyncTestPair.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
 
         let own = drive.url.appending(path: ".treewise/devices/a-mac.json")
         let records =
             (try? DeviceSyncFile.decoded(from: Data(contentsOf: own)))?.records ?? []
         #expect(records.isEmpty)
-        #expect(await mac.folders.settings(forFolderAt: folder) == Self.settings("dates"))
+        #expect(await mac.folders.settings(forFolderAt: folder) == SyncTestPair.settings("dates"))
     }
 
     @Test func theSavedPatternsChangedOnOneDeviceAreHandedToTheOthersApp() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         _ = await mac.session.start(drives: [drive.url], patterns: .examples())
         let theirs = await ipad.session.start(drives: [drive.url], patterns: .examples())
@@ -205,13 +156,13 @@ import TreewiseTestSupport
         var changed = SavedPatterns.examples()
         _ = changed.save(name: "Receipts", text: "{date} Receipt")
         mac.clock.advance()
-        await mac.session.patternsChanged(changed)
+        await mac.session.patternsChanged(from: .examples(), to: changed)
 
         #expect(await ipad.session.refresh() == [.savedPatterns(changed)])
     }
 
     @Test func aDevicesOwnPatternsWinOverAnotherStartingWithTheExamples() async throws {
-        let pair = try Self.pair()
+        let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         _ = await ipad.session.start(drives: [drive.url], patterns: .examples())
         var own = SavedPatterns.examples()

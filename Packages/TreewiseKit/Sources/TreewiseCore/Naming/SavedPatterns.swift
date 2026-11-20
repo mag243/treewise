@@ -56,7 +56,7 @@ public struct SavedPatterns: Hashable, Sendable, Codable {
         patterns.first { $0.id == defaultID } ?? patterns[0]
     }
 
-    private init(patterns: [SavedPattern], defaultID: SavedPattern.ID) {
+    init(patterns: [SavedPattern], defaultID: SavedPattern.ID) {
         precondition(!patterns.isEmpty, "the list is never empty")
         self.patterns = patterns
         self.defaultID = defaultID

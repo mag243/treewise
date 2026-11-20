@@ -9,6 +9,8 @@ public actor SyncSession {
     private let folders: FolderSettingsStore
     private let templates: FolderTemplateStore
     private var isRunning = false
+    /// This device's changes another device's replaced without seeing them (ADR 0144).
+    public private(set) var lost: [SyncRecord] = []
 
     /// A session of `sync` over `folders` and `templates`.
     public init(sync: SettingsSync, folders: FolderSettingsStore, templates: FolderTemplateStore) {
@@ -17,27 +19,44 @@ public actor SyncSession {
         self.templates = templates
     }
 
-    /// Starts syncing through the drives at `drives`: reads what the files hold, records the
-    /// settings this device had from before for keys no file knows, and from then on records
-    /// every change. `patterns` are the saved patterns as the app keeps them. Returns the
-    /// saved patterns of another device for the app to take over, if any.
+    /// Starts syncing through the drives at `drives`: gives the templates' folders their
+    /// ids, reads what the files hold, records the settings this device had from before for
+    /// elements no file knows, and from then on records every change. `patterns` are the
+    /// saved patterns as the app keeps them. Returns another device's saved patterns for the
+    /// app to take over, if any.
     public func start(drives: [URL], patterns: SavedPatterns?) async -> [SettingsSync.Change] {
         await sync.setDrives(drives)
-        let first = await refresh()
-        let known = await templates.templates()
-        var shared: [SyncKey: SyncValue] = [:]
-        // The examples a new installation starts with are no one's choice: seeding them
-        // could set them over another device's own list at the same seed time.
-        if let patterns, !patterns.isExamples() {
-            shared[.savedPatterns] = .savedPatterns(patterns)
+        for template in await templates.templates() {
+            let withIDs = template.withFolderIDs()
+            if withIDs != template { await templates.takeOver(withIDs, id: withIDs.id) }
         }
-        for template in known { shared[.template(template.id)] = .template(template) }
-        await sync.seed(folders: await folders.allSettings(), shared: shared)
+        let first = await refresh()
+        let untouched = patterns.map { $0.isExamples() } ?? true
+        await sync.seed(
+            folders: await folders.allSettings(), patterns: untouched ? nil : patterns,
+            templates: await templates.templates())
         let sync = sync
+        let templates = templates
         await folders.tellChanges { await sync.handle($0) }
-        await templates.tellChanges { await sync.handle($0) }
+        await templates.tellChanges { notice in
+            await Self.handle(notice, sync: sync, templates: templates)
+        }
         isRunning = true
         return first
+    }
+
+    /// Records a change to the templates, giving a folder added an id first.
+    private static func handle(
+        _ notice: FolderTemplateNotice, sync: SettingsSync, templates: FolderTemplateStore
+    ) async {
+        switch notice {
+        case .saved(let template, let before):
+            let withIDs = template.withFolderIDs()
+            if withIDs != template { await templates.takeOver(withIDs, id: withIDs.id) }
+            await sync.templateChanged(id: template.id, from: before, to: withIDs)
+        case .deleted(let id, let before):
+            await sync.templateChanged(id: id, from: before, to: nil)
+        }
     }
 
     /// Stops syncing: nothing is read or written in the drives any more.
@@ -53,10 +72,11 @@ public actor SyncSession {
     /// patterns for the app.
     @discardableResult
     public func refresh() async -> [SettingsSync.Change] {
-        await folders.changesTold()
-        await templates.changesTold()
+        await settle()
+        let refreshed = await sync.refresh()
+        lost += refreshed.lost
         var forTheApp: [SettingsSync.Change] = []
-        for change in await sync.refresh() {
+        for change in refreshed.changes {
             switch change {
             case .folder(let path, let settings):
                 await folders.takeOver(settings, forFolderAt: path)
@@ -69,10 +89,10 @@ public actor SyncSession {
         return forTheApp
     }
 
-    /// The user changed the saved patterns: one of them, their order or the default.
-    public func patternsChanged(_ patterns: SavedPatterns) async {
+    /// The user changed the saved patterns from `before` to `after`.
+    public func patternsChanged(from before: SavedPatterns, to after: SavedPatterns) async {
         guard isRunning else { return }
-        await sync.changed(.savedPatterns, to: .savedPatterns(patterns))
+        await sync.patternsChanged(from: before, to: after)
     }
 
     /// Returns once every change the stores told so far is recorded and written.

@@ -3,8 +3,8 @@ import TreewiseCore
 
 /// What the user changed in a folder's settings, told to a sync in order (ADR 0144).
 public enum FolderSettingsNotice: Hashable, Sendable {
-    /// The settings of the folder at `path` were saved, or removed when nil.
-    case changed(path: String, settings: FolderSettings?)
+    /// The settings of the folder at `path` went from `before` to `after`, nil for none.
+    case changed(path: String, before: FolderSettings?, after: FolderSettings?)
     /// Treewise moved the folder at `old` to `new`.
     case moved(from: String, to: String)
 }

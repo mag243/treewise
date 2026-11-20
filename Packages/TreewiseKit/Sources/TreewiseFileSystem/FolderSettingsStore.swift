@@ -105,7 +105,9 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     /// Saves the settings of a folder, giving it an id when it has none of ours.
     public func save(_ settings: FolderSettings, forFolderAt path: String) {
         loadIfNeeded()
-        if let id = settledID(forFolderAt: path) {
+        let settled = settledID(forFolderAt: path)
+        let before = settled.flatMap { records?[$0]?.settings }
+        if let id = settled {
             records?[id]?.settings = settings
             records?[id]?.lastSeen = now()
         } else {
@@ -117,7 +119,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
                 path: path, isOnFolder: isOnFolder, settings: settings, lastSeen: now())
         }
         persist()
-        notices?.tell(.changed(path: path, settings: settings))
+        notices?.tell(.changed(path: path, before: before, after: settings))
     }
 
     /// Drops the settings of every folder that has not been seen for a while on a disk that
@@ -144,10 +146,12 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     /// without their records (ADR 0072).
     public func clearAll() {
         loadIfNeeded()
-        let paths = (records ?? [:]).values.map(\.path)
+        let cleared = (records ?? [:]).values.map { ($0.path, $0.settings) }
         records = [:]
         persist()
-        for path in paths { notices?.tell(.changed(path: path, settings: nil)) }
+        for (path, before) in cleared {
+            notices?.tell(.changed(path: path, before: before, after: nil))
+        }
     }
 
     /// Whether a record's folder is at its path: a folder, carrying the record's id when

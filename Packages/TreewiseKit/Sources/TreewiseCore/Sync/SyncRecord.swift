@@ -1,97 +1,74 @@
 import Foundation
 
-/// What a synced record holds: the whole of a folder's settings, the saved patterns, or a
-/// template (ADR 0144).
-public enum SyncValue: Hashable, Sendable {
-    case folder(FolderSettings)
-    case savedPatterns(SavedPatterns)
-    case template(FolderTemplate)
+/// When and by which device a record was made: what a later record names as the one it
+/// replaced (ADR 0144).
+public struct SyncStamp: Hashable, Sendable, Codable {
+    public let device: String
+    public let changedAt: Date
+
+    public init(device: String, changedAt: Date) {
+        self.device = device
+        self.changedAt = changedAt
+    }
 }
 
-/// One change a device made, as it is written in its file in a drive's `.treewise` folder
-/// (ADR 0144): a key, its value or its removal, when, and by which device.
-///
-/// Invariant: a value is of the kind its key names.
+/// One part of an element as a device changed it, as it is written in its file in a drive's
+/// `.treewise` folder (ADR 0144): the part, its value, when, by which device, and which
+/// record it replaced on that device.
 public struct SyncRecord: Hashable, Sendable {
     /// What the record is about.
     public let key: SyncKey
-    /// The value, or nil when the thing was removed, forgotten or cleared.
-    public let value: SyncValue?
+    /// The part's value; `null` for a part the element does not have.
+    public let value: JSONValue
     /// When the device made the change.
     public let changedAt: Date
     /// The id of the device that made it.
     public let device: String
+    /// The record of the part the device held when it made the change, if any.
+    public let replaced: SyncStamp?
 
-    /// A record of `value` for `key`, nil for a removal.
-    ///
-    /// Precondition: `value` is of the kind `key` names.
-    public init(key: SyncKey, value: SyncValue?, changedAt: Date, device: String) {
-        precondition(
-            value.map { Self.fits($0, key) } ?? true, "a value is of the kind its key names")
+    /// A record of `value` for `key`.
+    public init(
+        key: SyncKey, value: JSONValue, changedAt: Date, device: String,
+        replaced: SyncStamp? = nil
+    ) {
         self.key = key
         self.value = value
         self.changedAt = changedAt
         self.device = device
+        self.replaced = replaced
     }
 
-    /// Whether the record is a removal.
-    public var isRemoval: Bool { value == nil }
+    /// The record's own stamp.
+    public var stamp: SyncStamp { SyncStamp(device: device, changedAt: changedAt) }
 
-    static func fits(_ value: SyncValue, _ key: SyncKey) -> Bool {
-        switch (key, value) {
-        case (.folder, .folder), (.savedPatterns, .savedPatterns): true
-        case (.template(let id), .template(let template)): template.id == id
-        default: false
-        }
-    }
+    /// Whether the record removes its element.
+    public var isRemoval: Bool { key.part == SyncKey.exists && value == .bool(false) }
 }
 
 extension SyncRecord: Codable {
     private enum CodingKeys: String, CodingKey {
-        case key, changedAt, device, value
+        case element, part, value, changedAt, device, replaced
     }
 
-    /// Why a record is not read: its kind is unknown, or its value is not of that kind.
-    public enum Problem: Error, Equatable {
-        case unknownKey(String)
-        case mismatchedValue(String)
-    }
-
-    /// Reads a record; one of a kind this version does not know throws `unknownKey`.
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let text = try container.decode(String.self, forKey: .key)
-        guard let key = SyncKey(text: text) else { throw Problem.unknownKey(text) }
-        let value: SyncValue? =
-            switch key {
-            case .folder:
-                try container.decodeIfPresent(FolderSettings.self, forKey: .value).map(
-                    SyncValue.folder)
-            case .savedPatterns:
-                try container.decodeIfPresent(SavedPatterns.self, forKey: .value)
-                    .map(SyncValue.savedPatterns)
-            case .template:
-                try container.decodeIfPresent(FolderTemplate.self, forKey: .value)
-                    .map(SyncValue.template)
-            }
-        if let value, !Self.fits(value, key) { throw Problem.mismatchedValue(text) }
-        self.key = key
-        self.value = value
+        key = SyncKey(
+            try container.decode(SyncElement.self, forKey: .element),
+            try container.decode(String.self, forKey: .part))
+        value = try container.decodeIfPresent(JSONValue.self, forKey: .value) ?? .null
         changedAt = try container.decode(Date.self, forKey: .changedAt)
         device = try container.decode(String.self, forKey: .device)
+        replaced = try container.decodeIfPresent(SyncStamp.self, forKey: .replaced)
     }
 
-    /// Writes the record; a removal has no value.
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(key.text, forKey: .key)
+        try container.encode(key.element, forKey: .element)
+        try container.encode(key.part, forKey: .part)
+        try container.encode(value, forKey: .value)
         try container.encode(changedAt, forKey: .changedAt)
         try container.encode(device, forKey: .device)
-        switch value {
-        case nil: break
-        case .folder(let settings): try container.encode(settings, forKey: .value)
-        case .savedPatterns(let patterns): try container.encode(patterns, forKey: .value)
-        case .template(let template): try container.encode(template, forKey: .value)
-        }
+        try container.encodeIfPresent(replaced, forKey: .replaced)
     }
 }

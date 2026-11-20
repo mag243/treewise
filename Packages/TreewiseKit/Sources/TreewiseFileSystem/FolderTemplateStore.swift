@@ -47,17 +47,19 @@ public actor FolderTemplateStore: FolderTemplateStoring {
 
     /// Saves a template under its id, replacing what was saved under it.
     public func save(_ template: FolderTemplate) throws {
+        let before = notices == nil ? nil : Self.read(file(of: template.id))
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try FolderTemplateFile.data(of: template).write(to: file(of: template.id), options: .atomic)
-        notices?.tell(.saved(template))
+        notices?.tell(.saved(template, before: before))
     }
 
     /// Puts the file of the template with this id in the Trash, and says where, so Undo can
     /// bring it back.
     @discardableResult
     public func delete(id: String) throws -> TrashedItem {
+        let before = notices == nil ? nil : Self.read(file(of: id))
         let trashed = try TrashService().trash(FileItem.ID(file(of: id).path))
-        notices?.tell(.deleted(id: id))
+        notices?.tell(.deleted(id: id, before: before))
         return trashed
     }
 
@@ -66,7 +68,9 @@ public actor FolderTemplateStore: FolderTemplateStoring {
         try TrashService().restore(trashed)
         let id = URL(filePath: trashed.originalID.rawValue).deletingPathExtension()
             .lastPathComponent
-        if let template = Self.read(file(of: id)) { notices?.tell(.saved(template)) }
+        if let template = Self.read(file(of: id)) {
+            notices?.tell(.saved(template, before: nil))
+        }
     }
 
     /// Saves the template in a file as a new one and, when its name is taken, `name 2`,

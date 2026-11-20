@@ -37,6 +37,9 @@ public struct FolderTree: Codable, Hashable, Sendable {
         case repeatInRepeat(String)
     }
 
+    /// The folder's id in a template, which it keeps when renamed or moved, so a template
+    /// merges by its folders across devices (ADR 0144); nil until the template is synced.
+    public let id: String?
     /// The folder's name.
     public let name: String
     /// The folders in it, ordered by name.
@@ -45,7 +48,11 @@ public struct FolderTree: Codable, Hashable, Sendable {
     public let names: FolderNameSettings?
 
     /// A folder with the folders in it, which it orders by name, and its name settings.
-    public init(name: String, folders: [FolderTree] = [], names: FolderNameSettings? = nil) {
+    public init(
+        id: String? = nil, name: String, folders: [FolderTree] = [],
+        names: FolderNameSettings? = nil
+    ) {
+        self.id = id
         self.name = name
         self.folders = folders.sorted {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
@@ -58,6 +65,7 @@ public struct FolderTree: Codable, Hashable, Sendable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
+            id: try container.decodeIfPresent(String.self, forKey: .id),
             name: try container.decode(String.self, forKey: .name),
             folders: try container.decodeIfPresent([FolderTree].self, forKey: .folders) ?? [],
             names: try container.decodeIfPresent(FolderNameSettings.self, forKey: .names))

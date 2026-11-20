@@ -7,27 +7,26 @@ import TreewiseCore
 @Suite struct DeviceSyncFileTests {
     private static let at = Date(timeIntervalSince1970: 2_000_000_000.25)
 
-    private static let file: DeviceSyncFile = {
-        let template = FolderTemplate(
-            id: "t1", name: "Household Year",
-            root: FolderTree(name: "{year}", folders: [FolderTree(name: "Receipts")]))
-        return DeviceSyncFile(
-            device: "4C1F", name: "Office Mac",
-            records: [
-                SyncRecord(
-                    key: .folder("Clients/2026"),
-                    value: .folder(FolderSettings(enabledModules: ["dates"], templates: [:])),
-                    changedAt: at, device: "4C1F"),
-                SyncRecord(
-                    key: .savedPatterns,
-                    value: .savedPatterns(
-                        SavedPatterns(keeping: "{date} {text}", locale: Locale(identifier: "en"))),
-                    changedAt: at, device: "4C1F"),
-                SyncRecord(
-                    key: .template("t1"), value: .template(template), changedAt: at, device: "4C1F"),
-                SyncRecord(key: .folder("Clients/Old"), value: nil, changedAt: at, device: "4C1F"),
-            ])
-    }()
+    private static let file = DeviceSyncFile(
+        device: "4C1F", name: "Office Mac",
+        records: [
+            SyncRecord(
+                key: SyncKey(.folder("Clients/2026"), "enabledModules"),
+                value: .array([.string("dates")]), changedAt: at, device: "4C1F",
+                replaced: SyncStamp(device: "ipad", changedAt: at.addingTimeInterval(-60))),
+            SyncRecord(
+                key: SyncKey(.pattern("p1"), "name"), value: .string("Invoices"), changedAt: at,
+                device: "4C1F"),
+            SyncRecord(
+                key: SyncKey(.patternList, "default"), value: .string("p1"), changedAt: at,
+                device: "4C1F"),
+            SyncRecord(
+                key: SyncKey(.templateFolder(template: "t1", folder: "f/1"), "parent"),
+                value: .string(""), changedAt: at, device: "4C1F"),
+            SyncRecord(
+                key: .exists(.folder("Clients/Old")), value: .bool(false), changedAt: at,
+                device: "4C1F"),
+        ])
 
     @Test func readsBackWhatItWrote() throws {
         let written = try Self.file.encoded()
@@ -44,22 +43,21 @@ import TreewiseCore
     @Test func aRecordOfAnUnknownKindIsSkippedAndTheRestRead() throws {
         let text = #"""
             {"format": 1, "device": "X", "name": "iPad", "records": [
-              {"key": "bookmark/1", "changedAt": 1, "device": "X", "value": {"anything": 1}},
-              {"key": "template/t1", "changedAt": 1, "device": "X"}
+              {"element": {"kind": "bookmark", "id": "1"}, "part": "x", "changedAt": 1,
+               "device": "X", "value": 1},
+              {"element": {"kind": "template", "id": "t1"}, "part": "name", "changedAt": 1,
+               "device": "X", "value": "Year"}
             ]}
             """#
         let file = try DeviceSyncFile.decoded(from: Data(text.utf8))
-        #expect(file.records.map(\.key) == [.template("t1")])
+        #expect(file.records.map(\.key) == [SyncKey(.template("t1"), "name")])
     }
 
-    @Test(arguments: [
-        SyncKey.folder("Clients/2026/Q1"), .savedPatterns, .template("t1"),
-    ])
-    func aKeyReadsBackFromItsText(_ key: SyncKey) {
-        #expect(SyncKey(text: key.text) == key)
-    }
-
-    @Test func aKeyOfAnUnknownKindIsNone() {
-        #expect(SyncKey(text: "bookmark/1") == nil)
+    @Test func aPathWithSlashesAndHashesReadsBack() throws {
+        let key = SyncKey(.folder("A/B#2/C: D"), "alwaysSkipped/x/y.pdf")
+        let file = DeviceSyncFile(
+            device: "X", name: "",
+            records: [SyncRecord(key: key, value: .bool(true), changedAt: Self.at, device: "X")])
+        #expect(try DeviceSyncFile.decoded(from: file.encoded()).records.first?.key == key)
     }
 }

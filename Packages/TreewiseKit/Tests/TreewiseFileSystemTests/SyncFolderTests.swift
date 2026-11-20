@@ -12,8 +12,7 @@ import TreewiseTestSupport
 
     private static func record(_ path: String, device: String) -> SyncRecord {
         SyncRecord(
-            key: .folder(path),
-            value: .folder(FolderSettings(enabledModules: ["dates"], templates: [:])),
+            key: SyncKey(.folder(path), "enabledModules"), value: .array([.string("dates")]),
             changedAt: at, device: device)
     }
 

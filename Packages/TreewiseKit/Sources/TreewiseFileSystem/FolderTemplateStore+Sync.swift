@@ -4,8 +4,10 @@ import os
 
 /// What the user changed in the templates, told to a sync in order (ADR 0144).
 public enum FolderTemplateNotice: Hashable, Sendable {
-    case saved(FolderTemplate)
-    case deleted(id: String)
+    /// A template was saved; `before` is what was saved under its id, if anything.
+    case saved(FolderTemplate, before: FolderTemplate?)
+    /// The template `id` was put in the Trash; `before` is what it was.
+    case deleted(id: String, before: FolderTemplate?)
 }
 
 extension FolderTemplateStore {
