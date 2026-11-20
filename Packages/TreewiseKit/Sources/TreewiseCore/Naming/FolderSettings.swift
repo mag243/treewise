@@ -58,6 +58,20 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     /// Anyway (ADR 0139): each the path of the folder that holds them below this one, then
     /// the two names as the file system compares them, in order.
     public var namesKeptApart: Set<[String]> = []
+    /// The ids of the templates this folder was made from, the one used last last (ADR
+    /// 0141): kept by the folder a template fills or makes as its root.
+    public var madeFrom: [String] = []
+
+    /// Notes that this folder was made from, or corrected through, the template `id`.
+    public mutating func remember(madeFrom id: String) {
+        madeFrom.removeAll { $0 == id }
+        madeFrom.append(id)
+    }
+
+    /// Forgets that this folder was made from the template `id`.
+    public mutating func forget(madeFrom id: String) {
+        madeFrom.removeAll { $0 == id }
+    }
 
     /// The entry of `namesKeptApart` for `one` and `other` in the folder at `place`.
     public static func keptApart(_ one: String, _ other: String, at place: [String])
@@ -75,6 +89,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         missingFoldersClosed = other.missingFoldersClosed
         offersNoMissingFolders = other.offersNoMissingFolders
         namesKeptApart = other.namesKeptApart
+        madeFrom = other.madeFrom
     }
 
     /// Whether the folder was ever reviewed: then a module is on, which a folder kept only
@@ -141,7 +156,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     private enum CodingKeys: String, CodingKey {
         case enabledModules, templates, alwaysSkipped, moduleOrder, savedPatternLinks
         case newFolders, templateBarClosed, missingFoldersClosed, offersNoMissingFolders
-        case namesKeptApart
+        case namesKeptApart, madeFrom
     }
 
     /// Reads settings; those stored before a field existed get its default.
@@ -165,6 +180,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
             try container.decodeIfPresent(Bool.self, forKey: .offersNoMissingFolders) ?? false
         namesKeptApart =
             try container.decodeIfPresent(Set<[String]>.self, forKey: .namesKeptApart) ?? []
+        madeFrom = try container.decodeIfPresent([String].self, forKey: .madeFrom) ?? []
         // Settings kept under an add-on's former id belong to its current one (ADR 0140).
         AddOnIDs.convert { handOver(from: $0, to: $1) }
     }

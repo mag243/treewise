@@ -22,8 +22,15 @@ public enum FolderTemplateFile {
 
     private struct Envelope: Codable {
         let format: Int
+        /// The template's id, so another Mac can find the same template (ADR 0141); a file
+        /// written before held none, and a Treewise before reads past it.
+        let id: String?
         let name: String
         let root: FolderTree
+    }
+
+    private struct Identity: Decodable {
+        let id: String?
     }
 
     private struct Version: Decodable {
@@ -35,11 +42,16 @@ public enum FolderTemplateFile {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         return try encoder.encode(
-            Envelope(format: format, name: template.name, root: template.root))
+            Envelope(format: format, id: template.id, name: template.name, root: template.root))
+    }
+
+    /// The id the file holds, or nil for a file written without one or no template.
+    public static func id(in data: Data) -> String? {
+        (try? JSONDecoder().decode(Identity.self, from: data))?.id
     }
 
     /// The template in a file, checked as a template (ADR 0096), with the id it is kept
-    /// under, which the file does not hold.
+    /// under, whatever id the file holds.
     public static func template(from data: Data, id: String) throws(Problem) -> FolderTemplate {
         let decoder = JSONDecoder()
         guard let version = try? decoder.decode(Version.self, from: data) else {

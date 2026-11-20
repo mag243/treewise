@@ -98,16 +98,66 @@ public final class FolderTemplatesModel {
     }
 
     /// Reads a template's file as a new template.
-    public func importTemplate(from data: Data) async {
+    /// What Import did with a file.
+    public enum ImportResult: Hashable, Sendable {
+        /// The file's template is kept.
+        case imported
+        /// A template here has the file's id: the same template, perhaps changed elsewhere,
+        /// which the user replaces or keeps beside it (ADR 0141).
+        case sameTemplate(here: FolderTemplate, file: FolderTemplate)
+        /// The file is no template, or it could not be kept; `problem` says why.
+        case refused
+    }
+
+    /// Imports a template's file under the id it holds; a template here with that id is not
+    /// changed, but given back with the file's, for the user to choose (ADR 0141).
+    @discardableResult
+    public func importTemplate(from data: Data) async -> ImportResult {
+        if let id = FolderTemplateFile.id(in: data),
+            let here = templates.first(where: { $0.id == id })
+        {
+            do {
+                let file = try FolderTemplateFile.template(from: data, id: id)
+                problem = nil
+                return .sameTemplate(here: here, file: file)
+            } catch {
+                problem = .file(error)
+                return .refused
+            }
+        }
+        return await keep(data, keepingID: true)
+    }
+
+    /// Replace: the template here becomes the file's version, under its id, so every folder
+    /// made from it keeps finding it; Undo takes it back.
+    public func replace(withImported file: FolderTemplate, undoManager: UndoManager?) async {
+        await apply(.save(file), named: "Replace Template", undoManager: undoManager)
+    }
+
+    /// Keep Both: the file's version beside the template here, with an id and a name of its
+    /// own, as Duplicate makes them.
+    public func keepBoth(_ file: FolderTemplate) async {
+        guard let data = try? FolderTemplateFile.data(of: file) else {
+            problem = .notSaved
+            return
+        }
+        await keep(data, keepingID: false)
+    }
+
+    @discardableResult
+    private func keep(_ data: Data, keepingID: Bool) async -> ImportResult {
         do {
-            _ = try await store.importTemplate(from: data)
+            _ = try await store.importTemplate(from: data, keepingID: keepingID)
             problem = nil
+            await load()
+            return .imported
         } catch .notSaved {
             problem = .notSaved
         } catch {
             problem = .file(error)
         }
         await load()
+        return .refused
     }
 
     // MARK: Editing a tree (ADR 0095)

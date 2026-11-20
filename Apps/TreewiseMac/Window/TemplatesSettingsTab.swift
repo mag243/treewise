@@ -174,7 +174,36 @@ final class TemplatesSettingsTab: NSViewController, NSTableViewDataSource, NSTab
                 // Read off the main actor; a file that cannot be read is no template, as
                 // the import says.
                 let data = await Task.detached { (try? Data(contentsOf: url)) ?? Data() }.value
-                await self.model.importTemplate(from: data)
+                let result = await self.model.importTemplate(from: data)
+                if case .sameTemplate(let here, let file) = result {
+                    self.ask(replacing: here, with: file, on: window)
+                }
+            }
+        }
+    }
+
+    /// The file holds a template that is here already, perhaps changed on another Mac:
+    /// Replace keeps its id, so the folders made from it keep finding it; Keep Both puts the
+    /// file's version beside it (ADR 0141).
+    private func ask(replacing here: FolderTemplate, with file: FolderTemplate, on window: NSWindow)
+    {
+        let alert = NSAlert()
+        alert.messageText = String(localized: "“\(here.name)” is here already")
+        alert.informativeText = String(
+            localized: "Replace it with the version in the file, or keep both?")
+        alert.addButton(withTitle: String(localized: "Replace"))
+        alert.addButton(withTitle: String(localized: "Keep Both"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
+        let undo = window.undoManager
+        alert.beginSheetModal(for: window) { [weak self] response in
+            guard let self else { return }
+            switch response {
+            case .alertFirstButtonReturn:
+                Task { await self.model.replace(withImported: file, undoManager: undo) }
+            case .alertSecondButtonReturn:
+                Task { await self.model.keepBoth(file) }
+            default:
+                break
             }
         }
     }

@@ -132,10 +132,12 @@ import TreewiseUI
         #expect(model.templates.first { $0.id == "year" } == Self.year)
     }
 
-    @Test func importsAFileAsANewTemplate() async throws {
+    @Test func importsAFileWithoutAnIDAsANewTemplate() async throws {
         let model = await model()
-        await model.importTemplate(from: try FolderTemplateFile.data(of: Self.client))
+        let json = #"{"format": 1, "name": "Client", "root": {"name": "{text}", "folders": []}}"#
+        #expect(await model.importTemplate(from: Data(json.utf8)) == .imported)
         #expect(model.templates.map(\.name) == ["Client", "Client 2", "Household Year"])
+        #expect(Set(model.templates.map(\.id)).count == 3, "under an id of its own")
     }
 
     @Test func saysWhenAFileIsNoTemplate() async {

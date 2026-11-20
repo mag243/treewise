@@ -62,14 +62,27 @@ import TreewiseTestSupport
         #expect(await store.templates() == [Self.year])
     }
 
-    @Test func importsAFileAsANewTemplateWithANameOfItsOwn() async throws {
+    @Test func importsATemplateHereAsANewOneWithANameOfItsOwn() async throws {
         try await store.save(Self.year)
         let data = try FolderTemplateFile.data(of: Self.year)
-        let imported = try await store.importTemplate(from: data)
-        #expect(imported.id != Self.year.id)
+        let imported = try await store.importTemplate(from: data, keepingID: true)
+        #expect(imported.id != Self.year.id, "an id here is not taken twice")
         #expect(imported.name == "Household Year 2")
         #expect(imported.root == Self.year.root)
         #expect(await store.templates().count == 2)
+    }
+
+    @Test func importKeepsTheFilesIDWhenNoTemplateHasIt() async throws {
+        let data = try FolderTemplateFile.data(of: Self.year)
+        let imported = try await store.importTemplate(from: data, keepingID: true)
+        #expect(imported.id == Self.year.id)
+        #expect(await store.templates() == [Self.year])
+    }
+
+    @Test func importGivesANewIDWhenNotKeepingIt() async throws {
+        let data = try FolderTemplateFile.data(of: Self.year)
+        let imported = try await store.importTemplate(from: data, keepingID: false)
+        #expect(imported.id != Self.year.id)
     }
 
     @Test func saysAnImportThatCannotBeSavedIsNotSaved() async throws {
@@ -82,13 +95,13 @@ import TreewiseTestSupport
         }
         let data = try FolderTemplateFile.data(of: Self.client)
         await #expect(throws: FolderTemplateFile.Problem.notSaved) {
-            try await store.importTemplate(from: data)
+            try await store.importTemplate(from: data, keepingID: true)
         }
     }
 
     @Test func refusesToImportAFileThatIsNoTemplate() async {
         await #expect(throws: FolderTemplateFile.Problem.unreadable) {
-            try await store.importTemplate(from: Data("nope".utf8))
+            try await store.importTemplate(from: Data("nope".utf8), keepingID: true)
         }
     }
 }

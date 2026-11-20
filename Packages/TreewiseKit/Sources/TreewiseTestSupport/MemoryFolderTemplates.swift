@@ -35,10 +35,12 @@ public actor MemoryFolderTemplates: FolderTemplateStoring {
         kept[template.id] = template
     }
 
-    public func importTemplate(from data: Data) throws(FolderTemplateFile.Problem)
+    public func importTemplate(from data: Data, keepingID: Bool) throws(FolderTemplateFile.Problem)
         -> FolderTemplate
     {
-        let read = try FolderTemplateFile.template(from: data, id: UUID().uuidString)
+        let fileID = keepingID ? FolderTemplateFile.id(in: data) : nil
+        let id = fileID.flatMap { kept[$0] == nil ? $0 : nil }
+        let read = try FolderTemplateFile.template(from: data, id: id ?? UUID().uuidString)
         let name = FolderTemplate.uniqueName(read.name, among: Set(kept.values.map(\.name)))
         let template = FolderTemplate(id: read.id, name: name, root: read.root)
         kept[template.id] = template

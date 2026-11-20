@@ -61,14 +61,18 @@ public actor FolderTemplateStore: FolderTemplateStoring {
         try TrashService().restore(trashed)
     }
 
-    /// Saves the template in a file as a new one, with a new id and, when its name is taken,
-    /// `name 2`, `name 3`, …
+    /// Saves the template in a file as a new one and, when its name is taken, `name 2`,
+    /// `name 3`, …; under the id the file holds when `keepingID` and no template has it, else
+    /// under a new id (ADR 0141).
     /// - Throws: the file's problem, or `.notSaved` when the template cannot be kept.
-    public func importTemplate(from data: Data) throws(FolderTemplateFile.Problem)
+    public func importTemplate(from data: Data, keepingID: Bool) throws(FolderTemplateFile.Problem)
         -> FolderTemplate
     {
-        let read = try FolderTemplateFile.template(from: data, id: UUID().uuidString)
-        let name = FolderTemplate.uniqueName(read.name, among: Set(templates().map(\.name)))
+        let here = templates()
+        let fileID = keepingID ? FolderTemplateFile.id(in: data) : nil
+        let id = fileID.flatMap { id in here.contains { $0.id == id } ? nil : id }
+        let read = try FolderTemplateFile.template(from: data, id: id ?? UUID().uuidString)
+        let name = FolderTemplate.uniqueName(read.name, among: Set(here.map(\.name)))
         let template = FolderTemplate(id: read.id, name: name, root: read.root)
         do {
             try save(template)

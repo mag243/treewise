@@ -10,7 +10,8 @@ public protocol FolderTemplateStoring: Sendable {
     func delete(id: String) async throws -> TrashedItem
     /// Brings back a template `delete(id:)` put away.
     func restore(_ trashed: TrashedItem) async throws
-    /// Saves the template in a file as a new one, with a new id and a name of its own.
-    func importTemplate(from data: Data) async throws(FolderTemplateFile.Problem)
+    /// Saves the template in a file as a new one with a name of its own, under the id the
+    /// file holds when `keepingID` and no template has it, else under a new id (ADR 0141).
+    func importTemplate(from data: Data, keepingID: Bool) async throws(FolderTemplateFile.Problem)
         -> FolderTemplate
 }
