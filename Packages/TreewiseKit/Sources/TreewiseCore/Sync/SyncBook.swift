@@ -9,13 +9,26 @@ public struct SyncBook: Sendable {
     /// change, so they win only where no device knows the element.
     public static let seedTime = Date(timeIntervalSince1970: 0)
 
+    /// A record of this device's that lost to another device's record not built on it.
+    public struct Conflict: Hashable, Sendable, Codable {
+        /// This device's record, the value the safety net keeps.
+        public let mine: SyncRecord
+        /// The record that holds instead.
+        public let winner: SyncRecord
+
+        public init(mine: SyncRecord, winner: SyncRecord) {
+            self.mine = mine
+            self.winner = winner
+        }
+    }
+
     /// What reading the files brought.
     public struct Absorbed: Sendable, Equatable {
         /// The other devices' records that now hold and were not taken over, to apply.
         public let taken: [SyncRecord]
         /// This device's records that lost to a record not built on them: a real conflict,
         /// for the safety net.
-        public let lost: [SyncRecord]
+        public let lost: [Conflict]
     }
 
     /// This device's id.
@@ -91,9 +104,11 @@ public struct SyncBook: Sendable {
         let kept = SyncMerge.pruned(
             own: Array(own.values), merged: merged, others: others, now: now)
         own = Dictionary(uniqueKeysWithValues: kept.map { ($0.key, $0) })
-        let lost = before.values.filter { mine in
-            guard let winner = merged[mine.key], winner.device != device else { return false }
-            return winner.replaced != mine.stamp && mine.changedAt != Self.seedTime
+        let lost = before.values.compactMap { mine -> Conflict? in
+            guard let winner = merged[mine.key], winner.device != device,
+                winner.replaced != mine.stamp, mine.changedAt != Self.seedTime
+            else { return nil }
+            return Conflict(mine: mine, winner: winner)
         }
         var toApply: [SyncRecord] = []
         for (key, winner) in merged where winner.device != device && taken[key] != winner {
@@ -102,6 +117,6 @@ public struct SyncBook: Sendable {
         }
         return Absorbed(
             taken: toApply.sorted { $0.key.order < $1.key.order },
-            lost: lost.sorted { $0.key.order < $1.key.order })
+            lost: lost.sorted { $0.mine.key.order < $1.mine.key.order })
     }
 }

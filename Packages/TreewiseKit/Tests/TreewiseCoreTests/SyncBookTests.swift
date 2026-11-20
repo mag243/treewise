@@ -97,7 +97,7 @@ import TreewiseCore
         book.record([Self.key: .string("a")], now: Self.now)
         let mine = book.own[Self.key]
         let blind = Self.record("b", at: Self.now.addingTimeInterval(60), device: "ipad")
-        #expect(Self.absorb(&book, [blind]).lost == [mine].compactMap { $0 })
+        #expect(Self.absorb(&book, [blind]).lost.map(\.mine) == [mine].compactMap { $0 })
     }
 
     @Test func theWinnerOfAConflictLosesNothing() {

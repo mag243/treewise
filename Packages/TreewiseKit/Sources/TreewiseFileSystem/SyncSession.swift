@@ -10,7 +10,7 @@ public actor SyncSession {
     private let templates: FolderTemplateStore
     private var isRunning = false
     /// This device's changes another device's replaced without seeing them (ADR 0144).
-    public private(set) var lost: [SyncRecord] = []
+    public private(set) var conflicts: [SyncBook.Conflict] = []
 
     /// A session of `sync` over `folders` and `templates`.
     public init(sync: SettingsSync, folders: FolderSettingsStore, templates: FolderTemplateStore) {
@@ -74,9 +74,15 @@ public actor SyncSession {
     public func refresh() async -> [SettingsSync.Change] {
         await settle()
         let refreshed = await sync.refresh()
-        lost += refreshed.lost
+        conflicts += refreshed.lost
+        return await apply(refreshed.changes)
+    }
+
+    /// Takes over the folder settings and templates in `changes`, and returns the rest for
+    /// the app.
+    private func apply(_ changes: [SettingsSync.Change]) async -> [SettingsSync.Change] {
         var forTheApp: [SettingsSync.Change] = []
-        for change in refreshed.changes {
+        for change in changes {
             switch change {
             case .folder(let path, let settings):
                 await folders.takeOver(settings, forFolderAt: path)
@@ -87,6 +93,23 @@ public actor SyncSession {
             }
         }
         return forTheApp
+    }
+
+    /// Restore in the safety net: `conflict`'s value of this device holds again, here and on
+    /// the other devices. Returns the saved patterns for the app when it changed them.
+    public func restore(_ conflict: SyncBook.Conflict) async -> [SettingsSync.Change] {
+        conflicts.removeAll { $0 == conflict }
+        return await apply(await sync.restore(conflict.mine))
+    }
+
+    /// Forgets the conflicts, once the app keeps them.
+    public func clearConflicts() {
+        conflicts = []
+    }
+
+    /// The name of the device with `id`, as its file gives it.
+    public func deviceName(_ id: String) async -> String? {
+        await sync.deviceNames[id]
     }
 
     /// The user changed the saved patterns from `before` to `after`.

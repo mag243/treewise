@@ -36,7 +36,7 @@ import TreewiseTestSupport
         both.alwaysSkipped = ["scan.pdf"]
         #expect(await mac.folders.settings(forFolderAt: folder) == both)
         #expect(await ipad.folders.settings(forFolderAt: folder) == both)
-        let lost = await mac.session.lost + ipad.session.lost
+        let lost = await mac.session.conflicts + ipad.session.conflicts
         #expect(lost.isEmpty, "no part clashed")
     }
 
@@ -60,9 +60,9 @@ import TreewiseTestSupport
         await ipad.session.refresh()
 
         #expect(await mac.folders.settings(forFolderAt: folder) == SyncTestPair.settings("newer"))
-        let macLost = await mac.session.lost
-        let ipadLost = await ipad.session.lost
-        #expect(macLost.map(\.key.part) == ["enabledModules"])
+        let macLost = await mac.session.conflicts
+        let ipadLost = await ipad.session.conflicts
+        #expect(macLost.map(\.mine.key.part) == ["enabledModules"])
         #expect(ipadLost.isEmpty)
     }
 
@@ -96,5 +96,34 @@ import TreewiseTestSupport
             let names = await device.templates.templates().first?.root.folders.map(\.name)
             #expect(names == ["Receipts", "Taxes"])
         }
+    }
+
+    @Test func restoreMakesTheLosersValueHoldOnBoth() async throws {
+        let pair = try SyncTestPair.make()
+        let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
+        let folder = try drive.makeFolder("Clients").path
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
+        await mac.folders.save(SyncTestPair.settings("dates"), forFolderAt: folder)
+        await mac.session.settle()
+        await ipad.session.refresh()
+        mac.clock.advance()
+        await mac.folders.save(SyncTestPair.settings("mine"), forFolderAt: folder)
+        mac.clock.advance()
+        await ipad.folders.save(SyncTestPair.settings("theirs"), forFolderAt: folder)
+        await mac.session.settle()
+        await ipad.session.settle()
+        await mac.session.refresh()
+        let conflict = try #require(await mac.session.conflicts.first)
+        #expect(await mac.session.deviceName(conflict.winner.device) == "b-ipad")
+
+        mac.clock.advance()
+        _ = await mac.session.restore(conflict)
+        await ipad.session.refresh()
+
+        #expect(await mac.folders.settings(forFolderAt: folder) == SyncTestPair.settings("mine"))
+        #expect(await ipad.folders.settings(forFolderAt: folder) == SyncTestPair.settings("mine"))
+        let ipadConflicts = await ipad.session.conflicts
+        #expect(ipadConflicts.isEmpty, "Restore built on the iPad's change")
     }
 }

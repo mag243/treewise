@@ -22,7 +22,7 @@ public actor SettingsSync {
     /// another device's replaced without seeing them, for the safety net.
     public struct Refreshed: Sendable {
         public let changes: [Change]
-        public let lost: [SyncRecord]
+        public let lost: [SyncBook.Conflict]
     }
 
     private static let logger = Logger(subsystem: LogSubsystem.name, category: "Sync")
@@ -34,6 +34,8 @@ public actor SettingsSync {
     private var folderBooks: [String: SyncBook] = [:]
     private var shared: SyncBook
     private var written: [String: Set<SyncRecord>] = [:]
+    /// The name of each device whose file was read, by its id.
+    public private(set) var deviceNames: [String: String] = [:]
 
     /// A sync of `device`, its times from `now`.
     public init(device: SyncDevice, now: @escaping @Sendable () -> Date = Date.init) {
@@ -168,9 +170,10 @@ public actor SettingsSync {
         var sharedOthers: Set<SyncRecord> = []
         var sharedOwn: [SyncRecord] = []
         var changes: [Change] = []
-        var lost: [SyncRecord] = []
+        var lost: [SyncBook.Conflict] = []
         for root in drives {
             guard let files = await read(root), var book = folderBooks[root.path] else { continue }
+            for file in files { deviceNames[file.device] = file.name }
             let own = files.filter { $0.device == device.id }.flatMap(\.records)
             let others = files.filter { $0.device != device.id }.flatMap(\.records)
             sharedOwn += own.filter { !$0.key.element.isFolder }
@@ -187,6 +190,23 @@ public actor SettingsSync {
         changes += sharedChanges(absorbed.taken)
         for root in drives { await write(root.path) }
         return Refreshed(changes: changes, lost: lost)
+    }
+
+    /// Records `record`'s value again, as the user's change now: Restore in the safety net.
+    /// Returns the element it changed, whole, for the stores and the app to take over.
+    public func restore(_ record: SyncRecord) async -> [Change] {
+        guard record.key.element.isFolder else {
+            shared.record([record.key: record.value], now: now())
+            for root in drives { await write(root.path) }
+            return sharedChanges([record])
+        }
+        for (root, var book) in folderBooks where book.merged[record.key] != nil {
+            book.record([record.key: record.value], now: now())
+            folderBooks[root] = book
+            await write(root)
+            return Self.folderChanges([record], in: book, root: root)
+        }
+        return []
     }
 
     private func read(_ root: URL) async -> [DeviceSyncFile]? {
