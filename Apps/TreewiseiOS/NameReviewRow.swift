@@ -8,6 +8,11 @@ import TreewiseUI
 struct NameReviewRow: View {
     let model: NameReviewModel
     let entry: NameProposalSession.Entry
+    /// Shows the panel about this file in a sheet, where it is not beside the list.
+    let showDetails: (() -> Void)?
+
+    /// How strongly the chosen row is marked, as the panel beside the list is about it.
+    private static let chosenOpacity = 0.12
 
     var body: some View {
         HStack(spacing: 12) {
@@ -25,7 +30,24 @@ struct NameReviewRow: View {
             }
             Spacer(minLength: 0)
             if (entry.position?.count ?? 0) > 1 { steps }
+            if let showDetails {
+                Button {
+                    model.selectedID = entry.id
+                    showDetails()
+                } label: {
+                    Image(systemName: "info.circle")
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text("About \(entry.originalName)"))
+            }
         }
+        .contentShape(Rectangle())
+        // A tap anywhere in the row chooses it, for the panel beside the list.
+        .simultaneousGesture(TapGesture().onEnded { model.selectedID = entry.id })
+        .listRowBackground(
+            showDetails == nil && model.selectedID == entry.id
+                ? Color.accentColor.opacity(Self.chosenOpacity) : nil
+        )
         .swipeActions { skipActions }
     }
 

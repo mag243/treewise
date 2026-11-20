@@ -54,4 +54,63 @@ final class NameReviewTests: XCTestCase {
             "the overview shows the folder's files")
         XCTAssertTrue(app.textFields["proposal-Budget.txt"].firstMatch.exists)
     }
+
+    /// Opens the overview of Notes.md, with its proposal read. The app opens at the first
+    /// location, Documents, so this works in portrait too, where the sidebar hides.
+    @MainActor
+    private func openOverview() -> XCUIApplication {
+        let app = launch(state: UUID().uuidString)
+        let notes = row("Notes.md", in: app)
+        XCTAssertTrue(notes.waitForExistence(timeout: Self.timeout))
+        notes.press(forDuration: 1)
+        app.buttons["Suggest Names…"].firstMatch.tap()
+        XCTAssertTrue(
+            app.textFields["proposal-Notes.md"].firstMatch.waitForExistence(
+                timeout: Self.timeout), "the overview shows the file")
+        return app
+    }
+
+    /// In landscape the panel about the chosen file shows beside the list, as on the Mac,
+    /// and Hide Preview takes it away.
+    @MainActor
+    func testThePanelAboutTheFileShowsBesideTheListAndHides() {
+        let app = openOverview()
+        let panel = app.descendants(matching: .any)["nameDetails"].firstMatch
+        XCTAssertTrue(panel.waitForExistence(timeout: Self.timeout), "beside the list")
+        XCTAssertTrue(
+            app.staticTexts["In This Folder"].firstMatch.exists, "with the names around it")
+        app.buttons["Hide Preview"].firstMatch.tap()
+        XCTAssertTrue(app.eventually { !panel.exists }, "hidden")
+        XCTAssertTrue(app.buttons["Show Preview"].firstMatch.exists)
+    }
+
+    /// Save Pattern… keeps the pattern under a name, which the menu then offers.
+    @MainActor
+    func testAPatternIsSavedUnderANameFromTheMenu() {
+        let app = openOverview()
+        let menu = app.buttons["Choose a Saved Pattern"].firstMatch
+        menu.tap()
+        app.buttons["Save Pattern…"].firstMatch.tap()
+        let name = app.alerts.textFields.firstMatch
+        XCTAssertTrue(name.waitForExistence(timeout: Self.timeout), "a name is asked")
+        name.typeText("Notes Pattern")
+        app.alerts.buttons["Save"].tap()
+
+        menu.tap()
+        XCTAssertTrue(
+            app.buttons["Notes Pattern"].firstMatch.waitForExistence(timeout: Self.timeout),
+            "the menu offers it")
+    }
+
+    /// In portrait there is no room beside the list: a row's ⓘ shows the panel in a sheet.
+    @MainActor
+    func testARowsInfoShowsThePanelWhereItIsNotBesideTheList() {
+        XCUIDevice.shared.orientation = .portrait
+        let app = openOverview()
+        let panel = app.descendants(matching: .any)["nameDetails"].firstMatch
+        XCTAssertFalse(panel.exists, "not beside the list")
+        app.buttons["About Notes.md"].firstMatch.tap()
+        XCTAssertTrue(panel.waitForExistence(timeout: Self.timeout), "in a sheet")
+        XCTAssertTrue(app.staticTexts["In This Folder"].firstMatch.exists)
+    }
 }

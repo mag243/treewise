@@ -105,7 +105,9 @@ struct FolderView: View {
         }
         .modifier(PermanentDeleteAlert(browser: browser, failureText: failureText))
         .fullScreenCover(item: $review) { shown in
-            NameReviewSheet(model: shown.model, browser: browser, undoManager: undoManager)
+            NameReviewSheet(
+                model: shown.model, browser: browser, settings: settings,
+                undoManager: undoManager)
         }
     }
 

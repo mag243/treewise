@@ -7,10 +7,12 @@ import TreewiseUI
 /// type over, and the patterns to take instead.
 struct NameReviewPatterns: View {
     let model: NameReviewModel
+    /// Opens Settings' saved patterns.
+    let editSaved: () -> Void
 
     var body: some View {
         ForEach(model.modules) { module in
-            PatternBlock(model: model, module: module)
+            PatternBlock(model: model, module: module, editSaved: editSaved)
         }
     }
 }
@@ -19,6 +21,7 @@ struct NameReviewPatterns: View {
 private struct PatternBlock: View {
     let model: NameReviewModel
     let module: NameReviewModule
+    let editSaved: () -> Void
     /// The pattern as typed, until it is used.
     @State private var typed = ""
 
@@ -54,45 +57,9 @@ private struct PatternBlock: View {
                     Task { await model.useDefaultPattern(module.id) }
                 }
             }
-            let saved = model.savedPatternChoices(for: module.id)
-            if !saved.isEmpty || !module.candidates.isEmpty {
-                Menu("Choose a Saved Pattern") {
-                    if !module.candidates.isEmpty {
-                        Section("Found in This Folder") {
-                            ForEach(module.candidates, id: \.text) { candidate in
-                                Button {
-                                    Task {
-                                        await model.useFoundPattern(candidate.text, for: module.id)
-                                    }
-                                } label: {
-                                    current(candidate.text, module.templateText == candidate.text)
-                                }
-                            }
-                        }
-                    }
-                    Section("Saved") {
-                        ForEach(saved) { choice in
-                            Button {
-                                Task { await model.useSavedPattern(choice.id, for: module.id) }
-                            } label: {
-                                current(choice.pattern.name, choice.isCurrent)
-                            }
-                            .disabled(choice.problem != nil)
-                        }
-                    }
-                }
-            }
+            NameReviewPatternMenu(model: model, module: module, editSaved: editSaved)
         }
         .font(.callout)
         .buttonStyle(.borderless)
-    }
-
-    /// A menu item, ticked when it is the pattern in force.
-    @ViewBuilder private func current(_ title: String, _ isCurrent: Bool) -> some View {
-        if isCurrent {
-            Label(title, systemImage: "checkmark")
-        } else {
-            Text(title)
-        }
     }
 }
