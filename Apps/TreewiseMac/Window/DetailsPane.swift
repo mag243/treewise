@@ -126,7 +126,7 @@ final class DetailsPane: NSView {
     private func show(_ details: [ItemDetails.Row], again: Bool = false) {
         guard again || details != shownRows else { return }
         shownRows = details
-        while rows.numberOfRows > 0 { rows.removeRow(at: 0) }
+        removeRows()
         let font = NSFont.preferredFont(forTextStyle: .callout)
         let labels = details.map { row in
             let label = NSTextField(labelWithString: row.label)
@@ -147,6 +147,17 @@ final class DetailsPane: NSView {
         }
         addTemplateRows(font: font, width: valueWidth)
         rows.rowAlignment = .firstBaseline
+    }
+
+    /// Removes every row and its views: `removeRow(at:)` leaves a row's views in the grid.
+    private func removeRows() {
+        while rows.numberOfRows > 0 {
+            let row = rows.row(at: 0)
+            for index in 0..<row.numberOfCells {
+                row.cell(at: index).contentView?.removeFromSuperview()
+            }
+            rows.removeRow(at: 0)
+        }
     }
 
     /// Made from, with each template's name and Forget.
