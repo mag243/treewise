@@ -8,11 +8,22 @@ extension BrowserState {
     /// be registered during the undo, while the undo itself is async. So each
     /// handler starts the inverse in a task and at once registers the next
     /// step, which waits for that task's record (ADR 0018).
-    func registerUndo(_ record: Task<UndoRecord, Never>, name: String, undoManager: UndoManager?) {
+    ///
+    /// `alongside` is what the same step changes beside the files, undone after them and
+    /// redone after them (ADR 0139).
+    func registerUndo(
+        _ record: Task<UndoRecord, Never>, name: String, undoManager: UndoManager?,
+        alongside: UndoAlongside? = nil
+    ) {
         guard let undoManager else { return }
         undoManager.registerUndo(withTarget: self) { browser in
-            let inverse = Task { @MainActor in await browser.performUndo(record.value) }
-            browser.registerUndo(inverse, name: name, undoManager: undoManager)
+            let inverse = Task { @MainActor in
+                let redo = await browser.performUndo(record.value)
+                await alongside?.undo()
+                return redo
+            }
+            browser.registerUndo(
+                inverse, name: name, undoManager: undoManager, alongside: alongside?.reversed)
         }
         undoManager.setActionName(name)
     }
@@ -37,4 +48,14 @@ extension BrowserState {
             return .none
         }
     }
+}
+
+/// What one undoable step changes beside the files, as a template corrected along with the
+/// folders renamed (ADR 0139): how to undo it, and how to redo it.
+struct UndoAlongside: Sendable {
+    let undo: @MainActor @Sendable () async -> Void
+    let redo: @MainActor @Sendable () async -> Void
+
+    /// The same change the other way, for the step that redoes it.
+    var reversed: UndoAlongside { UndoAlongside(undo: redo, redo: undo) }
 }

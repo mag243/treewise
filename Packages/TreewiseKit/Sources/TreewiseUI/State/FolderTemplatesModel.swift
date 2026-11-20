@@ -50,6 +50,15 @@ public final class FolderTemplatesModel {
         templates.first { $0.name == name }
     }
 
+    /// Saves `changed` over the templates with their ids, without an undo of its own: the
+    /// step that changed them undoes it (ADR 0139).
+    public func replace(_ changed: [FolderTemplate]) async {
+        for template in changed {
+            try? await store.save(template)
+        }
+        await load()
+    }
+
     /// Renames a template; an empty name, or one another template has, is not taken.
     public func rename(_ id: String, to name: String, undoManager: UndoManager?) async {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
