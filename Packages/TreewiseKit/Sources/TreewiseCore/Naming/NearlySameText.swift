@@ -60,7 +60,7 @@ public enum NearlySameText {
     /// The fewest characters to add, remove or replace, or pairs side by side to swap, to
     /// make one text the other (optimal string alignment), counted up to one more than
     /// `limit`.
-    private static func distance(_ one: [Character], _ other: [Character], atMost limit: Int)
+    static func distance(_ one: [Character], _ other: [Character], atMost limit: Int)
         -> Int
     {
         guard abs(one.count - other.count) <= limit else { return limit + 1 }

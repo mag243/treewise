@@ -56,4 +56,50 @@ import TreewiseCore
             NearlySameFolderName.matches(
                 "Belasting Dienst", "Belastingdienst", isSpelledCorrectly: speller))
     }
+
+    // MARK: The years' history (rule 5)
+
+    private static func history(_ years: [Int: [String]]) -> FolderNameHistory {
+        FolderNameHistory(years)
+    }
+
+    @Test func namesSideBySideInAYearAreTwoFolders() {
+        let history = Self.history([2024: ["Belasting Dienst", "Belastingdienst"]])
+        #expect(
+            !NearlySameFolderName.matches(
+                "Belasting Dienst", "Belastingdienst", isSpelledCorrectly: Self.knows([]),
+                history: history))
+    }
+
+    @Test(arguments: [("Huur", "Huis"), ("Bonen", "Bonnen")])
+    func aNameInOneYearIsNearlyTheNameInMoreYears(_ rare: String, _ usual: String) {
+        let history = Self.history([
+            2021: [usual], 2022: [usual], 2023: [usual], 2024: [usual], 2025: [rare],
+            2026: [usual],
+        ])
+        let speller = Self.knows([rare, usual])
+        #expect(
+            NearlySameFolderName.matches(rare, usual, isSpelledCorrectly: speller, history: history)
+        )
+    }
+
+    @Test(arguments: [("Huis", "Auto"), ("Q1", "Q2"), ("Bank", "Belasting")])
+    func historyGivesNoLikenessToNamesUnlikeEachOther(_ rare: String, _ usual: String) {
+        let history = Self.history([2024: [usual], 2025: [usual], 2026: [rare]])
+        #expect(
+            !NearlySameFolderName.matches(
+                rare, usual, isSpelledCorrectly: Self.knows([]), history: history))
+    }
+
+    @Test func namesInAsManyYearsKeepTheOtherRules() {
+        let history = Self.history([2025: ["Huur"], 2026: ["Huis"]])
+        #expect(
+            !NearlySameFolderName.matches(
+                "Huur", "Huis", isSpelledCorrectly: Self.knows([]), history: history))
+    }
+
+    @Test func historyCountsYearsByTheNameAsTheFileSystemCompares() {
+        let history = Self.history([2024: ["huis"], 2025: ["Huis"], 2026: ["Huur"]])
+        #expect(history.years(of: "HUIS") == [2024, 2025])
+    }
 }
