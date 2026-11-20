@@ -3,6 +3,27 @@
     <channel>
         <title>Treewise</title>
         <item>
+            <title>0.9.3</title>
+            <pubDate>Fri, 20 Nov 2026 20:00:08 +0100</pubDate>
+            <sparkle:version>2026.1120.195801</sparkle:version>
+            <sparkle:shortVersionString>0.9.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[One folder renamed in every year, and a shorter context menu.
+
+### New
+- **Rename in All Years…** on a folder inside a year's folder, such as `2025/Tax`, gives that folder its new name in every year at once. A sheet shows each year first, leaves out a year that already has a folder with the new name, corrects the template the years were made from, and one Undo takes all of it back.
+- **A misspelled folder found for you:** with Folder Structure Templates, the bar in a year's folder notices a folder of the year before that is nearly named as one there, such as `Belastingsdienst` beside `Belastingdienst`, and asks which name to keep in every year, or to add it anyway.
+- **A folder remembers its template:** a folder made from a folder structure template keeps which one, shown as *Made from* in the details pane, with a button to forget it. Rename in All Years and Add to Template then offer that template, also when you have more than one for your years, and a template exported and imported on another Mac is still known as the same one.
+
+### Improved
+- **A shorter context menu:** it shows only what can be done with what you clicked, and groups compressing, folder structures and Suggest Names in a submenu each, the usual command first.
+
+### Fixed
+- On a disk that cannot keep Treewise's mark on a folder, such as some USB sticks, a folder's settings in Suggest Names and templates now stay with it when Treewise renames or moves it.
+]]></description>
+            <enclosure url="https://github.com/mag243/treewise/releases/download/v0.9.3/Treewise-0.9.3-2026.1120.195801.zip" length="6334093" type="application/octet-stream" sparkle:edSignature="VgzRz7b3eu38rb/W/PenPbNpkH8RvkhwB36TGNt/B+HYf+h0iWK6N02XrVFG34KL+kI4F2/wb5dNi+nw+kwhBg=="/>
+        </item>
+        <item>
             <title>0.9.2</title>
             <pubDate>Thu, 19 Nov 2026 21:28:07 +0100</pubDate>
             <sparkle:version>2026.1119.212502</sparkle:version>
