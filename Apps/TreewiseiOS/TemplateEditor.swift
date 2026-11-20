@@ -169,14 +169,20 @@ private struct TemplateFolderNameSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField(String(localized: "Name"), text: $name)
-                    .accessibilityIdentifier("templateFolderName")
-                Menu("Insert Field") {
-                    ForEach(choices, id: \.field) { choice in
-                        Button(choice.title) {
-                            name = TemplateFieldChoices.name(name, adding: choice.field)
+                // The menu sits beside the name, as on the Mac: a menu as a form's row of its
+                // own opens only from its text, not from the rest of the row.
+                HStack {
+                    TextField(String(localized: "Name"), text: $name)
+                        .accessibilityIdentifier("templateFolderName")
+                    Menu("Insert Field") {
+                        ForEach(choices, id: \.field) { choice in
+                            Button(choice.title) {
+                                name = TemplateFieldChoices.name(name, adding: choice.field)
+                            }
                         }
                     }
+                    .fixedSize()
+                    .buttonStyle(.borderless)
                 }
             }
             .navigationTitle(Text("Rename Folder"))
