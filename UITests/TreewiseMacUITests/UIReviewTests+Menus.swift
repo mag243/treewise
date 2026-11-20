@@ -20,6 +20,20 @@ extension UIReviewTests {
         }
     }
 
+    /// The context menu of a file and of a folder in the root (ADR 0142): what shows, its
+    /// groups and its submenus' lines.
+    @MainActor
+    func reviewContextMenus(in window: XCUIElement, app: XCUIApplication, appearance: String?) {
+        for (name, shot) in [("Notes.md", "file"), ("Projects", "folder")] {
+            let item = window.tables.staticTexts[name]
+            XCTAssertTrue(item.waitForExistence(timeout: Self.timeout), "\(name) shows")
+            press(item, in: window.scrollViews.firstMatch, .rightClick)
+            settleScreen()
+            keepScreen(over: window, as: "browser-context-\(shot)", appearance: appearance)
+            app.typeKey(.escape, modifierFlags: [])
+        }
+    }
+
     /// Keeps the part of the screen under `window`, with what lies over it, as a screen of
     /// the review. Nothing in a menu is checked: XCUITest does not see a menu item's symbol,
     /// so the screenshot is looked at.

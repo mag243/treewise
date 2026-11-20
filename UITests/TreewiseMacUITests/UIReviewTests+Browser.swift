@@ -1,7 +1,7 @@
 import XCTest
 
 /// The UI review's walk through the browser window (ADR 0103): `tools/build.sh uireview
-/// browser`. The list, the command bar's menus, the details pane, the icon view, a second
+/// browser`. The list, the command bar's menus, the context menus, the details pane, the icon view, a second
 /// tab and About Treewise.
 extension UIReviewTests {
     @MainActor
@@ -17,6 +17,7 @@ extension UIReviewTests {
             window, as: "browser-list", appearance: appearance,
             also: sidebarWidth(in: window))
         reviewCommandBarMenus(in: window, app: app, appearance: appearance)
+        reviewContextMenus(in: window, app: app, appearance: appearance)
         app.go(to: "Documents/Taxes", timeout: Self.timeout)
         let file = window.tables.staticTexts["Payment reminder.pdf"]
         XCTAssertTrue(file.waitForExistence(timeout: Self.timeout), "the folder's files show")

@@ -47,7 +47,8 @@ extension LaunchTests {
         try saveClientTemplate(in: app)
         let window = app.windows.firstMatch
         window.tables.staticTexts["Documents"].rightClick()
-        let menu = window.tables.menus.menuItems["New Folders from Template"]
+        let menu = window.tables.menus.submenuItem(
+            "New Folders from Template", in: "Folder Structure")
         XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout), "the menu offers templates")
         menu.hover()
         menu.menuItems[Self.client].click()
@@ -85,12 +86,12 @@ extension LaunchTests {
         let client = window.tables.staticTexts[Self.client]
         XCTAssertTrue(client.appeared(timeout: Self.launchTimeout))
         client.rightClick()
-        window.tables.menus.menuItems["Copy Folder Structure"].click()
+        window.tables.menus.submenuItem("Copy Structure", in: "Folder Structure").click()
         app.typeKey(.upArrow, modifierFlags: .command)
         let documents = window.tables.staticTexts["Documents"]
         XCTAssertTrue(documents.appeared(timeout: Self.launchTimeout))
         documents.rightClick()
-        window.tables.menus.menuItems["Paste Folder Structure…"].click()
+        window.tables.menus.submenuItem("Paste Structure…", in: "Folder Structure").click()
         let sheet = window.sheets.firstMatch
         XCTAssertTrue(
             sheet.staticTexts["Makes 3 folders."].appeared(timeout: Self.launchTimeout),
@@ -165,7 +166,8 @@ extension LaunchTests {
         templates.typeKey("w", modifierFlags: .command)
         let window = app.windows.firstMatch
         window.tables.staticTexts["Documents"].rightClick()
-        let menu = window.tables.menus.menuItems["New Folders from Template"]
+        let menu = window.tables.menus.submenuItem(
+            "New Folders from Template", in: "Folder Structure")
         XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout))
         menu.hover()
         menu.menuItems[Self.client].click()
@@ -201,7 +203,7 @@ extension LaunchTests {
         let client = window.tables.staticTexts[Self.client]
         XCTAssertTrue(client.appeared(timeout: Self.launchTimeout))
         client.rightClick()
-        window.tables.menus.menuItems["Save Folder Structure as Template…"].click()
+        window.tables.menus.submenuItem("Save as Template…", in: "Folder Structure").click()
         let sheet = window.sheets.firstMatch
         let name = sheet.textFields["templateName"]
         XCTAssertTrue(name.appeared(timeout: Self.launchTimeout), "the sheet asks for a name")

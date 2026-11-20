@@ -47,7 +47,7 @@ final class BenchmarkTests: XCTestCase {
         options.iterationCount = Self.iterations
         measure(metrics: [XCTClockMetric()], options: options) {
             folder.rightClick()
-            app.tables.menus.menuItems["Suggest Names…"].click()
+            app.tables.menus.submenuItem("For Selection…", in: "Suggest Names").click()
             let review = app.windows.matching(
                 NSPredicate(format: "title BEGINSWITH 'Suggest Names'")
             ).firstMatch

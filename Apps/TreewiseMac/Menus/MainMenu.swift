@@ -16,6 +16,11 @@ enum MainMenu {
         bar.items = [
             app, FileMenu.make(), EditMenu.make(), ViewMenu.make(), GoMenu.make(), window, help,
         ]
+        // A programmer's slip, not the user's: every launch of a debug build checks it,
+        // so every UI test does.
+        assert(
+            MenuKeyCheck.shared(in: bar).isEmpty,
+            "Menu items share a key: \(MenuKeyCheck.shared(in: bar))")
         NSApp.mainMenu = bar
         NSApp.windowsMenu = window.submenu
         NSApp.helpMenu = help.submenu

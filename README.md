@@ -43,7 +43,7 @@ The specification of the app's keys (ADR 0022).
 
 ## Name suggestions
 
-*Suggest Names…* in a file's or folder's context menu proposes names for its files from a pattern, such as `{date:yyyy.MM.dd} {folder} - {text}`, which Treewise recognizes in the names already there or you type yourself. You approve each name before anything is renamed. While renaming a file, ⌥Esc offers the proposals for that one file.
+*Suggest Names ▸ For Selection…* in a file's or folder's context menu proposes names for its files from a pattern, such as `{date:yyyy.MM.dd} {folder} - {text}`, which Treewise recognizes in the names already there or you type yourself. You approve each name before anything is renamed. While renaming a file, ⌥Esc offers the proposals for that one file.
 
 - **Patterns** hold dates in several forms, also with month names in English, Dutch and German, the folder's name, a running number per year, quarter or month, optional parts and choices between parts.
 - **Saved patterns** in Settings > Names: pick one for a folder from the menu beside the pattern. A folder keeps the version it uses and is offered a newer one when you change it.

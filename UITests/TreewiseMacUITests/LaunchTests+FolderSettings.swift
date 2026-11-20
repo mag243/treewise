@@ -21,7 +21,7 @@ extension LaunchTests {
         let row = app.tables.staticTexts[Self.oddName]
         XCTAssertTrue(row.appeared(timeout: Self.launchTimeout), "the folder shows")
         row.rightClick()
-        app.tables.menus.menuItems["Suggest Names…"].click()
+        app.tables.menus.submenuItem("For Selection…", in: "Suggest Names").click()
         let again = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch
         XCTAssertTrue(

@@ -7,12 +7,6 @@ enum FileMenu {
     private typealias Window = BrowserWindowController
 
     static func make() -> NSMenuItem {
-        let compress = MenuItem.make("Compress to", nil)
-        compress.submenu = NSMenu(title: compress.title)
-        compress.submenu?.items = [
-            MenuItem.make("7z File", #selector(Window.compressTo7z(_:))),
-            MenuItem.make("TAR.GZ File", #selector(Window.compressToTarGz(_:))),
-        ]
         let down = MenuItem.arrow(NSDownArrowFunctionKey)
         let file = MenuItem.menu(
             "File",
@@ -27,15 +21,7 @@ enum FileMenu {
                 MenuItem.make(
                     "Open in Other Window", #selector(Window.openSelectionInOtherWindow(_:)),
                     key: down, modifiers: [.command, .option]),
-                MenuItem.make("Suggest Names…", #selector(Window.suggestNames(_:))),
-                MenuItem.make(
-                    "Suggest Names for Whole Folder…", #selector(Window.suggestNamesForFolder(_:))),
-                MenuItem.make("Extract All…", #selector(Window.extractAll(_:))),
-                MenuItem.make("Compress to ZIP", #selector(Window.compressToZip(_:))),
-                compress,
-                MenuItem.make("Rename", #selector(Window.renameSelection(_:))),
-                MenuItem.make(
-                    "Rename with Suggestions", #selector(Window.renameWithSuggestions(_:))),
+            ] + namingAndArchiveItems() + [
                 MenuItem.make("Eject", #selector(Window.ejectSelection(_:)), key: "e"),
                 MenuItem.make(
                     "Open in Terminal", #selector(Window.openInTerminal(_:)), key: "t",
@@ -47,5 +33,25 @@ enum FileMenu {
             ])
         file.submenu?.delegate = FileMenuTemplates.shared
         return file
+    }
+
+    /// Suggest Names, the archive commands and Rename.
+    private static func namingAndArchiveItems() -> [NSMenuItem] {
+        let compress = MenuItem.make("Compress to", nil)
+        compress.submenu = NSMenu(title: compress.title)
+        compress.submenu?.items = [
+            MenuItem.make("7z File", #selector(Window.compressTo7z(_:))),
+            MenuItem.make("TAR.GZ File", #selector(Window.compressToTarGz(_:))),
+        ]
+        return [
+            MenuItem.make("Suggest Names…", #selector(Window.suggestNames(_:))),
+            MenuItem.make(
+                "Suggest Names for Whole Folder…", #selector(Window.suggestNamesForFolder(_:))),
+            MenuItem.make("Extract All…", #selector(Window.extractAll(_:))),
+            MenuItem.make("Compress to ZIP", #selector(Window.compressToZip(_:))),
+            compress,
+            MenuItem.make("Rename", #selector(Window.renameSelection(_:))),
+            MenuItem.make("Rename with Suggestions", #selector(Window.renameWithSuggestions(_:))),
+        ]
     }
 }

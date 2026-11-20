@@ -146,7 +146,7 @@ final class ScreenshotTests: XCTestCase {
         let year = window.tables.staticTexts["2025"]
         XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
         year.rightClick()
-        window.tables.menus.menuItems["Save Folder Structure as Template…"].click()
+        window.tables.menus.submenuItem("Save as Template…", in: "Folder Structure").click()
         let sheet = window.sheets.firstMatch
         XCTAssertTrue(
             sheet.staticTexts["Appeals"].waitForExistence(timeout: Self.timeout),

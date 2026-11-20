@@ -21,10 +21,11 @@ extension LaunchTests {
         year.rightClick()
         let menu = window.tables.menus.firstMatch
         XCTAssertTrue(
-            menu.menuItems["New Folders from Template"].appeared(timeout: Self.launchTimeout),
+            menu.submenuItem("New Folders from Template", in: "Folder Structure").appeared(
+                timeout: Self.launchTimeout),
             "the year's menu shows its template items")
         XCTAssertFalse(
-            menu.menuItems["Add Missing Folders from 2026…"].exists,
+            menu.submenuItem("Add Missing Folders from 2026…", in: "Folder Structure").exists,
             "without the add-on no missing folders are offered")
         app.typeKey(.escape, modifierFlags: [])
         year.doubleClick()

@@ -1602,6 +1602,22 @@
         }
       }
     },
+    "Compress" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komprimieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprimeer"
+          }
+        }
+      }
+    },
     "Compress to" : {
       "localizations" : {
         "de" : {
@@ -1662,6 +1678,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kopieer mapstructuur"
+          }
+        }
+      }
+    },
+    "Copy Structure" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Struktur kopieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieer structuur"
           }
         }
       }
@@ -2523,6 +2555,22 @@
         }
       }
     },
+    "Folder Structure" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnerstruktur"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapstructuur"
+          }
+        }
+      }
+    },
     "Folder Structure Templates gave no folders. Its trial or licence may have ended." : {
       "localizations" : {
         "de" : {
@@ -2664,6 +2712,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voor %@"
+          }
+        }
+      }
+    },
+    "For Selection…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für Auswahl …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor selectie…"
+          }
+        }
+      }
+    },
+    "For Whole Folder…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für ganzen Ordner …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor hele map…"
           }
         }
       }
@@ -4322,6 +4402,22 @@
         }
       }
     },
+    "Paste Structure…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Struktur einsetzen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plak structuur…"
+          }
+        }
+      }
+    },
     "Paste the Structure of “%@”" : {
       "localizations" : {
         "de" : {
@@ -5223,6 +5319,22 @@
         }
       }
     },
+    "Save as Template…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Vorlage sichern …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar als sjabloon…"
+          }
+        }
+      }
+    },
     "Saved" : {
       "localizations" : {
         "de" : {
@@ -5790,6 +5902,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gestopt: een naam kon niet worden gegeven. Een bestand heet nu %@; Herstel naamswijziging zet het terug."
+          }
+        }
+      }
+    },
+    "Suggest Names" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen vorschlagen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel namen voor"
           }
         }
       }
@@ -6809,6 +6937,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Je add-ons konden deze sleutel nu niet controleren. Probeer het opnieuw."
+          }
+        }
+      }
+    },
+    "ZIP File" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP-Datei"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP-bestand"
           }
         }
       }

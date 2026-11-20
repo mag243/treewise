@@ -22,7 +22,7 @@ extension LaunchTests {
         }
 
         odd.rightClick()
-        app.tables.menus.menuItems["Suggest Names…"].click()
+        app.tables.menus.submenuItem("For Selection…", in: "Suggest Names").click()
 
         let review = app.windows.matching(NSPredicate(format: "title BEGINSWITH 'Suggest Names'"))
             .firstMatch

@@ -32,7 +32,7 @@ extension UIReviewTests {
         let year = window.tables.staticTexts["2026"]
         XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
         press(year, in: window.scrollViews.firstMatch, .rightClick)
-        press(window.tables.menus.menuItems["Save Folder Structure as Template…"])
+        press(window.tables.menus.submenuItem("Save as Template…", in: "Folder Structure"))
         reviewSheet(of: window, as: "templates-sheet-save", appearance: appearance)
         try renameInAllYears(in: app, appearance: appearance)
         try lookalike(in: app, appearance: appearance)
