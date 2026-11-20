@@ -100,6 +100,13 @@ import TreewiseCore
         #expect(Self.absorb(&book, [blind]).lost.map(\.mine) == [mine].compactMap { $0 })
     }
 
+    @Test func theSameValueOnBothIsNoConflict() {
+        var book = SyncBook(device: "mac")
+        book.record([Self.key: .string("same")], now: Self.now)
+        let blind = Self.record("same", at: Self.now.addingTimeInterval(60), device: "ipad")
+        #expect(Self.absorb(&book, [blind]).lost.isEmpty)
+    }
+
     @Test func theWinnerOfAConflictLosesNothing() {
         var book = SyncBook(device: "mac")
         book.record([Self.key: .string("a")], now: Self.now.addingTimeInterval(60))

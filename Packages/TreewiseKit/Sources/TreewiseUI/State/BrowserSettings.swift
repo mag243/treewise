@@ -34,6 +34,7 @@ public final class BrowserSettings {
         static let offersMissingFolders = "offersMissingFolders"
         static let showsNameReviewPanel = "nameReviewShowsPanel"
         static let showsNameReviewAddOns = "nameReviewAddOnsOpen"
+        static let syncsSettings = "syncsSettings"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
     }
@@ -92,11 +93,32 @@ public final class BrowserSettings {
         }
     }
 
-    /// The user's named patterns, one of them the default (ADR 0068).
+    /// The user's named patterns, one of them the default (ADR 0068). A change the user
+    /// makes is told to `savedPatternsChanged`; one taken over from another device is not.
     public var savedPatterns: SavedPatterns {
         didSet {
             store.setSetting(Self.json(savedPatterns), for: Key.savedPatterns)
+            if !isTakingOver, oldValue != savedPatterns {
+                savedPatternsChanged?(oldValue, savedPatterns)
+            }
         }
+    }
+    /// Told each change the user makes to the saved patterns, with what they were, for the
+    /// sync to record (ADR 0144).
+    @ObservationIgnored public var savedPatternsChanged: ((SavedPatterns, SavedPatterns) -> Void)?
+    @ObservationIgnored private var isTakingOver = false
+
+    /// Takes over saved patterns another device changed, without telling them back.
+    public func takeOver(_ patterns: SavedPatterns) {
+        isTakingOver = true
+        defer { isTakingOver = false }
+        savedPatterns = patterns
+    }
+
+    /// Whether folder settings, saved patterns and templates sync through the cloud drives
+    /// (ADR 0144); on unless turned off.
+    public var syncsSettings: Bool {
+        didSet { store.setSetting(String(syncsSettings), for: Key.syncsSettings) }
     }
 
     /// What the user chose for the add-ons across the app (ADR 0070).
@@ -218,6 +240,7 @@ public final class BrowserSettings {
             Self.decoded(TableColumnLayout.self, at: Key.tableColumns, in: store)
             ?? TableColumnLayout()
         offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
+        syncsSettings = store.setting(Key.syncsSettings) != "false"
     }
 
     /// A setting that is on unless turned off, kept as `false`, or as `0` by a boolean.

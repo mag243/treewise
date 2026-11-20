@@ -9,7 +9,8 @@ public struct SyncBook: Sendable {
     /// change, so they win only where no device knows the element.
     public static let seedTime = Date(timeIntervalSince1970: 0)
 
-    /// A record of this device's that lost to another device's record not built on it.
+    /// A record of this device's that lost to another device's record not built on it and
+    /// of another value.
     public struct Conflict: Hashable, Sendable, Codable {
         /// This device's record, the value the safety net keeps.
         public let mine: SyncRecord
@@ -106,7 +107,8 @@ public struct SyncBook: Sendable {
         own = Dictionary(uniqueKeysWithValues: kept.map { ($0.key, $0) })
         let lost = before.values.compactMap { mine -> Conflict? in
             guard let winner = merged[mine.key], winner.device != device,
-                winner.replaced != mine.stamp, mine.changedAt != Self.seedTime
+                winner.replaced != mine.stamp, mine.changedAt != Self.seedTime,
+                winner.value != mine.value
             else { return nil }
             return Conflict(mine: mine, winner: winner)
         }
