@@ -967,6 +967,22 @@
         }
       }
     },
+    "Rename in All Years" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In allen Jahren umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam in alle jaren"
+          }
+        }
+      }
+    },
     "Save Template" : {
       "localizations" : {
         "de" : {

@@ -212,6 +212,13 @@ struct FileContextMenu {
                 browser.renameSuggests = true
                 browser.renameRequest = items.first?.id
             })
+        // The same folder in every year's folder, as one step (ADR 0139).
+        if items.count == 1,
+            let inAllYears = RenameInAllYearsSheet.menuItem(
+                for: items[0], browser: browser, undoManager: undoManager, enabled: changeable)
+        {
+            menu.addItem(inAllYears)
+        }
         menu.addItem(
             item("Move to Trash", symbol: "trash", enabled: changeable) {
                 await browser.moveSelectionToTrash(undoManager: undoManager)

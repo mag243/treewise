@@ -6,6 +6,12 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+### New
+- **Rename in All Years…** on a folder inside a year's folder, such as `2025/Tax`, gives that folder its new name in every year at once. A sheet shows each year first, leaves out a year that already has a folder with the new name, corrects the template the years were made from, and one Undo takes all of it back.
+
+### Fixed
+- On a disk that cannot keep Treewise's mark on a folder, such as some USB sticks, a folder's settings in Suggest Names and templates now stay with it when Treewise renames or moves it.
+
 ## [0.9.2] - 2026-11-19
 
 Change a name that already fits from where it is.
