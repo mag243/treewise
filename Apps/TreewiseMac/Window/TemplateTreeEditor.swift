@@ -29,14 +29,6 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
     private static let height: CGFloat = 190
     /// The space between the tree and its buttons, as in Settings' Names tab.
     private static let spacing: CGFloat = 8
-    private static let fields: [(field: String, title: String.LocalizationValue)] = [
-        ("{year}", "Year"), ("{year:yy}", "Year in Two Digits"), ("{text}", "Text"),
-        ("{seq}", "Number"), ("{date:yyyy-MM-dd}", "Date"),
-        ("{month:MM MMMM}", "Each Month"), ("Q{quarter}", "Each Quarter"),
-        ("H{half}", "Each Half"),
-    ]
-    /// The fields only a folder below the root may hold: a repeat (ADR 0100).
-    private static let belowRootOnly: Set<String> = ["{month:MM MMMM}", "Q{quarter}", "H{half}"]
 
     private let model: FolderTemplatesModel
     let outline = NSOutlineView()
@@ -78,11 +70,10 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
             self?.folderMenuItems() ?? []
         }
         insert.addItem(withTitle: String(localized: "Insert Field"))
-        for (field, title) in Self.fields {
+        for choice in TemplateFieldChoices.all {
             let item = NSMenuItem(
-                title: String(localized: title), action: #selector(insertField(_:)),
-                keyEquivalent: "")
-            item.representedObject = field
+                title: choice.title, action: #selector(insertField(_:)), keyEquivalent: "")
+            item.representedObject = choice.field
             item.target = self
             insert.menu?.addItem(item)
         }
@@ -143,11 +134,10 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         remove.isEnabled = !(node?.path.isEmpty ?? true)
         insert.isEnabled = node != nil
         namesLine.show(node?.tree.names)
-        let belowRoot = !(node?.path.isEmpty ?? true)
+        let offered = Set(
+            TemplateFieldChoices.offered(atRoot: node?.path.isEmpty ?? true).map(\.field))
         for item in insert.itemArray.dropFirst() {
-            let field = item.representedObject as? String ?? ""
-            item.isEnabled =
-                belowRoot ? field != "{seq}" : !Self.belowRootOnly.contains(field)
+            item.isEnabled = offered.contains(item.representedObject as? String ?? "")
         }
     }
 
@@ -187,7 +177,7 @@ final class TemplateTreeEditor: NSObject, NSOutlineViewDataSource, NSOutlineView
         guard let id = templateID, let node = selectedNode,
             let field = item.representedObject as? String
         else { return }
-        let name = node.tree.name.isEmpty ? field : node.tree.name + " " + field
+        let name = TemplateFieldChoices.name(node.tree.name, adding: field)
         Task { await model.renameFolder(node.path, of: id, to: name, undoManager: undoManager) }
     }
 

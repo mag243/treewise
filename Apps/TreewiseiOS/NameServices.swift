@@ -2,6 +2,7 @@ import Foundation
 import TreewiseFileNamePatternsModule
 import TreewiseFileSystem
 import TreewiseModuleInterface
+import TreewiseUI
 
 /// What the name proposals and folder templates share across the app (ADR 0129): the free
 /// module, run inside the app, and the stores of the folders' name settings and of the
@@ -14,6 +15,8 @@ enum NameServices {
     static let folderSettings = FolderSettingsStore(directory: directory)
     static let templates = FolderTemplateStore(
         directory: directory.appendingPathComponent("Templates", isDirectory: true))
+    /// The templates as Settings' Templates tab lists and edits them (ADR 0143).
+    static let templateList = FolderTemplatesModel(store: templates)
 
     /// Where the folder settings and templates are kept.
     private static var directory: URL {

@@ -77,7 +77,7 @@ struct RootView: View {
             }
         }
         .sheet(isPresented: $isShowingSettings) {
-            SettingsSheet(settings: locations.settings)
+            SettingsSheet(settings: locations.settings, undoManager: locations.undo.manager)
         }
         .modifier(LocationNameAlert(locations: locations, window: window))
         .alert(

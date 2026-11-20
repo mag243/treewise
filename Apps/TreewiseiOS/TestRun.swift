@@ -5,7 +5,8 @@ import Foundation
 /// folders the app may read.
 /// - `-TreewiseTestState <name>`: the run's state, found again by a relaunch with that name.
 /// - `-TreewiseTestFixture YES`: the folders `Documents` and `Work`, added when none are;
-///   `Projects` holds a second `Budget.txt`, so a drop there asks about the name.
+///   `Projects` holds a second `Budget.txt`, so a drop there asks about the name; and the
+///   template `Household Year`, for Settings' Templates tab (ADR 0143).
 /// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders (`DemoTree`).
 /// - `-TreewiseTestRemove <folder>`: removes a fixture folder before the locations are read.
 struct TestRun {
@@ -65,7 +66,21 @@ struct TestRun {
             }
             folders.append(location)
         }
+        try seedTemplate()
         return folders
+    }
+
+    /// The fixture's template, kept where the run's templates are, unless it is there.
+    private func seedTemplate() throws {
+        let templates = folder.appendingPathComponent("Settings/Templates", isDirectory: true)
+        let file = templates.appendingPathComponent("household.json")
+        guard !FileManager.default.fileExists(atPath: file.path) else { return }
+        try FileManager.default.createDirectory(at: templates, withIntermediateDirectories: true)
+        let json = """
+            {"format": 1, "id": "household", "name": "Household Year", "root": {"name": "{year}",
+              "folders": [{"name": "Tax", "folders": [{"name": "Appeals"}]}, {"name": "Receipts"}]}}
+            """
+        try Data(json.utf8).write(to: file)
     }
 
     /// Removes the fixture folder the launch names, as a drive that is not attached.
