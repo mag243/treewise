@@ -6,6 +6,10 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+### New
+- **Your settings on every Mac:** the patterns of your folders, your saved patterns and your folder structure templates now follow you to your other Macs, and later your iPad, through your cloud drives: iCloud Drive, Dropbox, Nextcloud and the others in the sidebar. Treewise keeps them in a hidden `.treewise` folder there; nothing goes anywhere else. Change different things on two Macs at once and both changes stay. Settings > General has the switch, which is on.
+- **Nothing lost when two Macs change the same thing:** the newest change wins, and the one it replaced is kept for 30 days on its Mac, where Settings > General lists it with Restore.
+
 ## [0.9.3] - 2026-11-20
 
 One folder renamed in every year, and a shorter context menu.
