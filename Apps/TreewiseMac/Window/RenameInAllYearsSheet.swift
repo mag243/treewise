@@ -30,8 +30,10 @@ enum RenameInAllYearsSheet {
         return menuItem
     }
 
-    private static func present(
-        for item: FileItem, browser: BrowserState, on window: NSWindow, undoManager: UndoManager?
+    /// Opens the sheet for `item` on `window`, with `newName` typed in when there is one.
+    static func present(
+        for item: FileItem, newName: String? = nil, browser: BrowserState, on window: NSWindow,
+        undoManager: UndoManager?
     ) async {
         let templates = FolderTemplatesService.templates
         await templates.load()
@@ -39,6 +41,7 @@ enum RenameInAllYearsSheet {
             let model = await RenameInAllYearsModel.make(
                 for: item, in: browser.fileSystem, templates: templates.templates)
         else { return }
+        if let newName { model.newName = newName }
         let sheet = RenameInAllYearsSheetController(model: model)
         let sheetWindow = NSWindow(contentViewController: sheet)
         sheet.finish = { [weak window, weak sheetWindow] choice in
@@ -64,6 +67,8 @@ enum RenameInAllYearsSheet {
             let result = await browser.renameInAllYears(
                 model, templates: FolderTemplatesService.templates,
                 settings: AppServices.folderSettings, undoManager: undoManager)
+            // The bar of each pane looks again: the names it compares changed (ADR 0139).
+            NotificationCenter.default.post(name: FolderTemplateSheet.foldersMade, object: nil)
             switch result {
             case .nothing:
                 return

@@ -18,6 +18,8 @@ final class TemplateBarView: NSStackView {
         case empty(TemplateBarModel.Offer)
         /// The folders of the year before that a year's folder lacks.
         case missing(TemplateBarModel.MissingOffer)
+        /// A missing folder nearly named as one there, asked about (ADR 0139).
+        case lookalike(TemplateBarModel.Lookalike)
     }
 
     /// What the bar last looked at: the folder, whether it is empty, and for a year's own
@@ -29,14 +31,24 @@ final class TemplateBarView: NSStackView {
     }
 
     let browser: BrowserState
-    private let label = NSTextField(labelWithString: "")
+    let label = NSTextField(labelWithString: "")
     private static let createTitle = String(localized: "Create Folders…")
     private static let addTitle = String(localized: "Add to Template")
-    private lazy var create = ClosureButton(title: Self.createTitle) { [weak self] in
+    lazy var create = ClosureButton(title: Self.createTitle) { [weak self] in
         self?.createFolders()
     }
     private lazy var addToTemplate = ClosureButton(title: Self.addTitle) { [weak self] in
         self?.addMissingToTemplate()
+    }
+    /// The lookalike's choices: the name in the most years first, the other, and Add Anyway.
+    lazy var firstName = ClosureButton(title: "") { [weak self] in
+        self?.renameLookalike(first: true)
+    }
+    lazy var secondName = ClosureButton(title: "") { [weak self] in
+        self?.renameLookalike(first: false)
+    }
+    lazy var addAnyway = ClosureButton(title: String(localized: "Add Anyway")) { [weak self] in
+        self?.addLookalikeAnyway()
     }
     private let close = NSButton()
     private var lookedAt: LookedAt?
@@ -62,7 +74,16 @@ final class TemplateBarView: NSStackView {
         addToTemplate.setAccessibilityIdentifier("templateBarAddToTemplate")
         let spacer = NSView()
         spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        setViews([label, spacer, addToTemplate, create, close], in: .leading)
+        for (button, id) in [
+            (firstName, "templateBarLookalikeFirst"), (secondName, "templateBarLookalikeSecond"),
+            (addAnyway, "templateBarAddAnyway"),
+        ] {
+            button.controlSize = .small
+            button.setAccessibilityIdentifier(id)
+        }
+        setViews(
+            [label, spacer, addToTemplate, firstName, secondName, addAnyway, create, close],
+            in: .leading)
         edgeInsets = NSEdgeInsets(
             top: Self.padding, left: Self.padding * 2, bottom: Self.padding,
             right: Self.padding)
@@ -109,6 +130,10 @@ final class TemplateBarView: NSStackView {
                 found = await bar.offer(in: folder).map(Shown.empty)
             } else {
                 found = await bar.missing(in: folder).map(Shown.missing)
+                if case .missing(let offer) = found, let lookalike = await bar.lookalike(for: offer)
+                {
+                    found = .lookalike(lookalike)
+                }
             }
             guard lookedAt == now else { return }
             show(found)
@@ -125,6 +150,8 @@ final class TemplateBarView: NSStackView {
         shown = found
         isHidden = found == nil
         addToTemplate.isHidden = true
+        create.isHidden = false
+        for button in [firstName, secondName, addAnyway] { button.isHidden = true }
         switch found {
         case .empty(let offer):
             let source = Self.sourceName(offer.source)
@@ -136,6 +163,8 @@ final class TemplateBarView: NSStackView {
                     "\(offer.folder.name) lacks \(offer.missing.paths.count) folders of \(Self.name(of: offer.yearBefore))."
             )
             addToTemplate.isHidden = offer.template == nil
+        case .lookalike(let lookalike):
+            show(lookalike)
         case nil:
             break
         }
@@ -160,6 +189,8 @@ final class TemplateBarView: NSStackView {
         case .missing(let offer):
             FolderTemplateMenu.presentMissing(
                 offer, browser: browser, on: window, undoManager: SharedUndo.manager)
+        case .lookalike:
+            break
         }
     }
 

@@ -760,6 +760,22 @@
         }
       }
     },
+    "Add Anyway" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trotzdem hinzufügen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg toch toe"
+          }
+        }
+      }
+    },
     "Add Folder" : {
       "localizations" : {
         "de" : {
@@ -4799,6 +4815,50 @@
         }
       }
     },
+    "Rename in %@ to “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %1$@ in „%2$@“ umbenennen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rename in %1$@ to “%2$@”"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam in %1$@ in ‘%2$@’"
+          }
+        }
+      }
+    },
+    "Rename in %lld Years to “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %1$lld Jahren in „%2$@“ umbenennen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rename in %1$lld Years to “%2$@”"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam in %1$lld jaren in ‘%2$@’"
+          }
+        }
+      }
+    },
     "Rename in All Years…" : {
       "localizations" : {
         "de" : {
@@ -6980,6 +7040,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De naam van ‘%1$@’ in %2$@ kon niet worden gewijzigd"
+          }
+        }
+      }
+    },
+    "“%@” in %@ looks like “%@” in %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ in %2$@ sieht aus wie „%3$@“ in %4$@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "“%1$@” in %2$@ looks like “%3$@” in %4$@."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%1$@’ in %2$@ lijkt op ‘%3$@’ in %4$@."
           }
         }
       }

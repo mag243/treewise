@@ -23,6 +23,8 @@ extension TemplateBarView {
                     })
             }
             return items
+        case .lookalike(let lookalike):
+            return closeItems(for: .missing(lookalike.offer))
         case .missing(let offer):
             let these = String(localized: "Don’t Show These Folders")
             return [

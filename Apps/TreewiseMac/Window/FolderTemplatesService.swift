@@ -89,11 +89,26 @@ enum FolderTemplatesService {
     static func bar(for browser: BrowserState) -> TemplateBarModel {
         let fileSystem = browser.fileSystem
         let licences = browser.licences
-        return TemplateBarModel(
+        let bar = TemplateBarModel(
             fileSystem: fileSystem, settings: AppServices.folderSettings, templates: store,
             addOnMayWork: { addOnMayWork },
             yearBefore: { await recognized($0, in: fileSystem, licences: licences) },
             offersMissingFolders: { AppServices.settings.offersMissingFolders })
+        bar.isSpelledCorrectly = isSpelledCorrectly
+        return bar
+    }
+
+    /// Whether `name` is spelled correctly in one of the languages the user chose for the
+    /// spelling checker, as macOS checks it (ADR 0139).
+    static func isSpelledCorrectly(_ name: String) -> Bool {
+        let checker = NSSpellChecker.shared
+        let languages = checker.userPreferredLanguages
+        return languages.contains { language in
+            checker.checkSpelling(
+                of: name, startingAt: 0, language: language, wrap: false,
+                inSpellDocumentWithTag: 0, wordCount: nil
+            ).location == NSNotFound
+        }
     }
 
     /// The folder at `id` read as a template, with the year as `{year}` and what else the

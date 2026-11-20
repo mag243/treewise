@@ -35,6 +35,26 @@ extension UIReviewTests {
         press(window.tables.menus.menuItems["Save Folder Structure as Template…"])
         reviewSheet(of: window, as: "templates-sheet-save", appearance: appearance)
         try renameInAllYears(in: app, appearance: appearance)
+        try lookalike(in: app, appearance: appearance)
+    }
+
+    /// The bar asking about a missing folder nearly named as one there (ADR 0139):
+    /// `Insurance` in 2026 and `Insurrance` in 2027, made last so the screens before keep
+    /// their folders.
+    @MainActor
+    private func lookalike(in app: XCUIApplication, appearance: String?) throws {
+        let administration = try XCTUnwrap(root).appendingPathComponent("Administration")
+        for path in ["2026/Insurance", "2027/Insurrance"] {
+            try FileManager.default.createDirectory(
+                at: administration.appendingPathComponent(path),
+                withIntermediateDirectories: true)
+        }
+        let window = app.windows.firstMatch
+        app.go(to: "../2027", timeout: Self.timeout)
+        let ask = window.buttons["templateBarAddAnyway"]
+        XCTAssertTrue(ask.waitForExistence(timeout: Self.timeout), "the bar asks about the two")
+        settleScreen()
+        review(window, as: "templates-bar-lookalike", appearance: appearance)
     }
 
     /// Rename in All Years… on 2026's Receipts (ADR 0139): as it opens, with a name that
