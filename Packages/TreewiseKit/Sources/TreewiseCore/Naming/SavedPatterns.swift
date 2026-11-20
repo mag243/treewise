@@ -97,6 +97,14 @@ public struct SavedPatterns: Hashable, Sendable, Codable {
         return SavedPatterns(patterns: patterns, defaultID: patterns[0].id)
     }
 
+    /// Whether the list is the examples as a user starts with them, whatever their ids:
+    /// the same names and texts in the same order, the first the default.
+    public func isExamples(locale: Locale = .current) -> Bool {
+        let examples = Self.examples(locale: locale).patterns
+        return patterns.map(\.name) == examples.map(\.name)
+            && patterns.map(\.text) == examples.map(\.text) && defaultID == patterns[0].id
+    }
+
     /// The examples, with a default pattern kept from before the list as its default:
     /// the example with the same text, or a pattern of its own.
     public init(keeping defaultText: String, locale: Locale = .current) {

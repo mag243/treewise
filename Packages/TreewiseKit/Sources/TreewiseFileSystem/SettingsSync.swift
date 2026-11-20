@@ -5,15 +5,15 @@ import os
 /// Keeps this device's settings in sync through the `.treewise` folder of each cloud drive
 /// that takes part (ADR 0144). The stores tell it what the user changed; `refresh()` reads
 /// every device's files and returns what the stores must take over. A folder's settings
-/// merge per drive; the saved patterns, the default and the templates across all drives,
+/// merge per drive; the saved patterns and the templates across all drives,
 /// and are written to each.
 public actor SettingsSync {
     /// A change from another device, for a store to take over without recording it again.
     public enum Change: Hashable, Sendable {
         /// The settings of the folder at `path`, nil when they were removed.
         case folder(path: String, settings: FolderSettings?)
-        case savedPattern(id: String, pattern: SavedPattern?)
-        case defaultPattern(id: String)
+        /// The saved patterns, as one list.
+        case savedPatterns(SavedPatterns)
         case template(id: String, template: FolderTemplate?)
     }
 
@@ -75,7 +75,7 @@ public actor SettingsSync {
         await write(oldRoot)
     }
 
-    /// The user changed a saved pattern, the default or a template; nil when they removed it.
+    /// The user changed the saved patterns or a template; nil when they removed a template.
     public func changed(_ key: SyncKey, to value: SyncValue?) async {
         shared.record(key, value, now: now())
         for root in drives { await write(root.path) }
@@ -160,10 +160,7 @@ public actor SettingsSync {
                 return .folder(path: root + "/" + path, settings: nil)
             }
             return .folder(path: root + "/" + path, settings: settings)
-        case (.savedPattern(let id), .savedPattern(let pattern)?):
-            return .savedPattern(id: id, pattern: pattern)
-        case (.savedPattern(let id), nil): return .savedPattern(id: id, pattern: nil)
-        case (.defaultPattern, .defaultPattern(let id)?): return .defaultPattern(id: id)
+        case (.savedPatterns, .savedPatterns(let patterns)?): return .savedPatterns(patterns)
         case (.template(let id), .template(let template)?):
             return .template(id: id, template: template)
         case (.template(let id), nil): return .template(id: id, template: nil)

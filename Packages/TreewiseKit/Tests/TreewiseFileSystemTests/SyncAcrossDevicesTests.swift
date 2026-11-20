@@ -61,8 +61,8 @@ import TreewiseTestSupport
         let pair = try Self.pair()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients/2026").path
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
-        _ = await ipad.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
 
         await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
@@ -74,8 +74,8 @@ import TreewiseTestSupport
     @Test func aTemplateMadeOnOneDeviceIsThereOnTheOther() async throws {
         let pair = try Self.pair()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
-        _ = await ipad.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
         let template = FolderTemplate(id: "t1", name: "Year", root: FolderTree(name: "{year}"))
 
         try await mac.templates.save(template)
@@ -89,8 +89,8 @@ import TreewiseTestSupport
         let pair = try Self.pair()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
-        _ = await ipad.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
         await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
         await ipad.session.refresh()
@@ -107,8 +107,8 @@ import TreewiseTestSupport
         let pair = try Self.pair()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
-        _ = await ipad.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
 
         await mac.folders.save(Self.settings("older"), forFolderAt: folder)
         mac.clock.advance()
@@ -129,8 +129,8 @@ import TreewiseTestSupport
         let pair = try Self.pair()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
-        _ = await ipad.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
         await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
 
@@ -147,12 +147,12 @@ import TreewiseTestSupport
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let folder = try drive.makeFolder("Clients").path
         await ipad.folders.save(Self.settings("stale"), forFolderAt: folder)
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
         await mac.folders.save(Self.settings("fresh"), forFolderAt: folder)
         await mac.session.settle()
 
         mac.clock.advance()
-        _ = await ipad.session.start(drives: [drive.url], patterns: [:])
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
         await mac.session.refresh()
 
         #expect(await ipad.folders.settings(forFolderAt: folder) == Self.settings("fresh"))
@@ -163,8 +163,8 @@ import TreewiseTestSupport
         let pair = try Self.pair()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
         let old = try drive.makeFolder("Clients/Acme").path
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
-        _ = await ipad.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
         await mac.folders.save(Self.settings("dates"), forFolderAt: old)
         await mac.session.settle()
         await ipad.session.refresh()
@@ -182,7 +182,7 @@ import TreewiseTestSupport
         let pair = try Self.pair()
         let (mac, drive) = (pair.mac, pair.drive)
         let folder = try drive.makeFolder("Clients").path
-        _ = await mac.session.start(drives: [drive.url], patterns: [:])
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
         await mac.session.stop()
 
         await mac.folders.save(Self.settings("dates"), forFolderAt: folder)
@@ -193,5 +193,32 @@ import TreewiseTestSupport
             (try? DeviceSyncFile.decoded(from: Data(contentsOf: own)))?.records ?? []
         #expect(records.isEmpty)
         #expect(await mac.folders.settings(forFolderAt: folder) == Self.settings("dates"))
+    }
+
+    @Test func theSavedPatternsChangedOnOneDeviceAreHandedToTheOthersApp() async throws {
+        let pair = try Self.pair()
+        let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
+        _ = await mac.session.start(drives: [drive.url], patterns: .examples())
+        let theirs = await ipad.session.start(drives: [drive.url], patterns: .examples())
+        #expect(theirs.isEmpty, "the examples on both: nothing to take over")
+
+        var changed = SavedPatterns.examples()
+        _ = changed.save(name: "Receipts", text: "{date} Receipt")
+        mac.clock.advance()
+        await mac.session.patternsChanged(changed)
+
+        #expect(await ipad.session.refresh() == [.savedPatterns(changed)])
+    }
+
+    @Test func aDevicesOwnPatternsWinOverAnotherStartingWithTheExamples() async throws {
+        let pair = try Self.pair()
+        let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
+        _ = await ipad.session.start(drives: [drive.url], patterns: .examples())
+        var own = SavedPatterns.examples()
+        _ = own.save(name: "Receipts", text: "{date} Receipt")
+
+        _ = await mac.session.start(drives: [drive.url], patterns: own)
+
+        #expect(await ipad.session.refresh() == [.savedPatterns(own)])
     }
 }

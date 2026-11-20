@@ -19,14 +19,18 @@ public actor SyncSession {
 
     /// Starts syncing through the drives at `drives`: reads what the files hold, records the
     /// settings this device had from before for keys no file knows, and from then on records
-    /// every change. `patterns` are the saved patterns and the default, as the app keeps
-    /// them. Returns the changes to the saved patterns for the app to take over.
-    public func start(drives: [URL], patterns: [SyncKey: SyncValue]) async -> [SettingsSync.Change]
-    {
+    /// every change. `patterns` are the saved patterns as the app keeps them. Returns the
+    /// saved patterns of another device for the app to take over, if any.
+    public func start(drives: [URL], patterns: SavedPatterns?) async -> [SettingsSync.Change] {
         await sync.setDrives(drives)
         let first = await refresh()
         let known = await templates.templates()
-        var shared = patterns
+        var shared: [SyncKey: SyncValue] = [:]
+        // The examples a new installation starts with are no one's choice: seeding them
+        // could set them over another device's own list at the same seed time.
+        if let patterns, !patterns.isExamples() {
+            shared[.savedPatterns] = .savedPatterns(patterns)
+        }
         for template in known { shared[.template(template.id)] = .template(template) }
         await sync.seed(folders: await folders.allSettings(), shared: shared)
         let sync = sync
@@ -58,17 +62,17 @@ public actor SyncSession {
                 await folders.takeOver(settings, forFolderAt: path)
             case .template(let id, let template):
                 await templates.takeOver(template, id: id)
-            case .savedPattern, .defaultPattern:
+            case .savedPatterns:
                 forTheApp.append(change)
             }
         }
         return forTheApp
     }
 
-    /// The user changed a saved pattern or the default; nil when they removed a pattern.
-    public func patternChanged(_ key: SyncKey, to value: SyncValue?) async {
+    /// The user changed the saved patterns: one of them, their order or the default.
+    public func patternsChanged(_ patterns: SavedPatterns) async {
         guard isRunning else { return }
-        await sync.changed(key, to: value)
+        await sync.changed(.savedPatterns, to: .savedPatterns(patterns))
     }
 
     /// Returns once every change the stores told so far is recorded and written.

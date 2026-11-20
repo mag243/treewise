@@ -59,10 +59,10 @@ import TreewiseCore
     }
 
     @Test func patternsAndTemplatesStay() {
-        let pattern = SavedPattern(id: "p", name: "Invoices", text: "{date} {text}")
+        let patterns = SavedPatterns(keeping: "{date} {text}", locale: Locale(identifier: "en"))
         let result = Self.moved(
             "Clients/Old", to: "Clients/New",
-            in: Self.known([(.savedPattern("p"), .savedPattern(pattern))]))
+            in: Self.known([(.savedPatterns, .savedPatterns(patterns))]))
         #expect(result.isEmpty)
     }
 }

@@ -7,7 +7,7 @@ import TreewiseCore
 @Suite struct DeviceSyncFileTests {
     private static let at = Date(timeIntervalSince1970: 2_000_000_000.25)
 
-    private static var file: DeviceSyncFile {
+    private static let file: DeviceSyncFile = {
         let template = FolderTemplate(
             id: "t1", name: "Household Year",
             root: FolderTree(name: "{year}", folders: [FolderTree(name: "Receipts")]))
@@ -19,17 +19,15 @@ import TreewiseCore
                     value: .folder(FolderSettings(enabledModules: ["dates"], templates: [:])),
                     changedAt: at, device: "4C1F"),
                 SyncRecord(
-                    key: .savedPattern("p1"),
-                    value: .savedPattern(SavedPattern(id: "p1", name: "Invoices", text: "{date}")),
+                    key: .savedPatterns,
+                    value: .savedPatterns(
+                        SavedPatterns(keeping: "{date} {text}", locale: Locale(identifier: "en"))),
                     changedAt: at, device: "4C1F"),
-                SyncRecord(
-                    key: .defaultPattern, value: .defaultPattern(id: "p1"), changedAt: at,
-                    device: "4C1F"),
                 SyncRecord(
                     key: .template("t1"), value: .template(template), changedAt: at, device: "4C1F"),
                 SyncRecord(key: .folder("Clients/Old"), value: nil, changedAt: at, device: "4C1F"),
             ])
-    }
+    }()
 
     @Test func readsBackWhatItWrote() throws {
         let written = try Self.file.encoded()
@@ -55,7 +53,7 @@ import TreewiseCore
     }
 
     @Test(arguments: [
-        SyncKey.folder("Clients/2026/Q1"), .savedPattern("p/1"), .defaultPattern, .template("t1"),
+        SyncKey.folder("Clients/2026/Q1"), .savedPatterns, .template("t1"),
     ])
     func aKeyReadsBackFromItsText(_ key: SyncKey) {
         #expect(SyncKey(text: key.text) == key)

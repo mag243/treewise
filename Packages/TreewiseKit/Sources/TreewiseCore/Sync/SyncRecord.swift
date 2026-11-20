@@ -1,11 +1,10 @@
 import Foundation
 
-/// What a synced record holds: the whole of a folder's settings, a saved pattern, a
-/// template, or the id of the default pattern (ADR 0144).
+/// What a synced record holds: the whole of a folder's settings, the saved patterns, or a
+/// template (ADR 0144).
 public enum SyncValue: Hashable, Sendable {
     case folder(FolderSettings)
-    case savedPattern(SavedPattern)
-    case defaultPattern(id: String)
+    case savedPatterns(SavedPatterns)
     case template(FolderTemplate)
 }
 
@@ -40,8 +39,7 @@ public struct SyncRecord: Hashable, Sendable {
 
     static func fits(_ value: SyncValue, _ key: SyncKey) -> Bool {
         switch (key, value) {
-        case (.folder, .folder), (.defaultPattern, .defaultPattern): true
-        case (.savedPattern(let id), .savedPattern(let pattern)): pattern.id == id
+        case (.folder, .folder), (.savedPatterns, .savedPatterns): true
         case (.template(let id), .template(let template)): template.id == id
         default: false
         }
@@ -69,12 +67,9 @@ extension SyncRecord: Codable {
             case .folder:
                 try container.decodeIfPresent(FolderSettings.self, forKey: .value).map(
                     SyncValue.folder)
-            case .savedPattern:
-                try container.decodeIfPresent(SavedPattern.self, forKey: .value)
-                    .map(SyncValue.savedPattern)
-            case .defaultPattern:
-                try container.decodeIfPresent(String.self, forKey: .value)
-                    .map { SyncValue.defaultPattern(id: $0) }
+            case .savedPatterns:
+                try container.decodeIfPresent(SavedPatterns.self, forKey: .value)
+                    .map(SyncValue.savedPatterns)
             case .template:
                 try container.decodeIfPresent(FolderTemplate.self, forKey: .value)
                     .map(SyncValue.template)
@@ -95,8 +90,7 @@ extension SyncRecord: Codable {
         switch value {
         case nil: break
         case .folder(let settings): try container.encode(settings, forKey: .value)
-        case .savedPattern(let pattern): try container.encode(pattern, forKey: .value)
-        case .defaultPattern(let id): try container.encode(id, forKey: .value)
+        case .savedPatterns(let patterns): try container.encode(patterns, forKey: .value)
         case .template(let template): try container.encode(template, forKey: .value)
         }
     }

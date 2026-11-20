@@ -4,6 +4,7 @@ import TreewiseCore
 
 /// The user's named patterns, one of them the default (ADR 0068).
 @Suite struct SavedPatternsTests {
+    private let english = Locale(identifier: "en")
     private let examples = SavedPatterns.examples(locale: Locale(identifier: "en"))
 
     @Test func startsWithTheExamplesAndADateAndTextAsDefault() {
@@ -127,5 +128,21 @@ import TreewiseCore
         let duplicatedAgain = list.duplicate(first.id)
         let again = try #require(duplicatedAgain)
         #expect(list.patterns.first { $0.id == again }?.name == "\(first.name) 3")
+    }
+
+    @Test func theExamplesAreKnownWhateverTheirIDs() {
+        #expect(SavedPatterns.examples(locale: english).isExamples(locale: english))
+    }
+
+    @Test func aListTheUserChangedIsNotTheExamples() {
+        var list = SavedPatterns.examples(locale: english)
+        _ = list.save(name: "Receipts", text: "{date} Receipt")
+        #expect(!list.isExamples(locale: english))
+    }
+
+    @Test func anotherDefaultIsNotTheExamples() {
+        var list = SavedPatterns.examples(locale: english)
+        list.makeDefault(list.patterns[1].id)
+        #expect(!list.isExamples(locale: english))
     }
 }
