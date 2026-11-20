@@ -70,6 +70,43 @@ final class NameSheetTests: XCTestCase {
     }
 
     @MainActor
+    func testRenameIsGreyedWhileTheNameIsUnchanged() {
+        let app = openDocuments()
+        row("Notes.md", in: app).press(forDuration: 1)
+        app.buttons["Rename"].firstMatch.tap()
+        let rename = app.navigationBars["Rename"].buttons["Rename"]
+        XCTAssertTrue(rename.waitForExistence(timeout: Self.timeout))
+        XCTAssertFalse(rename.isEnabled, "nothing to rename yet")
+
+        app.textFields["name"].typeText("Ideas")
+
+        XCTAssertTrue(rename.isEnabled, "a new name can be given")
+    }
+
+    @MainActor
+    func testRenameWithSuggestionsStartsWithTheFirstProposalAndOffersTheCurrentName() {
+        let app = openDocuments()
+        row("Notes.md", in: app).press(forDuration: 1)
+        app.buttons["Rename with Suggestions…"].firstMatch.tap()
+        let suggestion = app.buttons["suggestion-0"]
+        XCTAssertTrue(
+            suggestion.waitForExistence(timeout: Self.timeout), "a proposal from the default")
+        let proposed = suggestion.label
+        let field = app.textFields["name"]
+        XCTAssertTrue(
+            app.eventually { field.value as? String == proposed }, "the first proposal is taken")
+
+        let current = app.buttons["currentName"]
+        XCTAssertTrue(current.exists, "the current name is offered")
+        current.tap()
+        XCTAssertEqual(field.value as? String, "Notes.md", "back to the current name")
+        suggestion.tap()
+        app.navigationBars["Rename"].buttons["Rename"].tap()
+
+        XCTAssertTrue(row(proposed, in: app).waitForExistence(timeout: Self.timeout), "renamed")
+    }
+
+    @MainActor
     func testRenameRightAfterTakingAProposalGivesTheFileThatName() {
         let app = openDocuments()
         row("Notes.md", in: app).press(forDuration: 1)

@@ -2,10 +2,13 @@ import SwiftUI
 import TreewiseUI
 
 /// The proposals beneath the name being renamed (ADR 0130): Show Suggestions until they
-/// are asked, then the proposals to tap, or why there are none, and the overview.
+/// are asked, then the proposals to tap, or why there are none, the current name to go back
+/// to, and the overview.
 struct NameSheetProposals: View {
     let proposals: NameProposalsAsked
     @Binding var name: String
+    /// The item's own name, offered last.
+    let current: String
     let ask: () -> Void
     let openOverview: () -> Void
 
@@ -44,6 +47,9 @@ struct NameSheetProposals: View {
                     // The UI tests find it by it.
                     .accessibilityIdentifier("suggestion-\(index)")
                 }
+                if !proposals.options.contains(where: { $0.name == current }) {
+                    currentName
+                }
             }
             Button("Open Name Overview…", action: openOverview)
         } header: {
@@ -51,5 +57,23 @@ struct NameSheetProposals: View {
         } footer: {
             Text("With a keyboard: ⌥Esc or F5 shows them, ↑ and ↓ choose.")
         }
+    }
+
+    /// The item's own name, to go back to after a proposal was taken.
+    private var currentName: some View {
+        Button {
+            name = current
+        } label: {
+            HStack {
+                Text(verbatim: current).foregroundStyle(Color.primary)
+                Text("Current Name").foregroundStyle(Color.secondary)
+                Spacer(minLength: 0)
+                if name == current {
+                    Image(systemName: "checkmark").foregroundStyle(.tint)
+                }
+            }
+        }
+        // The UI tests find it by it.
+        .accessibilityIdentifier("currentName")
     }
 }

@@ -832,6 +832,22 @@
         }
       }
     },
+    "Current Name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktueller Name"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Huidige naam"
+          }
+        }
+      }
+    },
     "Cut" : {
       "localizations" : {
         "de" : {

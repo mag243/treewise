@@ -20,7 +20,9 @@ struct NameSheetRequest: Identifiable {
 
 /// Asks for a name (ADR 0130): the field, and for a file being renamed the add-ons'
 /// proposals beneath it, asked with Show Suggestions, ⌥Esc or F5, as the Mac's suggestion
-/// list asks them (ADR 0066). A proposal only goes into the field; Rename renames.
+/// list asks them (ADR 0066). A proposal only goes into the field; Rename renames, and is
+/// greyed while the name is the item's own. Rename with Suggestions starts with the first
+/// proposal in the field, and the list ends with the current name.
 struct NameSheet: View {
     let request: NameSheetRequest
     let browser: BrowserState
@@ -42,7 +44,8 @@ struct NameSheet: View {
                 }
                 if let item = suggestible {
                     NameSheetProposals(
-                        proposals: proposals, name: $name, ask: { ask(for: item) },
+                        proposals: proposals, name: $name, current: item.name,
+                        ask: { ask(for: item) },
                         openOverview: {
                             dismiss()
                             openOverview(item)
@@ -57,7 +60,7 @@ struct NameSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(isNewFolder ? "Create" : "Rename") { confirm() }
-                        .disabled(name.isEmpty)
+                        .disabled(name.isEmpty || isUnchanged)
                 }
             }
         }
@@ -66,6 +69,22 @@ struct NameSheet: View {
             if request.suggests, let item = suggestible { ask(for: item) }
         }
         .onDisappear { proposals.stop() }
+        .onChange(of: proposals.state) { takeFirstProposal() }
+    }
+
+    /// Whether a rename would keep the item's own name.
+    private var isUnchanged: Bool {
+        guard case .rename(let item) = request.purpose else { return false }
+        return name == item.name
+    }
+
+    /// Rename with Suggestions: the first proposal goes in the field once it comes, unless
+    /// the name was changed meanwhile, so Rename takes what the field shows (ADR 0130).
+    private func takeFirstProposal() {
+        guard request.suggests, proposals.state == .answered, name == request.name,
+            let first = proposals.options.first
+        else { return }
+        name = first.name
     }
 
     private var isNewFolder: Bool {
