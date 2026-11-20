@@ -21,7 +21,9 @@ enum MenuKeyCheck {
     }
 
     private static func name(of item: NSMenuItem) -> String {
-        let flags = item.keyEquivalentModifierMask
+        var flags = item.keyEquivalentModifierMask
+        // An upper-case key is pressed with Shift, as AppKit reads it.
+        if item.keyEquivalent != item.keyEquivalent.lowercased() { flags.insert(.shift) }
         let marks: [(NSEvent.ModifierFlags, String)] = [
             (.control, "⌃"), (.option, "⌥"), (.shift, "⇧"), (.command, "⌘"),
         ]
