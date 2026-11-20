@@ -1,12 +1,18 @@
+import CoreGraphics
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
 
 /// A UI test's run of the app (ADR 0114), in Debug builds only: its bookmarks and settings
 /// apart from the real ones, and a fixture of folders to add, as the test runner cannot make
 /// folders the app may read.
 /// - `-TreewiseTestState <name>`: the run's state, found again by a relaunch with that name.
 /// - `-TreewiseTestFixture YES`: the folders `Documents` and `Work`, added when none are;
-///   `Projects` holds a second `Budget.txt`, so a drop there asks about the name; and the
-///   template `Household Year`, for Settings' Templates tab (ADR 0143).
+///   `Projects` holds a second `Budget.txt`, so a drop there asks about the name; `Photos`
+///   holds three photos named by their date, the least a pattern is recognized from, and
+///   `IMG_0042.jpg`, whose date is only in the
+///   photo, for name proposals from a recognized and a typed pattern; and the template
+///   `Household Year`, for Settings' Templates tab (ADR 0143).
 /// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders (`DemoTree`).
 /// - `-TreewiseTestRemove <folder>`: removes a fixture folder before the locations are read.
 struct TestRun {
@@ -19,7 +25,16 @@ struct TestRun {
         "Documents": [
             "Notes.md", "Budget.txt", "Projects/", "Projects/Budget.txt", "Archive/",
         ],
-        "Work": ["Report.txt"],
+        "Work": [
+            "Report.txt", "Photos/", "Photos/2025-03-13 Harbour.jpg", "Photos/2025-03-14 Beach.jpg",
+            "Photos/2025-03-15 Park.jpg", "Photos/IMG_0042.jpg",
+        ],
+    ]
+    /// When each of the fixture's photos was taken, as the camera writes it in the photo.
+    private static let captured = [
+        "2025-03-13 Harbour.jpg": "2025:03:13 08:30:00",
+        "2025-03-14 Beach.jpg": "2025:03:14 10:15:00", "2025-03-15 Park.jpg": "2025:03:15 16:40:00",
+        "IMG_0042.jpg": "2025:03:16 09:05:00",
     ]
 
     /// The folder that holds the run's bookmarks and fixture.
@@ -60,7 +75,11 @@ struct TestRun {
                 let url = location.appendingPathComponent(entry)
                 if entry.hasSuffix("/") {
                     try manager.createDirectory(at: url, withIntermediateDirectories: true)
-                } else if !manager.fileExists(atPath: url.path) {
+                } else if manager.fileExists(atPath: url.path) {
+                    continue
+                } else if let date = Self.captured[url.lastPathComponent] {
+                    try Self.writePhoto(to: url, captured: date)
+                } else {
                     try Data("\(entry)\n".utf8).write(to: url)
                 }
             }
@@ -68,6 +87,27 @@ struct TestRun {
         }
         try seedTemplate()
         return folders
+    }
+
+    /// A small grey photo with the date it was taken in its EXIF data.
+    private static func writePhoto(to url: URL, captured: String) throws {
+        let side = 8
+        guard
+            let context = CGContext(
+                data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
+        else { return }
+        context.setFillColor(gray: 0.5, alpha: 1)
+        context.fill(CGRect(x: 0, y: 0, width: side, height: side))
+        guard let image = context.makeImage(),
+            let destination = CGImageDestinationCreateWithURL(
+                url as CFURL, UTType.jpeg.identifier as CFString, 1, nil)
+        else { return }
+        let exif: [CFString: Any] = [kCGImagePropertyExifDateTimeOriginal: captured]
+        CGImageDestinationAddImage(
+            destination, image, [kCGImagePropertyExifDictionary: exif] as CFDictionary)
+        CGImageDestinationFinalize(destination)
     }
 
     /// The fixture's template, kept where the run's templates are, unless it is there.

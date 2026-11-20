@@ -9,6 +9,8 @@ import TreewiseUI
 /// template (ADR 0141); a structure pasted is made inside, from no template.
 struct NewFoldersFromTemplateSheet: View {
     let title: String
+    /// The title where the width is compact, as on an iPhone, where the long one is cut off.
+    let shortTitle: String
     let tree: FolderTree
     /// The saved template the folders come from; nil for a structure pasted.
     let template: FolderTemplate?
@@ -19,6 +21,7 @@ struct NewFoldersFromTemplateSheet: View {
     /// The folders a file's name left out, said once the others are made.
     @State private var leftOut: [[String]] = []
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         NavigationStack {
@@ -29,7 +32,7 @@ struct NewFoldersFromTemplateSheet: View {
                     ProgressView()
                 }
             }
-            .navigationTitle(Text(title))
+            .navigationTitle(Text(sizeClass == .compact ? shortTitle : title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -73,11 +73,13 @@ struct FolderStructureSheets: ViewModifier {
                 case .make(let template, let folder):
                     NewFoldersFromTemplateSheet(
                         title: String(localized: "New Folders from “\(template.name)”"),
+                        shortTitle: String(localized: "New Folders"),
                         tree: template.root, template: template, folder: folder,
                         browser: browser, undoManager: undoManager)
                 case .paste(let tree, let folder):
                     NewFoldersFromTemplateSheet(
                         title: String(localized: "Paste the Structure of “\(tree.name)”"),
+                        shortTitle: String(localized: "Paste Structure"),
                         tree: tree, template: nil, folder: folder, browser: browser,
                         undoManager: undoManager)
                 case .renameInAllYears(let folder):

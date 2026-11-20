@@ -72,8 +72,10 @@ struct TemplateEditor: View {
             renaming = row
         } label: {
             HStack {
-                Label(row.tree.name, systemImage: "folder")
-                    .foregroundStyle(.primary)
+                // A symbol and a text rather than a Label, whose symbol a list sets in a
+                // column of its own, apart from the row's indent.
+                Image(systemName: "folder").foregroundStyle(Color.accentColor)
+                Text(row.tree.name).foregroundStyle(.primary)
                 if row.tree.names != nil {
                     Image(systemName: "textformat")
                         .foregroundStyle(.secondary)

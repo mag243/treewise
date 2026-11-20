@@ -124,4 +124,74 @@ final class FolderStructureTests: XCTestCase {
             app.buttons["Made from"].firstMatch.waitForExistence(timeout: Self.timeout),
             "remembered again")
     }
+
+    /// M6e's acceptance criterion: a template saved from one folder makes the same folders in
+    /// another, with a field filled in. The iPad saves names as written, so the year's folder
+    /// gets its field in Settings' Templates tab first.
+    @MainActor
+    func testATemplateSavedFromAFolderMakesItsFoldersElsewhereWithAField() {
+        let app = openDocuments()
+        openFolderStructure(of: "Archive", in: app)
+        app.buttons["New Folders from Template"].firstMatch.tap()
+        app.buttons["Household Year"].firstMatch.tap()
+        let create = app.buttons["Create Folders"].firstMatch
+        XCTAssertTrue(create.waitForExistence(timeout: Self.timeout))
+        create.tap()
+        row("Archive", in: app).tap()
+        let year = app.staticTexts.matching(NSPredicate(format: "label MATCHES '^[0-9]{4}$'"))
+            .firstMatch
+        XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
+        let yearName = year.label
+
+        openFolderStructure(of: yearName, in: app)
+        app.buttons["Save as Template…"].firstMatch.tap()
+        let name = app.textFields["templateName"]
+        XCTAssertTrue(name.waitForExistence(timeout: Self.timeout))
+        XCTAssertEqual(name.value as? String, "Archive Year", "named after the folder above")
+        app.buttons["Save"].firstMatch.tap()
+
+        giveTheRootTheYearField(of: "Archive Year", named: yearName, in: app)
+
+        sidebar(of: app).staticTexts["Documents"].tap()
+        XCTAssertTrue(row("Projects", in: app).waitForExistence(timeout: Self.timeout))
+        openFolderStructure(of: "Projects", in: app)
+        app.buttons["New Folders from Template"].firstMatch.tap()
+        app.buttons["Archive Year"].firstMatch.tap()
+        XCTAssertTrue(create.waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(app.steppers.firstMatch.exists, "the year is asked")
+        create.tap()
+        row("Projects", in: app).tap()
+        let made = app.staticTexts.matching(NSPredicate(format: "label MATCHES '^[0-9]{4}$'"))
+            .firstMatch
+        XCTAssertTrue(made.waitForExistence(timeout: Self.timeout), "the year's folder is made")
+        made.tap()
+        XCTAssertTrue(row("Tax", in: app).waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(row("Receipts", in: app).exists, "with the same folders")
+    }
+
+    /// In Settings' Templates tab, renames the root `root` of the template `template` to the
+    /// year's field, and closes Settings.
+    @MainActor
+    private func giveTheRootTheYearField(
+        of template: String, named root: String, in app: XCUIApplication
+    ) {
+        app.buttons["settings"].firstMatch.tap()
+        app.buttons["Templates"].firstMatch.tap()
+        app.staticTexts[template].firstMatch.tap()
+        let rootRow = app.buttons[root].firstMatch
+        XCTAssertTrue(rootRow.waitForExistence(timeout: Self.timeout))
+        rootRow.tap()
+        let field = app.textFields["templateFolderName"]
+        XCTAssertTrue(field.waitForExistence(timeout: Self.timeout))
+        // A tap at the field's end puts the caret after the name, which the deletes take.
+        field.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap()
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: root.count))
+        app.buttons["Insert Field"].firstMatch.tap()
+        app.buttons["Year"].firstMatch.tap()
+        XCTAssertEqual(field.value as? String, "{year}")
+        app.buttons["Done"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["{year}"].firstMatch.waitForExistence(timeout: Self.timeout))
+        app.navigationBars[template].buttons.firstMatch.tap()
+        app.buttons["Done"].firstMatch.tap()
+    }
 }

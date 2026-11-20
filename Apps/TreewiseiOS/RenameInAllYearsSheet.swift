@@ -14,6 +14,7 @@ struct RenameInAllYearsSheet: View {
     /// Why a folder could not be renamed, while that is said.
     @State private var failure: String?
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         NavigationStack {
@@ -24,7 +25,12 @@ struct RenameInAllYearsSheet: View {
                     ProgressView()
                 }
             }
-            .navigationTitle(Text("Rename “\(folder.name)” in All Years"))
+            // Where the width is compact, as on an iPhone, the folder's name would cut the
+            // title off; the field below holds it.
+            .navigationTitle(
+                sizeClass == .compact
+                    ? Text("Rename in All Years") : Text("Rename “\(folder.name)” in All Years")
+            )
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -123,8 +129,9 @@ private struct RenameInAllYearsForm: View {
         } else {
             switch entry.outcome {
             case .renamed:
+                // One text, as the Mac's checkbox reads, which the switch reads out whole.
                 Toggle(isOn: renames(entry.place.folder)) {
-                    LabeledContent(label, value: "\(entry.place.name) → \(model.trimmedName)")
+                    Text(verbatim: "\(label)   \(entry.place.name) → \(model.trimmedName)")
                 }
             case .alreadyNamed:
                 LabeledContent(

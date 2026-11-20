@@ -184,7 +184,9 @@ final class IPadReviewTests: XCTestCase {
         let name = app.textFields["renameInAllYearsName"]
         XCTAssertTrue(name.waitForExistence(timeout: Self.timeout))
         name.tap()
-        name.typeText("es")
+        // Return puts the keyboard away: on iPadOS 27 its bar keeps the app from coming to
+        // rest while it shows.
+        name.typeText("es\n")
         settleScreen()
         review(app, as: "rename-in-all-years", variant: variant)
         app.buttons["Cancel"].firstMatch.tap()
