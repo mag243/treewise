@@ -72,21 +72,67 @@ import TreewiseCore
         }
     }
 
-    @Test func aRemovalOlderThanItsKeepingIsDropped() {
+    @Test func anOldRemovalStillWinsInTheMerge() {
         let old = Self.record(
             nil, minutesAgo: (SyncMerge.removalKept + Self.day) / 60, device: "mac")
-        #expect(Self.merged([old]) == nil)
+        let older = Self.record(
+            "a", minutesAgo: (SyncMerge.removalKept + 2 * Self.day) / 60, device: "ipad")
+        #expect(Self.merged([old, older]) == old, "a device back after months keeps it removed")
     }
 
-    @Test func aRemovalWithinItsKeepingStays() {
+    // MARK: - A device's own file, pruned
+
+    private static func pruned(own: [SyncRecord], others: [SyncRecord]) -> [SyncRecord] {
+        let merged = SyncMerge.merge(own + others, now: now)
+        return SyncMerge.pruned(own: own, merged: merged, others: others, now: now)
+    }
+
+    @Test func anOwnRemovalPastItsKeepingIsDroppedWhenNoOtherFileHoldsTheValue() {
+        let old = Self.record(
+            nil, minutesAgo: (SyncMerge.removalKept + Self.day) / 60, device: "mac")
+        #expect(Self.pruned(own: [old], others: []).isEmpty)
+    }
+
+    @Test func anOwnRemovalStaysWhileAnotherFileStillHoldsTheValue() {
+        let old = Self.record(
+            nil, minutesAgo: (SyncMerge.removalKept + Self.day) / 60, device: "mac")
+        let leftBehind = Self.record(
+            "a", minutesAgo: (SyncMerge.removalKept + 2 * Self.day) / 60, device: "gone")
+        #expect(
+            Self.pruned(own: [old], others: [leftBehind]) == [old],
+            "an uninstalled device's file never brings it back")
+    }
+
+    @Test func anOwnRemovalWithinItsKeepingStays() {
         let recent = Self.record(
             nil, minutesAgo: (SyncMerge.removalKept - Self.day) / 60, device: "mac")
-        #expect(Self.merged([recent]) == recent)
+        #expect(Self.pruned(own: [recent], others: []) == [recent])
     }
 
-    @Test func aValueIsKeptHoweverOld() {
+    @Test func anOwnValueThatLostIsDropped() {
+        let mine = Self.record("a", minutesAgo: 5, device: "mac")
+        let newer = Self.record("b", minutesAgo: 1, device: "ipad")
+        #expect(Self.pruned(own: [mine], others: [newer]).isEmpty)
+    }
+
+    @Test func anOwnValueIsKeptHoweverOld() {
         let old = Self.record("a", minutesAgo: 10 * SyncMerge.removalKept / 60, device: "mac")
-        #expect(Self.merged([old]) == old)
+        #expect(Self.pruned(own: [old], others: []) == [old])
+    }
+
+    // MARK: - The time of a change
+
+    @Test func aChangeIsStampedNowWhenNothingNewerIsKnown() {
+        let held = Self.record("a", minutesAgo: 5, device: "ipad")
+        #expect(SyncMerge.stamp(now: Self.now, after: held) == Self.now)
+    }
+
+    @Test func aChangeIsStampedAfterWhatTheDeviceAlreadySaw() {
+        let ahead = SyncRecord(
+            key: Self.key, value: nil, changedAt: Self.now.addingTimeInterval(3600),
+            device: "ipad")
+        let stamp = SyncMerge.stamp(now: Self.now, after: ahead)
+        #expect(stamp > ahead.changedAt, "an edit beats what was seen, whatever the clock says")
     }
 
     @Test func eachKeyMergesOnItsOwn() {
