@@ -68,16 +68,38 @@ import TreewiseUI
         #expect(model.correctedTemplates.map(\.id) == ["household"])
     }
 
-    @Test func remembersATemplateItCorrected() async throws {
-        let model = try await model(for: try await folder())
+    private func rename(_ model: RenameInAllYearsModel) async {
         model.newName = "Belastingdienst"
-        model.uncorrected = ["club"]
         let browser = await makeBrowser(fileSystem: fileSystem)
         await browser.renameInAllYears(
             model, templates: templates, settings: settings, undoManager: nil)
+    }
+
+    private func kept(_ year: String) async -> [String]? {
+        await settings.settings(forFolderAt: "documents/Admin/\(year)")?.madeFrom
+    }
+
+    @Test func aGuessAmongTwoIsNotRemembered() async throws {
+        let model = try await model(for: try await folder())
+        await rename(model)
+        #expect(model.correctedTemplates.count == 2, "both are still corrected")
+        #expect(await kept("2024") == nil, "a template guessed among two is not learnt")
+    }
+
+    @Test func theOneTemplateGuessedIsRemembered() async throws {
+        await templates.delete("club", undoManager: nil)
+        let model = try await model(for: try await folder())
+        await rename(model)
         for year in ["2024", "2025"] {
-            let kept = await settings.settings(forFolderAt: "documents/Admin/\(year)")
-            #expect(kept?.madeFrom == ["household"], "\(year) learns its template")
+            #expect(await kept(year) == ["household"], "\(year) learns its template")
         }
+    }
+
+    @Test func aTemplateKeptIsRememberedForTheOtherYears() async throws {
+        let folder = try await folder()
+        await made("2024", from: "club")
+        let model = try await model(for: folder)
+        await rename(model)
+        #expect(await kept("2025") == ["club"])
     }
 }

@@ -21,6 +21,9 @@ public final class RenameInAllYearsModel {
     /// made from (ADR 0141), the one used last first, or, when no year keeps one, those
     /// rooted at `{year}` (ADR 0102).
     public let templates: [FolderTemplate]
+    /// Whether `templates` were guessed, as no year keeps one: then the years learn them only
+    /// when there was one to guess (ADR 0141).
+    public let templatesGuessed: Bool
     /// The new name, as typed.
     public var newName: String
     /// The folders the user unchecked.
@@ -30,13 +33,15 @@ public final class RenameInAllYearsModel {
 
     init(
         oldName: String, path: [String], years: [FileItem.ID],
-        holders: [(parent: FileItem.ID, contents: [FileItem])], templates: [FolderTemplate]
+        holders: [(parent: FileItem.ID, contents: [FileItem])], templates: [FolderTemplate],
+        templatesGuessed: Bool
     ) {
         self.oldName = oldName
         self.path = path
         self.years = years
         self.holders = holders
         self.templates = templates
+        self.templatesGuessed = templatesGuessed
         newName = oldName
     }
 
@@ -71,7 +76,8 @@ public final class RenameInAllYearsModel {
             ? holding.filter(\.isRootedAtYear)
             : kept.compactMap { id in holding.first { $0.id == id } }
         return RenameInAllYearsModel(
-            oldName: folder.name, path: path, years: years, holders: holders, templates: chosen)
+            oldName: folder.name, path: path, years: years, holders: holders, templates: chosen,
+            templatesGuessed: kept.isEmpty)
     }
 
     /// The folder below `year` that would hold the last folder of `path`, with what it
@@ -125,6 +131,12 @@ public final class RenameInAllYearsModel {
 
     /// Whether Rename can be chosen: a valid new name and a folder to give it.
     public var canRename: Bool { FileName.isValid(trimmedName) && !renames.isEmpty }
+
+    /// The templates the years' folders learn they were made from after the rename: those
+    /// corrected, unless they were guessed among more than one (ADR 0141).
+    public var templatesToRemember: [FolderTemplate] {
+        templatesGuessed && templates.count > 1 ? [] : correctedTemplates
+    }
 
     /// The templates checked, with the folder renamed.
     public var correctedTemplates: [FolderTemplate] {

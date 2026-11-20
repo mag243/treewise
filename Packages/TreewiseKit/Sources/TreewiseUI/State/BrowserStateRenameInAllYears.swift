@@ -39,7 +39,7 @@ extension BrowserState {
             await reloadShownFolders()
         }
         guard let failure = outcome.failure else {
-            await remember(model.correctedTemplates, in: model, settings: settings)
+            await remember(model.templatesToRemember, in: model, settings: settings)
             return .renamed(count: outcome.renamed.count)
         }
         return .stopped(failure, renamed: outcome.renamed.count)
@@ -86,8 +86,8 @@ extension BrowserState {
         }
     }
 
-    /// The years whose folder was renamed were made from the templates corrected, as far as
-    /// Treewise can tell: it remembers so for the next time (ADR 0141).
+    /// The years whose folder was renamed were made from `corrected`, as far as Treewise can
+    /// tell: it remembers so for the next time (ADR 0141).
     private func remember(
         _ corrected: [FolderTemplate], in model: RenameInAllYearsModel,
         settings: any FolderSettingsStoring
