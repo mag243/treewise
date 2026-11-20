@@ -12,8 +12,9 @@ final class IPadReviewTests: XCTestCase {
     /// on-screen keyboard iPadOS 27's simulator brings in with a menu, and beside the menus.
     private static let emptyPoint = CGVector(dx: 0.3, dy: 0.5)
 
-    override func setUp() {
+    override func setUp() async throws {
         continueAfterFailure = false
+        await MainActor.run { QuiescenceShortcut.installIfNeeded() }
     }
 
     // MARK: - Screens

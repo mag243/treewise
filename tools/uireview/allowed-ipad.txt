@@ -69,15 +69,6 @@ context-menu-landscape-11inch | overlap | button "Rename with Suggestions…"  #
 context-menu-landscape-11inch | overlap | button "Cut"  # iPadOS 27's keyboard with a menu
 context-menu-landscape-11inch | overlap | button "Copy"  # iPadOS 27's keyboard with a menu
 context-menu-landscape-11inch | overlap | button "Move to Trash"  # iPadOS 27's keyboard
-# iPadOS 27 never reports an app idle while a context menu is open, Apple's own too (ADR 0115):
-# each step there waits a minute, so the walk looks at the menu last, in a run of its own.
-context-menu-landscape-11inch | notIdle | *  # iPadOS 27 with a context menu open
-context-menu-portrait-11inch | notIdle | *  # iPadOS 27 with a context menu open
-# The rename sheet takes the keyboard as it opens (ADR 0130); on iPadOS 27 the bar iPadOS gives
-# a hardware keyboard keeps sliding in, so the app is not reported idle there in some runs,
-# before step 6 of M6e too.
-rename-suggestions-landscape-11inch | notIdle | *  # iPadOS 27's keyboard bar
-rename-suggestions-portrait-11inch | notIdle | *  # iPadOS 27's keyboard bar
 # The iPhone (ADR 0132). A system menu's shadow reaches beyond the screen, and in landscape
 # the folder's long menu scrolls, its last items below the screen's edge.
 more-menu-landscape-iphone | outsideWindow | image ""  # iOS's menu shadow
