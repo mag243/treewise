@@ -4,12 +4,14 @@ import TreewiseUI
 
 /// What a folder's Folder Structure ▸ asks for (ADR 0091, ADR 0099): to save the folder's
 /// structure as a template, to make a template's folders in it, to copy its structure, or to
-/// paste the structure copied.
+/// paste the structure copied; and Rename in All Years…, which corrects the templates along
+/// (ADR 0139).
 enum FolderStructureRequest: Identifiable {
     case save(FileItem.ID)
     case make(FolderTemplate, in: FileItem.ID)
     case copy(FileItem.ID)
     case paste(FolderTree, in: FileItem.ID)
+    case renameInAllYears(FileItem)
 
     var id: String {
         switch self {
@@ -17,6 +19,7 @@ enum FolderStructureRequest: Identifiable {
         case .make(let template, let folder): "make \(template.id) " + folder.rawValue
         case .copy(let folder): "copy " + folder.rawValue
         case .paste(let tree, let folder): "paste \(tree.name) " + folder.rawValue
+        case .renameInAllYears(let folder): "rename " + folder.id.rawValue
         }
     }
 }
@@ -74,6 +77,9 @@ struct FolderStructureSheets: ViewModifier {
                         title: String(localized: "Paste the Structure of “\(tree.name)”"),
                         tree: tree, template: nil, folder: folder, browser: browser,
                         undoManager: undoManager)
+                case .renameInAllYears(let folder):
+                    RenameInAllYearsSheet(
+                        folder: folder, browser: browser, undoManager: undoManager)
                 case .copy:
                     EmptyView()
                 }

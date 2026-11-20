@@ -124,8 +124,8 @@ final class IPadReviewTests: XCTestCase {
     }
 
     /// The folder templates (ADR 0143, M6e): Settings' Templates tab, a template's tree and
-    /// its folder renamed, and from a folder's Folder Structure ▸ Save as Template… and New
-    /// Folders from Template.
+    /// its folder renamed, from a folder's Folder Structure ▸ Save as Template… and New
+    /// Folders from Template, and Rename in All Years… in the year's folder made.
     @MainActor
     func testTemplates() throws {
         try eachReviewVariant { variant in
@@ -147,8 +147,9 @@ final class IPadReviewTests: XCTestCase {
             XCTAssertTrue(make.waitForExistence(timeout: Self.timeout))
             settleScreen()
             review(app, as: "new-folders", variant: variant)
-            app.buttons["Cancel"].firstMatch.tap()
+            make.tap()
             toolbarButton("Done", in: app).tap()
+            reviewRenameInAllYears(in: app, variant: variant)
 
             openSettings(in: app)
             app.buttons["Templates"].firstMatch.tap()
@@ -169,6 +170,26 @@ final class IPadReviewTests: XCTestCase {
     }
 
     // MARK: - Looking
+
+    /// Rename in All Years… on Tax in the year's folder New Folders from Template made in
+    /// Archive, with a new name typed.
+    @MainActor
+    private func reviewRenameInAllYears(in app: XCUIApplication, variant: String) {
+        app.staticTexts["Archive"].firstMatch.tap()
+        let year = app.staticTexts.matching(NSPredicate(format: "label MATCHES '^[0-9]{4}$'"))
+            .firstMatch
+        XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
+        year.tap()
+        perform("Rename in All Years…", on: "Tax", in: app)
+        let name = app.textFields["renameInAllYearsName"]
+        XCTAssertTrue(name.waitForExistence(timeout: Self.timeout))
+        name.tap()
+        name.typeText("es")
+        settleScreen()
+        review(app, as: "rename-in-all-years", variant: variant)
+        app.buttons["Cancel"].firstMatch.tap()
+        toolbarButton("Done", in: app).tap()
+    }
 
     /// Opens Settings from the sidebar's gear; in portrait the sidebar, with the gear, shows
     /// over the folder when asked.

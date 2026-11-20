@@ -82,6 +82,7 @@ enum ItemCommands {
             ItemCommand(
                 title: String(localized: "Rename"), symbol: "pencil",
                 isEnabled: item.canBeRenamedOrTrashed, perform: { actions.rename(item) }))
+        opening += renameInAllYearsCommands(item, actions)
         var sections = [opening]
         if item.isContainer, !item.id.isInsideArchive {
             sections.append([favoriteCommand(item, actions)])

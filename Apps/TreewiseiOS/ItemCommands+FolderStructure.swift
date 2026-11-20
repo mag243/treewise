@@ -78,4 +78,19 @@ extension ItemCommands {
                 isEnabled: isEnabled, perform: { structure(.paste(copied, in: folder)) })
         ]
     }
+
+    /// Rename in All Years…, beside Rename, on a folder inside a year's own folder (ADR 0139).
+    static func renameInAllYearsCommands(_ item: FileItem, _ actions: ItemActions)
+        -> [ItemCommand]
+    {
+        guard item.kind == .folder, !item.id.isInsideArchive,
+            YearFolders.place(of: item.id) != nil, let structure = actions.folderStructure
+        else { return [] }
+        return [
+            ItemCommand(
+                title: String(localized: "Rename in All Years…"),
+                symbol: "pencil.and.list.clipboard", isEnabled: item.canBeRenamedOrTrashed,
+                perform: { structure(.renameInAllYears(item)) })
+        ]
+    }
 }

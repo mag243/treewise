@@ -17,6 +17,28 @@
         }
       }
     },
+    "%@ already has a folder “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ hat bereits einen Ordner „%2$@“"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ already has a folder “%2$@”"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ heeft al een map ‘%2$@’"
+          }
+        }
+      }
+    },
     "%@ · %lld folders" : {
       "localizations" : {
         "de" : {
@@ -163,6 +185,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Een bestand heeft de naam van %@."
+          }
+        }
+      }
+    },
+    "A folder could not be renamed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Ordner konnte nicht umbenannt werden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De naam van een map kon niet worden gewijzigd"
           }
         }
       }
@@ -356,6 +394,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Past al"
+          }
+        }
+      }
+    },
+    "Also Correct the Templates" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auch die Vorlagen korrigieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbeter ook de sjablonen"
+          }
+        }
+      }
+    },
+    "Also correct the template “%@”" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auch die Vorlage „%@“ korrigieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbeter ook het sjabloon ‘%@’"
           }
         }
       }
@@ -1587,6 +1658,22 @@
         }
       }
     },
+    "New name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Name"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe naam"
+          }
+        }
+      }
+    },
     "Next" : {
       "localizations" : {
         "de" : {
@@ -2231,6 +2318,64 @@
         }
       }
     },
+    "Rename %lld Folders" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Ordner umbenennen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Ordner umbenennen"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Rename %lld Folder"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Rename %lld Folders"
+                }
+              }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wijzig naam van %lld map"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wijzig naam van %lld mappen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Rename %lld Items" : {
       "localizations" : {
         "de" : {
@@ -2279,6 +2424,22 @@
         }
       }
     },
+    "Rename in All Years…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In allen Jahren umbenennen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam in alle jaren…"
+          }
+        }
+      }
+    },
     "Rename with Suggestions…" : {
       "localizations" : {
         "de" : {
@@ -2291,6 +2452,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wijzig naam met voorstellen…"
+          }
+        }
+      }
+    },
+    "Rename “%@” in All Years" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ in allen Jahren umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam van ‘%@’ in alle jaren"
           }
         }
       }
@@ -2579,6 +2756,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toon voorstellen"
+          }
+        }
+      }
+    },
+    "Show in %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@ zeigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon in %@"
           }
         }
       }
@@ -3079,6 +3272,22 @@
         }
       }
     },
+    "already named so" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "heißt bereits so"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "heeft deze naam al"
+          }
+        }
+      }
+    },
     "already there" : {
       "localizations" : {
         "de" : {
@@ -3107,6 +3316,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "naamloze map"
+          }
+        }
+      }
+    },
+    "“%@” in %@ could not be renamed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ in %2$@ konnte nicht umbenannt werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "“%1$@” in %2$@ could not be renamed"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De naam van ‘%1$@’ in %2$@ kon niet worden gewijzigd"
           }
         }
       }

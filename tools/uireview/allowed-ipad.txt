@@ -46,6 +46,8 @@ save-template-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shad
 save-template-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 new-folders-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 new-folders-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+rename-in-all-years-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+rename-in-all-years-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 # Settings' tab bar floats on iPadOS 27 (ADR 0143): the chosen tab's highlight reaches 8
 # points under the tab beside it, as iPadOS draws it.
 settings-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
