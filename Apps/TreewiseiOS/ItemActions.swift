@@ -39,6 +39,18 @@ struct ItemActions {
         NameServices.templateState.copiedStructure
     }
 
+    /// The templates `folder` was made from, the one used last first (ADR 0141).
+    func templates(madeFrom folder: FileItem.ID) -> [FolderTemplate] {
+        NameServices.templateOriginsShown.templates[folder] ?? []
+    }
+
+    /// Forget: `folder` was not made from `template`; Undo remembers it again (ADR 0141).
+    func forget(_ template: FolderTemplate, madeFrom folder: FileItem.ID) {
+        NameServices.templateOriginsShown.change(
+            folder, template: template.id, forgetting: true, browser: browser,
+            undoManager: undoManager)
+    }
+
     /// The folder shown, unless it is no folder on disk, as a place inside an archive.
     var shownFolder: FileItem.ID? {
         let folder = browser.layout.focusedPane.activeTab.folder

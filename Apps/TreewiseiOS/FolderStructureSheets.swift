@@ -55,11 +55,14 @@ final class FolderStructureAsked {
     }
 }
 
-/// The sheets and the alert of Folder Structure ▸, on the folder view.
+/// The sheets and the alert of Folder Structure ▸, on the folder view, and the templates
+/// its folders were made from, read for Made from ▸.
 struct FolderStructureSheets: ViewModifier {
     @Bindable var asked: FolderStructureAsked
     let browser: BrowserState
     let undoManager: UndoManager
+    /// The folders shown, whose templates Made from ▸ offers (ADR 0141).
+    let folders: [FileItem.ID]
 
     func body(content: Content) -> some View {
         content
@@ -94,5 +97,8 @@ struct FolderStructureSheets: ViewModifier {
                 Text(asked.problem ?? "")
             }
             .task { await NameServices.templateList.load() }
+            .task(id: folders) {
+                await NameServices.templateOriginsShown.read(folders, browser: browser)
+            }
     }
 }

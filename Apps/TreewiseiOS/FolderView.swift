@@ -95,7 +95,8 @@ struct FolderView: View {
         }
         .modifier(
             FolderStructureSheets(
-                asked: structureAsked, browser: browser, undoManager: undoManager)
+                asked: structureAsked, browser: browser, undoManager: undoManager,
+                folders: items.filter { $0.kind == .folder }.map(\.id))
         )
         .sheet(isPresented: isAskingAboutConflict) {
             if let question = conflicts.question {

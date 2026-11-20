@@ -19,6 +19,8 @@ enum NameServices {
     static let templateList = FolderTemplatesModel(store: templates)
     /// The structure Copy Structure copied, for Paste Structure… in any window (ADR 0099).
     static let templateState = FolderTemplatesState()
+    /// The templates the folders shown were made from, for Made from ▸ (ADR 0141).
+    static let templateOriginsShown = TemplateOriginsShown()
 
     /// What remembers the templates a folder was made from (ADR 0141), for `browser`'s
     /// folders; the iPad has no template bar, nor the add-on that would offer in it.

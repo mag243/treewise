@@ -1,8 +1,8 @@
 import XCTest
 
 /// A folder's Folder Structure ▸ on the iPad (ADR 0091, ADR 0099, ADR 0142): its structure
-/// saved as a template, a template's folders made in it, and its structure copied and pasted
-/// into another folder.
+/// saved as a template, a template's folders made in it, its structure copied and pasted
+/// into another folder, and the template a folder was made from forgotten with Undo.
 final class FolderStructureTests: XCTestCase {
     private static let timeout: TimeInterval = 10
 
@@ -86,5 +86,42 @@ final class FolderStructureTests: XCTestCase {
         XCTAssertTrue(
             row("Archive", in: app).waitForExistence(timeout: Self.timeout),
             "the structure is made inside")
+    }
+
+    @MainActor
+    func testTheTemplateAFolderWasMadeFromIsForgottenAndUndone() {
+        let app = openDocuments()
+        openFolderStructure(of: "Archive", in: app)
+        app.buttons["New Folders from Template"].firstMatch.tap()
+        app.buttons["Household Year"].firstMatch.tap()
+        let create = app.buttons["Create Folders"].firstMatch
+        XCTAssertTrue(create.waitForExistence(timeout: Self.timeout))
+        create.tap()
+        row("Archive", in: app).tap()
+        let year = app.staticTexts.matching(NSPredicate(format: "label MATCHES '^[0-9]{4}$'"))
+            .firstMatch
+        XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
+        let name = year.label
+
+        openFolderStructure(of: name, in: app)
+        app.buttons["Made from"].firstMatch.tap()
+        let forget = app.buttons["Forget “Household Year”"].firstMatch
+        XCTAssertTrue(forget.waitForExistence(timeout: Self.timeout), "it was made from it")
+        forget.tap()
+
+        openFolderStructure(of: name, in: app)
+        XCTAssertTrue(
+            app.buttons["Save as Template…"].firstMatch.waitForExistence(timeout: Self.timeout))
+        XCTAssertFalse(app.buttons["Made from"].firstMatch.exists, "forgotten")
+        app.buttons["Save as Template…"].firstMatch.tap()
+        app.buttons["Cancel"].firstMatch.tap()
+
+        let undo = app.buttons["undo"].firstMatch
+        XCTAssertTrue(app.eventually { undo.isEnabled })
+        undo.tap()
+        openFolderStructure(of: name, in: app)
+        XCTAssertTrue(
+            app.buttons["Made from"].firstMatch.waitForExistence(timeout: Self.timeout),
+            "remembered again")
     }
 }

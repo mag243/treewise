@@ -23,6 +23,7 @@ extension ItemCommands {
                 perform: { structure(.copy(folder)) }),
         ]
         commands += paste(in: folder, isEnabled: true, structure, actions)
+        commands += madeFrom(folder, actions)
         return [[submenu(commands)]]
     }
 
@@ -64,6 +65,23 @@ extension ItemCommands {
         return .submenu(
             String(localized: "New Folders from Template"), symbol: "folder.badge.plus",
             templates)
+    }
+
+    /// Made from ▸ with Forget for each template the folder was made from, the one used last
+    /// first (ADR 0141); no confirmation, as Undo takes it back.
+    private static func madeFrom(_ folder: FileItem.ID, _ actions: ItemActions) -> [ItemCommand] {
+        let templates = actions.templates(madeFrom: folder)
+        guard !templates.isEmpty else { return [] }
+        return [
+            .submenu(
+                String(localized: "Made from"), symbol: "clock.arrow.circlepath",
+                templates.map { template in
+                    ItemCommand(
+                        title: String(localized: "Forget “\(template.name)”"),
+                        symbol: "xmark.circle",
+                        perform: { actions.forget(template, madeFrom: folder) })
+                })
+        ]
     }
 
     /// Paste Structure…, only while a structure is copied.

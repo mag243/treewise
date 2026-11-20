@@ -1152,6 +1152,38 @@
         }
       }
     },
+    "Forget Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlage vergessen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergeet sjabloon"
+          }
+        }
+      }
+    },
+    "Forget “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ vergessen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergeet ‘%@’"
+          }
+        }
+      }
+    },
     "Forward" : {
       "localizations" : {
         "de" : {
@@ -1308,6 +1340,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Locaties"
+          }
+        }
+      }
+    },
+    "Made from" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellt mit"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemaakt met"
           }
         }
       }
