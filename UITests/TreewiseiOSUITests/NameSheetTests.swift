@@ -68,4 +68,21 @@ final class NameSheetTests: XCTestCase {
 
         XCTAssertTrue(row(proposed, in: app).waitForExistence(timeout: Self.timeout), "renamed")
     }
+
+    @MainActor
+    func testRenameRightAfterTakingAProposalGivesTheFileThatName() {
+        let app = openDocuments()
+        row("Notes.md", in: app).press(forDuration: 1)
+        app.buttons["Rename with Suggestions…"].firstMatch.tap()
+        let suggestion = app.buttons["suggestion-0"]
+        XCTAssertTrue(
+            suggestion.waitForExistence(timeout: Self.timeout), "a proposal from the default")
+        let proposed = suggestion.label
+
+        suggestion.tap()
+        app.navigationBars["Rename"].buttons["Rename"].tap()
+
+        XCTAssertTrue(row(proposed, in: app).waitForExistence(timeout: Self.timeout), "renamed")
+        XCTAssertFalse(row("Notes.md", in: app).exists, "the old name is gone")
+    }
 }
