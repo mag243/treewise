@@ -108,12 +108,14 @@ import TreewiseCore
         #expect(settings.alwaysSkipped.isEmpty)
         #expect(settings.missingFoldersClosed.isEmpty)
         #expect(!settings.offersNoMissingFolders)
+        #expect(settings.namesKeptApart.isEmpty)
     }
 
     @Test func keepsTheMissingFoldersClosedThroughEncoding() throws {
         var settings = FolderSettings(enabledModules: [], templates: [:])
         settings.missingFoldersClosed = [["Tax", "Appeals"]]
         settings.offersNoMissingFolders = true
+        settings.namesKeptApart = [FolderSettings.keptApart("Huis", "Huur", at: ["Wonen"])]
         let data = try JSONEncoder().encode(settings)
         #expect(try JSONDecoder().decode(FolderSettings.self, from: data) == settings)
     }
@@ -124,12 +126,14 @@ import TreewiseCore
         stored.templateBarClosed = true
         stored.missingFoldersClosed = [["Tax"]]
         stored.offersNoMissingFolders = true
+        stored.namesKeptApart = [["huis", "huur"]]
         var reviewed = FolderSettings.new(defaultModuleID: "free")
         reviewed.keepTemplates(of: stored)
         #expect(reviewed.newFolders == .none)
         #expect(reviewed.templateBarClosed)
         #expect(reviewed.missingFoldersClosed == [["Tax"]])
         #expect(reviewed.offersNoMissingFolders)
+        #expect(reviewed.namesKeptApart == [["huis", "huur"]])
         #expect(reviewed.enabledModules == ["free"])
     }
 

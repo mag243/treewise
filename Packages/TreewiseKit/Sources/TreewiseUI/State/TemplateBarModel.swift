@@ -22,6 +22,10 @@ public final class TemplateBarModel {
     let yearBefore: @MainActor (FileItem.ID) async -> FolderTree?
     /// Whether the bar offers missing folders, as Settings says (ADR 0102).
     let offersMissingFolders: @MainActor () -> Bool
+    /// Whether a name is spelled correctly in the user's languages, as the system's spelling
+    /// checker says; two names that both are never count as one folder by likeness alone
+    /// (ADR 0139). Without a checker, no name is.
+    public var isSpelledCorrectly: @MainActor (String) -> Bool = { _ in false }
 
     /// A model that reads folders from `fileSystem`, their settings from `settings` and the
     /// templates from `templates`; the bar shows only while `addOnMayWork` says so. Missing

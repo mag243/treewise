@@ -54,6 +54,18 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     public var missingFoldersClosed: Set<[String]> = []
     /// Whether the bar offers this year's folder no missing folders at all (ADR 0102).
     public var offersNoMissingFolders = false
+    /// The names the bar does not take for one folder in this year's folder, after Add
+    /// Anyway (ADR 0139): each the path of the folder that holds them below this one, then
+    /// the two names as the file system compares them, in order.
+    public var namesKeptApart: Set<[String]> = []
+
+    /// The entry of `namesKeptApart` for `one` and `other` in the folder at `place`.
+    public static func keptApart(_ one: String, _ other: String, at place: [String])
+        -> [String]
+    {
+        place.map(ConflictResolver.comparisonKey)
+            + [one, other].map(ConflictResolver.comparisonKey).sorted()
+    }
 
     /// Takes what `other` says of templates (ADR 0094, ADR 0097, ADR 0102), which changes
     /// outside the review, keeping the rest of these settings.
@@ -62,6 +74,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
         templateBarClosed = other.templateBarClosed
         missingFoldersClosed = other.missingFoldersClosed
         offersNoMissingFolders = other.offersNoMissingFolders
+        namesKeptApart = other.namesKeptApart
     }
 
     /// Whether the folder was ever reviewed: then a module is on, which a folder kept only
@@ -128,6 +141,7 @@ public struct FolderSettings: Hashable, Sendable, Codable {
     private enum CodingKeys: String, CodingKey {
         case enabledModules, templates, alwaysSkipped, moduleOrder, savedPatternLinks
         case newFolders, templateBarClosed, missingFoldersClosed, offersNoMissingFolders
+        case namesKeptApart
     }
 
     /// Reads settings; those stored before a field existed get its default.
@@ -149,6 +163,8 @@ public struct FolderSettings: Hashable, Sendable, Codable {
             try container.decodeIfPresent(Set<[String]>.self, forKey: .missingFoldersClosed) ?? []
         offersNoMissingFolders =
             try container.decodeIfPresent(Bool.self, forKey: .offersNoMissingFolders) ?? false
+        namesKeptApart =
+            try container.decodeIfPresent(Set<[String]>.self, forKey: .namesKeptApart) ?? []
         // Settings kept under an add-on's former id belong to its current one (ADR 0140).
         AddOnIDs.convert { handOver(from: $0, to: $1) }
     }
