@@ -32,8 +32,9 @@ final class SettingsForm {
     }
 
     /// Adds a row of `label` and `control`, or of `control` alone under the
-    /// controls when there is no label.
-    func row(_ label: String.LocalizationValue?, _ control: NSView) {
+    /// controls when there is no label; returns the row, for one shown only at times.
+    @discardableResult
+    func row(_ label: String.LocalizationValue?, _ control: NSView) -> NSGridRow {
         let title = label.map { NSTextField(labelWithString: String(localized: $0)) }
         let row = grid.addRow(with: [title ?? NSGridCell.emptyContentView, control])
         grid.column(at: 0).xPlacement = .trailing
@@ -43,6 +44,7 @@ final class SettingsForm {
             startsGroup = false
         }
         row.rowAlignment = .firstBaseline
+        return row
     }
 
     /// Adds a note under the controls.

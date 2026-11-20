@@ -58,6 +58,24 @@ templates-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab ba
 templates-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 template-tree-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 template-tree-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+settings-landscape-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+settings-portrait-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+saved-patterns-landscape-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+saved-patterns-portrait-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+templates-landscape-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+templates-portrait-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+template-tree-landscape-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+template-tree-portrait-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+about-landscape-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+about-portrait-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+general-landscape-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+general-portrait-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+general-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+general-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+general-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+general-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+general-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+general-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 about-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 about-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 settings-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar

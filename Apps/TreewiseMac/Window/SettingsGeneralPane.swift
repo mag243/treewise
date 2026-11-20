@@ -46,6 +46,8 @@ final class SettingsGeneralPane: NSViewController {
         "Sync settings through cloud drives"
     ) { [sync] in Self.setSyncing($0, in: sync) }
     private let replacedCount = NSTextField(labelWithString: "")
+    /// The row of `replacedLine`, hidden whole while nothing was replaced, so it takes no room.
+    private var replacedRow: NSGridRow?
     private lazy var replacedLine: NSStackView = {
         let review = SettingsForm.button("Review…") { [weak self] in self?.reviewReplaced() }
         return Self.line([replacedCount, review])
@@ -85,7 +87,7 @@ final class SettingsGeneralPane: NSViewController {
         form.note(
             "Folder settings, saved patterns and templates are kept in a hidden .treewise folder in iCloud Drive, Dropbox and your other cloud drives, so your other Macs and your iPad have them too.",
             width: SettingsForm.noteWidth)
-        form.row(nil, replacedLine)
+        replacedRow = form.row(nil, replacedLine)
         form.group()
         let customize = SettingsForm.button("Customize…") {
             if let url = Self.keyboardSettings { NSWorkspace.shared.open(url) }
@@ -111,7 +113,7 @@ final class SettingsGeneralPane: NSViewController {
         updates.state = updater.checksAutomatically ? .on : .off
         syncs.state = settings.syncsSettings ? .on : .off
         let replaced = sync.replaced.count
-        replacedLine.isHidden = replaced == 0
+        replacedRow?.isHidden = replaced == 0
         replacedCount.stringValue = String(
             localized: "Replaced by another device: \(replaced)")
     }
