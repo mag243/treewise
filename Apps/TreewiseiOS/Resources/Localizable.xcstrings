@@ -1802,6 +1802,22 @@
         }
       }
     },
+    "New Folders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Ordner"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe mappen"
+          }
+        }
+      }
+    },
     "New Folders from Template" : {
       "localizations" : {
         "de" : {
@@ -2286,6 +2302,22 @@
         }
       }
     },
+    "Paste Structure" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Struktur einsetzen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plak structuur"
+          }
+        }
+      }
+    },
     "Paste Structure…" : {
       "localizations" : {
         "de" : {
@@ -2644,6 +2676,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wijzig naam locatie…"
+          }
+        }
+      }
+    },
+    "Rename in All Years" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In allen Jahren umbenennen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig naam in alle jaren"
           }
         }
       }
