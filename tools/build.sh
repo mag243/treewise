@@ -149,7 +149,7 @@ IPHONE_REVIEW_TESTS="TreewiseiOSUITests/IPhoneReviewTests"
 APPSTORE_SCREENSHOT_TESTS="TreewiseiOSUITests/AppStoreScreenshotTests"
 APPSTORE_SCREENSHOT_DIR="$BUILD_DIR/appstore/screenshots"
 IPAD_REVIEW_DIR="$BUILD_DIR/ui-review-ipad"
-IPAD_REVIEW_SCREENS=" start browser names settings "
+IPAD_REVIEW_SCREENS=" start browser names settings templates "
 SCREENSHOT_DIR="$BUILD_DIR/screenshots"
 # Where the releases are published (tools/publish.sh).
 RELEASES_REPOSITORY="mag243/treewise"

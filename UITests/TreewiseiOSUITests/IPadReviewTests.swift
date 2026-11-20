@@ -113,14 +113,7 @@ final class IPadReviewTests: XCTestCase {
             toolbarButton("Done", in: app).tap()
             review(app, as: "favorites", variant: variant)
 
-            // In portrait the sidebar, with the gear, shows over the folder when asked.
-            if !app.buttons["settings"].firstMatch.isHittable {
-                // The system's button: named ToggleSidebar on iOS 18, only labelled on 27.
-                app.buttons.matching(
-                    NSPredicate(format: "identifier == 'ToggleSidebar' OR label == 'Show Sidebar'")
-                ).firstMatch.tap()
-            }
-            app.buttons["settings"].firstMatch.tap()
+            openSettings(in: app)
             let saved = app.buttons["savedPatterns"].firstMatch
             XCTAssertTrue(saved.waitForExistence(timeout: Self.timeout))
             review(app, as: "settings", variant: variant)
@@ -130,7 +123,65 @@ final class IPadReviewTests: XCTestCase {
         }
     }
 
+    /// The folder templates (ADR 0143, M6e): Settings' Templates tab, a template's tree and
+    /// its folder renamed, and from a folder's Folder Structure ▸ Save as Template… and New
+    /// Folders from Template.
+    @MainActor
+    func testTemplates() throws {
+        try eachReviewVariant { variant in
+            let app = launch(state: UUID().uuidString, fixture: true)
+            XCTAssertTrue(
+                app.staticTexts["Archive"].firstMatch.waitForExistence(timeout: Self.timeout))
+            perform("Folder Structure", on: "Archive", in: app)
+            app.buttons["Save as Template…"].firstMatch.tap()
+            let save = app.navigationBars["Save as Template"]
+            XCTAssertTrue(save.waitForExistence(timeout: Self.timeout))
+            review(app, as: "save-template", variant: variant)
+            save.buttons["Cancel"].tap()
+
+            toolbarButton("Actions", in: app).tap()
+            app.buttons["Folder Structure"].firstMatch.tap()
+            app.buttons["New Folders from Template"].firstMatch.tap()
+            app.buttons["Household Year"].firstMatch.tap()
+            let make = app.buttons["Create Folders"].firstMatch
+            XCTAssertTrue(make.waitForExistence(timeout: Self.timeout))
+            settleScreen()
+            review(app, as: "new-folders", variant: variant)
+            app.buttons["Cancel"].firstMatch.tap()
+            toolbarButton("Done", in: app).tap()
+
+            openSettings(in: app)
+            app.buttons["Templates"].firstMatch.tap()
+            let template = app.staticTexts["Household Year"].firstMatch
+            XCTAssertTrue(template.waitForExistence(timeout: Self.timeout))
+            review(app, as: "templates", variant: variant)
+            template.tap()
+            let receipts = app.buttons["Receipts"].firstMatch
+            XCTAssertTrue(receipts.waitForExistence(timeout: Self.timeout))
+            review(app, as: "template-tree", variant: variant)
+            receipts.tap()
+            XCTAssertTrue(
+                app.textFields["templateFolderName"].waitForExistence(timeout: Self.timeout))
+            settleScreen()
+            review(app, as: "template-folder-name", variant: variant)
+            app.terminate()
+        }
+    }
+
     // MARK: - Looking
+
+    /// Opens Settings from the sidebar's gear; in portrait the sidebar, with the gear, shows
+    /// over the folder when asked.
+    @MainActor
+    private func openSettings(in app: XCUIApplication) {
+        if !app.buttons["settings"].firstMatch.isHittable {
+            // The system's button: named ToggleSidebar on iOS 18, only labelled on 27.
+            app.buttons.matching(
+                NSPredicate(format: "identifier == 'ToggleSidebar' OR label == 'Show Sidebar'")
+            ).firstMatch.tap()
+        }
+        app.buttons["settings"].firstMatch.tap()
+    }
 
     /// Closes the menu that shows `item`, and checks it is gone.
     @MainActor

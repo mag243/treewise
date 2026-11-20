@@ -18,6 +18,7 @@
       }
     },
     "%@ Year" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -520,6 +521,7 @@
       }
     },
     "A field of the template has no value." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -568,6 +570,7 @@
       }
     },
     "A folder cannot go into itself." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -616,6 +619,7 @@
       }
     },
     "A template goes at most %lld folders deep." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -632,6 +636,7 @@
       }
     },
     "A template holds at most %lld folders." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -664,6 +669,7 @@
       }
     },
     "A template needs a name." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1165,6 +1171,7 @@
       }
     },
     "Another template is named “%@”." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6186,6 +6193,7 @@
       }
     },
     "The file is no template, or was made by a newer Treewise." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6380,6 +6388,7 @@
       }
     },
     "The template could not be saved." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6396,6 +6405,7 @@
       }
     },
     "There is already a folder “%@” here." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6701,6 +6711,7 @@
       }
     },
     "Type the text for the folders’ names." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7174,6 +7185,7 @@
       }
     },
     "{seq} can only be in the top folder; write numbered folders as 01 Intake." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7190,6 +7202,7 @@
       }
     },
     "“%@” cannot be a folder’s name." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7222,6 +7235,7 @@
       }
     },
     "“%@” holds a field with a format it does not take." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7298,6 +7312,7 @@
       }
     },
     "“%@” repeats for each month, quarter or half, which only a folder below the top one can." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7314,6 +7329,7 @@
       }
     },
     "“%@” repeats inside a folder that repeats already; a folder can repeat once." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7330,6 +7346,7 @@
       }
     },
     "“%@” starts with a dot, so Finder would hide it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

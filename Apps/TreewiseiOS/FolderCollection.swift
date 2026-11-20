@@ -227,7 +227,12 @@ final class FolderCollectionCoordinator: NSObject, UICollectionViewDelegate {
         })
     }
 
-    private static func action(for command: ItemCommand) -> UIAction {
+    private static func action(for command: ItemCommand) -> UIMenuElement {
+        guard command.children.isEmpty else {
+            return UIMenu(
+                title: command.title, image: UIImage(systemName: command.symbol),
+                children: command.children.map(action))
+        }
         var attributes: UIMenuElement.Attributes = []
         if command.isDestructive { attributes.insert(.destructive) }
         if !command.isEnabled { attributes.insert(.disabled) }

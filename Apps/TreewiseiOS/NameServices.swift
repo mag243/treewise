@@ -18,6 +18,14 @@ enum NameServices {
     /// The templates as Settings' Templates tab lists and edits them (ADR 0143).
     static let templateList = FolderTemplatesModel(store: templates)
 
+    /// What remembers the templates a folder was made from (ADR 0141), for `browser`'s
+    /// folders; the iPad has no template bar, nor the add-on that would offer in it.
+    static func templateOrigins(for browser: BrowserState) -> TemplateBarModel {
+        TemplateBarModel(
+            fileSystem: browser.fileSystem, settings: folderSettings, templates: templates,
+            addOnMayWork: { false })
+    }
+
     /// Where the folder settings and templates are kept.
     private static var directory: URL {
         TestRun.current?.folder.appendingPathComponent("Settings", isDirectory: true)

@@ -25,6 +25,20 @@ struct ItemActions {
     /// Opens a folder in a window of its own, where the device shows several (ADR 0134);
     /// `nil` elsewhere.
     var openInNewWindow: ((FileItem) -> Void)?
+    /// Opens Save as Template… or New Folders from Template's sheet (ADR 0091); `nil` where
+    /// the folder view has no sheet for them.
+    var folderStructure: ((FolderStructureRequest) -> Void)?
+
+    /// The saved templates, for New Folders from Template ▸.
+    var templates: [FolderTemplate] {
+        NameServices.templateList.templates
+    }
+
+    /// The folder shown, unless it is no folder on disk, as a place inside an archive.
+    var shownFolder: FileItem.ID? {
+        let folder = browser.layout.focusedPane.activeTab.folder
+        return folder.isInsideArchive ? nil : folder
+    }
 
     /// Whether names can be proposed for what the folder shows.
     var canSuggestNames: Bool {

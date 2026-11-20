@@ -9,8 +9,15 @@ struct ItemCommand: Identifiable {
     var isDestructive = false
     var isEnabled = true
     let perform: () -> Void
+    /// The commands of a submenu, which this command opens instead of performing.
+    var children: [ItemCommand] = []
 
     var id: String { title }
+
+    /// A submenu of `children` (ADR 0142).
+    static func submenu(_ title: String, symbol: String, _ children: [ItemCommand]) -> ItemCommand {
+        ItemCommand(title: title, symbol: symbol, perform: {}, children: children)
+    }
 }
 
 /// The context menu of the items a long press or secondary click is on, or of the folder
@@ -18,7 +25,9 @@ struct ItemCommand: Identifiable {
 @MainActor
 enum ItemCommands {
     static func sections(for items: [FileItem], actions: ItemActions) -> [[ItemCommand]] {
-        items.isEmpty ? [folderCommands(actions)] : itemCommands(items, actions)
+        items.isEmpty
+            ? [folderCommands(actions)] + shownFolderStructureCommands(actions)
+            : itemCommands(items, actions)
     }
 
     private static func itemCommands(_ items: [FileItem], _ actions: ItemActions)
@@ -77,6 +86,7 @@ enum ItemCommands {
         if item.isContainer, !item.id.isInsideArchive {
             sections.append([favoriteCommand(item, actions)])
         }
+        sections += folderStructureCommands(item, actions)
         return sections
     }
 

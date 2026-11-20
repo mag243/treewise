@@ -36,6 +36,31 @@ settings-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 settings-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 saved-patterns-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 saved-patterns-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+templates-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+templates-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+template-tree-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+template-tree-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+template-folder-name-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+template-folder-name-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+save-template-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+save-template-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+new-folders-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+new-folders-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+# Settings' tab bar floats on iPadOS 27 (ADR 0143): the chosen tab's highlight reaches 8
+# points under the tab beside it, as iPadOS draws it.
+settings-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+settings-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+saved-patterns-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+saved-patterns-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+templates-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+templates-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+template-tree-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+template-tree-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+# Insert Field beside a template folder's name: the menu's button lies over its label.
+template-folder-name-landscape-11inch | overlap | button "Insert Field"  # a menu's label
+template-folder-name-landscape-11inch | overlap | button ""  # the menu over its label
+template-folder-name-portrait-11inch | overlap | button "Insert Field"  # a menu's label
+template-folder-name-portrait-11inch | overlap | button ""  # the menu over its label
 # The simulator of iPadOS 27 brings in the on-screen keyboard with a context menu, in
 # Apple's apps too (ADR 0115); its keys cover the menu's lower items.
 context-menu-landscape-11inch | overlap | button "Rename with Suggestions…"  # iPadOS 27's keyboard

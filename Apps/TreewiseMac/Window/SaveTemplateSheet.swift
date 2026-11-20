@@ -19,7 +19,7 @@ enum SaveTemplateSheet {
 
     private static func show(_ template: FolderTree, for folder: FileItem, on window: NSWindow) {
         let sheet = SaveTemplateSheetController(
-            tree: template, proposedName: proposedName(for: folder))
+            tree: template, proposedName: FolderTemplatesModel.proposedName(for: folder))
         let sheetWindow = NSWindow(contentViewController: sheet)
         sheet.finish = { [weak window, weak sheetWindow] name in
             guard let window, let sheetWindow else { return }
@@ -57,14 +57,6 @@ enum SaveTemplateSheet {
         } catch {}
         tell(String(localized: "The folder’s structure could not be read."), on: window)
         return nil
-    }
-
-    /// For a year's folder the name of the folder above it with “Year”, else its own name.
-    private static func proposedName(for folder: FileItem) -> String {
-        guard let year = YearFolders.year(of: folder.id), String(year) == folder.name,
-            let above = folder.parentID?.rawValue.split(separator: "/").last
-        else { return folder.name }
-        return String(localized: "\(String(above)) Year")
     }
 
     private static func save(_ tree: FolderTree, as name: String, on window: NSWindow) {

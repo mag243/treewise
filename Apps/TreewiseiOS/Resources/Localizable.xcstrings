@@ -151,6 +151,22 @@
         }
       }
     },
+    "A file has the name of %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Datei hat den Namen von %@."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een bestand heeft de naam van %@."
+          }
+        }
+      }
+    },
     "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not." : {
       "localizations" : {
         "de" : {
@@ -163,6 +179,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Een voorgestelde naam met een e-mailadres, telefoonnummer, bankrekening- of betaalkaartnummer wordt gemarkeerd. Een naam die je zelf typt niet."
+          }
+        }
+      }
+    },
+    "A template named “%@” already exists." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Vorlage mit dem Namen „%@“ existiert bereits."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er bestaat al een sjabloon met de naam ‘%@’."
           }
         }
       }
@@ -633,6 +665,22 @@
         }
       }
     },
+    "Create Folders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordner anlegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maak mappen"
+          }
+        }
+      }
+    },
     "Cut" : {
       "localizations" : {
         "de" : {
@@ -645,6 +693,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Knip"
+          }
+        }
+      }
+    },
+    "Date" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum"
           }
         }
       }
@@ -905,6 +969,22 @@
         }
       }
     },
+    "Every folder is already there." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Ordner sind schon da."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle mappen zijn er al."
+          }
+        }
+      }
+    },
     "Export…" : {
       "localizations" : {
         "de" : {
@@ -933,6 +1013,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Favorieten"
+          }
+        }
+      }
+    },
+    "Folder Structure" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnerstruktur"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapstructuur"
           }
         }
       }
@@ -1145,6 +1241,64 @@
         }
       }
     },
+    "Makes %lld folders." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Legt %lld Ordner an."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Legt %lld Ordner an."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Makes %lld folder."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Makes %lld folders."
+                }
+              }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Maakt %lld map."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Maakt %lld mappen."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "More" : {
       "localizations" : {
         "de" : {
@@ -1349,6 +1503,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nieuwe map hierin"
+          }
+        }
+      }
+    },
+    "New Folders from Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Ordner aus Vorlage"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe mappen uit sjabloon"
+          }
+        }
+      }
+    },
+    "New Folders from “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Ordner aus „%@“"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe mappen uit ‘%@’"
           }
         }
       }
@@ -1574,6 +1760,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Niet voor deze add-ons. Blijft zoals het is."
+          }
+        }
+      }
+    },
+    "Number" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nummer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nummer"
           }
         }
       }
@@ -2077,6 +2279,38 @@
         }
       }
     },
+    "Replace it with this folder’s structure?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durch die Struktur dieses Ordners ersetzen?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wil je het vervangen door de structuur van deze map?"
+          }
+        }
+      }
+    },
+    "Required" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erforderlich"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplicht"
+          }
+        }
+      }
+    },
     "Resume" : {
       "localizations" : {
         "de" : {
@@ -2121,6 +2355,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bewaar de structuur van een map als sjabloon via het menu van die map."
+          }
+        }
+      }
+    },
+    "Save as Template" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Vorlage sichern"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar als sjabloon"
+          }
+        }
+      }
+    },
+    "Save as Template…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Vorlage sichern …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar als sjabloon…"
           }
         }
       }
@@ -2301,6 +2567,22 @@
         }
       }
     },
+    "Some folders were left out" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Ordner wurden ausgelassen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sommige mappen zijn overgeslagen"
+          }
+        }
+      }
+    },
     "Sort By" : {
       "localizations" : {
         "de" : {
@@ -2429,6 +2711,22 @@
         }
       }
     },
+    "Text" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst"
+          }
+        }
+      }
+    },
     "The file is no template" : {
       "localizations" : {
         "de" : {
@@ -2457,6 +2755,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De map kan niet worden toegevoegd."
+          }
+        }
+      }
+    },
+    "The folders in it, at every depth. Files are not saved." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Ordner darin, in jeder Tiefe. Dateien werden nicht gesichert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De mappen erin, op elke diepte. Bestanden worden niet bewaard."
+          }
+        }
+      }
+    },
+    "The folder’s structure could not be read." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Struktur des Ordners konnte nicht gelesen werden."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De structuur van de map kon niet worden gelezen."
           }
         }
       }
@@ -2649,6 +2979,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Met een toetsenbord: ⌥Esc of F5 toont ze, ↑ en ↓ kiezen."
+          }
+        }
+      }
+    },
+    "Year" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jahr"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jaar"
+          }
+        }
+      }
+    },
+    "a file has this name · left out" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "eine Datei hat diesen Namen · ausgelassen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "een bestand heeft deze naam · overgeslagen"
+          }
+        }
+      }
+    },
+    "already there" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "schon da"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "al aanwezig"
           }
         }
       }
