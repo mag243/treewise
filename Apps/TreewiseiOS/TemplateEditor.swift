@@ -76,11 +76,6 @@ struct TemplateEditor: View {
                 // column of its own, apart from the row's indent.
                 Image(systemName: "folder").foregroundStyle(Color.accentColor)
                 Text(row.tree.name).foregroundStyle(.primary)
-                if row.tree.names != nil {
-                    Image(systemName: "textformat")
-                        .foregroundStyle(.secondary)
-                        .accessibilityLabel(Text("Has name settings"))
-                }
             }
             .padding(.leading, CGFloat(row.depth) * Self.indent)
         }
