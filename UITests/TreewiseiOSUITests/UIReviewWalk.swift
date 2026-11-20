@@ -20,6 +20,10 @@ enum UIReviewWalk {
 
     /// The device's name in the screens' names, as `UIREVIEW_DEVICE` gives it: empty on the
     /// pinned iPad, `11inch` on the smaller one, `iphone` on the iPhone (ADR 0115, 0132).
+    /// The appearance the walk looks at now, which `launch` passes to the app: the
+    /// simulator does not take `XCUIDevice.appearance` over in the app's own views.
+    @MainActor static var appearance = "light"
+
     static var device: String {
         ProcessInfo.processInfo.environment["UIREVIEW_DEVICE"] ?? ""
     }
@@ -42,6 +46,7 @@ extension XCTestCase {
     func eachReviewVariant(_ walk: (String) throws -> Void) throws {
         for appearance in UIReviewWalk.appearances {
             XCUIDevice.shared.appearance = appearance == "dark" ? .dark : .light
+            UIReviewWalk.appearance = appearance
             for (name, orientation) in UIReviewWalk.orientations {
                 XCUIDevice.shared.orientation = orientation
                 let device = UIReviewWalk.device
@@ -50,6 +55,7 @@ extension XCTestCase {
             }
         }
         XCUIDevice.shared.appearance = .light
+        UIReviewWalk.appearance = "light"
         XCUIDevice.shared.orientation = .landscapeLeft
     }
 

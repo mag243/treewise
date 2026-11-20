@@ -10,6 +10,7 @@ struct TreewiseiOSApp: App {
         // to restore it; a window the system opens gets a new one (ADR 0134).
         WindowGroup(for: WindowRequest.self) { $request in
             RootView(locations: locations, request: $request)
+                .preferredColorScheme(TestRun.isDark ? .dark : nil)
         } defaultValue: {
             WindowRequest()
         }

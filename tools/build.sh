@@ -658,6 +658,11 @@ cmd_iosreview() {
     "$TOOLS_DIR/uireview/allowed-ipad.txt" || rc=$?
   rm -rf "$exported"
   ((rc == 0)) || fail "The iPad UI review found quirks: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
+  # A dark run that looked at the light screens passes too: found here.
+  if [[ -n "$TEST_RUNNER_UIREVIEW_APPEARANCES" ]]; then
+    python3 -I "$TOOLS_DIR/uireview/dark.py" "$IPAD_REVIEW_DIR" ||
+      fail "The dark run showed light screens: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
+  fi
   # A step the app never came to rest for passes, a minute late: found here instead.
   python3 -I "$TOOLS_DIR/uireview/idle.py" "$TOOLS_DIR/uireview/allowed-ipad.txt" \
     "$LOG_DIR"/iosreview.log "$LOG_DIR"/iosreview-11inch.log "$LOG_DIR"/iosreview-iphone.log ||

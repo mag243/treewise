@@ -15,6 +15,9 @@ extension XCTestCase {
             "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
         ]
         if let removing { app.launchArguments += ["-TreewiseTestRemove", removing] }
+        if UIReviewWalk.appearance == "dark" {
+            app.launchArguments += ["-TreewiseTestAppearance", "dark"]
+        }
         app.launch()
         return app
     }

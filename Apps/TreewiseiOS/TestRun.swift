@@ -15,11 +15,23 @@ import UniformTypeIdentifiers
 ///   `Household Year`, for Settings' Templates tab (ADR 0143).
 /// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders (`DemoTree`).
 /// - `-TreewiseTestRemove <folder>`: removes a fixture folder before the locations are read.
+/// - `-TreewiseTestAppearance dark`: the app in dark mode, for the UI review's dark screens,
+///   as the simulator does not pass a change of the device's appearance on to the app.
 struct TestRun {
     private static let stateArgument = "TreewiseTestState"
     private static let fixtureArgument = "TreewiseTestFixture"
     private static let removeArgument = "TreewiseTestRemove"
     private static let demoArgument = "TreewiseTestDemo"
+    private static let appearanceArgument = "TreewiseTestAppearance"
+
+    /// Whether the run asks for dark mode; always false in a Release build.
+    static var isDark: Bool {
+        #if DEBUG
+            UserDefaults.standard.string(forKey: appearanceArgument) == "dark"
+        #else
+            false
+        #endif
+    }
     /// The fixture's folders and their files.
     private static let fixture: [String: [String]] = [
         "Documents": [
