@@ -3,7 +3,7 @@ import TreewiseCore
 import TreewiseUI
 
 /// Settings, from the gear in the sidebar (ADR 0130, ADR 0143): tabs as the Mac's, Names and
-/// Templates, at the top on the iPad and at the bottom on the iPhone. Changes apply at once.
+/// Templates, and About in place of the Mac's About panel, at the top on the iPad and at the bottom on the iPhone. Changes apply at once.
 struct SettingsSheet: View {
     let settings: BrowserSettings
     let undoManager: UndoManager
@@ -19,6 +19,9 @@ struct SettingsSheet: View {
                     TemplatesSettings(model: NameServices.templateList, undoManager: undoManager)
                         .toolbar { done }
                 }
+            }
+            Tab(String(localized: "About"), systemImage: "info.circle") {
+                NavigationStack { AboutSettings().toolbar { done } }
             }
         }
     }

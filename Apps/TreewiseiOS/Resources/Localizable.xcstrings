@@ -189,6 +189,22 @@
         }
       }
     },
+    "A file manager that works like Windows Explorer, made for the iPad." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Dateimanager, der wie der Windows Explorer funktioniert, gemacht für das iPad."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een bestandsbeheerder die werkt als Windows Verkenner, gemaakt voor de iPad."
+          }
+        }
+      }
+    },
     "A folder could not be renamed" : {
       "localizations" : {
         "de" : {
@@ -233,6 +249,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Er bestaat al een sjabloon met de naam ‘%@’."
+          }
+        }
+      }
+    },
+    "About" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over"
           }
         }
       }
@@ -1328,6 +1360,28 @@
         }
       }
     },
+    "Free and open source under the [%@](%@)." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kostenlos und Open Source unter der [%1$@](%2$@)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Free and open source under the [%1$@](%2$@)."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratis en open source onder de [%1$@](%2$@)."
+          }
+        }
+      }
+    },
     "From: %@" : {
       "localizations" : {
         "de" : {
@@ -1340,6 +1394,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Van: %@"
+          }
+        }
+      }
+    },
+    "GitHub" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub"
           }
         }
       }
@@ -2410,6 +2480,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vorige"
+          }
+        }
+      }
+    },
+    "Privacy" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutz"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
           }
         }
       }
@@ -3560,6 +3646,28 @@
         }
       }
     },
+    "Version %@ (%@)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %1$@ (%2$@)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ (%2$@)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versie %1$@ (%2$@)"
+          }
+        }
+      }
+    },
     "View" : {
       "localizations" : {
         "de" : {
@@ -3572,6 +3680,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weergave"
+          }
+        }
+      }
+    },
+    "Website" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
           }
         }
       }

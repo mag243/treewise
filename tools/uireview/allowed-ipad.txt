@@ -58,6 +58,20 @@ templates-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab ba
 templates-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 template-tree-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 template-tree-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+about-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+about-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+settings-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+settings-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+saved-patterns-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+saved-patterns-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+templates-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+templates-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+template-tree-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+template-tree-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+about-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+about-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+about-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+about-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 # Insert Field beside a template folder's name: the menu's button lies over its label.
 template-folder-name-landscape-11inch | overlap | button "Insert Field"  # a menu's label
 template-folder-name-landscape-11inch | overlap | button ""  # the menu over its label
@@ -94,6 +108,18 @@ new-folders-portrait-iphone | overlap | text "Year"  # a row's label, reported t
 start-landscape-iphone | overlap | image "folder.badge.plus"  # the view's own frames
 # Settings scrolls in the iPhone's landscape: its last footer starts at the screen's edge.
 settings-landscape-iphone | outsideWindow | text "For each folder you suggest names in, Treewise keeps which a"  # scrolls
+# About scrolls there too: its links pass under the tab bar and start below the edge.
+about-landscape-iphone | overlap | button "Website"  # scrolls under the tab bar
+about-landscape-iphone | overlap | button "GitHub"  # scrolls under the tab bar
+about-landscape-iphone | outsideWindow | button "Privacy"  # scrolls
+about-landscape-iphone | outsideWindow | text "Privacy"  # scrolls
+about-landscape-iphone | outsideWindow | image "arrow.up.right.square"  # scrolls
+# About's line on Treewise shows whole and wraps where it must; SwiftUI measures it 6 points
+# narrower than the check does.
+about-landscape | cutShort | text "A file manager that works like Windows Explorer, made for th"  # shows whole
+about-portrait | cutShort | text "A file manager that works like Windows Explorer, made for th"  # shows whole
+about-landscape-11inch | cutShort | text "A file manager that works like Windows Explorer, made for th"  # shows whole
+about-portrait-11inch | cutShort | text "A file manager that works like Windows Explorer, made for th"  # shows whole
 # The name overview's file panel in a sheet scrolls; in the iPhone's landscape its last
 # names start below the screen's edge, and in portrait the sheet's shadow reaches beyond it.
 name-details-landscape-iphone | outsideWindow | text "Budget.txt"  # scrolls

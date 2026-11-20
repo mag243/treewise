@@ -184,7 +184,7 @@ final class IPhoneReviewTests: XCTestCase {
         }
     }
 
-    /// Settings and its saved patterns, from the locations' screen (ADR 0130).
+    /// Settings, its saved patterns and About, from the locations' screen (ADR 0130).
     @MainActor
     func testSettings() throws {
         try eachReviewVariant { variant in
@@ -197,6 +197,10 @@ final class IPhoneReviewTests: XCTestCase {
             review(app, as: "settings", variant: variant)
             saved.tap()
             review(app, as: "saved-patterns", variant: variant)
+            app.buttons["About"].firstMatch.tap()
+            XCTAssertTrue(
+                app.staticTexts["Treewise"].firstMatch.waitForExistence(timeout: Self.timeout))
+            review(app, as: "about", variant: variant)
             app.terminate()
         }
     }

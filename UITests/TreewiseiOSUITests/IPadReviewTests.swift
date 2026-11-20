@@ -103,7 +103,7 @@ final class IPadReviewTests: XCTestCase {
         }
     }
 
-    /// Settings with its saved patterns, and the sidebar with a favorite (ADR 0130, 0131).
+    /// Settings with its saved patterns and About, and the sidebar with a favorite (ADR 0130, 0131).
     @MainActor
     func testSettings() throws {
         try eachReviewVariant { variant in
@@ -120,6 +120,10 @@ final class IPadReviewTests: XCTestCase {
             review(app, as: "settings", variant: variant)
             saved.tap()
             review(app, as: "saved-patterns", variant: variant)
+            app.buttons["About"].firstMatch.tap()
+            XCTAssertTrue(
+                app.staticTexts["Treewise"].firstMatch.waitForExistence(timeout: Self.timeout))
+            review(app, as: "about", variant: variant)
             app.terminate()
         }
     }
@@ -235,7 +239,8 @@ final class IPadReviewTests: XCTestCase {
     @MainActor
     private func toolbarButton(_ label: String, in app: XCUIApplication) -> XCUIElement {
         let button = app.buttons[label].firstMatch
-        if button.exists { return button }
+        // A moment for the bar to show it: the pause in place of the idle wait is short.
+        if button.waitForExistence(timeout: QuiescenceShortcut.pause * 2) { return button }
         app.buttons["OverflowBarButtonItem"].firstMatch.tap()
         XCTAssertTrue(button.waitForExistence(timeout: Self.timeout), "\(label) in the overflow")
         return button
