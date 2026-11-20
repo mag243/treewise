@@ -21,6 +21,8 @@ enum NameReviewWindow {
     /// Opens a review of the browser's selection, or of its folder's files.
     static func show(for browser: BrowserState, undoManager: UndoManager?) {
         Task {
+            // The folder's settings may have changed on another device (ADR 0144).
+            await SyncWatcher.refresh()
             guard
                 let model = await browser.makeNameReview(
                     host: AppServices.moduleHost, store: AppServices.folderSettings)
@@ -33,6 +35,8 @@ enum NameReviewWindow {
     /// Opens a review of the files of the browser's folder, whatever is selected.
     static func showWholeFolder(of browser: BrowserState, undoManager: UndoManager?) {
         Task {
+            // The folder's settings may have changed on another device (ADR 0144).
+            await SyncWatcher.refresh()
             guard
                 let model = await browser.makeFolderNameReview(
                     host: AppServices.moduleHost, store: AppServices.folderSettings)

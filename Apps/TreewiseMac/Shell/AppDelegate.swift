@@ -33,7 +33,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ApplicationsMover.offerIfNeeded()
             FolderSettingsCleaner.start(with: AppServices.folderSettings)
             FileOperationRunner.removeLeftoverArchiveCopies(in: LaunchOptions.locations)
+            SyncWatcher.start()
         }
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        Task { @MainActor in await SyncWatcher.refresh() }
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

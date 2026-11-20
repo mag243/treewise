@@ -1,3 +1,4 @@
+import Foundation
 import TreewiseFileSystem
 import TreewiseModuleXPC
 import TreewiseUI
@@ -17,4 +18,15 @@ enum AppServices {
     static let folderSettings = FolderSettingsStore(
         directory: LaunchOptions.folderSettingsDirectory)
     static let thumbnails = ThumbnailCache()
+    /// Folder settings, saved patterns and templates in sync through the cloud drives
+    /// (ADR 0144).
+    static let sync = SyncController(
+        settings: settings,
+        session: SyncSession(
+            sync: SettingsSync(
+                device: SyncDevice.load(
+                    from: LaunchOptions.folderSettingsDirectory,
+                    name: Host.current().localizedName ?? "Mac")),
+            folders: folderSettings, templates: FolderTemplatesService.store),
+        conflicts: SyncConflictStore(directory: LaunchOptions.folderSettingsDirectory))
 }

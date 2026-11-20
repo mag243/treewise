@@ -5,7 +5,8 @@ import TreewiseUI
 
 /// Settings' General pane: where folders open, the start folder, and how the list
 /// shows items (ADR 0022, ADR 0023), checking for updates (ADR 0032), the terminal to
-/// open (ADR 0052) and the way to change shortcuts (ADR 0029). Changes apply at once.
+/// open (ADR 0052), the way to change shortcuts (ADR 0029), and syncing settings through
+/// the cloud drives with its safety net (ADR 0144). Changes apply at once.
 @MainActor
 final class SettingsGeneralPane: NSViewController {
     /// The Keyboard pane of System Settings, where App Shortcuts live (ADR 0029).
@@ -16,6 +17,7 @@ final class SettingsGeneralPane: NSViewController {
 
     private let settings: BrowserSettings
     private let updater: AppUpdater
+    private let sync: SyncController
     private lazy var placement = SettingsForm.popUp(
         [String(localized: "This window"), String(localized: "The other window")],
         accessibilityLabel: "Double-click opens folders in"
@@ -40,13 +42,22 @@ final class SettingsGeneralPane: NSViewController {
     private lazy var terminal = SettingsForm.popUp(
         TerminalOpener.installedApps.map(\.name), accessibilityLabel: "Terminal app"
     ) { [settings] in settings.terminalApp = TerminalOpener.installedApps[$0].id }
+    private lazy var syncs = SettingsForm.checkbox(
+        "Sync settings through cloud drives"
+    ) { [sync] in Self.setSyncing($0, in: sync) }
+    private let replacedCount = NSTextField(labelWithString: "")
+    private lazy var replacedLine: NSStackView = {
+        let review = SettingsForm.button("Review…") { [weak self] in self?.reviewReplaced() }
+        return Self.line([replacedCount, review])
+    }()
     private lazy var updates = SettingsForm.checkbox(
         "Check for updates automatically"
     ) { [updater] in updater.checksAutomatically = $0 }
 
-    init(settings: BrowserSettings, updater: AppUpdater) {
+    init(settings: BrowserSettings, updater: AppUpdater, sync: SyncController) {
         self.settings = settings
         self.updater = updater
+        self.sync = sync
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -70,6 +81,12 @@ final class SettingsGeneralPane: NSViewController {
         updates.isEnabled = updater.isRunning
         form.row(nil, updates)
         form.group()
+        form.row("Sync:", syncs)
+        form.note(
+            "Folder settings, saved patterns and templates are kept in a hidden .treewise folder in iCloud Drive, Dropbox and your other cloud drives, so your other Macs and your iPad have them too.",
+            width: SettingsForm.noteWidth)
+        form.row(nil, replacedLine)
+        form.group()
         let customize = SettingsForm.button("Customize…") {
             if let url = Self.keyboardSettings { NSWorkspace.shared.open(url) }
         }
@@ -92,6 +109,20 @@ final class SettingsGeneralPane: NSViewController {
         let chosen = TerminalOpener.chosenApp(in: settings)
         terminal.selectItem(at: TerminalOpener.installedApps.firstIndex { $0.id == chosen } ?? 0)
         updates.state = updater.checksAutomatically ? .on : .off
+        syncs.state = settings.syncsSettings ? .on : .off
+        let replaced = sync.replaced.count
+        replacedLine.isHidden = replaced == 0
+        replacedCount.stringValue = String(
+            localized: "\(replaced) changes replaced by another device")
+    }
+
+    private static func setSyncing(_ isOn: Bool, in sync: SyncController) {
+        Task { await sync.setSyncing(isOn) }
+    }
+
+    /// The safety net's list with Restore, as a sheet (ADR 0144).
+    private func reviewReplaced() {
+        presentAsSheet(SyncReplacedSheet(sync: sync, settings: settings))
     }
 
     private static func line(_ views: [NSView]) -> NSStackView {

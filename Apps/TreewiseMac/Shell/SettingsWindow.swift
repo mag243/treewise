@@ -22,6 +22,8 @@ enum SettingsWindow {
         (controller.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 0
         controller.window?.center()
         controller.showWindow(nil)
+        // Settings shows synced settings: the newest, even if a change was not heard.
+        Task { await SyncWatcher.refresh() }
     }
 
     private static func make() -> NSWindowController {
@@ -30,7 +32,8 @@ enum SettingsWindow {
         tabs.tabStyle = .toolbar
         tabs.addTabViewItem(
             pane(
-                SettingsGeneralPane(settings: settings, updater: AppServices.updater),
+                SettingsGeneralPane(
+                    settings: settings, updater: AppServices.updater, sync: AppServices.sync),
                 "General", "gearshape"))
         tabs.addTabViewItem(pane(SettingsNamesPane(settings: settings), "Names", "textformat"))
         tabs.addTabViewItem(
