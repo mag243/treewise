@@ -17,6 +17,8 @@ public final class SyncController {
     /// Why this device does not sync in a drive, by the drive's path: no sync folder yet,
     /// or one the provider renamed (ADR 0144).
     public private(set) var driveProblems: [String: SyncFolder.Problem] = [:]
+    /// The drives that use the visible sync folder an iPad made, which Hide Folder hides.
+    public private(set) var visibleDrives: Set<String> = []
 
     @ObservationIgnored private let settings: BrowserSettings
     @ObservationIgnored private let session: SyncSession
@@ -92,6 +94,12 @@ public final class SyncController {
         replaced = await conflicts.entries(now: now())
     }
 
+    /// Hide Folder: renames the drive's visible sync folder to the hidden one (ADR 0144).
+    public func hideFolder(in drive: String) async throws {
+        try await session.hideFolder(in: URL(filePath: drive))
+        await keepConflicts()
+    }
+
     /// Forgets every replaced change.
     public func clearReplaced() async {
         await conflicts.clear()
@@ -113,6 +121,7 @@ public final class SyncController {
 
     private func keepConflicts() async {
         driveProblems = await session.driveProblems()
+        visibleDrives = await session.visibleDrives()
         let found = await session.conflicts
         guard !found.isEmpty else { return }
         await session.clearConflicts()

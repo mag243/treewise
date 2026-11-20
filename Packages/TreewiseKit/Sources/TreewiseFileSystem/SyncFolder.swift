@@ -4,7 +4,7 @@ import TreewiseCore
 /// A cloud drive's sync folder (ADR 0144): this device writes only its own file in its
 /// `devices` folder and reads every device's, each access coordinated, so a provider brings
 /// what it keeps only online first and hears of each change. The folder is the hidden
-/// `.treewise.settings` a Mac makes, or the visible `Treewise.Settings` an iPad makes when
+/// `.treewise.settings` a Mac makes, or the visible `treewise.settings` an iPad makes when
 /// asked, as the Dropbox app on iOS renames a folder made there whose name starts with a dot.
 ///
 /// Its methods block on file coordination: run them off Swift's cooperative pool.
@@ -12,7 +12,7 @@ public struct SyncFolder: Sendable {
     /// The folder a Mac makes at a drive's root, hidden by its dot.
     static let hiddenName = ".treewise.settings"
     /// The folder an iPad or iPhone makes when the user asks, for a drive no Mac syncs.
-    static let visibleName = "Treewise.Settings"
+    static let visibleName = "treewise.settings"
     /// The folder of the devices' files inside it.
     static let devicesName = "devices"
     private static let fileExtension = "json"
@@ -59,17 +59,18 @@ public struct SyncFolder: Sendable {
     /// The devices' folder of the sync folder there, the hidden one first; nil when the
     /// drive has none. Looked for through coordination, so a provider brings it first.
     public func existingDevicesFolder() -> URL? {
-        for name in [Self.hiddenName, Self.visibleName] {
-            let folder = driveRoot.appending(path: name)
-            let isThere =
-                (try? FileCoordination.read(folder) { url in
-                    var isFolder: ObjCBool = false
-                    return FileManager.default.fileExists(atPath: url.path, isDirectory: &isFolder)
-                        && isFolder.boolValue
-                }) ?? false
-            if isThere { return folder.appending(path: Self.devicesName) }
-        }
-        return nil
+        existingDevicesFolders().first
+    }
+
+    /// The devices' folders of every sync folder there, the hidden one first.
+    func existingDevicesFolders() -> [URL] {
+        [Self.hiddenName, Self.visibleName].map { driveRoot.appending(path: $0) }.filter { folder in
+            (try? FileCoordination.read(folder) { url in
+                var isFolder: ObjCBool = false
+                return FileManager.default.fileExists(atPath: url.path, isDirectory: &isFolder)
+                    && isFolder.boolValue
+            }) ?? false
+        }.map { $0.appending(path: Self.devicesName) }
     }
 
     /// The devices' folder to watch: the one there, or the hidden one a Mac would make.
@@ -132,22 +133,11 @@ public struct SyncFolder: Sendable {
 
     /// Reads every device's file; one that cannot be read is skipped and left as it is.
     /// A drive without the folder reads as no files.
+    /// Where both sync folders are there, a device's newer file of the two is read.
     public func read() throws -> Reading {
-        guard let devicesFolder = existingDevicesFolder() else {
-            return Reading(files: [], skipped: [])
-        }
-        let names: [String]
-        do {
-            names = try FileCoordination.read(devicesFolder) { url in
-                try FileManager.default.contentsOfDirectory(atPath: url.path)
-            }
-        } catch CocoaError.fileReadNoSuchFile {
-            return Reading(files: [], skipped: [])
-        }
         var files: [DeviceSyncFile] = []
         var skipped: [URL] = []
-        for name in names.compactMap(Self.deviceFileName).sorted() {
-            let url = devicesFolder.appending(path: name)
+        for url in deviceFiles() {
             do {
                 let data = try FileCoordination.read(url) { try Data(contentsOf: $0) }
                 files.append(try DeviceSyncFile.decoded(from: data))

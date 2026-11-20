@@ -122,7 +122,7 @@ import TreewiseTestSupport
 
         #expect(
             FileManager.default.fileExists(
-                atPath: drive.url.appending(path: "Treewise.Settings/devices/mac.json").path))
+                atPath: drive.url.appending(path: "treewise.settings/devices/mac.json").path))
         #expect(
             !FileManager.default.fileExists(
                 atPath: drive.url.appending(path: ".treewise.settings").path),
@@ -131,13 +131,65 @@ import TreewiseTestSupport
 
     @Test func theHiddenFolderComesFirstWhenBothAreThere() throws {
         let drive = try TempDirectory()
-        _ = try drive.makeFolder("Treewise.Settings/devices")
+        _ = try drive.makeFolder("treewise.settings/devices")
         _ = try drive.makeFolder(".treewise.settings/devices")
         let mac = SyncFolder(driveRoot: drive.url, device: SyncDevice(id: "mac", name: "Mac"))
         try mac.write([Self.record("Clients", device: "mac")])
         #expect(
             FileManager.default.fileExists(
                 atPath: drive.url.appending(path: ".treewise.settings/devices/mac.json").path))
+    }
+
+    @Test func theDevicesFilesOfBothFoldersAreRead() throws {
+        let drive = try TempDirectory()
+        let ipad = SyncFolder(
+            driveRoot: drive.url, device: SyncDevice(id: "ipad", name: "iPad"), making: .visible)
+        try ipad.write([Self.record("Photos", device: "ipad")])
+        _ = try drive.makeFolder(".treewise.settings/devices")
+        let mac = SyncFolder(driveRoot: drive.url, device: SyncDevice(id: "mac", name: "Mac"))
+        try mac.write([Self.record("Clients", device: "mac")])
+
+        #expect(Set(try mac.read().files.map(\.device)) == ["mac", "ipad"])
+    }
+
+    @Test func hidingRenamesTheVisibleFolder() throws {
+        let drive = try TempDirectory()
+        let ipad = SyncFolder(
+            driveRoot: drive.url, device: SyncDevice(id: "ipad", name: "iPad"), making: .visible)
+        try ipad.write([Self.record("Photos", device: "ipad")])
+        let mac = SyncFolder(driveRoot: drive.url, device: SyncDevice(id: "mac", name: "Mac"))
+        #expect(mac.usesVisibleFolder())
+
+        let trashed = try mac.hideFolder()
+
+        #expect(trashed == nil, "nothing to throw away")
+        #expect(!mac.usesVisibleFolder())
+        #expect(
+            try FileManager.default.contentsOfDirectory(atPath: drive.path) == [
+                ".treewise.settings"
+            ])
+        #expect(try mac.read().files.map(\.device) == ["ipad"])
+    }
+
+    @Test func hidingWhereBothAreThereMovesTheFilesAndTrashesTheVisibleOne() throws {
+        let drive = try TempDirectory()
+        let ipad = SyncFolder(
+            driveRoot: drive.url, device: SyncDevice(id: "ipad", name: "iPad"), making: .visible)
+        try ipad.write([Self.record("Photos", device: "ipad")])
+        _ = try drive.makeFolder(".treewise.settings/devices")
+        let mac = SyncFolder(driveRoot: drive.url, device: SyncDevice(id: "mac", name: "Mac"))
+
+        let trashed = try mac.hideFolder()
+        defer { if let trashed { try? TrashService().restore(trashed) } }
+
+        #expect(trashed != nil)
+        #expect(
+            try FileManager.default.contentsOfDirectory(atPath: drive.path) == [
+                ".treewise.settings"
+            ])
+        #expect(
+            FileManager.default.fileExists(
+                atPath: drive.url.appending(path: ".treewise.settings/devices/ipad.json").path))
     }
 
     @Test(arguments: [

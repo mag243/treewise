@@ -123,4 +123,20 @@ import TreewiseUI
         #expect(controller.driveProblems[drive.url.standardizedFileURL.path] == .notStarted)
         #expect(try FileManager.default.contentsOfDirectory(atPath: drive.path) == ["Clients"])
     }
+
+    @Test func aDriveWithTheVisibleFolderIsHiddenOnRequest() async throws {
+        let drive = try TempDirectory()
+        _ = try drive.makeFolder("treewise.settings/devices")
+        let mac = try Device("a-mac") { 0 }
+        await mac.controller.start(drives: [drive.url])
+        let path = drive.url.standardizedFileURL.path
+        #expect(mac.controller.visibleDrives == [path])
+
+        try await mac.controller.hideFolder(in: path)
+
+        #expect(mac.controller.visibleDrives.isEmpty)
+        #expect(
+            FileManager.default.fileExists(
+                atPath: drive.url.appending(path: ".treewise.settings").path))
+    }
 }

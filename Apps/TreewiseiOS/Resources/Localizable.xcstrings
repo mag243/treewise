@@ -2390,6 +2390,7 @@
       }
     },
     "On an iPad, a cloud drive's app may not keep a hidden folder, so Treewise makes a folder named Treewise.Settings you can see in the drive. A Mac that syncs this drive later uses it too." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2401,6 +2402,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Op een iPad houdt de app van een clouddrive een verborgen map soms niet, dus maakt Treewise een zichtbare map Treewise.Settings in de drive. Een Mac die deze drive later synchroniseert, gebruikt hem ook."
+          }
+        }
+      }
+    },
+    "On an iPad, a cloud drive's app may not keep a hidden folder, so Treewise makes a folder named treewise.settings you can see in the drive. A Mac that syncs this drive later uses it too." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf einem iPad behält die App eines Cloud-Laufwerks einen versteckten Ordner womöglich nicht, daher erstellt Treewise einen sichtbaren Ordner treewise.settings im Laufwerk. Ein Mac, der dieses Laufwerk später synchronisiert, verwendet ihn auch."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Op een iPad houdt de app van een clouddrive een verborgen map soms niet, dus maakt Treewise een zichtbare map treewise.settings in de drive. Een Mac die deze drive later synchroniseert, gebruikt hem ook."
           }
         }
       }

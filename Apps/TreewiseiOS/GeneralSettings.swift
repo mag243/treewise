@@ -51,7 +51,7 @@ struct GeneralSettings: View {
             }
         } message: { _ in
             Text(
-                "On an iPad, a cloud drive's app may not keep a hidden folder, so Treewise makes a folder named Treewise.Settings you can see in the drive. A Mac that syncs this drive later uses it too."
+                "On an iPad, a cloud drive's app may not keep a hidden folder, so Treewise makes a folder named treewise.settings you can see in the drive. A Mac that syncs this drive later uses it too."
             )
         }
         .sheet(isPresented: $isReviewing) {

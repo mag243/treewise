@@ -123,6 +123,17 @@ public actor SyncSession {
         await sync.driveProblems
     }
 
+    /// The drives that use the visible sync folder an iPad made, by their paths.
+    public func visibleDrives() async -> Set<String> {
+        await sync.visibleDrives
+    }
+
+    /// Hide Folder: hides the visible sync folder of the drive at `root`, then reads again.
+    public func hideFolder(in root: URL) async throws {
+        try await sync.hideFolder(in: root)
+        await refresh()
+    }
+
     /// The name of the device with `id`, as its file gives it.
     public func deviceName(_ id: String) async -> String? {
         await sync.deviceNames[id]

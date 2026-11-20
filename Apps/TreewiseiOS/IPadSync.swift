@@ -58,9 +58,16 @@ enum IPadSync {
     /// Starts syncing in the drive at `folder` from here, making the visible sync folder
     /// there (ADR 0144).
     static func startHere(_ folder: URL, settings: BrowserSettings) async {
-        settings.syncStartedHere.insert(folder.standardizedFileURL.path)
+        let path = folder.standardizedFileURL.path
+        settings.syncStartedHere.insert(path)
         startedHere.set(settings.syncStartedHere)
         await refresh()
+        // Made once: when the folder is gone later, as a Mac hid it, the iPad waits for
+        // the hidden one rather than making the visible one again.
+        if problem(of: folder) == nil {
+            settings.syncStartedHere.remove(path)
+            startedHere.set(settings.syncStartedHere)
+        }
     }
 
     /// Why the drive at `folder` does not sync, if it does not.

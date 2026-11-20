@@ -34,6 +34,8 @@ public actor SettingsSync {
     private let making: @Sendable (URL) -> SyncFolder.Making
     /// Why this device does not sync in a drive, by the drive's path.
     public private(set) var driveProblems: [String: SyncFolder.Problem] = [:]
+    /// The drives that use the visible sync folder an iPad made, by their paths.
+    public private(set) var visibleDrives: Set<String> = []
     private var drives: [URL] = []
     private var folderBooks: [String: SyncBook] = [:]
     private var shared: SyncBook
@@ -94,18 +96,6 @@ public actor SettingsSync {
             await write(newRoot)
         }
         await write(oldRoot)
-    }
-
-    /// The parts of folders moved out of another drive, at their paths under `newPath`.
-    private static func arriving(_ moving: [SyncRecord], at newPath: String)
-        -> [SyncKey: JSONValue]
-    {
-        var parts: [SyncKey: JSONValue] = [:]
-        for record in moving where !record.isRemoval {
-            guard case .folder(let path) = record.key.element else { continue }
-            parts[SyncKey(.folder(newPath + path), record.key.part)] = record.value
-        }
-        return parts
     }
 
     /// The user changed the saved patterns from `before` to `after`.
@@ -218,10 +208,25 @@ public actor SettingsSync {
         return []
     }
 
+    /// Hide Folder: hides the visible sync folder of the drive at `root` (ADR 0144).
+    public func hideFolder(in root: URL) async throws {
+        let folder = SyncFolder(driveRoot: root, device: device, making: making(root))
+        _ = try await Self.run { try folder.hideFolder() }
+        visibleDrives.remove(root.standardizedFileURL.path)
+    }
+
     private func read(_ root: URL) async -> [DeviceSyncFile]? {
         let folder = SyncFolder(driveRoot: root, device: device, making: making(root))
         do {
-            return try await Self.run { try folder.read().files }
+            let (files, isVisible) = try await Self.run {
+                (try folder.read().files, folder.usesVisibleFolder())
+            }
+            if isVisible {
+                visibleDrives.insert(root.path)
+            } else {
+                visibleDrives.remove(root.path)
+            }
+            return files
         } catch {
             Self.logger.error("Sync files unreadable: \(error.localizedDescription)")
             return nil
@@ -255,14 +260,6 @@ public actor SettingsSync {
         return changes
     }
 
-    private static func elements(of merged: [SyncKey: SyncRecord])
-        -> [SyncElement: [String: SyncRecord]]
-    {
-        var elements: [SyncElement: [String: SyncRecord]] = [:]
-        for (key, record) in merged { elements[key.element, default: [:]][key.part] = record }
-        return elements
-    }
-
     /// The drive holding `path`, and the path from its root.
     private func place(of path: String) -> (root: String, path: String)? {
         for root in drives {
@@ -292,7 +289,30 @@ public actor SettingsSync {
         }
     }
 
-    private static func run<Value: Sendable>(
+}
+
+extension SettingsSync {
+    /// The parts of folders moved out of another drive, at their paths under `newPath`.
+    fileprivate static func arriving(_ moving: [SyncRecord], at newPath: String)
+        -> [SyncKey: JSONValue]
+    {
+        var parts: [SyncKey: JSONValue] = [:]
+        for record in moving where !record.isRemoval {
+            guard case .folder(let path) = record.key.element else { continue }
+            parts[SyncKey(.folder(newPath + path), record.key.part)] = record.value
+        }
+        return parts
+    }
+
+    fileprivate static func elements(of merged: [SyncKey: SyncRecord])
+        -> [SyncElement: [String: SyncRecord]]
+    {
+        var elements: [SyncElement: [String: SyncRecord]] = [:]
+        for (key, record) in merged { elements[key.element, default: [:]][key.part] = record }
+        return elements
+    }
+
+    fileprivate static func run<Value: Sendable>(
         _ body: @escaping @Sendable () throws -> Value
     ) async throws -> Value {
         try await withCheckedThrowingContinuation { continuation in

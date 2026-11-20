@@ -14,6 +14,8 @@ final class SettingsGeneralPane: NSViewController {
         string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension")
     private static let placements: [OpenPlacement] = [.samePane, .otherPane]
     private static let densities: [RowDensity] = [.small, .medium, .large]
+    /// The width Hide Folder takes beside its note.
+    private static let hideButtonRoom: CGFloat = 110
 
     private let settings: BrowserSettings
     private let updater: AppUpdater
@@ -49,6 +51,13 @@ final class SettingsGeneralPane: NSViewController {
     /// The row of `replacedLine`, hidden whole while nothing was replaced, so it takes no room.
     private var replacedRow: NSGridRow?
     private let renamedNote = NSTextField(wrappingLabelWithString: "")
+    private let visibleNote = NSTextField(wrappingLabelWithString: "")
+    private lazy var visibleLine: NSStackView = {
+        let hide = SettingsForm.button("Hide Folder") { [weak self] in self?.askToHideFolder() }
+        return Self.line([visibleNote, hide])
+    }()
+    /// The row of `visibleLine`, shown only when a drive uses the visible sync folder.
+    private var visibleRow: NSGridRow?
     /// The row of `renamedNote`, shown only when a drive renamed Treewise's folder.
     private var renamedRow: NSGridRow?
     private lazy var replacedLine: NSStackView = {
@@ -94,6 +103,9 @@ final class SettingsGeneralPane: NSViewController {
         renamedNote.textColor = .secondaryLabelColor
         renamedNote.preferredMaxLayoutWidth = SettingsForm.noteWidth
         renamedRow = form.row(nil, renamedNote)
+        visibleNote.textColor = .secondaryLabelColor
+        visibleNote.preferredMaxLayoutWidth = SettingsForm.noteWidth - Self.hideButtonRoom
+        visibleRow = form.row(nil, visibleLine)
         form.group()
         let customize = SettingsForm.button("Customize…") {
             if let url = Self.keyboardSettings { NSWorkspace.shared.open(url) }
@@ -123,6 +135,12 @@ final class SettingsGeneralPane: NSViewController {
         let renamed = sync.driveProblems.filter { $0.value == .renamed }.keys
             .map { URL(filePath: $0).lastPathComponent }.sorted()
         renamedRow?.isHidden = renamed.isEmpty
+        let visible = sync.visibleDrives.map { URL(filePath: $0).lastPathComponent }.sorted()
+        visibleRow?.isHidden = visible.isEmpty
+        visibleNote.stringValue = String(
+            localized:
+                "\(visible.formatted(.list(type: .and))) uses a visible treewise.settings folder, made from an iPad."
+        )
         renamedNote.stringValue = String(
             localized:
                 "Not syncing in \(renamed.formatted(.list(type: .and))): the drive renamed Treewise's folder."
@@ -133,6 +151,25 @@ final class SettingsGeneralPane: NSViewController {
 
     private static func setSyncing(_ isOn: Bool, in sync: SyncController) {
         Task { await sync.setSyncing(isOn) }
+    }
+
+    /// Hide Folder: asks, then renames each visible sync folder to the hidden one (ADR 0144).
+    private func askToHideFolder() {
+        guard let window = view.window else { return }
+        let alert = NSAlert()
+        alert.messageText = String(localized: "Hide the treewise.settings folder?")
+        alert.informativeText = String(
+            localized:
+                "Treewise renames it .treewise.settings. Your iPad and other devices go on syncing in it."
+        )
+        alert.addButton(withTitle: String(localized: "Hide Folder"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
+        alert.beginSheetModal(for: window) { [sync] response in
+            guard response == .alertFirstButtonReturn else { return }
+            Task { @MainActor in
+                for drive in sync.visibleDrives { try? await sync.hideFolder(in: drive) }
+            }
+        }
     }
 
     /// The safety net's list with Restore, as a sheet (ADR 0144).
