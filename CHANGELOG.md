@@ -6,10 +6,13 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-11-20
+
+One folder renamed in every year, and a shorter context menu.
+
 ### New
 - **Rename in All Years…** on a folder inside a year's folder, such as `2025/Tax`, gives that folder its new name in every year at once. A sheet shows each year first, leaves out a year that already has a folder with the new name, corrects the template the years were made from, and one Undo takes all of it back.
 - **A misspelled folder found for you:** with Folder Structure Templates, the bar in a year's folder notices a folder of the year before that is nearly named as one there, such as `Belastingsdienst` beside `Belastingdienst`, and asks which name to keep in every year, or to add it anyway.
-
 - **A folder remembers its template:** a folder made from a folder structure template keeps which one, shown as *Made from* in the details pane, with a button to forget it. Rename in All Years and Add to Template then offer that template, also when you have more than one for your years, and a template exported and imported on another Mac is still known as the same one.
 
 ### Improved
