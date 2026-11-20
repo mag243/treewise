@@ -658,6 +658,10 @@ cmd_iosreview() {
     "$TOOLS_DIR/uireview/allowed-ipad.txt" || rc=$?
   rm -rf "$exported"
   ((rc == 0)) || fail "The iPad UI review found quirks: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
+  # A step the app never came to rest for passes, a minute late: found here instead.
+  python3 -I "$TOOLS_DIR/uireview/idle.py" "$TOOLS_DIR/uireview/allowed-ipad.txt" \
+    "$LOG_DIR"/iosreview.log "$LOG_DIR"/iosreview-11inch.log "$LOG_DIR"/iosreview-iphone.log ||
+    fail "The app did not come to rest at the steps above; logs: build/logs/iosreview*.log"
   ok "No quirks found: ${IPAD_REVIEW_DIR#"$ROOT_DIR"/}/index.html"
 }
 

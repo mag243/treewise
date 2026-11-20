@@ -69,6 +69,10 @@ context-menu-landscape-11inch | overlap | button "Rename with Suggestions…"  #
 context-menu-landscape-11inch | overlap | button "Cut"  # iPadOS 27's keyboard with a menu
 context-menu-landscape-11inch | overlap | button "Copy"  # iPadOS 27's keyboard with a menu
 context-menu-landscape-11inch | overlap | button "Move to Trash"  # iPadOS 27's keyboard
+# iPadOS 27 never reports an app idle while a context menu is open, Apple's own too (ADR 0115):
+# each step there waits a minute, so the walk looks at the menu last, in a run of its own.
+context-menu-landscape-11inch | notIdle | *  # iPadOS 27 with a context menu open
+context-menu-portrait-11inch | notIdle | *  # iPadOS 27 with a context menu open
 # The iPhone (ADR 0132). A system menu's shadow reaches beyond the screen, and in landscape
 # the folder's long menu scrolls, its last items below the screen's edge.
 more-menu-landscape-iphone | outsideWindow | image ""  # iOS's menu shadow
