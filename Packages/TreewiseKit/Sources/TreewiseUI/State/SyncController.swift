@@ -14,6 +14,9 @@ public final class SyncController {
     public private(set) var replaced: [SyncConflictStore.Entry] = []
     /// The roots of the drives that take part.
     public private(set) var drives: [URL] = []
+    /// Why this device does not sync in a drive, by the drive's path: no sync folder yet,
+    /// or one the provider renamed (ADR 0144).
+    public private(set) var driveProblems: [String: SyncFolder.Problem] = [:]
 
     @ObservationIgnored private let settings: BrowserSettings
     @ObservationIgnored private let session: SyncSession
@@ -42,7 +45,10 @@ public final class SyncController {
         replaced = await conflicts.entries(now: now())
         guard settings.syncsSettings else { return }
         if isRunning {
-            if changed { take(await session.changeDrives(drives)) }
+            if changed {
+                take(await session.changeDrives(drives))
+                await keepConflicts()
+            }
             return
         }
         isRunning = true
@@ -106,6 +112,7 @@ public final class SyncController {
     }
 
     private func keepConflicts() async {
+        driveProblems = await session.driveProblems()
         let found = await session.conflicts
         guard !found.isEmpty else { return }
         await session.clearConflicts()

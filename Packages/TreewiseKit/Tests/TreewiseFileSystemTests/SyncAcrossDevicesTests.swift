@@ -72,7 +72,7 @@ import TreewiseTestSupport
         #expect(await mac.folders.settings(forFolderAt: folder) == SyncTestPair.settings("newer"))
         #expect(await ipad.folders.settings(forFolderAt: folder) == SyncTestPair.settings("newer"))
         let files = try FileManager.default.contentsOfDirectory(
-            atPath: drive.url.appending(path: ".treewise/devices").path)
+            atPath: drive.url.appending(path: ".treewise.settings/devices").path)
         #expect(Set(files) == ["a-mac.json", "b-ipad.json"])
     }
 
@@ -89,7 +89,8 @@ import TreewiseTestSupport
         await ipad.session.settle()
 
         let ipadFile = try DeviceSyncFile.decoded(
-            from: Data(contentsOf: drive.url.appending(path: ".treewise/devices/b-ipad.json")))
+            from: Data(
+                contentsOf: drive.url.appending(path: ".treewise.settings/devices/b-ipad.json")))
         #expect(ipadFile.records.isEmpty, "the iPad stamps nothing of the Mac's")
     }
 
@@ -139,7 +140,7 @@ import TreewiseTestSupport
         await mac.folders.save(SyncTestPair.settings("dates"), forFolderAt: folder)
         await mac.session.settle()
 
-        let own = drive.url.appending(path: ".treewise/devices/a-mac.json")
+        let own = drive.url.appending(path: ".treewise.settings/devices/a-mac.json")
         let records =
             (try? DeviceSyncFile.decoded(from: Data(contentsOf: own)))?.records ?? []
         #expect(records.isEmpty)

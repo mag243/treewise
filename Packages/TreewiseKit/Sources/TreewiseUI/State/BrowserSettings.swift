@@ -36,6 +36,7 @@ public final class BrowserSettings {
         static let showsNameReviewAddOns = "nameReviewAddOnsOpen"
         static let syncsSettings = "syncsSettings"
         static let syncLeavesOut = "syncLeavesOut"
+        static let syncStartedHere = "syncStartedHere"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
     }
@@ -125,6 +126,13 @@ public final class BrowserSettings {
     /// themselves (ADR 0144).
     public var syncLeavesOut: Set<String> {
         didSet { store.setSetting(Self.json(syncLeavesOut.sorted()), for: Key.syncLeavesOut) }
+    }
+    /// The paths of drives where the user started syncing from this iPad or iPhone, which
+    /// makes the visible sync folder there (ADR 0144).
+    public var syncStartedHere: Set<String> {
+        didSet {
+            store.setSetting(Self.json(syncStartedHere.sorted()), for: Key.syncStartedHere)
+        }
     }
 
     /// What the user chose for the add-ons across the app (ADR 0070).
@@ -248,6 +256,8 @@ public final class BrowserSettings {
         offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
         syncsSettings = store.setting(Key.syncsSettings) != "false"
         syncLeavesOut = Set(Self.decoded([String].self, at: Key.syncLeavesOut, in: store) ?? [])
+        syncStartedHere = Set(
+            Self.decoded([String].self, at: Key.syncStartedHere, in: store) ?? [])
     }
 
     /// A setting that is on unless turned off, kept as `false`, or as `0` by a boolean.

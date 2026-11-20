@@ -58,7 +58,7 @@ import TreewiseUI
 
         #expect(
             !FileManager.default.fileExists(
-                atPath: drive.url.appending(path: ".treewise/devices/a-mac.json").path))
+                atPath: drive.url.appending(path: ".treewise.settings/devices/a-mac.json").path))
     }
 
     @Test func aReplacedChangeIsListedAndRestoreBringsItBack() async throws {
@@ -99,6 +99,28 @@ import TreewiseUI
 
         #expect(
             FileManager.default.fileExists(
-                atPath: second.url.appending(path: ".treewise/devices/a-mac.json").path))
+                atPath: second.url.appending(path: ".treewise.settings/devices/a-mac.json").path))
+    }
+
+    @Test func aDeviceThatMakesNoFolderSaysTheDriveHasNotStarted() async throws {
+        let drive = try TempDirectory()
+        let settings = BrowserSettings(store: MemorySettingsStore())
+        let support = try TempDirectory()
+        let folders = FolderSettingsStore(directory: support.url)
+        let controller = SyncController(
+            settings: settings,
+            session: SyncSession(
+                sync: SettingsSync(
+                    device: SyncDevice(id: "ipad", name: "iPad"), making: { _ in .none }),
+                folders: folders, templates: FolderTemplateStore(directory: support.url)),
+            conflicts: SyncConflictStore(directory: support.url))
+        let folder = try drive.makeFolder("Clients").path
+        await folders.save(
+            FolderSettings(enabledModules: ["dates"], templates: [:]), forFolderAt: folder)
+
+        await controller.start(drives: [drive.url])
+
+        #expect(controller.driveProblems[drive.url.standardizedFileURL.path] == .notStarted)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: drive.path) == ["Clients"])
     }
 }

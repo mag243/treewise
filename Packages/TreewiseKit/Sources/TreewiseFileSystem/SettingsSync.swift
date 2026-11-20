@@ -30,6 +30,10 @@ public actor SettingsSync {
 
     private let device: SyncDevice
     private let now: @Sendable () -> Date
+    /// Which sync folder this device makes in a drive that has none.
+    private let making: @Sendable (URL) -> SyncFolder.Making
+    /// Why this device does not sync in a drive, by the drive's path.
+    public private(set) var driveProblems: [String: SyncFolder.Problem] = [:]
     private var drives: [URL] = []
     private var folderBooks: [String: SyncBook] = [:]
     private var shared: SyncBook
@@ -37,10 +41,15 @@ public actor SettingsSync {
     /// The name of each device whose file was read, by its id.
     public private(set) var deviceNames: [String: String] = [:]
 
-    /// A sync of `device`, its times from `now`.
-    public init(device: SyncDevice, now: @escaping @Sendable () -> Date = Date.init) {
+    /// A sync of `device`, its times from `now`, making in a drive without a sync folder the
+    /// one `making` says: a Mac the hidden one, an iPad none until asked (ADR 0144).
+    public init(
+        device: SyncDevice, now: @escaping @Sendable () -> Date = Date.init,
+        making: @escaping @Sendable (URL) -> SyncFolder.Making = { _ in .hidden }
+    ) {
         self.device = device
         self.now = now
+        self.making = making
         shared = SyncBook(device: device.id)
     }
 
@@ -210,7 +219,7 @@ public actor SettingsSync {
     }
 
     private func read(_ root: URL) async -> [DeviceSyncFile]? {
-        let folder = SyncFolder(driveRoot: root, device: device)
+        let folder = SyncFolder(driveRoot: root, device: device, making: making(root))
         do {
             return try await Self.run { try folder.read().files }
         } catch {
@@ -269,11 +278,15 @@ public actor SettingsSync {
         let records = Set(
             (folderBooks[root]?.own.values.map { $0 } ?? []) + shared.own.values.map { $0 })
         guard written[root] != records else { return }
-        let folder = SyncFolder(driveRoot: URL(filePath: root), device: device)
+        let url = URL(filePath: root)
+        let folder = SyncFolder(driveRoot: url, device: device, making: making(url))
         let sorted = records.sorted { $0.key.order < $1.key.order }
         do {
             try await Self.run { try folder.write(sorted) }
             written[root] = records
+            driveProblems[root] = nil
+        } catch let problem as SyncFolder.Problem {
+            driveProblems[root] = problem
         } catch {
             Self.logger.error("Sync file not written: \(error.localizedDescription)")
         }

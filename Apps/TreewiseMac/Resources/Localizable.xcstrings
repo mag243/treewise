@@ -2648,6 +2648,7 @@
       }
     },
     "Folder settings, saved patterns and templates are kept in a hidden .treewise folder in iCloud Drive, Dropbox and your other cloud drives, so your other Macs and your iPad have them too." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2659,6 +2660,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mapinstellingen, bewaarde patronen en sjablonen worden bewaard in een verborgen map .treewise in iCloud Drive, Dropbox en je andere clouddrives, zodat je andere Macs en je iPad ze ook hebben."
+          }
+        }
+      }
+    },
+    "Folder settings, saved patterns and templates are kept in a hidden .treewise.settings folder in iCloud Drive, Dropbox and your other cloud drives, so your other Macs and your iPad have them too." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnereinstellungen, gesicherte Muster und Vorlagen werden in einem versteckten Ordner .treewise.settings in iCloud Drive, Dropbox und deinen anderen Cloud-Laufwerken gesichert, sodass deine anderen Macs und dein iPad sie auch haben."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapinstellingen, bewaarde patronen en sjablonen worden bewaard in een verborgen map .treewise.settings in iCloud Drive, Dropbox en je andere clouddrives, zodat je andere Macs en je iPad ze ook hebben."
           }
         }
       }
@@ -4194,6 +4211,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Niet voor deze add-ons. Blijft zoals het is."
+          }
+        }
+      }
+    },
+    "Not syncing in %@: the drive renamed Treewise's folder." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Synchronisierung in %@: Das Laufwerk hat den Ordner von Treewise umbenannt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen synchronisatie in %@: de drive heeft de map van Treewise hernoemd."
           }
         }
       }

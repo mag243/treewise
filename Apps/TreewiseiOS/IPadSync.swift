@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import TreewiseCore
 import TreewiseFileSystem
 import TreewiseUI
@@ -20,6 +21,8 @@ enum IPadSync {
     }
 
     private(set) static var controller: SyncController?
+    /// The drives where the user started syncing from here, for the sync, off the main actor.
+    private static let startedHere = StartedDrives()
     /// The cloud locations, root or not, for Settings' General tab.
     private(set) static var cloudLocations: [Drive] = []
     private static var presenters: [FolderPresenter] = []
@@ -29,6 +32,7 @@ enum IPadSync {
         cloudLocations = folders.filter(LocalFileSystem.Locations.systemIsInCloud).map {
             Drive(folder: $0, name: names[$0] ?? $0.lastPathComponent, isRoot: isDriveRoot($0))
         }
+        startedHere.set(settings.syncStartedHere)
         let controller = controller ?? make(settings: settings)
         self.controller = controller
         await controller.start(drives: drives(leavingOut: settings.syncLeavesOut))
@@ -49,6 +53,19 @@ enum IPadSync {
         }
         await controller?.start(drives: drives(leavingOut: settings.syncLeavesOut))
         watch()
+    }
+
+    /// Starts syncing in the drive at `folder` from here, making the visible sync folder
+    /// there (ADR 0144).
+    static func startHere(_ folder: URL, settings: BrowserSettings) async {
+        settings.syncStartedHere.insert(folder.standardizedFileURL.path)
+        startedHere.set(settings.syncStartedHere)
+        await refresh()
+    }
+
+    /// Why the drive at `folder` does not sync, if it does not.
+    static func problem(of folder: URL) -> SyncFolder.Problem? {
+        controller?.driveProblems[folder.standardizedFileURL.path]
     }
 
     /// Reads the drives again and the templates after, as a template may have come.
@@ -85,7 +102,10 @@ enum IPadSync {
             settings: settings,
             session: SyncSession(
                 sync: SettingsSync(
-                    device: SyncDevice.load(from: directory, name: UIDevice.current.name)),
+                    device: SyncDevice.load(from: directory, name: UIDevice.current.name),
+                    making: { [startedHere] root in
+                        startedHere.contains(root.standardizedFileURL.path) ? .visible : .none
+                    }),
                 folders: NameServices.folderSettings, templates: NameServices.templates),
             conflicts: SyncConflictStore(directory: directory))
     }
@@ -95,5 +115,19 @@ enum IPadSync {
     private static func isDriveRoot(_ folder: URL) -> Bool {
         let parent = folder.deletingLastPathComponent()
         return (try? FileManager.default.contentsOfDirectory(atPath: parent.path)) == nil
+    }
+}
+
+/// The drives where the user started syncing from this device, read by the sync off the
+/// main actor.
+private final class StartedDrives: Sendable {
+    private let paths = Mutex<Set<String>>([])
+
+    func set(_ new: Set<String>) {
+        paths.withLock { $0 = new }
+    }
+
+    func contains(_ path: String) -> Bool {
+        paths.withLock { $0.contains(path) }
     }
 }

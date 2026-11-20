@@ -8,6 +8,8 @@ import TreewiseUI
 struct GeneralSettings: View {
     let settings: BrowserSettings
     @State private var isReviewing = false
+    /// The drive the user asked to start syncing in from here, while it asks to go on.
+    @State private var starting: IPadSync.Drive?
 
     var body: some View {
         Form {
@@ -22,7 +24,7 @@ struct GeneralSettings: View {
                 .accessibilityIdentifier("syncsSettings")
             } footer: {
                 Text(
-                    "Folder settings, saved patterns and templates are kept in a hidden .treewise folder in iCloud Drive, Dropbox and your other cloud drives, so your Macs and your other devices have them too."
+                    "Folder settings, saved patterns and templates are kept in a hidden .treewise.settings folder in iCloud Drive, Dropbox and your other cloud drives, so your Macs and your other devices have them too."
                 )
             }
             if settings.syncsSettings, !IPadSync.cloudLocations.isEmpty {
@@ -38,6 +40,20 @@ struct GeneralSettings: View {
         }
         .navigationTitle(Text("General"))
         .navigationBarTitleDisplayMode(.inline)
+        .alert(
+            "Start Syncing from This iPad?",
+            isPresented: Binding(get: { starting != nil }, set: { if !$0 { starting = nil } }),
+            presenting: starting
+        ) { drive in
+            Button("Cancel", role: .cancel) {}
+            Button("Make Folder") {
+                Task { await IPadSync.startHere(drive.folder, settings: settings) }
+            }
+        } message: { _ in
+            Text(
+                "On an iPad, a cloud drive's app may not keep a hidden folder, so Treewise makes a folder named Treewise.Settings you can see in the drive. A Mac that syncs this drive later uses it too."
+            )
+        }
         .sheet(isPresented: $isReviewing) {
             if let controller = IPadSync.controller {
                 SyncReplacedList(controller: controller, settings: settings)
@@ -48,7 +64,9 @@ struct GeneralSettings: View {
     private var drives: some View {
         Section {
             ForEach(IPadSync.cloudLocations) { drive in
-                if drive.isRoot {
+                if drive.isRoot, let problem = IPadSync.problem(of: drive.folder) {
+                    waiting(drive, problem: problem)
+                } else if drive.isRoot {
                     Toggle(
                         drive.name,
                         isOn: Binding(
@@ -70,6 +88,25 @@ struct GeneralSettings: View {
             }
         } header: {
             Text("Cloud Drives")
+        }
+    }
+
+    /// A drive this device does not sync in: why, and how to start.
+    private func waiting(_ drive: IPadSync.Drive, problem: SyncFolder.Problem) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(verbatim: drive.name)
+            switch problem {
+            case .notStarted:
+                Text("Starts once Treewise on a Mac syncs this drive.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Button("Start Syncing from This iPad") { starting = drive }
+                    .buttonStyle(.borderless)
+            case .renamed:
+                Text("The drive renamed Treewise's folder, so this device does not sync in it.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }

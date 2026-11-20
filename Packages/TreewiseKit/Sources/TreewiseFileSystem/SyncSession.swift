@@ -118,6 +118,11 @@ public actor SyncSession {
         conflicts = []
     }
 
+    /// Why this device does not sync in a drive, by the drive's path (ADR 0144).
+    public func driveProblems() async -> [String: SyncFolder.Problem] {
+        await sync.driveProblems
+    }
+
     /// The name of the device with `id`, as its file gives it.
     public func deviceName(_ id: String) async -> String? {
         await sync.deviceNames[id]

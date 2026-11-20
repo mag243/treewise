@@ -48,6 +48,9 @@ final class SettingsGeneralPane: NSViewController {
     private let replacedCount = NSTextField(labelWithString: "")
     /// The row of `replacedLine`, hidden whole while nothing was replaced, so it takes no room.
     private var replacedRow: NSGridRow?
+    private let renamedNote = NSTextField(wrappingLabelWithString: "")
+    /// The row of `renamedNote`, shown only when a drive renamed Treewise's folder.
+    private var renamedRow: NSGridRow?
     private lazy var replacedLine: NSStackView = {
         let review = SettingsForm.button("Review…") { [weak self] in self?.reviewReplaced() }
         return Self.line([replacedCount, review])
@@ -85,9 +88,12 @@ final class SettingsGeneralPane: NSViewController {
         form.group()
         form.row("Sync:", syncs)
         form.note(
-            "Folder settings, saved patterns and templates are kept in a hidden .treewise folder in iCloud Drive, Dropbox and your other cloud drives, so your other Macs and your iPad have them too.",
+            "Folder settings, saved patterns and templates are kept in a hidden .treewise.settings folder in iCloud Drive, Dropbox and your other cloud drives, so your other Macs and your iPad have them too.",
             width: SettingsForm.noteWidth)
         replacedRow = form.row(nil, replacedLine)
+        renamedNote.textColor = .secondaryLabelColor
+        renamedNote.preferredMaxLayoutWidth = SettingsForm.noteWidth
+        renamedRow = form.row(nil, renamedNote)
         form.group()
         let customize = SettingsForm.button("Customize…") {
             if let url = Self.keyboardSettings { NSWorkspace.shared.open(url) }
@@ -114,6 +120,13 @@ final class SettingsGeneralPane: NSViewController {
         syncs.state = settings.syncsSettings ? .on : .off
         let replaced = sync.replaced.count
         replacedRow?.isHidden = replaced == 0
+        let renamed = sync.driveProblems.filter { $0.value == .renamed }.keys
+            .map { URL(filePath: $0).lastPathComponent }.sorted()
+        renamedRow?.isHidden = renamed.isEmpty
+        renamedNote.stringValue = String(
+            localized:
+                "Not syncing in \(renamed.formatted(.list(type: .and))): the drive renamed Treewise's folder."
+        )
         replacedCount.stringValue = String(
             localized: "Replaced by another device: \(replaced)")
     }
