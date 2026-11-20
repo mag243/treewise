@@ -36,6 +36,32 @@ extension UIReviewTests {
         reviewSheet(of: window, as: "templates-sheet-save", appearance: appearance)
         try renameInAllYears(in: app, appearance: appearance)
         try lookalike(in: app, appearance: appearance)
+        madeFrom(in: app, appearance: appearance)
+    }
+
+    /// The details pane's Made from of a year's folder filled from a template (ADR 0141).
+    @MainActor
+    private func madeFrom(in app: XCUIApplication, appearance: String?) {
+        let window = app.windows.firstMatch
+        app.typeKey(.upArrow, modifierFlags: .command)
+        let year = window.tables.staticTexts["2028"]
+        XCTAssertTrue(year.waitForExistence(timeout: Self.timeout))
+        press(year, in: window.scrollViews.firstMatch, .rightClick)
+        let templates = window.tables.menus.submenuItem(
+            "New Folders from Template", in: "Folder Structure")
+        press(templates, .hover)
+        press(templates.menuItems["Household Year"])
+        let create = window.sheets.firstMatch.buttons["Create Folders"]
+        XCTAssertTrue(create.waitForExistence(timeout: Self.timeout), "the sheet opens")
+        press(create)
+        press(year, in: window.scrollViews.firstMatch)
+        app.typeKey("p", modifierFlags: [.command, .shift])
+        XCTAssertTrue(
+            window.groups["Details"].staticTexts["Made from"].waitForExistence(
+                timeout: Self.timeout), "the details pane says which template made it")
+        settleScreen()
+        review(window, as: "templates-details-made-from", appearance: appearance)
+        app.typeKey("p", modifierFlags: [.command, .shift])
     }
 
     /// The bar asking about a missing folder nearly named as one there (ADR 0139):

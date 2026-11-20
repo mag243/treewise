@@ -1051,23 +1051,6 @@
         }
       }
     },
-    "Also correct the template %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Auch die Vorlage %@ korrigieren"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbeter ook het sjabloon %@"
-          }
-        }
-      }
-    },
     "Also correct the template “%@”" : {
       "localizations" : {
         "de" : {
@@ -1080,23 +1063,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verbeter ook het sjabloon ‘%@’"
-          }
-        }
-      }
-    },
-    "Also correct the templates %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Auch die Vorlagen %@ korrigieren"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verbeter ook de sjablonen %@"
           }
         }
       }

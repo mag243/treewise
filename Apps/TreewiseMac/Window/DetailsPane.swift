@@ -145,12 +145,12 @@ final class DetailsPane: NSView {
             value.preferredMaxLayoutWidth = valueWidth
             rows.addRow(with: [label, value])
         }
-        addTemplateRows(font: font)
+        addTemplateRows(font: font, width: valueWidth)
         rows.rowAlignment = .firstBaseline
     }
 
     /// Made from, with each template's name and Forget.
-    private func addTemplateRows(font: NSFont) {
+    private func addTemplateRows(font: NSFont, width: CGFloat) {
         guard let madeFrom else { return }
         for (index, template) in madeFrom.templates.enumerated() {
             let label = NSTextField(
@@ -171,7 +171,10 @@ final class DetailsPane: NSView {
             forget.contentTintColor = .tertiaryLabelColor
             forget.identifier = NSUserInterfaceItemIdentifier(template.id)
             forget.toolTip = String(localized: "Forget that this folder was made from it")
-            rows.addRow(with: [label, NSStackView(views: [name, forget])])
+            let value = NSStackView(views: [name, forget])
+            // As wide as a value may be, so a long name is cut short, not the pane widened.
+            value.widthAnchor.constraint(lessThanOrEqualToConstant: width).isActive = true
+            rows.addRow(with: [label, value])
         }
     }
 
