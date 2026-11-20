@@ -2,7 +2,8 @@ import XCTest
 
 /// Settings' Templates tab on the iPad (ADR 0143): the fixture's template listed, its tree
 /// opened, a folder renamed with Insert Field and one made inside from its menu, that change
-/// undone from the browser's toolbar, and Import… opening the picker.
+/// undone from the browser's toolbar, and a template exported and imported again, which
+/// asks to replace it or keep both.
 final class TemplatesSettingsTests: XCTestCase {
     private static let timeout: TimeInterval = 10
 
@@ -86,21 +87,44 @@ final class TemplatesSettingsTests: XCTestCase {
         XCTAssertFalse(app.buttons["untitled folder"].firstMatch.exists, "the folder is undone")
     }
 
+    /// Exports the fixture's template to On My iPad and imports that file again: the template
+    /// is here already, so Treewise asks to replace it or keep both (ADR 0141).
     @MainActor
-    func testImportOpensThePicker() {
-        let app = launch(state: UUID().uuidString)
+    func testImportingATemplateThatIsHereAsksReplaceOrKeepBoth() {
+        let app = openTemplate()
+        app.buttons["More"].firstMatch.tap()
+        app.buttons["Export…"].firstMatch.tap()
+        // The exporter opens in On My iPad; a run before may have left the file there.
+        let move = app.buttons["Move"].firstMatch
+        XCTAssertTrue(move.waitForExistence(timeout: Self.timeout), "the exporter opens")
+        move.tap()
+        let replace = app.buttons["Replace"].firstMatch
+        if replace.waitForExistence(timeout: 2) { replace.tap() }
+        XCTAssertTrue(app.eventually { !move.exists }, "the exporter closes")
+        app.navigationBars["Household Year"].buttons["Templates"].tap()
+        let more = app.buttons["templatesMore"].firstMatch
+        XCTAssertTrue(more.waitForExistence(timeout: Self.timeout), "back on the list")
+        more.tap()
+        app.buttons["Import…"].firstMatch.tap()
+        let file = app.staticTexts.matching(
+            NSPredicate(format: "label BEGINSWITH 'Household Year Folder Template'")
+        ).firstMatch
+        if !file.waitForExistence(timeout: Self.timeout) {
+            app.staticTexts["On My iPad"].firstMatch.tap()
+        }
+        XCTAssertTrue(file.waitForExistence(timeout: Self.timeout), "the file exported")
+        // The picker's file is a cell holding its icon and name; a tap on its name may land
+        // beside the cell, so the cell itself is tapped.
+        let cell = app.cells.containing(.staticText, identifier: file.label).firstMatch
+        (cell.exists ? cell : file).tap()
+
+        let keepBoth = app.buttons["Keep Both"].firstMatch
         XCTAssertTrue(
-            sidebar(of: app).staticTexts["Documents"].waitForExistence(timeout: Self.timeout))
-        openTemplatesTab(in: app)
-        app.buttons["templatesMore"].firstMatch.tap()
-        let importItem = app.buttons["Import…"].firstMatch
-        XCTAssertTrue(importItem.waitForExistence(timeout: Self.timeout))
-        importItem.tap()
-        let cancel = app.buttons["Cancel"].firstMatch
-        XCTAssertTrue(cancel.waitForExistence(timeout: Self.timeout), "the picker opens")
-        cancel.tap()
-        XCTAssertTrue(
-            app.staticTexts["Household Year"].firstMatch.waitForExistence(timeout: Self.timeout),
-            "and closes on the list")
+            keepBoth.waitForExistence(timeout: Self.timeout), "it asks, as the template is here")
+        XCTAssertTrue(app.buttons["Replace"].firstMatch.exists)
+        keepBoth.tap()
+        // The copy takes a name of its own; both make the same folders.
+        let listed = app.staticTexts.matching(NSPredicate(format: "label == '{year} · 3 folders'"))
+        XCTAssertTrue(app.eventually { listed.count == 2 }, "both are kept")
     }
 }
