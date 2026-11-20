@@ -98,11 +98,12 @@ enum FolderTemplatesService {
         return bar
     }
 
-    /// Whether `name` is spelled correctly in one of the languages the user chose for the
-    /// spelling checker, as macOS checks it (ADR 0139).
+    /// Whether `name` is spelled correctly in one of the user's own languages, from Language
+    /// & Region, as macOS checks it (ADR 0139); false when none of them has a dictionary.
     static func isSpelledCorrectly(_ name: String) -> Bool {
         let checker = NSSpellChecker.shared
-        let languages = checker.userPreferredLanguages
+        let languages = SpellingLanguages.chosen(
+            preferred: Locale.preferredLanguages, available: checker.availableLanguages)
         return languages.contains { language in
             checker.checkSpelling(
                 of: name, startingAt: 0, language: language, wrap: false,
