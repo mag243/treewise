@@ -4,7 +4,8 @@ import TreewiseUI
 
 /// Explorer's details pane at the right of the window (M5b): a preview of the
 /// selected item and its name, kind, size, date and folder, or the count and
-/// total size of several (`ItemDetails`).
+/// total size of several (`ItemDetails`), and for a folder made from templates, which
+/// ones, each with Forget (ADR 0141).
 @MainActor
 final class DetailsPane: NSView {
     static let width: CGFloat = 260
@@ -20,6 +21,8 @@ final class DetailsPane: NSView {
     private let title = NSTextField(wrappingLabelWithString: "")
     private let rows = NSGridView()
     private var shownRows: [ItemDetails.Row] = []
+    /// The templates the one folder selected was made from, once read.
+    private var madeFrom: (folder: FileItem.ID, templates: [FolderTemplate])?
 
     init(browser: BrowserState) {
         self.browser = browser
@@ -82,7 +85,10 @@ final class DetailsPane: NSView {
             selected, calendar: .autoupdatingCurrent, locale: .autoupdatingCurrent,
             timeZone: .autoupdatingCurrent, now: .now)
         title.stringValue = details.title
+        let folder = selected.count == 1 && selected[0].kind == .folder ? selected[0].id : nil
+        if madeFrom?.folder != folder { madeFrom = nil }
         show(details.rows)
+        if let folder, madeFrom == nil { readTemplates(of: folder) }
         showPreview(of: details.previewItem, selected: selected.first)
     }
 
@@ -106,8 +112,19 @@ final class DetailsPane: NSView {
         icon.image = image
     }
 
-    private func show(_ details: [ItemDetails.Row]) {
-        guard details != shownRows else { return }
+    private func readTemplates(of folder: FileItem.ID) {
+        let bar = FolderTemplatesService.bar(for: browser)
+        Task {
+            let templates = await bar.templates(madeFrom: folder)
+            let selected = browser.selectedItems
+            guard selected.count == 1, selected[0].id == folder else { return }
+            madeFrom = (folder, templates)
+            show(shownRows, again: true)
+        }
+    }
+
+    private func show(_ details: [ItemDetails.Row], again: Bool = false) {
+        guard again || details != shownRows else { return }
         shownRows = details
         while rows.numberOfRows > 0 { rows.removeRow(at: 0) }
         let font = NSFont.preferredFont(forTextStyle: .callout)
@@ -128,6 +145,58 @@ final class DetailsPane: NSView {
             value.preferredMaxLayoutWidth = valueWidth
             rows.addRow(with: [label, value])
         }
+        addTemplateRows(font: font)
         rows.rowAlignment = .firstBaseline
+    }
+
+    /// Made from, with each template's name and Forget.
+    private func addTemplateRows(font: NSFont) {
+        guard let madeFrom else { return }
+        for (index, template) in madeFrom.templates.enumerated() {
+            let label = NSTextField(
+                labelWithString: index == 0 ? String(localized: "Made from") : "")
+            label.textColor = .secondaryLabelColor
+            label.font = font
+            let name = NSTextField(labelWithString: template.name)
+            name.font = font
+            name.lineBreakMode = .byTruncatingMiddle
+            name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            let forget = NSButton(
+                image: NSImage(
+                    systemSymbolName: "xmark.circle.fill",
+                    accessibilityDescription: String(localized: "Forget “\(template.name)”"))
+                    ?? NSImage(),
+                target: self, action: #selector(forget(_:)))
+            forget.isBordered = false
+            forget.contentTintColor = .tertiaryLabelColor
+            forget.identifier = NSUserInterfaceItemIdentifier(template.id)
+            forget.toolTip = String(localized: "Forget that this folder was made from it")
+            rows.addRow(with: [label, NSStackView(views: [name, forget])])
+        }
+    }
+
+    /// Forget: this folder was not made from the template; Undo remembers it again.
+    @objc private func forget(_ button: NSButton) {
+        guard let id = button.identifier?.rawValue, let folder = madeFrom?.folder else { return }
+        change(folder, template: id, forgetting: true)
+    }
+
+    /// Forgets or remembers the template `id` of `folder`, and registers the other for Undo.
+    private func change(_ folder: FileItem.ID, template id: String, forgetting: Bool) {
+        let bar = FolderTemplatesService.bar(for: browser)
+        let undoManager = SharedUndo.manager
+        undoManager.registerUndo(withTarget: self) { pane in
+            pane.change(folder, template: id, forgetting: !forgetting)
+        }
+        undoManager.setActionName(String(localized: "Forget Template"))
+        Task {
+            if forgetting {
+                await bar.forget(id, madeFrom: folder)
+            } else {
+                await bar.remember(made: folder, from: id, yearBefore: nil)
+            }
+            madeFrom = nil
+            update()
+        }
     }
 }

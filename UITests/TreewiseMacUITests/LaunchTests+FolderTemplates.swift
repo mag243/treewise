@@ -6,7 +6,7 @@ import XCTest
 /// Undoing the folders made is left to `BrowserStateFolderTemplateTests`, as it moves them to
 /// the Trash.
 extension LaunchTests {
-    private static let client = "Client A"
+    static let client = "Client A"
     /// The largest a folder's icon in Settings' tree may be, in points.
     private static let iconHeight: CGFloat = 18
     /// The least room between the tree and the buttons below it, in points.
@@ -185,7 +185,7 @@ extension LaunchTests {
     }
 
     /// `Projects/Client A` with the folders Contract and Invoices.
-    private func makeClientFolder() throws {
+    func makeClientFolder() throws {
         let client = try XCTUnwrap(root).appendingPathComponent("Projects/" + Self.client)
         for folder in ["Contract", "Invoices"] {
             try FileManager.default.createDirectory(
@@ -195,7 +195,7 @@ extension LaunchTests {
 
     /// Opens Projects and saves Client A's structure under the name proposed, its own.
     @MainActor
-    private func saveClientTemplate(in app: XCUIApplication) throws {
+    func saveClientTemplate(in app: XCUIApplication) throws {
         let window = app.windows.firstMatch
         let projects = window.tables.staticTexts["Projects"]
         XCTAssertTrue(projects.appeared(timeout: Self.launchTimeout))
