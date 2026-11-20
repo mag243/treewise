@@ -115,6 +115,10 @@ final class IPadReviewTests: XCTestCase {
             review(app, as: "favorites", variant: variant)
 
             openSettings(in: app)
+            let syncs = app.switches["syncsSettings"].firstMatch
+            XCTAssertTrue(syncs.waitForExistence(timeout: Self.timeout))
+            review(app, as: "general", variant: variant)
+            app.buttons["Names"].firstMatch.tap()
             let saved = app.buttons["savedPatterns"].firstMatch
             XCTAssertTrue(saved.waitForExistence(timeout: Self.timeout))
             review(app, as: "settings", variant: variant)

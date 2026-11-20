@@ -34,11 +34,17 @@ public final class SyncController {
         self.now = now
     }
 
-    /// Starts syncing through the drives at `drives` when the switch is on.
+    /// Starts syncing through the drives at `drives` when the switch is on; when it runs,
+    /// syncs through these drives from now on.
     public func start(drives: [URL]) async {
+        let changed = drives != self.drives
         self.drives = drives
         replaced = await conflicts.entries(now: now())
-        guard settings.syncsSettings, !isRunning else { return }
+        guard settings.syncsSettings else { return }
+        if isRunning {
+            if changed { take(await session.changeDrives(drives)) }
+            return
+        }
         isRunning = true
         take(await session.start(drives: drives, patterns: settings.savedPatterns))
         settings.savedPatternsChanged = { [weak self] before, after in

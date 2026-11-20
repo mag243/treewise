@@ -84,4 +84,21 @@ import TreewiseUI
         #expect(
             await mac.folders.settings(forFolderAt: folder)?.enabledModules == ["mine"])
     }
+
+    @Test func aDriveAddedWhileSyncingTakesPart() async throws {
+        let first = try TempDirectory()
+        let second = try TempDirectory()
+        let folder = try second.makeFolder("Clients").path
+        let mac = try Device("a-mac") { 0 }
+        await mac.folders.save(
+            FolderSettings(enabledModules: ["dates"], templates: [:]), forFolderAt: folder)
+        await mac.controller.start(drives: [first.url])
+
+        await mac.controller.start(drives: [first.url, second.url])
+        await mac.controller.settle()
+
+        #expect(
+            FileManager.default.fileExists(
+                atPath: second.url.appending(path: ".treewise/devices/a-mac.json").path))
+    }
 }

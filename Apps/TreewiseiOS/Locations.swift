@@ -195,6 +195,7 @@ final class Locations {
         confined = locations
         firstFolder = folders.first
         reader = LocalFileSystem(locations: locations)
+        await IPadSync.start(settings: settings, folders: folders, names: labels)
     }
 
     /// Reads the added folders again and makes every window a new browser.

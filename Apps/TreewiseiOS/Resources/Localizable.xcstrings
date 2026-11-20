@@ -221,6 +221,22 @@
         }
       }
     },
+    "A folder inside a drive: add the drive itself to sync it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Ordner in einem Laufwerk: Füge das Laufwerk selbst hinzu, um es zu synchronisieren."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een map in een drive: voeg de drive zelf toe om hem te synchroniseren."
+          }
+        }
+      }
+    },
     "A proposed name with an e-mail address, phone number, bank account or payment card number is marked. A name you type is not." : {
       "localizations" : {
         "de" : {
@@ -655,6 +671,22 @@
         }
       }
     },
+    "Clear" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wis"
+          }
+        }
+      }
+    },
     "Clear Folder Settings" : {
       "localizations" : {
         "de" : {
@@ -716,6 +748,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cloud"
+          }
+        }
+      }
+    },
+    "Cloud Drives" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud-Laufwerke"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clouddrives"
           }
         }
       }
@@ -1280,6 +1328,22 @@
         }
       }
     },
+    "Folder settings, saved patterns and templates are kept in a hidden .treewise folder in iCloud Drive, Dropbox and your other cloud drives, so your Macs and your other devices have them too." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnereinstellungen, gesicherte Muster und Vorlagen werden in einem versteckten Ordner .treewise in iCloud Drive, Dropbox und deinen anderen Cloud-Laufwerken gesichert, sodass deine Macs und deine anderen Geräte sie auch haben."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapinstellingen, bewaarde patronen en sjablonen worden bewaard in een verborgen map .treewise in iCloud Drive, Dropbox en je andere clouddrives, zodat je Macs en je andere apparaten ze ook hebben."
+          }
+        }
+      }
+    },
     "Folders in %@" : {
       "localizations" : {
         "de" : {
@@ -1414,6 +1478,22 @@
         }
       }
     },
+    "General" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allgemein"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algemeen"
+          }
+        }
+      }
+    },
     "GitHub" : {
       "localizations" : {
         "de" : {
@@ -1538,6 +1618,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bewaar beide"
+          }
+        }
+      }
+    },
+    "Kept for 30 days on this device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird 30 Tage auf diesem Gerät aufbewahrt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wordt 30 dagen op dit apparaat bewaard."
           }
         }
       }
@@ -2894,6 +2990,38 @@
         }
       }
     },
+    "Replaced Changes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ersetzte Änderungen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vervangen wijzigingen"
+          }
+        }
+      }
+    },
+    "Replaced by another device: %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von einem anderen Gerät ersetzt: %lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vervangen door een ander apparaat: %lld"
+          }
+        }
+      }
+    },
     "Required" : {
       "localizations" : {
         "de" : {
@@ -2906,6 +3034,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verplicht"
+          }
+        }
+      }
+    },
+    "Restore" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zet terug"
           }
         }
       }
@@ -3358,6 +3502,22 @@
         }
       }
     },
+    "Sync settings through cloud drives" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen über Cloud-Laufwerke synchronisieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchroniseer instellingen via clouddrives"
+          }
+        }
+      }
+    },
     "Tap a folder to rename it. Its menu makes a folder inside, moves or deletes it." : {
       "localizations" : {
         "de" : {
@@ -3776,6 +3936,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jij"
+          }
+        }
+      }
+    },
+    "Yours: %@   Now: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine: %1$@   Jetzt: %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Yours: %1$@   Now: %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jouw versie: %1$@   Nu: %2$@"
           }
         }
       }

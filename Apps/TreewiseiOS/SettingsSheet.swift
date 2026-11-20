@@ -2,8 +2,9 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// Settings, from the gear in the sidebar (ADR 0130, ADR 0143): tabs as the Mac's, Names and
-/// Templates, and About in place of the Mac's About panel, at the top on the iPad and at the bottom on the iPhone. Changes apply at once.
+/// Settings, from the gear in the sidebar (ADR 0130, ADR 0143): tabs as the Mac's, General
+/// with syncing (ADR 0144), Names and Templates, and About in place of the Mac's About
+/// panel, at the top on the iPad and at the bottom on the iPhone. Changes apply at once.
 struct SettingsSheet: View {
     let settings: BrowserSettings
     let undoManager: UndoManager
@@ -11,6 +12,9 @@ struct SettingsSheet: View {
 
     var body: some View {
         TabView {
+            Tab(String(localized: "General"), systemImage: "gearshape") {
+                NavigationStack { GeneralSettings(settings: settings).toolbar { done } }
+            }
             Tab(String(localized: "Names"), systemImage: "textformat") {
                 NavigationStack { NamesSettings(settings: settings).toolbar { done } }
             }
@@ -24,6 +28,8 @@ struct SettingsSheet: View {
                 NavigationStack { AboutSettings().toolbar { done } }
             }
         }
+        // Settings shows synced settings: the newest, even if a change was not heard.
+        .task { await IPadSync.refresh() }
     }
 
     @ToolbarContentBuilder private var done: some ToolbarContent {

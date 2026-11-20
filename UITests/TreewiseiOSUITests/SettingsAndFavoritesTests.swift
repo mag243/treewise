@@ -21,6 +21,7 @@ final class SettingsAndFavoritesTests: XCTestCase {
     func testTheGearOpensSettingsWhereAPatternIsAdded() {
         let app = openDocuments()
         app.buttons["settings"].firstMatch.tap()
+        app.buttons["Names"].firstMatch.tap()
         let saved = app.buttons["savedPatterns"].firstMatch
         XCTAssertTrue(saved.waitForExistence(timeout: Self.timeout))
 

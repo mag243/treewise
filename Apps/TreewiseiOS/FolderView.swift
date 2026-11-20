@@ -285,6 +285,8 @@ struct FolderView: View {
     /// Opens the name overview of the selection, or of the folder's files.
     private func suggestNames(wholeFolder: Bool) {
         Task {
+            // The folder's settings may have changed on another device (ADR 0144).
+            await IPadSync.refresh()
             let host = NameServices.moduleHost
             let store = NameServices.folderSettings
             let made =

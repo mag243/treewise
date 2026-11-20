@@ -192,6 +192,10 @@ final class IPhoneReviewTests: XCTestCase {
             XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
             app.navigationBars["Documents"].buttons.firstMatch.tap()
             app.buttons["settings"].firstMatch.tap()
+            let syncs = app.switches["syncsSettings"].firstMatch
+            XCTAssertTrue(syncs.waitForExistence(timeout: Self.timeout))
+            review(app, as: "general", variant: variant)
+            app.buttons["Names"].firstMatch.tap()
             let saved = app.buttons["savedPatterns"].firstMatch
             XCTAssertTrue(saved.waitForExistence(timeout: Self.timeout))
             review(app, as: "settings", variant: variant)

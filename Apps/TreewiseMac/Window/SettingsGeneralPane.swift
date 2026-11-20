@@ -113,7 +113,7 @@ final class SettingsGeneralPane: NSViewController {
         let replaced = sync.replaced.count
         replacedLine.isHidden = replaced == 0
         replacedCount.stringValue = String(
-            localized: "\(replaced) changes replaced by another device")
+            localized: "Replaced by another device: \(replaced)")
     }
 
     private static func setSyncing(_ isOn: Bool, in sync: SyncController) {

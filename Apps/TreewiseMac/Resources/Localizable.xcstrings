@@ -1382,6 +1382,22 @@
         }
       }
     },
+    "Changes Replaced by Another Device" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von einem anderen Gerät ersetzte Änderungen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Door een ander apparaat vervangen wijzigingen"
+          }
+        }
+      }
+    },
     "Check Document Now" : {
       "localizations" : {
         "de" : {
@@ -1506,6 +1522,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kies…"
+          }
+        }
+      }
+    },
+    "Clear" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wis"
           }
         }
       }
@@ -2615,6 +2647,22 @@
         }
       }
     },
+    "Folder settings, saved patterns and templates are kept in a hidden .treewise folder in iCloud Drive, Dropbox and your other cloud drives, so your other Macs and your iPad have them too." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnereinstellungen, gesicherte Muster und Vorlagen werden in einem versteckten Ordner .treewise in iCloud Drive, Dropbox und deinen anderen Cloud-Laufwerken gesichert, sodass deine anderen Macs und dein iPad sie auch haben."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapinstellingen, bewaarde patronen en sjablonen worden bewaard in een verborgen map .treewise in iCloud Drive, Dropbox en je andere clouddrives, zodat je andere Macs en je iPad ze ook hebben."
+          }
+        }
+      }
+    },
     "Folder settings:" : {
       "localizations" : {
         "de" : {
@@ -3174,6 +3222,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Houd de mijne"
+          }
+        }
+      }
+    },
+    "Kept for 30 days on this Mac." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird 30 Tage auf diesem Mac aufbewahrt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wordt 30 dagen op deze Mac bewaard."
           }
         }
       }
@@ -5170,6 +5234,22 @@
         }
       }
     },
+    "Replaced by another device: %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von einem anderen Gerät ersetzt: %lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vervangen door een ander apparaat: %lld"
+          }
+        }
+      }
+    },
     "Required" : {
       "localizations" : {
         "de" : {
@@ -5182,6 +5262,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verplicht"
+          }
+        }
+      }
+    },
+    "Restore" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zet terug"
           }
         }
       }
@@ -5214,6 +5310,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ga door"
+          }
+        }
+      }
+    },
+    "Review…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansehen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekijk…"
           }
         }
       }
@@ -6042,6 +6154,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stel namen voor…"
+          }
+        }
+      }
+    },
+    "Sync settings through cloud drives" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen über Cloud-Laufwerke synchronisieren"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchroniseer instellingen via clouddrives"
+          }
+        }
+      }
+    },
+    "Sync:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisierung:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisatie:"
           }
         }
       }
@@ -7019,6 +7163,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Je add-ons konden deze sleutel nu niet controleren. Probeer het opnieuw."
+          }
+        }
+      }
+    },
+    "Yours: %@   Now: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine: %1$@   Jetzt: %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Yours: %1$@   Now: %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jouw versie: %1$@   Nu: %2$@"
           }
         }
       }

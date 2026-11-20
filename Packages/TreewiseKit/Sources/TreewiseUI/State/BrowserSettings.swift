@@ -35,6 +35,7 @@ public final class BrowserSettings {
         static let showsNameReviewPanel = "nameReviewShowsPanel"
         static let showsNameReviewAddOns = "nameReviewAddOnsOpen"
         static let syncsSettings = "syncsSettings"
+        static let syncLeavesOut = "syncLeavesOut"
         /// Where 0.2 kept its one window (ADR 0024), read when there is no session.
         static let lastWindow = "lastWindow"
     }
@@ -119,6 +120,11 @@ public final class BrowserSettings {
     /// (ADR 0144); on unless turned off.
     public var syncsSettings: Bool {
         didSet { store.setSetting(String(syncsSettings), for: Key.syncsSettings) }
+    }
+    /// The paths of drives the user left out of syncing, which would take part of
+    /// themselves (ADR 0144).
+    public var syncLeavesOut: Set<String> {
+        didSet { store.setSetting(Self.json(syncLeavesOut.sorted()), for: Key.syncLeavesOut) }
     }
 
     /// What the user chose for the add-ons across the app (ADR 0070).
@@ -241,6 +247,7 @@ public final class BrowserSettings {
             ?? TableColumnLayout()
         offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
         syncsSettings = store.setting(Key.syncsSettings) != "false"
+        syncLeavesOut = Set(Self.decoded([String].self, at: Key.syncLeavesOut, in: store) ?? [])
     }
 
     /// A setting that is on unless turned off, kept as `false`, or as `0` by a boolean.

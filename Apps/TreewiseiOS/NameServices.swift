@@ -30,6 +30,9 @@ enum NameServices {
             addOnMayWork: { false })
     }
 
+    /// Where the folder settings, the templates and the sync's own files are kept.
+    static var settingsDirectory: URL { directory }
+
     /// Where the folder settings and templates are kept.
     private static var directory: URL {
         TestRun.current?.folder.appendingPathComponent("Settings", isDirectory: true)

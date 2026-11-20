@@ -45,6 +45,17 @@ public actor SyncSession {
         return first
     }
 
+    /// Syncs through the drives at `drives` from now on, as when a location was added or
+    /// removed: reads them, and records the settings of folders in a new drive that no file
+    /// knows. Returns another device's saved patterns for the app, if any.
+    public func changeDrives(_ drives: [URL]) async -> [SettingsSync.Change] {
+        guard isRunning else { return [] }
+        await sync.setDrives(drives)
+        let changes = await refresh()
+        await sync.seed(folders: await folders.allSettings(), patterns: nil, templates: [])
+        return changes
+    }
+
     /// Records a change to the templates, giving a folder added an id first.
     private static func handle(
         _ notice: FolderTemplateNotice, sync: SettingsSync, templates: FolderTemplateStore

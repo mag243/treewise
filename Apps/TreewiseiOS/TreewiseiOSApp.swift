@@ -20,8 +20,14 @@ struct TreewiseiOSApp: App {
             // In the background the folders are not watched, as iOS asks of file
             // presenters; back in front, what changed meanwhile is read (ADR 0120).
             switch phase {
-            case .background: locations.pauseWatching()
-            case .active: Task { await locations.resumeWatching() }
+            case .background:
+                locations.pauseWatching()
+                IPadSync.pause()
+            case .active:
+                Task {
+                    await locations.resumeWatching()
+                    await IPadSync.resume()
+                }
             default: break
             }
         }
