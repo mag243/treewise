@@ -61,12 +61,18 @@ enum RenameInAllYearsSheet {
         case .show(let folder):
             await browser.navigate(pane: browser.layout.focusedPaneIndex, to: folder)
         case .rename:
-            let count = model.renames.count
-            let failure = await browser.renameInAllYears(
+            let result = await browser.renameInAllYears(
                 model, templates: FolderTemplatesService.templates,
                 settings: AppServices.folderSettings, undoManager: undoManager)
-            guard let failure else { return tellRenamed(count, browser: browser) }
-            tell(failure, model: model, on: window)
+            switch result {
+            case .nothing:
+                return
+            case .renamed(let count):
+                tellRenamed(count, browser: browser)
+            case .stopped(let failure, let count):
+                if count > 0 { tellRenamed(count, browser: browser) }
+                tell(failure, model: model, on: window)
+            }
         }
     }
 

@@ -90,13 +90,13 @@ import TreewiseCore
         #expect(both.renamingFolder(atDiskPath: ["Belastingsdienst"], to: Self.new) == nil)
     }
 
-    @Test func closedMissingFoldersNameTheNewPath() {
+    @Test func closedMissingFoldersAreClosedUnderTheNewNameToo() {
         var settings = FolderSettings(enabledModules: [], templates: [:])
         settings.missingFoldersClosed = [
-            ["Belastingsdienst"], ["Belastingsdienst", "Aangifte"], ["Bank"],
+            ["Belastingsdienst"], ["Belastingsdienst", "Aangifte"], ["Bank"], [Self.new],
         ]
-        settings.renameClosedMissing(at: ["belastingsdienst"], to: Self.new)
         #expect(
-            settings.missingFoldersClosed == [[Self.new], [Self.new, "Aangifte"], ["Bank"]])
+            settings.closedMissing(renamedAt: ["belastingsdienst"], to: Self.new)
+                == [[Self.new, "Aangifte"]])
     }
 }

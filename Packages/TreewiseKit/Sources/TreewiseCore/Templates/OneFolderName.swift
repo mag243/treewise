@@ -88,20 +88,23 @@ extension FolderTree {
 }
 
 extension FolderSettings {
-    /// The closed missing folders with the folder at `path` named `name`, those inside it
-    /// too, so a folder closed under its old name stays closed (ADR 0102, ADR 0139).
+    /// The closed missing folders at the folder at `path` and inside it, under the name
+    /// `name`, that are not closed yet: closing them too keeps a folder closed under its
+    /// old name closed under its new one, while the old stays closed for a year left
+    /// unrenamed (ADR 0102, ADR 0139).
     /// - Precondition: `path` names a folder below the year's folder.
-    public mutating func renameClosedMissing(at path: [String], to name: String) {
+    public func closedMissing(renamedAt path: [String], to name: String) -> Set<[String]> {
         precondition(!path.isEmpty, "`path` names a folder below the year's folder.")
         let key = MissingFolders.key(path)
-        missingFoldersClosed = Set(
-            missingFoldersClosed.map { closed in
+        let closedKeys = Set(missingFoldersClosed.map(MissingFolders.key))
+        return Set(
+            missingFoldersClosed.compactMap { closed in
                 guard closed.count >= path.count,
                     MissingFolders.key(Array(closed.prefix(path.count))) == key
-                else { return closed }
+                else { return nil }
                 var renamed = closed
                 renamed[path.count - 1] = name
-                return renamed
+                return closedKeys.contains(MissingFolders.key(renamed)) ? nil : renamed
             })
     }
 }

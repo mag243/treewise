@@ -88,15 +88,20 @@ import TreewiseUI
         let manager = UndoManager()
         manager.groupsByEvent = false
         manager.beginUndoGrouping()
-        let failure = await browser.renameInAllYears(
+        let result = await browser.renameInAllYears(
             model, templates: templates, settings: settings, undoManager: manager)
         manager.endUndoGrouping()
-        #expect(failure == nil)
+        guard case .renamed(count: 2) = result else {
+            Issue.record("both years are renamed, not \(result)")
+            return
+        }
         #expect(try await names(in: "2024") == ["Belastingdienst"])
         #expect(try await names(in: "2025") == ["Belastingdienst"])
         #expect(templates.templates.first?.root.folder(at: ["Belastingdienst"]) != nil)
         let kept = await settings.settings(forFolderAt: "documents/Admin/2027")
-        #expect(kept?.missingFoldersClosed == [["Belastingdienst"]])
+        #expect(
+            kept?.missingFoldersClosed == [["Belastingsdienst"], ["Belastingdienst"]],
+            "closed under the new name too, and still under the old")
 
         manager.undo()
         #expect(
@@ -125,15 +130,46 @@ import TreewiseUI
         #expect(try await names(in: "2023") == ["Belastingdienst"])
     }
 
-    @Test func aFolderThatCannotBeRenamedLeavesTheTemplateAsItWas() async throws {
+    @Test func stoppingHalfwayLeavesTheTemplateAndUndoesWhatWasRenamed() async throws {
         let folder = try await years()
         let browser = await makeBrowser(fileSystem: fileSystem)
         let model = try await model(for: folder)
         model.newName = "Belastingdienst"
-        fileSystem.failChanges(with: FileSystemError.notWritable("2024"))
-        let failure = await browser.renameInAllYears(
-            model, templates: templates, settings: settings, undoManager: nil)
-        #expect(failure != nil)
+        // Made after the sheet looked, so 2025's rename finds the name taken.
+        try await fileSystem.addFolder("Belastingdienst", in: "documents/Admin/2025")
+        let manager = UndoManager()
+        manager.groupsByEvent = false
+        manager.beginUndoGrouping()
+        let result = await browser.renameInAllYears(
+            model, templates: templates, settings: settings, undoManager: manager)
+        manager.endUndoGrouping()
+        guard case .stopped(let failure, renamed: 1) = result else {
+            Issue.record("it stops at 2025 after renaming 2024, not \(result)")
+            return
+        }
+        #expect(failure.item == "documents/Admin/2025/Belastingsdienst")
+        #expect(templates.templates.first?.root.folder(at: ["Belastingsdienst"]) != nil)
+        manager.undo()
+        #expect(await eventuallyAsync { try await names(in: "2024") == ["Belastingsdienst"] })
+    }
+
+    @Test func registersNoUndoWhenNothingWasRenamed() async throws {
+        let folder = try await years()
+        let browser = await makeBrowser(fileSystem: fileSystem)
+        let model = try await model(for: folder)
+        model.newName = "Belastingdienst"
+        fileSystem.failChanges(with: FileSystemError.notWritable("documents/Admin/2024"))
+        let manager = UndoManager()
+        manager.groupsByEvent = false
+        manager.beginUndoGrouping()
+        let result = await browser.renameInAllYears(
+            model, templates: templates, settings: settings, undoManager: manager)
+        manager.endUndoGrouping()
+        guard case .stopped(_, renamed: 0) = result else {
+            Issue.record("it stops at the first folder, not \(result)")
+            return
+        }
+        #expect(manager.undoActionName.isEmpty, "no Undo Rename in All Years that does nothing")
         #expect(templates.templates.first?.root.folder(at: ["Belastingsdienst"]) != nil)
     }
 }
