@@ -34,6 +34,38 @@ extension UIReviewTests {
         press(year, in: window.scrollViews.firstMatch, .rightClick)
         press(window.tables.menus.menuItems["Save Folder Structure as Template…"])
         reviewSheet(of: window, as: "templates-sheet-save", appearance: appearance)
+        try renameInAllYears(in: app, appearance: appearance)
+    }
+
+    /// Rename in All Years… on 2026's Receipts (ADR 0139): as it opens, with a name that
+    /// 2027 has beside its Receipts, and with a long name.
+    @MainActor
+    private func renameInAllYears(in app: XCUIApplication, appearance: String?) throws {
+        let window = app.windows.firstMatch
+        app.go(to: "2026", timeout: Self.timeout)
+        let receipts = window.tables.staticTexts["Receipts"]
+        XCTAssertTrue(receipts.waitForExistence(timeout: Self.timeout))
+        press(receipts, in: window.scrollViews.firstMatch, .rightClick)
+        press(window.tables.menus.menuItems["Rename in All Years…"])
+        let sheet = window.sheets.firstMatch
+        let name = sheet.textFields["renameInAllYearsName"]
+        XCTAssertTrue(name.waitForExistence(timeout: Self.timeout), "the sheet opens")
+        settleScreen()
+        review(window, as: "templates-rename-years-open", appearance: appearance)
+        for (newName, shot) in [
+            ("Bills", "templates-rename-years-beside"),
+            (
+                "Receipts and bills of the household kept for the yearly tax return",
+                "templates-rename-years-long"
+            ),
+        ] {
+            name.typeKey("a", modifierFlags: .command)
+            name.typeText(newName)
+            settleScreen()
+            review(window, as: shot, appearance: appearance)
+        }
+        press(sheet.buttons["Cancel"])
+        XCTAssertTrue(sheet.waitForNonExistence(timeout: Self.timeout), "Cancel closes it")
     }
 
     /// Reviews the sheet that opened on `window`, then cancels it.

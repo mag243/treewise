@@ -22,7 +22,7 @@ final class UIReviewTests: XCTestCase {
         for path in [
             "Projects/Client A/Contract", "Projects/Client A/Invoices", "Documents/Taxes",
             "Administration/2026/Tax/Appeals", "Administration/2026/Receipts",
-            "Administration/2027/Receipts", "Administration/2028",
+            "Administration/2027/Receipts", "Administration/2027/Bills", "Administration/2028",
         ] {
             try FileManager.default.createDirectory(
                 at: folder.appendingPathComponent(path), withIntermediateDirectories: true)

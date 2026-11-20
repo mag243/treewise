@@ -212,10 +212,23 @@ private final class RenameInAllYearsSheetController: NSViewController, NSTextFie
     }
 
     private func update() {
-        rows.setViews(model.plan.entries.map(row), in: .top)
+        let unchanged = model.trimmedName == model.oldName
+        rows.setViews(model.plan.entries.map { unchanged ? place($0.place) : row($0) }, in: .top)
+        for row in rows.arrangedSubviews {
+            row.widthAnchor.constraint(
+                lessThanOrEqualTo: rows.widthAnchor, constant: -SheetLayout.spacing
+            ).isActive = true
+        }
         let count = model.renames.count
-        rename.title = String(localized: "Rename \(count) Folders")
+        rename.title =
+            unchanged ? String(localized: "Rename") : String(localized: "Rename \(count) Folders")
         rename.isEnabled = model.canRename
+    }
+
+    /// A year's folder while the name is still the old one: where it is, nothing more.
+    private func place(_ place: OneFolderName.Place) -> NSView {
+        let field = NSTextField(labelWithString: "\(model.label(of: place))   \(place.name)")
+        return truncating(field)
     }
 
     private func row(_ entry: OneFolderName.Entry) -> NSView {
@@ -227,7 +240,7 @@ private final class RenameInAllYearsSheetController: NSViewController, NSTextFie
                 target: self, action: #selector(checkChanged))
             box.identifier = NSUserInterfaceItemIdentifier(entry.place.folder.rawValue)
             box.state = model.excluded.contains(entry.place.folder) ? .off : .on
-            return box
+            return truncating(box)
         case .alreadyNamed:
             return greyed(
                 "\(label)   \(entry.place.name)   "
@@ -240,14 +253,25 @@ private final class RenameInAllYearsSheetController: NSViewController, NSTextFie
             let title = String(localized: "Show in \(label)")
             let show = ClosureButton(title: title) { [weak self] in self?.finish(.show(parent)) }
             show.controlSize = .small
-            return NSStackView(views: [text, show])
+            show.setContentCompressionResistancePriority(.required, for: .horizontal)
+            return NSStackView(views: [truncating(text), show])
         }
     }
 
     private func greyed(_ text: String) -> NSTextField {
         let field = NSTextField(labelWithString: text)
         field.textColor = .secondaryLabelColor
-        return field
+        return truncating(field)
+    }
+
+    /// `control` cut short in the middle when its text is wider than the list, so a long
+    /// name keeps its start and end and never widens the sheet.
+    private func truncating<Control: NSControl>(_ control: Control) -> Control {
+        control.lineBreakMode = .byTruncatingMiddle
+        control.cell?.lineBreakMode = .byTruncatingMiddle
+        control.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        control.toolTip = (control as? NSButton)?.title ?? (control as? NSTextField)?.stringValue
+        return control
     }
 
     private func templatesTitle() -> String {
