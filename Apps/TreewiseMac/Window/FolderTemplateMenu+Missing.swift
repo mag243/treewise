@@ -70,7 +70,8 @@ extension FolderTemplateMenu {
         FolderTemplateSheet.present(
             .init(
                 title: String(localized: "Add the Missing Folders of \(name)"),
-                tree: offer.missing.tree, templateID: nil, place: .filling(offer.folder)),
+                tree: offer.missing.tree, templateID: nil, place: .filling(offer.folder),
+                yearBefore: offer.yearBefore),
             browser: browser, on: window, undoManager: undoManager)
     }
 }

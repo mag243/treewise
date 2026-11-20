@@ -38,7 +38,10 @@ extension BrowserState {
             await relocateFavorites(outcome.renamed.map { ($0.original, $0.item.id) })
             await reloadShownFolders()
         }
-        guard let failure = outcome.failure else { return .renamed(count: outcome.renamed.count) }
+        guard let failure = outcome.failure else {
+            await remember(model.correctedTemplates, in: model, settings: settings)
+            return .renamed(count: outcome.renamed.count)
+        }
         return .stopped(failure, renamed: outcome.renamed.count)
     }
 
@@ -79,6 +82,23 @@ extension BrowserState {
         for (year, added) in paths {
             guard var kept = await settings.settings(forFolderAt: year.rawValue) else { continue }
             change(&kept.missingFoldersClosed, added)
+            await settings.save(kept, forFolderAt: year.rawValue)
+        }
+    }
+
+    /// The years whose folder was renamed were made from the templates corrected, as far as
+    /// Treewise can tell: it remembers so for the next time (ADR 0141).
+    private func remember(
+        _ corrected: [FolderTemplate], in model: RenameInAllYearsModel,
+        settings: any FolderSettingsStoring
+    ) async {
+        guard !corrected.isEmpty else { return }
+        let years = Set(model.renames.compactMap { YearFolders.place(of: $0.item)?.year })
+        for year in years {
+            var kept =
+                await settings.settings(forFolderAt: year.rawValue)
+                ?? FolderSettings(enabledModules: [], templates: [:])
+            for template in corrected { kept.remember(madeFrom: template.id) }
             await settings.save(kept, forFolderAt: year.rawValue)
         }
     }

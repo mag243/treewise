@@ -39,7 +39,11 @@ enum RenameInAllYearsSheet {
         await templates.load()
         guard
             let model = await RenameInAllYearsModel.make(
-                for: item, in: browser.fileSystem, templates: templates.templates)
+                for: item, in: browser.fileSystem, templates: templates.templates,
+                madeFrom: {
+                    await AppServices.folderSettings.settings(forFolderAt: $0.rawValue)?
+                        .madeFrom ?? []
+                })
         else { return }
         if let newName { model.newName = newName }
         let sheet = RenameInAllYearsSheetController(model: model)
@@ -121,8 +125,15 @@ private final class RenameInAllYearsSheetController: NSViewController, NSTextFie
     private let model: RenameInAllYearsModel
     private let name = NSTextField()
     private let rows = NSStackView()
-    private lazy var templatesBox = NSButton(
-        checkboxWithTitle: templatesTitle(), target: self, action: #selector(templatesChanged))
+    /// A checkbox for each template corrected along, on by default (ADR 0141).
+    private lazy var templateBoxes: [NSButton] = model.templates.map { template in
+        let box = NSButton(
+            checkboxWithTitle: String(localized: "Also correct the template “\(template.name)”"),
+            target: self, action: #selector(templateChanged))
+        box.identifier = NSUserInterfaceItemIdentifier(template.id)
+        box.state = .on
+        return box
+    }
     private lazy var rename = ClosureButton(title: "") { [weak self] in
         self?.finish(.rename)
     }
@@ -148,15 +159,13 @@ private final class RenameInAllYearsSheetController: NSViewController, NSTextFie
         let nameRow = NSStackView(views: [
             NSTextField(labelWithString: String(localized: "New name:")), name,
         ])
-        templatesBox.state = model.correctsTemplates ? .on : .off
-        templatesBox.isHidden = model.templates.isEmpty
         let cancel = ClosureButton(title: String(localized: "Cancel")) { [weak self] in
             self?.finish(.cancel)
         }
         rename.setAccessibilityIdentifier("renameInAllYearsRename")
         let buttons = SheetLayout.buttonRow(cancel: cancel, confirm: rename)
         let list = listView()
-        let stack = SheetLayout.column([title, nameRow, list, templatesBox, buttons])
+        let stack = SheetLayout.column([title, nameRow, list] + templateBoxes + [buttons])
         stack.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
         for view in [list, buttons] {
             view.widthAnchor.constraint(
@@ -206,8 +215,9 @@ private final class RenameInAllYearsSheetController: NSViewController, NSTextFie
         update()
     }
 
-    @objc private func templatesChanged() {
-        model.correctsTemplates = templatesBox.state == .on
+    @objc private func templateChanged(_ box: NSButton) {
+        guard let id = box.identifier?.rawValue else { return }
+        if box.state == .on { model.uncorrected.remove(id) } else { model.uncorrected.insert(id) }
     }
 
     @objc private func checkChanged(_ box: NSButton) {
@@ -277,14 +287,5 @@ private final class RenameInAllYearsSheetController: NSViewController, NSTextFie
         control.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         control.toolTip = (control as? NSButton)?.title ?? (control as? NSTextField)?.stringValue
         return control
-    }
-
-    private func templatesTitle() -> String {
-        let names = model.templates.map { "“\($0.name)”" }
-        guard names.count > 1 else {
-            return String(localized: "Also correct the template \(names.first ?? "")")
-        }
-        return String(
-            localized: "Also correct the templates \(names.formatted(.list(type: .and)))")
     }
 }

@@ -113,8 +113,8 @@ import TreewiseUI
     @Test func offersTheOneYearTemplateWithTheFoldersItLacks() async throws {
         let (_, year) = try await years()
         let offer = try #require(await model().missing(in: year))
-        let template = try #require(offer.template)
-        #expect(template.id == "year")
+        let template = try #require(offer.templates.first)
+        #expect(offer.templates.map(\.id) == ["year"])
         #expect(template.root.folder(at: ["Tax", "Appeals"]) != nil)
         #expect(template.root.folder(at: ["Receipts"]) != nil)
     }
@@ -129,6 +129,28 @@ import TreewiseUI
                     folders: [
                         FolderTree(name: "Tax", folders: [FolderTree(name: "Appeals")])
                     ])))
-        #expect(try #require(await model().missing(in: year)).template == nil)
+        #expect(try #require(await model().missing(in: year)).templates.isEmpty)
+    }
+
+    @Test func offersTheTemplatesTheYearWasMadeFromTheOneUsedLastFirst() async throws {
+        let (before, year) = try await years()
+        let club = FolderTemplate(
+            id: "club", name: "Club Year", root: FolderTree(name: "{year}"))
+        await templates.save(club)
+        let model = model()
+        await model.remember(made: before.id, from: "year", yearBefore: nil)
+        await model.remember(made: year.id, from: "club", yearBefore: nil)
+        let offer = try #require(await model.missing(in: year))
+        #expect(offer.templates.map(\.id) == ["club", "year"])
+    }
+
+    @Test func offersNoGuessWhenTheYearKeepsATemplate() async throws {
+        let (_, year) = try await years()
+        await templates.save(
+            FolderTemplate(id: "club", name: "Club Year", root: FolderTree(name: "{year}")))
+        let model = model()
+        await model.remember(made: year.id, from: "club", yearBefore: nil)
+        let offer = try #require(await model.missing(in: year))
+        #expect(offer.templates.map(\.id) == ["club"], "not the one rooted at {year} by guess")
     }
 }

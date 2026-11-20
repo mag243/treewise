@@ -162,7 +162,7 @@ final class TemplateBarView: NSStackView {
                 localized:
                     "\(offer.folder.name) lacks \(offer.missing.paths.count) folders of \(Self.name(of: offer.yearBefore))."
             )
-            addToTemplate.isHidden = offer.template == nil
+            addToTemplate.isHidden = offer.templates.isEmpty
         case .lookalike(let lookalike):
             show(lookalike)
         case nil:
@@ -197,11 +197,16 @@ final class TemplateBarView: NSStackView {
     private func createFolders(of offer: TemplateBarModel.Offer, on window: NSWindow) async {
         guard let tree = await tree(of: offer.source) else { return }
         var templateID: String?
-        if case .template(let template) = offer.source { templateID = template.id }
+        var yearBefore: FileItem.ID?
+        switch offer.source {
+        case .template(let template): templateID = template.id
+        case .yearBefore(let id): yearBefore = id
+        }
         FolderTemplateSheet.present(
             .init(
                 title: String(localized: "Create the Folders of \(Self.sourceName(offer.source))"),
-                tree: tree, templateID: templateID, place: .filling(offer.folder)),
+                tree: tree, templateID: templateID, place: .filling(offer.folder),
+                yearBefore: yearBefore),
             browser: browser, on: window, undoManager: SharedUndo.manager)
     }
 
@@ -216,11 +221,29 @@ final class TemplateBarView: NSStackView {
         }
     }
 
+    /// Add to Template: to the one template, or, with two the year was made from, to the one
+    /// chosen in a menu, the one used last first (ADR 0141).
     private func addMissingToTemplate() {
-        guard case .missing(let offer) = shown, let template = offer.template else { return }
+        guard case .missing(let offer) = shown, let first = offer.templates.first else { return }
+        guard offer.templates.count > 1 else { return add(offer, to: first) }
+        let menu = NSMenu()
+        for template in offer.templates {
+            let name = template.name
+            menu.addItem(
+                ClosureMenuItem(name, symbol: "folder.badge.gearshape") { [weak self] in
+                    self?.add(offer, to: template)
+                })
+        }
+        menu.popUp(
+            positioning: nil, at: NSPoint(x: 0, y: addToTemplate.bounds.height), in: addToTemplate)
+    }
+
+    private func add(_ offer: TemplateBarModel.MissingOffer, to template: FolderTemplate) {
         Task {
             await FolderTemplatesService.addMissing(
                 of: offer, to: template, undoManager: SharedUndo.manager)
+            await FolderTemplatesService.bar(for: browser).remember(
+                made: offer.folder.id, from: template.id, yearBefore: nil)
             lookAgain()
         }
     }

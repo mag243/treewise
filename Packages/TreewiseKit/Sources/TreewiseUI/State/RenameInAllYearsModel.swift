@@ -17,14 +17,16 @@ public final class RenameInAllYearsModel {
     /// In each year that has the folders above the chosen one, the folder that would hold
     /// it and what that folder holds, by year.
     private let holders: [(parent: FileItem.ID, contents: [FileItem])]
-    /// The templates rooted at `{year}` that hold a folder at that path (ADR 0102).
+    /// The templates to correct along that hold a folder at that path: those the years were
+    /// made from (ADR 0141), the one used last first, or, when no year keeps one, those
+    /// rooted at `{year}` (ADR 0102).
     public let templates: [FolderTemplate]
     /// The new name, as typed.
     public var newName: String
     /// The folders the user unchecked.
     public var excluded: Set<FileItem.ID> = []
-    /// Whether the templates are corrected along.
-    public var correctsTemplates = true
+    /// The ids of the templates the user unchecked, which are not corrected along.
+    public var uncorrected: Set<String> = []
 
     init(
         oldName: String, path: [String], years: [FileItem.ID],
@@ -38,10 +40,12 @@ public final class RenameInAllYearsModel {
         newName = oldName
     }
 
-    /// The model for `folder`, or nil when it is in no year's own folder.
+    /// The model for `folder`, or nil when it is in no year's own folder; `madeFrom` gives
+    /// the ids of the templates a year's folder was made from.
     public static func make(
         for folder: FileItem, in fileSystem: any FileSystemProviding,
-        templates: [FolderTemplate]
+        templates: [FolderTemplate],
+        madeFrom: (FileItem.ID) async -> [String] = { _ in [] }
     ) async -> RenameInAllYearsModel? {
         guard let (year, path) = YearFolders.place(of: folder.id),
             let parent = try? await fileSystem.item(at: year).parentID,
@@ -55,11 +59,19 @@ public final class RenameInAllYearsModel {
                 holders.append(holder)
             }
         }
-        let holding = templates.filter {
-            $0.isRootedAtYear && $0.root.renamingFolder(atDiskPath: path, to: folder.name) != nil
+        var kept: [String] = []
+        for year in years {
+            for id in await madeFrom(year).reversed() where !kept.contains(id) { kept.append(id) }
         }
+        let holding = templates.filter {
+            $0.root.renamingFolder(atDiskPath: path, to: folder.name) != nil
+        }
+        let chosen =
+            kept.isEmpty
+            ? holding.filter(\.isRootedAtYear)
+            : kept.compactMap { id in holding.first { $0.id == id } }
         return RenameInAllYearsModel(
-            oldName: folder.name, path: path, years: years, holders: holders, templates: holding)
+            oldName: folder.name, path: path, years: years, holders: holders, templates: chosen)
     }
 
     /// The folder below `year` that would hold the last folder of `path`, with what it
@@ -114,10 +126,9 @@ public final class RenameInAllYearsModel {
     /// Whether Rename can be chosen: a valid new name and a folder to give it.
     public var canRename: Bool { FileName.isValid(trimmedName) && !renames.isEmpty }
 
-    /// The templates with the folder renamed, when they are corrected along.
+    /// The templates checked, with the folder renamed.
     public var correctedTemplates: [FolderTemplate] {
-        guard correctsTemplates else { return [] }
-        return templates.compactMap { template in
+        templates.filter { !uncorrected.contains($0.id) }.compactMap { template in
             var corrected = template
             guard let root = template.root.renamingFolder(atDiskPath: path, to: trimmedName)
             else { return nil }

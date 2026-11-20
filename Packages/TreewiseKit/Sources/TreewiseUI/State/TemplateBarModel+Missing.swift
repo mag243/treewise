@@ -16,9 +16,11 @@ extension TemplateBarModel {
         public let recognized: FolderTree
         /// The folders missing.
         public let missing: MissingFolders
-        /// The one template rooted at `{year}` with the missing folders it lacks added, or
-        /// nil when there is no such template or it lacks none.
-        public let template: FolderTemplate?
+        /// The templates Add to Template adds to, each with the missing folders it lacks
+        /// added: those the year's folder or the year before was made from, the one used last
+        /// first (ADR 0141), or, when neither keeps one, the one template rooted at `{year}`;
+        /// empty when there is none or none lacks them.
+        public let templates: [FolderTemplate]
     }
 
     /// What `folder` lacks of the year before, while the add-on may work; nil when nothing
@@ -49,18 +51,33 @@ extension TemplateBarModel {
         return MissingOffer(
             folder: folder, yearBefore: before, year: year, recognized: recognized,
             missing: missing,
-            template: await template(adding: missing, from: recognized, values: values))
+            templates: await templates(
+                adding: missing, from: recognized, values: values,
+                madeFrom: [folder.id, before]))
     }
 
-    private func template(
-        adding missing: MissingFolders, from recognized: FolderTree, values: FolderTemplateValues
-    ) async -> FolderTemplate? {
-        let rooted = await templates.templates().filter(\.isRootedAtYear)
-        guard rooted.count == 1, var template = rooted.first,
-            let root = template.root.adding(missing, from: recognized, values: values)
-        else { return nil }
-        template.root = root
-        return template
+    private func templates(
+        adding missing: MissingFolders, from recognized: FolderTree, values: FolderTemplateValues,
+        madeFrom folders: [FileItem.ID]
+    ) async -> [FolderTemplate] {
+        var kept: [FolderTemplate] = []
+        for folder in folders {
+            for template in await templates(madeFrom: folder) where !kept.contains(template) {
+                kept.append(template)
+            }
+        }
+        if kept.isEmpty {
+            let rooted = await templates.templates().filter(\.isRootedAtYear)
+            guard rooted.count == 1 else { return [] }
+            kept = rooted
+        }
+        return kept.compactMap { template in
+            guard let root = template.root.adding(missing, from: recognized, values: values)
+            else { return nil }
+            var added = template
+            added.root = root
+            return added
+        }
     }
 
     /// Don’t Show These Folders: the bar leaves out the folders `offer` holds from then on.

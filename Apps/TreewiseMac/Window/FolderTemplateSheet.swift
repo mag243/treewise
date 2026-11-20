@@ -24,6 +24,9 @@ enum FolderTemplateSheet {
         let templateID: String?
         /// Where the tree goes.
         let place: FolderTemplateSheetModel.Place
+        /// The year's folder the tree was read from, whose templates the folder made takes
+        /// on (ADR 0141); nil for a saved template or a copied structure.
+        var yearBefore: FileItem.ID?
     }
 
     /// Shows the sheet on `window`, for `browser`'s folders.
@@ -44,7 +47,8 @@ enum FolderTemplateSheet {
             window.endSheet(sheetWindow)
             guard create, let tree = model.tree, let folder = model.folderMadeIn else { return }
             let made = Made(
-                tree: tree, folder: folder, offering: offers ? making.templateID : nil)
+                tree: tree, folder: folder, offering: offers ? making.templateID : nil,
+                origin: making.templateID, yearBefore: making.yearBefore)
             Task { await make(made, browser: browser, window: window, undoManager: undoManager) }
         }
         window.beginSheet(sheetWindow)
@@ -59,6 +63,10 @@ enum FolderTemplateSheet {
         let tree: FolderTree
         let folder: FileItem.ID
         let offering: String?
+        /// The saved template the folders come from, and the year's folder they were read
+        /// from, which the root made remembers (ADR 0141).
+        let origin: String?
+        let yearBefore: FileItem.ID?
     }
 
     private static func make(
@@ -69,6 +77,11 @@ enum FolderTemplateSheet {
                 making: made.tree, in: made.folder, undoManager: undoManager)
         else { return }
         await FolderTemplatesService.giveNames(of: made.tree, to: outcome.made)
+        if made.origin != nil || made.yearBefore != nil {
+            let root = FileItem.ID(made.folder.rawValue + "/" + made.tree.name)
+            await FolderTemplatesService.bar(for: browser).remember(
+                made: root, from: made.origin, yearBefore: made.yearBefore)
+        }
         NotificationCenter.default.post(name: foldersMade, object: nil)
         if let templateID = made.offering {
             await FolderTemplatesService.bar(for: browser).offer(
