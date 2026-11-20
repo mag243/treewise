@@ -10,6 +10,8 @@ public actor FolderTemplateStore: FolderTemplateStoring {
         subsystem: LogSubsystem.name, category: "FolderTemplateStore")
 
     private let directory: URL
+    /// Where what the user changes is told, in order, for a sync to record (ADR 0144).
+    var notices: NoticeLine<FolderTemplateNotice>?
 
     /// Creates a store that keeps its files in `directory`, made when the first is saved.
     public init(directory: URL) {
@@ -47,18 +49,24 @@ public actor FolderTemplateStore: FolderTemplateStoring {
     public func save(_ template: FolderTemplate) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try FolderTemplateFile.data(of: template).write(to: file(of: template.id), options: .atomic)
+        notices?.tell(.saved(template))
     }
 
     /// Puts the file of the template with this id in the Trash, and says where, so Undo can
     /// bring it back.
     @discardableResult
     public func delete(id: String) throws -> TrashedItem {
-        try TrashService().trash(FileItem.ID(file(of: id).path))
+        let trashed = try TrashService().trash(FileItem.ID(file(of: id).path))
+        notices?.tell(.deleted(id: id))
+        return trashed
     }
 
     /// Brings back a template's file that `delete(id:)` put in the Trash.
     public func restore(_ trashed: TrashedItem) throws {
         try TrashService().restore(trashed)
+        let id = URL(filePath: trashed.originalID.rawValue).deletingPathExtension()
+            .lastPathComponent
+        if let template = Self.read(file(of: id)) { notices?.tell(.saved(template)) }
     }
 
     /// Saves the template in a file as a new one and, when its name is taken, `name 2`,
@@ -83,7 +91,7 @@ public actor FolderTemplateStore: FolderTemplateStoring {
         return template
     }
 
-    private func file(of id: String) -> URL {
+    func file(of id: String) -> URL {
         directory.appendingPathComponent(id).appendingPathExtension(
             FolderTemplateFile.pathExtension)
     }

@@ -121,14 +121,16 @@ import TreewiseTestSupport
         #expect(await stranger.settings(forFolderAt: path) == nil)
     }
 
-    @Test func givesAStrangersFolderANewIDWhenSaving() async throws {
+    /// Another device in a cloud drive sees the folder with this id; writing a new one over
+    /// it would cut that device's settings off (ADR 0144).
+    @Test func keepsTheIDAnotherTreewisePutOnTheFolderWhenSaving() async throws {
         let path = try root.makeFolder("A").path
         await store.save(settings, forFolderAt: path)
         let theirs = FolderSettingsStore.id(onFolderAt: path)
         try root.makeFolder("elsewhere")
         let stranger = FolderSettingsStore(directory: root.url("elsewhere"))
         await stranger.save(settings, forFolderAt: path)
-        #expect(FolderSettingsStore.id(onFolderAt: path) != theirs)
+        #expect(FolderSettingsStore.id(onFolderAt: path) == theirs)
     }
 
     @Test func keepsThePatternOutOfTheFoldersAttributes() async throws {

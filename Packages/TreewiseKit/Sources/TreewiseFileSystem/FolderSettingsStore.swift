@@ -15,7 +15,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     private static let logger = Logger(
         subsystem: LogSubsystem.name, category: "FolderSettingsStore")
 
-    private struct Record: Codable {
+    struct Record: Codable {
         var path: String
         /// Whether the id is on the folder. If not, the path is all that finds it.
         var isOnFolder: Bool
@@ -48,7 +48,10 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     }
 
     private let file: URL
-    private var records: [String: Record]?
+    /// The settings by the id on each folder; nil until the file is read.
+    var records: [String: Record]?
+    /// Where what the user changes is told, in order, for a sync to record (ADR 0144).
+    var notices: NoticeLine<FolderSettingsNotice>?
     /// Whether the file is there but could not be read: then it is never written, so the
     /// settings of every folder in it are not lost; changes last until the app quits.
     private var isFileUnreadable = false
@@ -89,6 +92,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
             moved = true
         }
         if moved { persist() }
+        notices?.tell(.moved(from: old, to: new))
     }
 
     /// The settings of a folder, or nil when it has none. This follows a folder that
@@ -105,12 +109,15 @@ public actor FolderSettingsStore: FolderSettingsStoring {
             records?[id]?.settings = settings
             records?[id]?.lastSeen = now()
         } else {
-            let id = UUID().uuidString
-            let isOnFolder = Self.write(id, toFolderAt: path)
+            // An id another device put on the folder is kept, not written over (ADR 0144).
+            let onFolder = Self.id(onFolderAt: path)
+            let id = onFolder ?? UUID().uuidString
+            let isOnFolder = onFolder != nil || Self.write(id, toFolderAt: path)
             records?[id] = Record(
                 path: path, isOnFolder: isOnFolder, settings: settings, lastSeen: now())
         }
         persist()
+        notices?.tell(.changed(path: path, settings: settings))
     }
 
     /// Drops the settings of every folder that has not been seen for a while on a disk that
@@ -136,8 +143,11 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     /// Removes the settings of every folder. The ids on the folders stay and mean nothing
     /// without their records (ADR 0072).
     public func clearAll() {
+        loadIfNeeded()
+        let paths = (records ?? [:]).values.map(\.path)
         records = [:]
         persist()
+        for path in paths { notices?.tell(.changed(path: path, settings: nil)) }
     }
 
     /// Whether a record's folder is at its path: a folder, carrying the record's id when
@@ -151,7 +161,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
     }
 
     /// The id whose record belongs to this folder, after bringing the record up to date.
-    private func settledID(forFolderAt path: String) -> String? {
+    func settledID(forFolderAt path: String) -> String? {
         let id = Self.id(onFolderAt: path)
         let recordedPath = id.flatMap { records?[$0]?.path }
         let place = FolderSettings.place(
@@ -163,7 +173,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         case .noID:
             return records?.first { !$0.value.isOnFolder && $0.value.path == path }?.key
         case .unknownID:
-            return nil
+            return adopt(id, forFolderAt: path)
         case .moved:
             guard let id else { return nil }
             records?[id]?.path = path
@@ -173,6 +183,19 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         case .copy:
             return id.flatMap { split(copyOf: $0, at: path) }
         }
+    }
+
+    /// The record kept by path for the folder at `path`, kept from now on under `id`, the
+    /// id another device put on the folder (ADR 0144); nil when there is none.
+    private func adopt(_ id: String?, forFolderAt path: String) -> String? {
+        guard let id, let kept = records?.first(where: { $0.value.path == path })?.key,
+            var record = records?[kept]
+        else { return nil }
+        record.isOnFolder = true
+        records?[kept] = nil
+        records?[id] = record
+        persist()
+        return id
     }
 
     private func split(copyOf id: String, at path: String) -> String? {
@@ -190,7 +213,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         return setxattr(path, attributeName, bytes, bytes.count, 0, 0) == 0
     }
 
-    private func loadIfNeeded() {
+    func loadIfNeeded() {
         guard records == nil else { return }
         let data: Data
         do {
@@ -221,7 +244,7 @@ public actor FolderSettingsStore: FolderSettingsStoring {
         }
     }
 
-    private func persist() {
+    func persist() {
         guard !isFileUnreadable else { return }
         do {
             try FileManager.default.createDirectory(

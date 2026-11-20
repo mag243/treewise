@@ -1,4 +1,5 @@
 import Foundation
+import TreewiseCore
 import os
 
 /// This installation as a device that syncs (ADR 0144): a random id, made once and kept in
@@ -6,7 +7,7 @@ import os
 public struct SyncDevice: Hashable, Sendable {
     /// The file in the support folder that keeps the id.
     static let fileName = "sync-device-id"
-    private static let logger = Logger(subsystem: "me.m-domain.treewise", category: "sync")
+    private static let logger = Logger(subsystem: LogSubsystem.name, category: "Sync")
 
     /// The random id.
     public let id: String
