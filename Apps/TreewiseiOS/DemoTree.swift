@@ -27,6 +27,8 @@
             /// How long before the run the entry was last changed.
             let age: TimeInterval
             let bytes: Int
+            /// When a photo was taken, as the camera writes it in the photo.
+            var captured: String?
 
             static func folder(_ path: Name..., age: TimeInterval) -> Entry {
                 Entry(path: path, isFolder: true, age: age, bytes: 0)
@@ -57,95 +59,100 @@
         /// The added folders, in the order of the sidebar's.
         static let tops = [documents, photos, work]
 
-        static let entries: [Entry] = [
-            .folder(documents, archive, age: 9 * day),
-            .file(documents, archive, budget, age: 40 * day, bytes: 41 * kilobyte),
-            .file(
-                documents, archive,
-                Name(
-                    en: "Tax return 2025.pdf", nl: "Belastingaangifte 2025.pdf",
-                    de: "Steuererklärung 2025.pdf"),
-                age: 60 * day, bytes: 820 * kilobyte),
-            .folder(
-                documents, Name(en: "Invoices", nl: "Facturen", de: "Rechnungen"), age: 3 * day),
-            .folder(documents, Name(en: "Recipes", nl: "Recepten", de: "Rezepte"), age: 21 * day),
-            .folder(
-                documents, Name(en: "Travel", nl: "Reizen", de: "Reisen"), age: 1 * day + 5 * hour),
-            .file(documents, budget, age: 2 * hour, bytes: 48 * kilobyte),
-            .file(
-                documents,
-                Name(
-                    en: "Meeting notes.docx", nl: "Notulen overleg.docx",
-                    de: "Besprechungsnotizen.docx"),
-                age: 26 * hour, bytes: 112 * kilobyte),
-            .file(
-                documents, Name(en: "Garden plan.pdf", nl: "Tuinplan.pdf", de: "Gartenplan.pdf"),
-                age: 5 * day, bytes: 2_300 * kilobyte),
-            .file(documents, lighthouse, age: 6 * day, bytes: 0),
-            .file(
-                documents,
-                Name(en: "Moving checklist.txt", nl: "Verhuislijst.txt", de: "Umzugsliste.txt"),
-                age: 12 * day, bytes: 3 * kilobyte),
-            .file(
-                documents,
-                Name(en: "Presentation.key", nl: "Presentatie.key", de: "Präsentation.key"),
-                age: 33 * day, bytes: 14 * megabyte),
-            .file(
-                documents, Name(en: "Reading list.md", nl: "Leeslijst.md", de: "Leseliste.md"),
-                age: 45 * day, bytes: 2 * kilobyte),
-            .file(
-                documents, Name(en: "Birthdays.txt", nl: "Verjaardagen.txt", de: "Geburtstage.txt"),
-                age: 90 * day, bytes: 1 * kilobyte),
-            .file(
-                documents,
-                Name(
-                    en: "Car insurance.pdf", nl: "Autoverzekering.pdf", de: "Autoversicherung.pdf"),
-                age: 120 * day, bytes: 310 * kilobyte),
-            .file(
-                documents, Name(en: "Floor plan.pdf", nl: "Plattegrond.pdf", de: "Grundriss.pdf"),
-                age: 17 * day, bytes: 1_200 * kilobyte),
-            .file(
-                documents,
-                Name(
-                    en: "Holiday budget.xlsx", nl: "Vakantiebudget.xlsx", de: "Urlaubsbudget.xlsx"),
-                age: 3 * hour, bytes: 26 * kilobyte),
-            .file(
-                documents,
-                Name(
-                    en: "Letter to the landlord.docx", nl: "Brief aan de verhuurder.docx",
-                    de: "Brief an den Vermieter.docx"),
-                age: 2 * day, bytes: 38 * kilobyte),
-            .file(
-                documents, Name(en: "Packing list.md", nl: "Paklijst.md", de: "Packliste.md"),
-                age: 4 * day, bytes: 1 * kilobyte),
-            .file(
-                documents,
-                Name(
-                    en: "Wedding speech.docx", nl: "Speech bruiloft.docx", de: "Hochzeitsrede.docx"),
-                age: 50 * day, bytes: 64 * kilobyte),
-            .folder(
-                photos, Name(en: "Summer 2026", nl: "Zomer 2026", de: "Sommer 2026"), age: 70 * day),
-            .file(
-                photos, Name(en: "Beach.jpg", nl: "Strand.jpg", de: "Strand.jpg"), age: 72 * day,
-                bytes: 0),
-            .file(
-                photos, Name(en: "Dunes.jpg", nl: "Duinen.jpg", de: "Dünen.jpg"), age: 72 * day,
-                bytes: 0),
-            .file(
-                work,
-                Name(
-                    en: "Quarterly report.pdf", nl: "Kwartaalrapport.pdf", de: "Quartalsbericht.pdf"
-                ), age: 4 * day, bytes: 1_600 * kilobyte),
-            .file(
-                work, Name(en: "Roadmap.numbers", nl: "Planning.numbers", de: "Planung.numbers"),
-                age: 8 * day, bytes: 380 * kilobyte),
-        ]
-
-        /// The language the names are in: the run's first preferred one of en, nl and de.
-        static var language: String {
-            let first = Locale.preferredLanguages.first.map { Locale(identifier: $0) }
-            return first?.language.languageCode?.identifier ?? "en"
-        }
+        static let entries: [Entry] =
+            [
+                .folder(documents, archive, age: 9 * day),
+                .file(documents, archive, budget, age: 40 * day, bytes: 41 * kilobyte),
+                .file(
+                    documents, archive,
+                    Name(
+                        en: "Tax return 2025.pdf", nl: "Belastingaangifte 2025.pdf",
+                        de: "Steuererklärung 2025.pdf"),
+                    age: 60 * day, bytes: 820 * kilobyte),
+                .folder(
+                    documents, Name(en: "Invoices", nl: "Facturen", de: "Rechnungen"), age: 3 * day),
+                .folder(
+                    documents, Name(en: "Recipes", nl: "Recepten", de: "Rezepte"), age: 21 * day),
+                .folder(
+                    documents, Name(en: "Travel", nl: "Reizen", de: "Reisen"),
+                    age: 1 * day + 5 * hour),
+                .file(documents, budget, age: 2 * hour, bytes: 48 * kilobyte),
+                .file(
+                    documents,
+                    Name(
+                        en: "Meeting notes.docx", nl: "Notulen overleg.docx",
+                        de: "Besprechungsnotizen.docx"),
+                    age: 26 * hour, bytes: 112 * kilobyte),
+                .file(
+                    documents,
+                    Name(en: "Garden plan.pdf", nl: "Tuinplan.pdf", de: "Gartenplan.pdf"),
+                    age: 5 * day, bytes: 2_300 * kilobyte),
+                .file(documents, lighthouse, age: 6 * day, bytes: 0),
+                .file(
+                    documents,
+                    Name(en: "Moving checklist.txt", nl: "Verhuislijst.txt", de: "Umzugsliste.txt"),
+                    age: 12 * day, bytes: 3 * kilobyte),
+                .file(
+                    documents,
+                    Name(en: "Presentation.key", nl: "Presentatie.key", de: "Präsentation.key"),
+                    age: 33 * day, bytes: 14 * megabyte),
+                .file(
+                    documents, Name(en: "Reading list.md", nl: "Leeslijst.md", de: "Leseliste.md"),
+                    age: 45 * day, bytes: 2 * kilobyte),
+                .file(
+                    documents,
+                    Name(en: "Birthdays.txt", nl: "Verjaardagen.txt", de: "Geburtstage.txt"),
+                    age: 90 * day, bytes: 1 * kilobyte),
+                .file(
+                    documents,
+                    Name(
+                        en: "Car insurance.pdf", nl: "Autoverzekering.pdf",
+                        de: "Autoversicherung.pdf"),
+                    age: 120 * day, bytes: 310 * kilobyte),
+                .file(
+                    documents,
+                    Name(en: "Floor plan.pdf", nl: "Plattegrond.pdf", de: "Grundriss.pdf"),
+                    age: 17 * day, bytes: 1_200 * kilobyte),
+                .file(
+                    documents,
+                    Name(
+                        en: "Holiday budget.xlsx", nl: "Vakantiebudget.xlsx",
+                        de: "Urlaubsbudget.xlsx"),
+                    age: 3 * hour, bytes: 26 * kilobyte),
+                .file(
+                    documents,
+                    Name(
+                        en: "Letter to the landlord.docx", nl: "Brief aan de verhuurder.docx",
+                        de: "Brief an den Vermieter.docx"),
+                    age: 2 * day, bytes: 38 * kilobyte),
+                .file(
+                    documents, Name(en: "Packing list.md", nl: "Paklijst.md", de: "Packliste.md"),
+                    age: 4 * day, bytes: 1 * kilobyte),
+                .file(
+                    documents,
+                    Name(
+                        en: "Wedding speech.docx", nl: "Speech bruiloft.docx",
+                        de: "Hochzeitsrede.docx"),
+                    age: 50 * day, bytes: 64 * kilobyte),
+                .folder(photos, summer, age: 70 * day),
+                .file(
+                    photos, Name(en: "Beach.jpg", nl: "Strand.jpg", de: "Strand.jpg"),
+                    age: 72 * day,
+                    bytes: 0),
+                .file(
+                    photos, Name(en: "Dunes.jpg", nl: "Duinen.jpg", de: "Dünen.jpg"), age: 72 * day,
+                    bytes: 0),
+                .file(
+                    work,
+                    Name(
+                        en: "Quarterly report.pdf", nl: "Kwartaalrapport.pdf",
+                        de: "Quartalsbericht.pdf"
+                    ), age: 4 * day, bytes: 1_600 * kilobyte),
+                .file(
+                    work,
+                    Name(en: "Roadmap.numbers", nl: "Planning.numbers", de: "Planung.numbers"),
+                    age: 8 * day, bytes: 380 * kilobyte),
+            ] + summerPhotos
 
         /// Makes the tree in `folder` unless it is there, and returns its added folders.
         static func make(in folder: URL) throws -> [URL] {
@@ -181,7 +188,8 @@
 
         private static func write(_ entry: Entry, to url: URL) throws {
             if url.pathExtension == "jpg" {
-                try photo(named: url.lastPathComponent).write(to: url)
+                let picture = photo(named: url.lastPathComponent)
+                try (entry.captured.flatMap { taken(picture, at: $0) } ?? picture).write(to: url)
             } else if ["txt", "md"].contains(url.pathExtension) {
                 let line = "\(url.deletingPathExtension().lastPathComponent)\n"
                 let lines = max(1, entry.bytes / line.utf8.count)

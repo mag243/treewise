@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Uploads the iPad app's listing to App Store Connect (ADR 0118): listing.md's text and
-the screenshots, to the version being prepared. Owner only: it needs the API key in
+"""Uploads the iOS app's listing to App Store Connect (ADR 0118, 0145): listing.md's text
+and the iPad's and the iPhone's screenshots, to the version being prepared; the iPhone
+Duo's are uploaded by hand, as the API has no display type for them. Owner only: it needs the API key in
 ~/.config/treewise, and writes to the App Store listing.
 
     python3 tools/appstore/upload.py metadata --dry-run      # what would change, sending nothing
     python3 tools/appstore/upload.py metadata
-    python3 tools/appstore/upload.py screenshots [--locale nl-NL]
+    python3 tools/appstore/upload.py screenshots [--locale nl-NL] [--device iphone]
     python3 tools/appstore/upload.py all
 
 A dry run reads App Store Connect and prints every write it would make. Builds are
@@ -18,6 +19,7 @@ import re
 import struct
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import asc
@@ -27,9 +29,31 @@ ROOT = Path(__file__).resolve().parents[2]
 PROJECT = ROOT / "Treewise.xcodeproj" / "project.pbxproj"
 BUNDLE_ID = "me.m-domain.treewise"
 SCREENSHOTS = ROOT / "build" / "appstore" / "screenshots"
-# The 13-inch iPad's slot, which takes 2064 × 2752 in either orientation.
-DISPLAY_TYPE = "APP_IPAD_PRO_3GEN_129"
-SCREENSHOT_SIZES = {(2064, 2752), (2752, 2064)}
+
+
+@dataclass(frozen=True)
+class Device:
+    """A device's screenshots: their App Store Connect slot, none where they are uploaded
+    by hand, and the sizes Apple takes, in either orientation."""
+
+    display_type: str | None
+    sizes: frozenset
+
+
+def sizes(*pairs: tuple[int, int]) -> frozenset:
+    return frozenset(pairs) | frozenset((height, width) for width, height in pairs)
+
+
+# Each device's screenshots are in their own folder, build/appstore/screenshots/<device>/.
+DEVICES = {
+    # The 13-inch iPad.
+    "ipad": Device("APP_IPAD_PRO_3GEN_129", sizes((2064, 2752), (2048, 2732))),
+    # The iPhone with Dynamic Island, medium display: the size Apple requires.
+    "iphone": Device("APP_IPHONE_61", sizes((1206, 2622), (1179, 2556))),
+    # The iPhone Duo's outer and inner displays: by hand, as the API has no type for them.
+    "duo-outer": Device(None, sizes((1398, 2034))),
+    "duo-inner": Device(None, sizes((2007, 2853))),
+}
 # Apple shows at most ten screenshots per slot.
 MAX_SCREENSHOTS = 10
 EDITABLE = "PREPARE_FOR_SUBMISSION,DEVELOPER_REJECTED,REJECTED,METADATA_REJECTED,INVALID_BINARY"
@@ -156,19 +180,21 @@ def png_size(path: Path) -> tuple[tuple[int, int], bool]:
     return (width, height), colour_type in (4, 6)
 
 
-def screenshots_of(locale: str, folder: Path) -> list[Path]:
-    shots = sorted((folder / locale).glob("*.png"))
+def screenshots_of(device: str, locale: str, folder: Path) -> list[Path]:
+    shots = sorted((folder / device / locale).glob("*.png"))
+    accepted = DEVICES[device].sizes
     problems = []
     for shot in shots:
         size, alpha = png_size(shot)
-        if size not in SCREENSHOT_SIZES:
-            problems.append(f"{shot.name}: {size[0]} × {size[1]}, not 2064 × 2752")
+        if size not in accepted:
+            allowed = ", ".join(f"{width} × {height}" for width, height in sorted(accepted))
+            problems.append(f"{shot.name}: {size[0]} × {size[1]}, not one of {allowed}")
         if alpha:
             problems.append(f"{shot.name}: has an alpha channel")
     if len(shots) > MAX_SCREENSHOTS:
         problems.append(f"{len(shots)} screenshots, at most {MAX_SCREENSHOTS}")
     if problems:
-        sys.exit(f"Screenshots for {locale}:\n  " + "\n  ".join(problems))
+        sys.exit(f"Screenshots for {device}, {locale}:\n  " + "\n  ".join(problems))
     return shots
 
 
@@ -200,16 +226,31 @@ def upload_screenshot(client: asc.Client, set_id: str, shot: Path, locale: str) 
     sys.exit(f"{name} was not processed within {PROCESSING_WAIT} seconds.")
 
 
-def upload_screenshots(credentials: tuple, dry_run: bool, locales: list[str], folder: Path) -> None:
-    shots = {locale: screenshots_of(locale, folder) for locale in locales}
+def upload_screenshots(
+    credentials: tuple, dry_run: bool, locales: list[str], devices: list[str], folder: Path
+) -> None:
     print("\n# Screenshots")
+    for device in devices:
+        display_type = DEVICES[device].display_type
+        if display_type is None:
+            print(f"  {device}: upload by hand from {folder / device}")
+            continue
+        print(f"  {device} ({display_type})")
+        upload_device_screenshots(credentials, dry_run, locales, device, folder)
+
+
+def upload_device_screenshots(
+    credentials: tuple, dry_run: bool, locales: list[str], device: str, folder: Path
+) -> None:
+    display_type = DEVICES[device].display_type
+    shots = {locale: screenshots_of(device, locale, folder) for locale in locales}
     first = Listing(asc.Client(credentials, dry_run))
     # The primary locale last: in velo-points, its screenshots went missing when another
     # locale's were uploaded after them.
     order = sorted(locales, key=lambda locale: locale == first.primary_locale)
     for locale in order:
         if not shots[locale]:
-            print(f"  {locale}: no screenshots in {folder / locale}, left as it is")
+            print(f"  {locale}: no screenshots in {folder / device / locale}, left as it is")
             continue
         # A fresh client and fresh records for each locale, as velo-points found that one
         # session uploading several locales put screenshots in the wrong locale.
@@ -219,7 +260,7 @@ def upload_screenshots(credentials: tuple, dry_run: bool, locales: list[str], fo
         new = localization["id"].startswith("<")
         sets = [] if new else client.get(f"/v1/appStoreVersionLocalizations/{localization['id']}/appScreenshotSets")["data"]
         # The filter on the display type is not to be trusted, so the sets are chosen here.
-        sets = [each for each in sets if each["attributes"].get("screenshotDisplayType") == DISPLAY_TYPE]
+        sets = [each for each in sets if each["attributes"].get("screenshotDisplayType") == display_type]
         print(f"  {locale}: {len(shots[locale])} screenshots")
         if sets:
             set_id = sets[0]["id"]
@@ -227,7 +268,7 @@ def upload_screenshots(credentials: tuple, dry_run: bool, locales: list[str], fo
                 client.write("DELETE", f"/v1/appScreenshots/{old['id']}")
         else:
             made = client.write("POST", "/v1/appScreenshotSets", resource(
-                "appScreenshotSets", "", {"screenshotDisplayType": DISPLAY_TYPE},
+                "appScreenshotSets", "", {"screenshotDisplayType": display_type},
                 appStoreVersionLocalization=("appStoreVersionLocalizations", localization["id"]),
             ))
             set_id = made.get("data", {}).get("id", "<new set>")
@@ -240,7 +281,10 @@ def main() -> int:
     parser.add_argument("what", choices=("metadata", "screenshots", "all"))
     parser.add_argument("--dry-run", action="store_true", help="read App Store Connect and print the writes")
     parser.add_argument("--locale", choices=listing.LOCALES, help="only this locale's screenshots")
-    parser.add_argument("--screenshots", type=Path, default=SCREENSHOTS, help="a folder per locale of PNGs")
+    parser.add_argument("--device", choices=sorted(DEVICES), help="only this device's screenshots")
+    parser.add_argument(
+        "--screenshots", type=Path, default=SCREENSHOTS, help="a folder per device, then per locale, of PNGs"
+    )
     arguments = parser.parse_args()
 
     values = listing.read()
@@ -259,7 +303,8 @@ def main() -> int:
         upload_metadata(records, values, version)
     if arguments.what in ("screenshots", "all"):
         locales = [arguments.locale] if arguments.locale else list(listing.LOCALES)
-        upload_screenshots(credentials, arguments.dry_run, locales, arguments.screenshots)
+        devices = [arguments.device] if arguments.device else list(DEVICES)
+        upload_screenshots(credentials, arguments.dry_run, locales, devices, arguments.screenshots)
     return 0
 
 

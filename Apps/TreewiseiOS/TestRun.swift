@@ -13,7 +13,8 @@ import UniformTypeIdentifiers
 ///   `IMG_0042.jpg`, whose date is only in the
 ///   photo, for name proposals from a recognized and a typed pattern; and the template
 ///   `Household Year`, for Settings' Templates tab (ADR 0143).
-/// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders (`DemoTree`).
+/// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders and template
+///   (`DemoTree`).
 /// - `-TreewiseTestRemove <folder>`: removes a fixture folder before the locations are read.
 /// - `-TreewiseTestAppearance dark`: the app in dark mode, for the UI review's dark screens,
 ///   as the simulator does not pass a change of the device's appearance on to the app.
@@ -74,6 +75,7 @@ struct TestRun {
     func fixtureFolders() throws -> [URL] {
         #if DEBUG
             if UserDefaults.standard.bool(forKey: Self.demoArgument) {
+                try DemoTree.seedTemplate(in: templatesFolder)
                 return try DemoTree.make(in: folder)
             }
         #endif
@@ -122,9 +124,14 @@ struct TestRun {
         CGImageDestinationFinalize(destination)
     }
 
+    /// Where the run keeps its templates.
+    private var templatesFolder: URL {
+        folder.appendingPathComponent("Settings/Templates", isDirectory: true)
+    }
+
     /// The fixture's template, kept where the run's templates are, unless it is there.
     private func seedTemplate() throws {
-        let templates = folder.appendingPathComponent("Settings/Templates", isDirectory: true)
+        let templates = templatesFolder
         let file = templates.appendingPathComponent("household.json")
         guard !FileManager.default.fileExists(atPath: file.path) else { return }
         try FileManager.default.createDirectory(at: templates, withIntermediateDirectories: true)
