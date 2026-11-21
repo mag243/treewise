@@ -27,6 +27,16 @@
             return first?.language.languageCode?.identifier ?? "en"
         }
 
+        /// The folders Favorites shows, in `folder`'s tree: none the walk finds by name, as
+        /// a favorite's row has its folder's name.
+        static func favorites(in folder: URL) -> [URL] {
+            let language = language
+            return [invoices, travel, recipes].map {
+                folder.appendingPathComponent(documents.text(in: language))
+                    .appendingPathComponent($0.text(in: language))
+            }
+        }
+
         /// Three photos named by the day they were taken, the least a pattern is recognized
         /// from, and the camera's, in the summer's folder.
         static let summerPhotos: [Entry] = [

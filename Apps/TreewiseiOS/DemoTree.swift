@@ -51,6 +51,9 @@
         static let photos = Name(en: "Photos", nl: "Foto’s", de: "Fotos")
         static let work = Name(en: "Work", nl: "Werk", de: "Arbeit")
         static let archive = Name(en: "Archive", nl: "Archief", de: "Archiv")
+        static let invoices = Name(en: "Invoices", nl: "Facturen", de: "Rechnungen")
+        static let recipes = Name(en: "Recipes", nl: "Recepten", de: "Rezepte")
+        static let travel = Name(en: "Travel", nl: "Reizen", de: "Reisen")
         static let budget = Name(
             en: "Budget 2026.xlsx", nl: "Begroting 2026.xlsx", de: "Budget 2026.xlsx")
         static let lighthouse = Name(
@@ -69,13 +72,9 @@
                         en: "Tax return 2025.pdf", nl: "Belastingaangifte 2025.pdf",
                         de: "Steuererklärung 2025.pdf"),
                     age: 60 * day, bytes: 820 * kilobyte),
-                .folder(
-                    documents, Name(en: "Invoices", nl: "Facturen", de: "Rechnungen"), age: 3 * day),
-                .folder(
-                    documents, Name(en: "Recipes", nl: "Recepten", de: "Rezepte"), age: 21 * day),
-                .folder(
-                    documents, Name(en: "Travel", nl: "Reizen", de: "Reisen"),
-                    age: 1 * day + 5 * hour),
+                .folder(documents, invoices, age: 3 * day),
+                .folder(documents, recipes, age: 21 * day),
+                .folder(documents, travel, age: 1 * day + 5 * hour),
                 .file(documents, budget, age: 2 * hour, bytes: 48 * kilobyte),
                 .file(
                     documents,

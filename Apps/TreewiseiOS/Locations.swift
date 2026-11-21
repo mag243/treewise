@@ -161,12 +161,17 @@ final class Locations {
         await rebuildAll()
     }
 
-    /// Adds a UI test's fixture folders when its run has no locations yet (ADR 0114).
+    /// Adds a UI test's fixture folders, and its favorites, when its run has no locations yet
+    /// (ADR 0114).
     private func addFixtureIfEmpty() async {
         guard let testRun, await added.folders().isEmpty, await added.unavailable().isEmpty,
             let folders = try? testRun.fixtureFolders()
         else { return }
         for folder in folders { try? await added.add(folder) }
+        let favorites = testRun.fixtureFavorites()
+        if !favorites.isEmpty {
+            settings.favoriteFolders = favorites.map { FileItem.ID($0.standardizedFileURL.path) }
+        }
     }
 
     /// The item at `id` in the added folders as it is now, if it is in them.

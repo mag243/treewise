@@ -13,8 +13,8 @@ import UniformTypeIdentifiers
 ///   `IMG_0042.jpg`, whose date is only in the
 ///   photo, for name proposals from a recognized and a typed pattern; and the template
 ///   `Household Year`, for Settings' Templates tab (ADR 0143).
-/// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders and template
-///   (`DemoTree`).
+/// - `-TreewiseTestDemo YES`: instead, the App Store screenshots' folders, template and
+///   favorites (`DemoTree`).
 /// - `-TreewiseTestRemove <folder>`: removes a fixture folder before the locations are read.
 /// - `-TreewiseTestAppearance dark`: the app in dark mode, for the UI review's dark screens,
 ///   as the simulator does not pass a change of the device's appearance on to the app.
@@ -66,6 +66,16 @@ struct TestRun {
         #else
             return nil
         #endif
+    }
+
+    /// The folders Favorites shows from the start: the demo's, when the launch asks for it.
+    func fixtureFavorites() -> [URL] {
+        #if DEBUG
+            if UserDefaults.standard.bool(forKey: Self.demoArgument) {
+                return DemoTree.favorites(in: folder)
+            }
+        #endif
+        return []
     }
 
     /// Where the run keeps its bookmarks.
