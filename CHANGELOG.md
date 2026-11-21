@@ -6,7 +6,7 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
-## [0.9.4] - 2026-11-20
+## [0.9.4] - 2026-11-21
 
 Your folder settings, patterns and templates on every Mac.
 
