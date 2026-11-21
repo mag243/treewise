@@ -8,6 +8,11 @@ import TreewiseUI
 @MainActor
 enum SyncWatcher {
     private static var presenters: [FolderPresenter] = []
+    /// The readings asked for, a burst of a provider's notices read as one more.
+    private static let refreshes = CoalescedWork {
+        await AppServices.sync.refresh()
+        await FolderTemplatesService.templates.load()
+    }
 
     /// Starts the sync over the cloud locations of the sidebar (ADR 0049).
     static func start() {
@@ -27,8 +32,7 @@ enum SyncWatcher {
     /// The templates' list is read again too, as a template may have come from another
     /// device; New Folders from Template ▸, a menu, cannot wait for the drives.
     static func refresh() async {
-        await AppServices.sync.refresh()
-        await FolderTemplatesService.templates.load()
+        await refreshes.request()
     }
 
     private static func watch(_ drives: [URL]) {

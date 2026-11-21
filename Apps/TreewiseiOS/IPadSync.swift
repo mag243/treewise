@@ -26,6 +26,11 @@ enum IPadSync {
     /// The cloud locations, root or not, for Settings' General tab.
     private(set) static var cloudLocations: [Drive] = []
     private static var presenters: [FolderPresenter] = []
+    /// The readings asked for, a burst of a provider's notices read as one more.
+    private static let refreshes = CoalescedWork {
+        await controller?.refresh()
+        await NameServices.templateList.load()
+    }
 
     /// Starts syncing through `folders`' drive roots with `settings`, or changes the drives.
     static func start(settings: BrowserSettings, folders: [URL], names: [URL: String]) async {
@@ -77,8 +82,7 @@ enum IPadSync {
 
     /// Reads the drives again and the templates after, as a template may have come.
     static func refresh() async {
-        await controller?.refresh()
-        await NameServices.templateList.load()
+        await refreshes.request()
     }
 
     /// Stops watching while the app is in the background, as iOS asks of file presenters.
