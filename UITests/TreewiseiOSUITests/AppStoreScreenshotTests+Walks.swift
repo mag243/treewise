@@ -72,17 +72,13 @@ extension AppStoreScreenshotTests {
         app.terminate()
     }
 
-    /// The iPhone Duo folded shut, its outer display as an iPhone: the folder, two files
-    /// selected and Rename with Suggestions. No menu is shown open: on iOS 27.2 a menu there
-    /// brings the keyboard up with it.
+    /// The iPhone Duo folded shut, its outer display as an iPhone: the folder, selecting with
+    /// Actions and Rename with Suggestions.
     @MainActor
     func walkDuoOuter(_ language: Language) {
         var app = open(language)
         keep("01-folder", of: language)
-        startSelecting(in: app, language: language)
-        row(language.nearTop, in: app).tap()
-        row(language.budget, in: app).tap()
-        keep("02-selecting", of: language)
+        keepActions("02-actions", in: app, language: language)
         app.terminate()
 
         app = open(language)
@@ -106,6 +102,7 @@ extension AppStoreScreenshotTests {
 
         app = open(language)
         perform(language.title("Copy"), on: language.budget, in: app, language: language)
+        toolbarButton(language.title("Done"), in: app).tap()
         row(language.archive, in: app).tap()
         XCTAssertTrue(
             app.staticTexts.matching(

@@ -48,31 +48,25 @@ extension AppStoreScreenshotTests {
         startSelecting(in: app, language: language)
         row(language.nearTop, in: app).tap()
         row(language.budget, in: app).tap()
-        XCTAssertFalse(app.keyboards.firstMatch.exists, "no keyboard over the folder")
         actionsButton(in: app, language: language).tap()
         XCTAssertTrue(
             app.buttons[language.title("Copy")].firstMatch.waitForExistence(
                 timeout: Self.timeout), "the Actions menu")
+        XCTAssertFalse(app.keyboards.firstMatch.exists, "no keyboard with the menu")
         keep(name, of: language)
     }
 
     /// Performs a row's command through Select and the Actions menu; selecting goes on
-    /// until the caller ends it. On the Duo the row's context menu, with the same commands:
-    /// on iOS 27.2 Actions brings the keyboard up on the outer display and does not open
-    /// when tapped on the inner one.
+    /// until the caller ends it.
     @MainActor
     func perform(
         _ command: String, on name: String, in app: XCUIApplication, language: Language
     ) {
+        startSelecting(in: app, language: language)
         let item = row(name, in: app)
         XCTAssertTrue(item.waitForExistence(timeout: Self.timeout))
-        if Device.current == .duoOuter || Device.current == .duoInner {
-            item.press(forDuration: Self.longPress)
-        } else {
-            startSelecting(in: app, language: language)
-            item.tap()
-            actionsButton(in: app, language: language).tap()
-        }
+        item.tap()
+        actionsButton(in: app, language: language).tap()
         // Copy has two Dutch titles, the app's and the shared commands'.
         let titles = command == "Kopieer" ? [command, "Kopiëren"] : [command]
         let entry = app.buttons.matching(NSPredicate(format: "label IN %@", titles)).firstMatch
@@ -82,7 +76,7 @@ extension AppStoreScreenshotTests {
 
     /// Select, from the folder's one menu where the folder shows as on the iPhone.
     @MainActor
-    func startSelecting(in app: XCUIApplication, language: Language) {
+    private func startSelecting(in app: XCUIApplication, language: Language) {
         if Device.current.isCompact {
             app.buttons["moreMenu"].firstMatch.tap()
             app.buttons[language.title("Select")].firstMatch.tap()
