@@ -37,26 +37,27 @@
             }
         }
 
-        /// Three photos named by the day they were taken, the least a pattern is recognized
-        /// from, and the camera's, in the summer's folder.
+        /// Three photos named by the day they were taken and the place, the least a pattern
+        /// is recognized from, and the camera's, in the summer's folder: the place is the
+        /// same in each, so the suggestion is a whole name.
         static let summerPhotos: [Entry] = [
             .photo(
                 photos, summer,
                 Name(
-                    en: "2026-07-12 Beach.jpg", nl: "2026-07-12 Strand.jpg",
-                    de: "2026-07-12 Strand.jpg"),
+                    en: "2026-07-12 Cornwall.jpg", nl: "2026-07-12 Texel.jpg",
+                    de: "2026-07-12 Sylt.jpg"),
                 age: 131 * oneDay, captured: "2026:07:12 10:42:00"),
             .photo(
                 photos, summer,
                 Name(
-                    en: "2026-07-13 Dunes.jpg", nl: "2026-07-13 Duinen.jpg",
-                    de: "2026-07-13 Dünen.jpg"),
+                    en: "2026-07-13 Cornwall.jpg", nl: "2026-07-13 Texel.jpg",
+                    de: "2026-07-13 Sylt.jpg"),
                 age: 130 * oneDay, captured: "2026:07:13 17:05:00"),
             .photo(
                 photos, summer,
                 Name(
-                    en: "2026-07-14 Harbour.jpg", nl: "2026-07-14 Haven.jpg",
-                    de: "2026-07-14 Hafen.jpg"),
+                    en: "2026-07-14 Cornwall.jpg", nl: "2026-07-14 Texel.jpg",
+                    de: "2026-07-14 Sylt.jpg"),
                 age: 129 * oneDay, captured: "2026:07:14 09:18:00"),
             .photo(photos, summer, cameraPhoto, age: 128 * oneDay, captured: "2026:07:15 19:36:00"),
         ]
