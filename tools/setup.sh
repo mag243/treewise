@@ -4,7 +4,9 @@
 # Verifies, at the versions pinned in tools/versions.env:
 #   - Xcode (selected with xcode-select, first launch done), with Swift and swift-format
 # Installs:
-#   - bash, shellcheck, swiftlint, xcbeautify (via Homebrew)
+#   - bash, shellcheck, swiftlint, xcbeautify (via Homebrew), and duoctl (from the
+#     skarol/tap tap, not with --no-simulator), which folds the iPhone Duo simulator
+#     (ADR 0145)
 #   - the iOS Simulator runtime and the test simulator the iOS tests run on
 # and configures git to use the hooks in tools/git-hooks.
 #
@@ -66,6 +68,15 @@ tool_version() {
     shellcheck) shellcheck --version 2>/dev/null | sed -n 's/^version: //p' ;;
     swiftlint) swiftlint version 2>/dev/null ;;
     xcbeautify) xcbeautify --version 2>/dev/null ;;
+    duoctl) brew list --versions duoctl 2>/dev/null | awk '{ print $2 }' ;;
+  esac
+}
+
+# Prints the name Homebrew installs a tool by: a tap's formula with the tap before it.
+homebrew_formula() {
+  case "$1" in
+    duoctl) echo "skarol/tap/duoctl" ;;
+    *) echo "$1" ;;
   esac
 }
 
@@ -73,12 +84,15 @@ install_homebrew_tools() {
   step "Command-line tools (Homebrew)"
   has brew || fail "Homebrew missing. Install it from https://brew.sh, then run this script again."
   local pkg minimum version
-  for pkg in bash shellcheck swiftlint xcbeautify; do
+  local pkgs=(bash shellcheck swiftlint xcbeautify)
+  # duoctl only works the simulators, which --no-simulator leaves alone, as on CI.
+  ((WITH_SIMULATOR)) && pkgs+=(duoctl)
+  for pkg in "${pkgs[@]}"; do
     if brew list --formula "$pkg" >/dev/null 2>&1; then
       ok "$pkg"
     else
       info "Installing $pkg"
-      brew install "$pkg"
+      brew install "$(homebrew_formula "$pkg")"
       ok "$pkg (installed)"
     fi
     case "$pkg" in
@@ -86,10 +100,11 @@ install_homebrew_tools() {
       shellcheck) minimum="$SHELLCHECK_MIN_VERSION" ;;
       swiftlint) minimum="$SWIFTLINT_MIN_VERSION" ;;
       xcbeautify) minimum="$XCBEAUTIFY_MIN_VERSION" ;;
+      duoctl) minimum="$DUOCTL_MIN_VERSION" ;;
     esac
     version="$(tool_version "$pkg")"
     if [[ -z "$version" ]] || ! version_at_least "$version" "$minimum"; then
-      fail "$pkg ${version:-?} is older than $minimum. Run: brew upgrade $pkg"
+      fail "$pkg ${version:-?} is older than $minimum. Run: brew upgrade $(homebrew_formula "$pkg")"
     fi
   done
 }
