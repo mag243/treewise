@@ -33,9 +33,20 @@ public enum TemplateDeriver {
             return nil
         }
         let field = "{date:\(best.format.template)}"
+        if let whole = sharedWhole(best.rests, of: stems.count) {
+            return "\(field) \(withFolder(whole, folderName))"
+        }
         return shared(best.rests, of: stems.count).map {
             "\(field) \(withFolder($0, folderName))\(separator){text}"
         } ?? "\(field) {text}"
+    }
+
+    /// The whole text after the date, shared by enough of all the names that it is
+    /// recognized as fixed text (ADR 0067), in names that have no more parts after it.
+    private static func sharedWhole(_ rests: [String], of names: Int) -> String? {
+        let wholes = rests.filter { !$0.isEmpty && !$0.contains(separator) }
+        let counts = Dictionary(wholes.map { ($0, 1) }, uniquingKeysWith: +)
+        return counts.first { PatternFit.isRecognized(fits: $0.value, of: names) }?.key
     }
 
     /// The first part that the pattern can name, shared by enough of all the names that it

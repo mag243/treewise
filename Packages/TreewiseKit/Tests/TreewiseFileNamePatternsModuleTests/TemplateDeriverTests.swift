@@ -120,6 +120,24 @@ import TreewiseFileNamePatternsModule
         #expect(derive(names) == "{date:yyyy.MM.dd} Taxes - {text}")
     }
 
+    @Test func keepsTheTextAfterTheDateThatEveryNameShares() {
+        let names = ["2026-07-12 Texel.jpg", "2026-07-13 Texel.jpg", "2026-07-14 Texel.jpg"]
+        #expect(derive(names, folder: "Summer 2026") == "{date:yyyy-MM-dd} Texel")
+    }
+
+    @Test func keepsTheTextAfterTheDateThatAMajorityShares() {
+        let names = [
+            "2026-07-12 Texel.jpg", "2026-07-13 Texel.jpg", "2026-07-14 Texel.jpg",
+            "2026-07-15 Vlieland.jpg",
+        ]
+        #expect(derive(names, folder: "Summer 2026") == "{date:yyyy-MM-dd} Texel")
+    }
+
+    @Test func theFolderAfterTheDateIsTheFolder() {
+        let names = ["2026-07-12 Texel.jpg", "2026-07-13 Texel.jpg", "2026-07-14 Texel.jpg"]
+        #expect(derive(names, folder: "Texel") == "{date:yyyy-MM-dd} {folder}")
+    }
+
     @Test func ignoresExtensionsWhenLooking() {
         #expect(derive(["Scan 1.pdf", "Scan 2.PNG", "Scan 3"]) == "Scan {seq}")
     }
