@@ -6,6 +6,16 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-21
+
+Treewise on the iPad, the iPhone and the iPhone Duo.
+
+### New
+- **Treewise for iPad, iPhone and iPhone Duo** in the App Store: the same folders, drag and drop, cut and paste, name suggestions and folder structure templates as on the Mac, with your settings shared through your cloud drives. On the iPhone the folder shows as a list; on the iPhone Duo, opened, as a table beside the sidebar.
+
+### Improved
+- **Whole names suggested:** when the files in a folder have the same text after their date, as `2026-07-12 Texel` and `2026-07-13 Texel`, Suggest Names and Rename with Suggestions now propose that text too, as `2026-07-15 Texel`, instead of leaving a part for you to fill in.
+
 ## [0.9.4] - 2026-11-21
 
 Your folder settings, patterns and templates on every Mac.
