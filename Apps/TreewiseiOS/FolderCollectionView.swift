@@ -17,8 +17,23 @@ final class FolderCollectionView: UICollectionView {
 
     override var canBecomeFirstResponder: Bool { true }
 
+    /// The list takes no typing, so it has an input view of its own with nothing in it: on
+    /// iOS 27 a menu that opens brings up the first responder's input view, which is the
+    /// keyboard unless the responder has one.
+    override var inputView: UIView? {
+        if #available(iOS 27, *) { return noInput }
+        return super.inputView
+    }
+
+    private lazy var noInput = UIView(frame: .zero)
+
     override func didMoveToWindow() {
         super.didMoveToWindow()
+        if #available(iOS 27, *) {
+            // Nor the bar of shortcuts an iPad shows above an input view.
+            inputAssistantItem.leadingBarButtonGroups = []
+            inputAssistantItem.trailingBarButtonGroups = []
+        }
         if window != nil { becomeFirstResponder() }
     }
 
