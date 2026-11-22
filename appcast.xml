@@ -3,6 +3,22 @@
     <channel>
         <title>Treewise</title>
         <item>
+            <title>1.0.0</title>
+            <pubDate>Sun, 22 Nov 2026 13:39:41 +0100</pubDate>
+            <sparkle:version>2026.1122.133702</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[Treewise on the iPad, the iPhone and the iPhone Duo.
+
+### New
+- **Treewise for iPad, iPhone and iPhone Duo** in the App Store: the same folders, drag and drop, cut and paste, name suggestions and folder structure templates as on the Mac, with your settings shared through your cloud drives. On the iPhone the folder shows as a list; on the iPhone Duo, opened, as a table beside the sidebar.
+
+### Improved
+- **Whole names suggested:** when the files in a folder have the same text after their date, as `2026-07-12 Texel` and `2026-07-13 Texel`, Suggest Names and Rename with Suggestions now propose that text too, as `2026-07-15 Texel`, instead of leaving a part for you to fill in.
+]]></description>
+            <enclosure url="https://github.com/mag243/treewise/releases/download/v1.0.0/Treewise-1.0.0-2026.1122.133702.zip" length="7002004" type="application/octet-stream" sparkle:edSignature="FvOYjbbVQliE1WpYVJhNmQvIQVxhdAvBID+EWsCGxVEPSD2JscaKfryHAYDYzdROcto+3ecbaqnainv+0qboCA=="/>
+        </item>
+        <item>
             <title>0.9.4</title>
             <pubDate>Sat, 21 Nov 2026 10:03:28 +0100</pubDate>
             <sparkle:version>2026.1121.100102</sparkle:version>
@@ -202,20 +218,6 @@
 - A file name with a dot but no extension, like `2026.04.28 Permit`, gets `copy` at its end when a name is taken.
 ]]></description>
             <enclosure url="https://github.com/mag243/treewise/releases/download/v0.6.0/Treewise-0.6.0-2026.1109.123102.zip" length="4545927" type="application/octet-stream" sparkle:edSignature="CKu8dcdfR1lTDHTi44aztbQLD1xn+AzetrgsVM7wAn2yPoCJ8oZJIx4OEgSap0b0H9R2vqq7MfAz7ZTv/jmGAg=="/>
-        </item>
-        <item>
-            <title>0.5.3</title>
-            <pubDate>Thu, 05 Nov 2026 15:53:54 +0100</pubDate>
-            <sparkle:version>2026.1105.155201</sparkle:version>
-            <sparkle:shortVersionString>0.5.3</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### Added
-- About Treewise links to the website and to the source code, which is now open under the Mozilla Public License 2.0.
-
-### Changed
-- Downloads and updates now come from the `mag243/treewise` repository.
-]]></description>
-            <enclosure url="https://github.com/mag243/treewise/releases/download/v0.5.3/Treewise-0.5.3-2026.1105.155201.zip" length="2627633" type="application/octet-stream" sparkle:edSignature="SjrvzmiC/BPAknDqzcOBI85HWUE/CrpVGPQZvVymHG4F7hXpQgvKYldyTn4klCPTqs6iOPp2NewOSEW3lwmiDw=="/>
         </item>
     </channel>
 </rss>
