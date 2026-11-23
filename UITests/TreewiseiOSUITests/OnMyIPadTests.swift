@@ -17,8 +17,7 @@ final class OnMyIPadTests: XCTestCase {
         let trashed = "Trash \(UUID().uuidString.prefix(8))"
         makeFolder(trashed, in: app)
 
-        row(trashed, in: app).press(forDuration: 1)
-        app.buttons["Move to Trash"].firstMatch.tap()
+        moveToTrash(trashed, in: app)
 
         XCTAssertTrue(
             app.eventually { !self.row(trashed, in: app).exists },
@@ -26,6 +25,16 @@ final class OnMyIPadTests: XCTestCase {
         let next = "Next \(UUID().uuidString.prefix(8))"
         makeFolder(next, in: app)
         XCTAssertTrue(row(next, in: app).waitForExistence(timeout: Self.timeout), "it runs")
+
+        // On My iPad outlives the test: the folder it made goes to the Trash too.
+        moveToTrash(next, in: app)
+        XCTAssertTrue(app.eventually { !self.row(next, in: app).exists }, "cleaned up")
+    }
+
+    @MainActor
+    private func moveToTrash(_ name: String, in app: XCUIApplication) {
+        row(name, in: app).press(forDuration: 1)
+        app.buttons["Move to Trash"].firstMatch.tap()
     }
 
     /// Adds On My iPad itself as a location through the picker, and opens it.
