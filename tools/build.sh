@@ -23,7 +23,8 @@
 #               the Simulator app first, to watch; `--11inch` runs them on the UI review's
 #               smaller iPad on the newest iOS instead, and `--iphone` runs the iPhone's
 #               UI tests (IPhoneTests) on the pinned iPhone (ADR 0132), and `--duo` the
-#               iPhone Duo's (DuoTests) on the pinned Duo (ADR 0133).
+#               iPhone Duo's (DuoTests) on the pinned Duo (ADR 0133); `--ios 26.5` on the
+#               review's iPad on that iOS, made the first time from an installed runtime.
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
 #               on the pinned iPad, a smaller one on the newest iOS and the iPhone (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
@@ -570,6 +571,19 @@ ipad_simulator() {
   echo "$udid"
 }
 
+# The name of a simulator of the review's iPad on iOS [1], made when there is none; the
+# runtime must be installed (Xcode > Settings > Components).
+ios_simulator_on() {
+  local os="$1" name="$IOS_REVIEW_SIMULATOR_DEVICE_TYPE on iOS $1" runtime
+  if [[ -z "$(ios_simulator_udid "Treewise $name")" ]]; then
+    runtime="$(ios_runtime_id "$os")"
+    [[ -n "$runtime" ]] || fail "No iOS $os runtime: install it from Xcode > Settings > Components."
+    xcrun simctl create "Treewise $name" "$IOS_REVIEW_SIMULATOR_DEVICE_TYPE" "$runtime" >/dev/null \
+      || fail "Could not create a simulator on iOS $os."
+  fi
+  echo "Treewise $name"
+}
+
 # The iPad app's UI tests on the pinned simulator (ADR 0114), or only those of the filter,
 # as Class or Class/testName separated by commas; --show first opens the Simulator app, and
 # --11inch runs them on the UI review's smaller iPad on the newest iOS, --iphone runs the
@@ -577,7 +591,7 @@ ipad_simulator() {
 # (DuoTests, ADR 0133) on the pinned Duo; the iPads' runs skip both.
 cmd_iosuitest() {
   local show="" filter="" name="$IOS_SIMULATOR_NAME" os="$IOS_SIMULATOR_OS" only=() tests=()
-  local word test skip=(-skip-testing:"$IPHONE_TESTS" -skip-testing:"$DUO_TESTS")
+  local word test other="" skip=(-skip-testing:"$IPHONE_TESTS" -skip-testing:"$DUO_TESTS")
   for word in "$@"; do
     case "$word" in
       --show) show=--show ;;
@@ -590,9 +604,16 @@ cmd_iosuitest() {
         name="$IOS_DUO_SIMULATOR_NAME" os="$IOS_DUO_SIMULATOR_OS"
         skip=() filter="${filter:-DuoTests}"
         ;;
-      *) filter="$word" ;;
+      --ios) other=next ;;
+      *)
+        if [[ "$other" == next ]]; then other="$word"; else filter="$word"; fi
+        ;;
     esac
   done
+  if [[ -n "$other" ]]; then
+    [[ "$other" != next ]] || fail "--ios takes an iOS version, such as 26.5."
+    name="$(ios_simulator_on "$other")" os="$other"
+  fi
   step "iPad app UI tests${filter:+ ($filter)} on $name"
   require_project
   local udid; udid="$(ipad_simulator "$show" "$name")"

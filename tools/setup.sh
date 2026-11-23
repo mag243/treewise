@@ -109,12 +109,6 @@ install_homebrew_tools() {
   done
 }
 
-# Prints the identifier of the installed iOS runtime for version [1], or nothing.
-ios_runtime_id() {
-  xcrun simctl list runtimes available 2>/dev/null |
-    grep -E "^iOS ${1//./\\.} " |
-    grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9]+(-[0-9]+)*$' | head -n 1 || true
-}
 
 # The runtime of identifier [1] when it is installed and available.
 ios_own_runtime() {

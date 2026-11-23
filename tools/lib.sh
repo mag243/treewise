@@ -57,6 +57,13 @@ ios_simulator_udid() {
     grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}' | head -n 1 || true
 }
 
+# Prints the identifier of the installed iOS runtime for version [1], or nothing.
+ios_runtime_id() {
+  xcrun simctl list runtimes available 2>/dev/null |
+    grep -E "^iOS ${1//./\\.} " |
+    grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9]+(-[0-9]+)*$' | head -n 1 || true
+}
+
 # The virtual environment that holds dmgbuild (ADR 0034); Homebrew's Python
 # refuses packages installed system-wide.
 DMGBUILD_ENV="$BUILD_DIR/tools/dmgbuild"
