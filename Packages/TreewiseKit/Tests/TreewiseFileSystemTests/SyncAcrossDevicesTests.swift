@@ -54,6 +54,37 @@ import TreewiseTestSupport
         #expect(await mac.folders.settings(forFolderAt: folder) == nil)
     }
 
+    @Test(arguments: [true, false])
+    func aTemplateDeletedStaysDeletedOnBoth(onTheDeviceThatMadeIt: Bool) async throws {
+        let pair = try SyncTestPair.make()
+        let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)
+        _ = await mac.session.start(drives: [drive.url], patterns: nil)
+        _ = await ipad.session.start(drives: [drive.url], patterns: nil)
+        let template = FolderTemplate(
+            id: "t1", name: "Year",
+            root: FolderTree(name: "{year}", folders: [FolderTree(name: "Tax")]))
+        try await mac.templates.save(template)
+        await mac.session.settle()
+        await ipad.session.refresh()
+        await ipad.session.settle()
+        #expect(await ipad.templates.templates().map(\.id) == ["t1"])
+
+        mac.clock.advance()
+        let deleting = onTheDeviceThatMadeIt ? mac : ipad
+        try await deleting.templates.delete(id: "t1")
+        await deleting.session.settle()
+        for _ in 1...3 {
+            mac.clock.advance()
+            await mac.session.refresh()
+            await mac.session.settle()
+            await ipad.session.refresh()
+            await ipad.session.settle()
+        }
+
+        #expect(await mac.templates.templates().isEmpty, "gone on the Mac")
+        #expect(await ipad.templates.templates().isEmpty, "gone on the iPad")
+    }
+
     @Test func changesOnBothAtOnceKeepTheNewerAndMakeNoConflictFile() async throws {
         let pair = try SyncTestPair.make()
         let (mac, ipad, drive) = (pair.mac, pair.ipad, pair.drive)

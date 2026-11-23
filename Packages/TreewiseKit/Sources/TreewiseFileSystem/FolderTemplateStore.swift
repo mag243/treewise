@@ -5,17 +5,34 @@ import os
 /// Keeps folder structure templates in Treewise's own folder, one JSON file each, named by
 /// the template's id (ADR 0091, ADR 0097). A deleted template's file goes to the Trash, as
 /// any deleted file does in Treewise (ADR 0004), so it can still be imported from there.
+/// Where Treewise's own folder has no Trash, as on the iPad, it goes to a folder of the
+/// store's own beside it, out of the user's sight, until `emptyDeleted()` at the next start;
+/// Undo brings it back from either.
 public actor FolderTemplateStore: FolderTemplateStoring {
     private static let logger = Logger(
         subsystem: LogSubsystem.name, category: "FolderTemplateStore")
 
     private let directory: URL
+    /// Where a deleted template's file is kept where there is no Trash.
+    private let deletedDirectory: URL
+    /// Puts a file in the Trash and says where.
+    private let trash: @Sendable (FileItem.ID) throws -> TrashedItem
     /// Where what the user changes is told, in order, for a sync to record (ADR 0144).
     var notices: NoticeLine<FolderTemplateNotice>?
 
-    /// Creates a store that keeps its files in `directory`, made when the first is saved.
-    public init(directory: URL) {
+    /// Creates a store that keeps its files in `directory`, made when the first is saved, and
+    /// puts a deleted one in the Trash with `trash`, or beside `directory` where that has no
+    /// Trash.
+    public init(
+        directory: URL,
+        trash: @escaping @Sendable (FileItem.ID) throws -> TrashedItem = {
+            try TrashService().trash($0)
+        }
+    ) {
         self.directory = directory
+        deletedDirectory = directory.deletingLastPathComponent()
+            .appendingPathComponent("Deleted Templates", isDirectory: true)
+        self.trash = trash
     }
 
     /// The folder Treewise keeps templates in by default.
@@ -53,14 +70,42 @@ public actor FolderTemplateStore: FolderTemplateStoring {
         notices?.tell(.saved(template, before: before))
     }
 
-    /// Puts the file of the template with this id in the Trash, and says where, so Undo can
-    /// bring it back.
+    /// Puts the file of the template with this id in the Trash, or in the store's own folder
+    /// where there is no Trash, and says where, so Undo can bring it back.
     @discardableResult
     public func delete(id: String) throws -> TrashedItem {
         let before = notices == nil ? nil : Self.read(file(of: id))
-        let trashed = try TrashService().trash(FileItem.ID(file(of: id).path))
+        let original = FileItem.ID(file(of: id).path)
+        let trashed: TrashedItem
+        do {
+            trashed = try trash(original)
+        } catch FileSystemError.trashUnavailable {
+            trashed = try keepDeleted(original, id: id)
+        }
         notices?.tell(.deleted(id: id, before: before))
         return trashed
+    }
+
+    /// Moves a deleted template's file into the store's own folder for deleted ones, under a
+    /// name of its own, as the Trash would.
+    private func keepDeleted(_ original: FileItem.ID, id: String) throws -> TrashedItem {
+        let kept = deletedDirectory.appendingPathComponent(
+            "\(id) \(UUID().uuidString).\(FolderTemplateFile.pathExtension)")
+        try FileManager.default.createDirectory(
+            at: deletedDirectory, withIntermediateDirectories: true)
+        try FileManager.default.moveItem(at: file(of: id), to: kept)
+        return TrashedItem(trashID: FileItem.ID(kept.path), originalID: original)
+    }
+
+    /// Removes the templates deleted where there was no Trash: Treewise's own copies, kept
+    /// only for Undo, which does not outlast the app; no file of the user's (ADR 0004).
+    public func emptyDeleted() {
+        guard FileManager.default.fileExists(atPath: deletedDirectory.path) else { return }
+        do {
+            try FileManager.default.removeItem(at: deletedDirectory)
+        } catch {
+            Self.logger.error("Deleted templates not emptied: \(error.localizedDescription)")
+        }
     }
 
     /// Brings back a template's file that `delete(id:)` put in the Trash.

@@ -33,12 +33,48 @@ final class TemplatesSettingsTests: XCTestCase {
             "its tree shows")
     }
 
+    /// Replaces the file a run before left where the exporter saves: the app asks on iOS 18,
+    /// SpringBoard on iOS 27.
+    @MainActor
+    private func replaceAFileLeftThere(in app: XCUIApplication) {
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let replace = app.buttons["Replace"].firstMatch
+        let replaceThere = springboard.alerts.buttons["Replace"].firstMatch
+        if replace.waitForExistence(timeout: 2) {
+            replace.tap()
+        } else if replaceThere.exists {
+            replaceThere.tap()
+        }
+    }
+
     @MainActor
     private func openTemplatesTab(in app: XCUIApplication) {
         app.buttons["settings"].firstMatch.tap()
         let tab = app.buttons["Templates"].firstMatch
         XCTAssertTrue(tab.waitForExistence(timeout: Self.timeout), "Settings has a Templates tab")
         tab.tap()
+    }
+
+    /// Deleting a template from the list deletes it, also where Treewise's own folder has no
+    /// Trash, as on the iPad: it stays gone when the list is read again.
+    @MainActor
+    func testATemplateSwipedAwayStaysDeleted() {
+        let app = launch(state: UUID().uuidString)
+        XCTAssertTrue(
+            sidebar(of: app).staticTexts["Documents"].waitForExistence(timeout: Self.timeout))
+        openTemplatesTab(in: app)
+        let template = app.staticTexts["Household Year"].firstMatch
+        XCTAssertTrue(template.waitForExistence(timeout: Self.timeout), "the template is listed")
+
+        swipeLeft(template)
+        let delete = app.buttons["Delete"].firstMatch
+        if delete.waitForExistence(timeout: 2) { delete.tap() }
+        XCTAssertTrue(app.eventually { !template.exists }, "deleted")
+        app.buttons["General"].firstMatch.tap()
+        app.buttons["Templates"].firstMatch.tap()
+
+        XCTAssertTrue(app.staticTexts["No Templates"].waitForExistence(timeout: Self.timeout))
+        XCTAssertFalse(template.exists, "still deleted when the list is read again")
     }
 
     @MainActor
@@ -105,8 +141,7 @@ final class TemplatesSettingsTests: XCTestCase {
         }
         XCTAssertTrue(move.waitForExistence(timeout: Self.timeout), "the exporter opens")
         move.tap()
-        let replace = app.buttons["Replace"].firstMatch
-        if replace.waitForExistence(timeout: 2) { replace.tap() }
+        replaceAFileLeftThere(in: app)
         XCTAssertTrue(app.eventually { !move.exists }, "the exporter closes")
         app.navigationBars["Household Year"].buttons["Templates"].tap()
         let more = app.buttons["templatesMore"].firstMatch

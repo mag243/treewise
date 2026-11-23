@@ -55,6 +55,46 @@ import TreewiseTestSupport
         #expect(await store.templates() == [Self.client, Self.year])
     }
 
+    /// Where Treewise's own folder has no Trash, as on the iPad, a deleted template's file
+    /// is kept in a folder of the store's own until the next start, for Undo.
+    @Test func deletesATemplateWhereThereIsNoTrashAndBringsItBack() async throws {
+        let store = FolderTemplateStore(
+            directory: root.url("Templates"),
+            trash: { throw FileSystemError.trashUnavailable($0) })
+        try await store.save(Self.year)
+        try await store.save(Self.client)
+
+        let trashed = try await store.delete(id: "year")
+
+        #expect(await store.templates() == [Self.client])
+        try await store.restore(trashed)
+        #expect(await store.templates() == [Self.client, Self.year])
+    }
+
+    @Test func emptiesTheTemplatesDeletedWhereThereIsNoTrash() async throws {
+        let store = FolderTemplateStore(
+            directory: root.url("Templates"),
+            trash: { throw FileSystemError.trashUnavailable($0) })
+        try await store.save(Self.year)
+        try await store.save(Self.client)
+        let trashed = try await store.delete(id: "year")
+
+        await store.emptyDeleted()
+
+        #expect(!FileManager.default.fileExists(atPath: trashed.trashID.rawValue))
+        #expect(await store.templates() == [Self.client], "the templates kept stay")
+    }
+
+    /// The same on a system whose temporary folder has no Trash, the iOS simulator.
+    @Test(.disabled(if: TrashAvailability.inTemporaryDirectory, "needs a place without a Trash"))
+    func deletesATemplateWithoutATrashOnThisSystem() async throws {
+        try await store.save(Self.year)
+        let trashed = try await store.delete(id: "year")
+        #expect(await store.templates().isEmpty)
+        try await store.restore(trashed)
+        #expect(await store.templates() == [Self.year])
+    }
+
     @Test func skipsAFileThatIsNoTemplate() async throws {
         try await store.save(Self.year)
         _ = try root.makeFile("Templates/broken.json", contents: "not json")

@@ -14,6 +14,8 @@ struct TemplatesSettings: View {
     /// A template the file holds that is here already, for Replace or Keep Both (ADR 0141).
     @State private var sameTemplate: (here: FolderTemplate, file: FolderTemplate)?
     @State private var isShowingProblem = false
+    /// Why the template could not be deleted or duplicated, while it is shown.
+    @State private var changeProblem: String?
 
     var body: some View {
         List {
@@ -24,11 +26,20 @@ struct TemplatesSettings: View {
                     row(template)
                 }
                 .swipeActions {
-                    Button("Delete", role: .destructive) {
-                        Task { await model.delete(template.id, undoManager: undoManager) }
+                    // Red, without the destructive role, with which SwiftUI takes the row
+                    // away itself before the template is deleted; it goes once it is.
+                    Button("Delete") {
+                        Task {
+                            await model.delete(template.id, undoManager: undoManager)
+                            changeProblem = model.problem.map(TemplateProblemText.text(for:))
+                        }
                     }
+                    .tint(.red)
                     Button("Duplicate") {
-                        Task { await model.duplicate(template.id, undoManager: undoManager) }
+                        Task {
+                            await model.duplicate(template.id, undoManager: undoManager)
+                            changeProblem = model.problem.map(TemplateProblemText.text(for:))
+                        }
                     }
                 }
             }
@@ -72,6 +83,13 @@ struct TemplatesSettings: View {
             Text("Replace it with the version in the file, or keep both?")
         }
         .alert(String(localized: "The file is no template"), isPresented: $isShowingProblem) {
+            Button("OK", role: .cancel) {}
+        }
+        .alert(
+            changeProblem ?? "",
+            isPresented: Binding(
+                get: { changeProblem != nil }, set: { if !$0 { changeProblem = nil } })
+        ) {
             Button("OK", role: .cancel) {}
         }
         .task { await model.load() }

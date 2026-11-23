@@ -5,6 +5,12 @@ struct TreewiseiOSApp: App {
     @State private var locations = Locations()
     @Environment(\.scenePhase) private var scenePhase
 
+    init() {
+        // The templates deleted where there is no Trash were kept for Undo, which does not
+        // outlast the app.
+        Task { await NameServices.templates.emptyDeleted() }
+    }
+
     var body: some Scene {
         // Every window presents a request of its own, which iPadOS keeps with the window
         // to restore it; a window the system opens gets a new one (ADR 0134).
