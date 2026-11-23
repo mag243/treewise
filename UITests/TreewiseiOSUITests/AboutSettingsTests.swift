@@ -27,7 +27,9 @@ final class AboutSettingsTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(version.exists, "its version")
         for link in ["Website", "GitHub", "Privacy"] {
-            XCTAssertTrue(app.buttons[link].exists, "a link to the \(link) page")
+            // A link on iOS 27, a button on iOS 18.
+            XCTAssertTrue(
+                app.links[link].exists || app.buttons[link].exists, "a link to the \(link) page")
         }
         let licence = app.staticTexts.matching(
             NSPredicate(format: "label CONTAINS 'Mozilla'")

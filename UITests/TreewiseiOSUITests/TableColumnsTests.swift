@@ -68,8 +68,11 @@ final class TableColumnsTests: XCTestCase {
         XCTAssertTrue(app.buttons["Date Modified"].firstMatch.exists, "the headings stay")
         XCTAssertFalse(app.buttons["Date Added"].firstMatch.exists, "the date added gives way")
         app.buttons["columns"].firstMatch.tap()
-        XCTAssertTrue(app.buttons["Date Added"].firstMatch.waitForExistence(timeout: Self.timeout))
-        XCTAssertTrue(app.buttons["Date Added"].firstMatch.isSelected, "still chosen")
+        // iOS 27 adds the item's subtitle, "No room in this width", to its label.
+        let dateAdded = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Date Added'"))
+            .firstMatch
+        XCTAssertTrue(dateAdded.waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(dateAdded.isSelected, "still chosen")
     }
 
     @MainActor

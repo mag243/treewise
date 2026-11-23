@@ -94,8 +94,15 @@ final class TemplatesSettingsTests: XCTestCase {
         let app = openTemplate()
         app.buttons["More"].firstMatch.tap()
         app.buttons["Export…"].firstMatch.tap()
-        // The exporter opens in On My iPad; a run before may have left the file there.
-        let move = app.buttons["Move"].firstMatch
+        // The exporter opens in On My iPad; a run before may have left the file there. On
+        // iOS 27 it asks for a name and shows its Save only once the name field is touched;
+        // on iOS 18 it has no name field and its button is Move.
+        let nameField = app.textFields["DOCPicker.filenameTextField"]
+        if nameField.waitForExistence(timeout: Self.timeout / 2) { nameField.tap() }
+        var move = app.buttons["DOCPicker.actionButton"].firstMatch
+        if !move.waitForExistence(timeout: Self.timeout / 2) {
+            move = app.buttons["Move"].firstMatch
+        }
         XCTAssertTrue(move.waitForExistence(timeout: Self.timeout), "the exporter opens")
         move.tap()
         let replace = app.buttons["Replace"].firstMatch
