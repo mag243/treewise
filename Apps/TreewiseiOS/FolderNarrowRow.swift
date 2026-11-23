@@ -15,8 +15,7 @@ struct FolderNarrowRow: View {
 
     var body: some View {
         HStack {
-            Image(systemName: ItemSymbol.name(for: item))
-                .foregroundStyle(item.isContainer ? Color.accentColor : .secondary)
+            FileIcon(item: item)
                 .frame(width: Self.iconWidth)
             VStack(alignment: .leading) {
                 Text(DisplayName.text(for: item, showsExtension: showsExtensions))

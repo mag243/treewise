@@ -17,8 +17,7 @@ struct NameReviewRow: View {
     var body: some View {
         HStack(spacing: 12) {
             approval
-            Image(systemName: ItemSymbol.name(for: item))
-                .foregroundStyle(entry.kind.isContainer ? Color.accentColor : .secondary)
+            FileIcon(item: item)
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.originalName)
                     .lineLimit(1)

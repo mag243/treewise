@@ -170,8 +170,7 @@ struct FolderTableRow: View {
                     OnlyOnlineMark(item: item)
                 }
             } icon: {
-                Image(systemName: ItemSymbol.name(for: item))
-                    .foregroundStyle(item.isContainer ? Color.accentColor : .secondary)
+                FileIcon(item: item)
             }
             .inColumn(.name, of: layout)
             ForEach(layout.shown, id: \.self) { column in
