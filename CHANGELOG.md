@@ -21,6 +21,7 @@ Move and copy in fewer steps, and swipe on the iPad and the iPhone.
 - Swiping a favorite away on the iPad or the iPhone, after its location was removed and added again, no longer ends the app.
 - A folder structure template deleted on the iPad stays deleted.
 - Move to Trash in On My iPad no longer hangs on iPadOS 27.
+- A zip with a password is no longer now and then called damaged when you open or extract it on the Mac; Treewise says it needs a password.
 
 ## [1.0.0] - 2026-11-21
 

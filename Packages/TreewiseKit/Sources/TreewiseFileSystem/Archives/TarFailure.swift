@@ -1,4 +1,5 @@
 #if os(macOS)
+    import Foundation
     import TreewiseCore
 
     /// What tar's complaints about an archive mean (ADR 0074).
@@ -24,6 +25,9 @@
             if mention(["failed to open"]) { return .notReadable(archive) }
             if mention(["permission denied", "read-only file system"]) {
                 return .notWritable(folder)
+            }
+            if ZipEncryption.hasEncryptedEntry(at: URL(fileURLWithPath: archive.rawValue)) {
+                return .archivePasswordProtected(archive)
             }
             return .archiveDamaged(archive)
         }
