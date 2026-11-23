@@ -123,11 +123,14 @@ h2.section { margin: 56px 0 12px; font-size: 25px; line-height: 1.2; font-weight
 .brand nav a:hover { color: var(--ink); text-decoration: underline; }
 .brand nav a[aria-current] { color: var(--ink); }
 @media (max-width: 560px) { .brand nav { width: 100%; margin-left: 0; } }
+/* One column for the whole site, centred, which the content fills. */
+.page { max-width: 928px; }
+.hero p, .intro, .rows, .body > p, .body .shot, .steps, .note, .map, .legal, .legal p, .legal li { max-width: none; }
 </style>
 </head>
 <body>
 <div class="page">
-  <header class="brand"><a class="home" href="index.html"><img src="images/icon.png" alt="" width="32" height="32">Treewise</a><nav aria-label="Pages"><a href="windows.html">From Windows</a><a href="privacy.html" aria-current="page">Privacy</a><a href="https://github.com/mag243/treewise">GitHub</a></nav></header>
+  <header class="brand"><a class="home" href="index.html"><img src="images/icon.png" alt="" width="32" height="32">Treewise</a><nav aria-label="Pages"><a href="windows.html">From Windows</a><a href="help.html">Help</a><a href="privacy.html" aria-current="page">Privacy</a><a href="https://github.com/mag243/treewise">GitHub</a></nav></header>
 
   <section class="hero">
     <h1>Privacy</h1>

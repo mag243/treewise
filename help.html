@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help: names and folder templates: Treewise</title>
+<meta name="description" content="How Treewise proposes file names, how to write a name pattern with its fields, and how folder templates make a structure of folders again.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="images/icon.png">
+<style>
+:root {
+  --paper: #fbfaf7; --ink: #262017; --soft: #6c6251; --bark: #a9782d; --honey: #f6cd63;
+  --honey-ink: #3b2807; --row: #f3ecdb; --line: #e4dac3;
+  --code: #f1ebdd;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1e1a15; --ink: #f2ecdf; --soft: #b0a590; --bark: #c79a4d; --honey: #f6cd63;
+    --honey-ink: #3b2807; --row: #2c261d; --line: #40372a;
+    --code: #2c261d;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+}
+a { color: inherit; text-underline-offset: .18em; text-decoration-color: var(--bark); }
+:focus-visible { outline: 3px solid var(--bark); outline-offset: 3px; border-radius: 4px; }
+.page { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+.brand { display: flex; align-items: center; gap: 10px; padding: 24px 0 0; font-weight: 600; }
+.brand img { width: 32px; height: 32px; }
+
+.hero h1 {
+  margin: 56px 0 0; max-width: 15em;
+  font: 700 clamp(38px, 6.4vw, 68px)/1.04 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  letter-spacing: -.028em;
+}
+.hero p { margin: 22px 0 0; max-width: 34em; font-size: 20px; line-height: 1.42; color: var(--soft); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 30px; }
+.download {
+  display: inline-block; padding: 12px 22px; border-radius: 10px;
+  background: var(--honey); color: var(--honey-ink); font-weight: 600; text-decoration: none;
+}
+.download:hover { background: #f2c244; }
+.needs { color: var(--soft); font-size: 15px; }
+code, kbd { font: .92em ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+kbd { padding: 0 .3em; border-radius: 4px; background: var(--code); white-space: nowrap; font-family: inherit; }
+.brew { display: block; overflow-x: auto; margin-top: 8px; padding: 10px 14px; border-radius: 8px; background: var(--code); white-space: nowrap; }
+
+.shot { display: block; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 1px 2px #0003, 0 22px 50px -18px #3b280759; }
+.hero .shot { margin-top: 48px; }
+
+/* The page's own folder tree: every part of it is a row that opens and closes. */
+.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
+.tree { margin-top: 72px; padding-bottom: 72px; }
+.tree > li { position: relative; padding-left: 30px; }
+.tree > li::before, .tree > li::after { content: ""; position: absolute; left: 8px; background: var(--bark); }
+.tree > li::before { top: 0; bottom: 0; width: 2px; }
+.tree > li::after { top: 25px; width: 16px; height: 2px; }
+.tree > li:last-child::before { bottom: auto; height: 26px; }
+
+summary {
+  display: flex; align-items: center; gap: 10px; min-height: 50px; margin-left: -6px; padding: 4px 8px;
+  border-radius: 8px; cursor: pointer; list-style: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary:hover { background: var(--row); }
+summary h2 { margin: 0; font-size: 25px; line-height: 1.2; font-weight: 650; letter-spacing: -.012em; }
+.chevron { flex: none; width: 10px; height: 10px; border: solid var(--soft); border-width: 0 2px 2px 0; transform: rotate(-45deg); transition: transform .12s ease-out; }
+details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
+.folder { flex: none; width: 26px; height: 21px; }
+
+.body { padding: 4px 0 30px 14px; }
+.rows { max-width: 44em; }
+.rows li { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.rows li:last-child { border-bottom: 0; }
+.rows b { font-weight: 600; }
+.body > p { margin: 0 0 14px; max-width: 40em; }
+.body .shot { margin: 18px 0 8px; max-width: 860px; }
+.steps { padding-left: 1.3em; max-width: 40em; }
+.steps li { padding: 3px 0; }
+
+.note { margin: 0; color: var(--soft); font-size: 15px; max-width: 44em; padding: 0 0 56px; }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .page { padding: 0 16px; }
+  .hero h1 { margin-top: 36px; }
+  .hero p { font-size: 18px; }
+  .tree { margin-top: 48px; }
+  .tree > li { padding-left: 24px; }
+  .tree > li::after { width: 12px; }
+  summary h2 { font-size: 21px; }
+  .body { padding-left: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+
+/* The table of Explorer's ways and Treewise's. */
+.intro { margin: 22px 0 0; max-width: 36em; font-size: 20px; line-height: 1.42; color: var(--soft); }
+h2.section { margin: 56px 0 12px; font-size: 25px; line-height: 1.2; font-weight: 650; letter-spacing: -.012em; }
+.map { width: 100%; max-width: 860px; border-collapse: collapse; }
+.map th, .map td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.map th { font-size: 15px; font-weight: 600; color: var(--soft); }
+.map td:first-child { width: 42%; }
+.map tr:last-child td { border-bottom: 0; }
+.note { max-width: 40em; color: var(--soft); }
+.back { display: inline-block; margin: 48px 0 72px; }
+@media (max-width: 560px) {
+  .map th, .map td { padding-right: 8px; }
+  .intro { font-size: 18px; }
+}
+.footer { margin: 0 0 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--soft); font-size: 15px; }
+.brand { flex-wrap: wrap; }
+.brand .home { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand nav { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-left: auto; font-weight: 400; font-size: 15px; }
+.brand nav a { color: var(--soft); text-decoration: none; }
+.brand nav a:hover { color: var(--ink); text-decoration: underline; }
+.brand nav a[aria-current] { color: var(--ink); }
+@media (max-width: 560px) { .brand nav { width: 100%; margin-left: 0; } }
+/* The help page: cards to jump to a part, tables for the facts. */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 36px 0 0; padding: 0; list-style: none; }
+.cards a { display: block; height: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; background: var(--paper); }
+.cards a:hover { background: var(--row); }
+.cards b { display: block; font-weight: 650; }
+.cards span { display: block; margin-top: 2px; color: var(--soft); font-size: 15px; line-height: 1.35; }
+section[id] { scroll-margin-top: 16px; }
+.lead { margin: 0 0 18px; max-width: 40em; color: var(--soft); }
+h3 { margin: 30px 0 10px; font-size: 18px; font-weight: 650; }
+.wrap { overflow-x: auto; max-width: 920px; border: 1px solid var(--line); border-radius: 12px; }
+.grid { width: 100%; border-collapse: collapse; font-size: 16px; }
+.grid th, .grid td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.grid thead th { background: var(--row); font-size: 14px; font-weight: 600; color: var(--soft); white-space: nowrap; }
+.grid tbody tr:last-child > * { border-bottom: 0; }
+.grid tbody th { font-weight: 600; }
+.grid td.out { color: var(--soft); }
+.tag { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 99px; background: var(--row); color: var(--soft); font-size: 12px; font-weight: 600; vertical-align: 1px; white-space: nowrap; }
+.grid code, .pill { padding: 1px 6px; border-radius: 6px; background: var(--code); white-space: nowrap; }
+.arrow { color: var(--bark); font-weight: 700; padding: 0 4px; }
+.steps3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; max-width: 920px; margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.steps3 li { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; counter-increment: step; }
+.steps3 li::before { content: counter(step); display: inline-grid; place-items: center; width: 24px; height: 24px; margin-right: 8px; border-radius: 50%; background: var(--honey); color: var(--honey-ink); font-size: 14px; font-weight: 700; }
+.steps3 b { font-weight: 650; }
+.steps3 p { margin: 6px 0 0; color: var(--soft); font-size: 15px; line-height: 1.4; }
+.trees { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; max-width: 920px; margin-top: 18px; }
+.trees .arrow { font-size: 22px; }
+.ftree { margin: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; font: 14px/1.7 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre; overflow-x: auto; }
+.ftree .cap { display: block; margin-bottom: 4px; font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; color: var(--soft); white-space: normal; }
+.small { margin: 12px 0 0; color: var(--soft); font-size: 15px; max-width: 46em; }
+.grid { table-layout: fixed; }
+.grid thead th:first-child { width: 30%; }
+.grid thead th { white-space: normal; }
+.grid tbody th { white-space: normal; }
+.grid code { white-space: normal; overflow-wrap: anywhere; }
+.grid .sub { display: block; font-weight: 400; color: var(--soft); font-size: 14px; }
+.folders { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; max-width: 920px; }
+.folders figure { margin: 0; }
+.folders .ftree { height: auto; }
+.folders figcaption { margin: 8px 2px 0; color: var(--soft); font-size: 15px; line-height: 1.4; }
+.ftree .old { color: var(--soft); text-decoration: line-through; }
+.ftree .new { color: var(--ink); background: color-mix(in srgb, var(--honey) 28%, transparent); border-radius: 4px; padding: 1px 4px; }
+.ftree .new::before { content: "→ "; color: var(--bark); font-weight: 700; }
+.ftree .tag { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+@media (max-width: 560px) {
+  .grid { font-size: 15px; }
+  .grid th, .grid td { padding: 9px 10px; }
+  .trees { grid-template-columns: 1fr; }
+  .trees .arrow { transform: rotate(90deg); justify-self: center; }
+}
+/* One width for everything below the headings. */
+.help .intro, .help .lead, .help .small, .help .legend, .help .wrap, .help .cards, .help .folders, .help .steps3, .help .trees { max-width: none; }
+.help .legend { margin: 14px 0 0; color: var(--soft); font-size: 15px; }
+.help .legend .tag { margin-left: 0; }
+.cards { grid-template-columns: repeat(4, 1fr); }
+.folders { grid-template-columns: 1fr; }
+.folders figure { display: grid; grid-template-columns: minmax(0, 360px) 1fr; gap: 20px; align-items: center; }
+.folders figcaption { margin: 0; font-size: 16px; }
+@media (max-width: 720px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .folders figure { grid-template-columns: 1fr; gap: 8px; }
+}
+/* One column for the whole site, centred, which the content fills. */
+.page { max-width: 928px; }
+.hero p, .intro, .rows, .body > p, .body .shot, .steps, .note, .map, .legal, .legal p, .legal li { max-width: none; }
+.help h2.section { display: flex; align-items: center; gap: 10px; }
+.cards a { border-left: 4px solid var(--honey); transition: background .12s ease-out; }
+.cards a:hover { background: var(--honey); border-color: var(--honey); color: var(--honey-ink); }
+.cards a:hover span { color: var(--honey-ink); opacity: .8; }
+@media (prefers-reduced-motion: reduce) { .cards a { transition: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="folder" viewBox="0 0 26 21"><path fill="#e9ad33" d="M1 3.5A2.5 2.5 0 0 1 3.5 1h6.2l2.8 3h10A2.5 2.5 0 0 1 25 6.5V9H1z"/><path fill="#f6cd63" d="M1 7.5A1.5 1.5 0 0 1 2.5 6h21A1.5 1.5 0 0 1 25 7.5v10a2.5 2.5 0 0 1-2.5 2.5h-19A2.5 2.5 0 0 1 1 17.5z"/></symbol>
+</svg>
+<div class="page help">
+  <header class="brand"><a class="home" href="index.html"><img src="images/icon.png" alt="" width="32" height="32">Treewise</a><nav aria-label="Pages"><a href="windows.html">From Windows</a><a href="help.html" aria-current="page">Help</a><a href="privacy.html">Privacy</a><a href="https://github.com/mag243/treewise">GitHub</a></nav></header>
+
+  <section class="hero">
+    <h1>Names and folder templates.</h1>
+    <p class="intro">Treewise proposes names for your files in the pattern a folder already follows, and makes a structure of folders again from a template.</p>
+    <p class="legend">Parts marked <span class="tag">Mac only</span> are not in the iPad and iPhone app yet.</p>
+    <ul class="cards">
+      <li><a href="#suggest"><b>Suggested names</b><span>What Treewise proposes, and why</span></a></li>
+      <li><a href="#fields"><b>Pattern fields</b><span>Every field you can write in a pattern</span></a></li>
+      <li><a href="#numbers"><b>Numbers that run</b><span>Per year, quarter or month</span></a></li>
+      <li><a href="#templates"><b>Folder templates</b><span>Save a structure, make it again</span></a></li>
+    </ul>
+  </section>
+
+  <section id="suggest">
+    <h2 class="section"><svg class="folder" aria-hidden="true"><use href="#folder"/></svg>Suggested names</h2>
+    <p class="lead">Treewise reads the names in a folder, finds the pattern they follow, and proposes a name in it for each file that does not fit. Nothing is renamed until you approve, and Undo turns it back.</p>
+    <div class="folders">
+      <figure>
+<pre class="ftree"><span class="cap">The folder Tax 2026</span>Tax 2026
+├─ 2026.02.11 Taxes - Acme.pdf
+├─ 2026.02.20 Taxes - Bolt.pdf
+├─ 2026.03.02 Taxes - Cora.pdf
+└─ <span class="old">scan0001.pdf</span>
+   <span class="new">2026.03.14 Taxes - ▮.pdf</span></pre>
+        <figcaption>The date comes from the PDF. The old name says nothing, so you fill in the gap ▮.</figcaption>
+      </figure>
+      <figure>
+<pre class="ftree"><span class="cap">The folder Holiday 2026</span>Holiday 2026
+├─ Holiday 2026 10.jpg
+├─ Holiday 2026 11.jpg
+├─ Holiday 2026 12.jpg
+└─ <span class="old">IMG_1234.jpg</span>
+   <span class="new">Holiday 2026 13.jpg</span></pre>
+        <figcaption>The folder’s name, and the next number.</figcaption>
+      </figure>
+      <figure>
+<pre class="ftree"><span class="cap">The folder Salary <span class="tag">Mac only</span></span>Salary
+├─ Salary 2026.05.pdf
+├─ Salary 2026.06.pdf
+├─ Salary 2026.07.pdf
+└─ <span class="old">Payslip.pdf</span>
+   <span class="new">Salary 2026.08.pdf</span></pre>
+        <figcaption>A number that runs per month, with the year.</figcaption>
+      </figure>
+    </div>
+    <p class="small">Text in the old name is kept: <code>Acme_invoice.pdf</code> becomes <code>2026.03.14 Taxes - Acme invoice.pdf</code>. A name that nearly fits is offered written right: <code>Taxs</code> becomes <code>Taxes</code>.</p>
+
+    <h3>Where to start it</h3>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Command</th><th scope="col">Where</th><th scope="col">What you get</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Rename with Suggestions<span class="sub">one file</span></th><td>Its context menu; on the Mac also the File menu, or <kbd>⌥Esc</kbd> or <kbd>F5</kbd> while renaming</td><td class="out">The proposals beside the name</td></tr>
+        <tr><th scope="row">Suggest Names<span class="sub">the selection</span></th><td>The context menu, or the File menu</td><td class="out">An overview, the old name above the new one, to approve or skip each</td></tr>
+        <tr><th scope="row">Suggest Names for Whole Folder<span class="sub">the folder</span></th><td>The context menu of empty space, or the File menu</td><td class="out">The same, with names that already fit apart</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>What Treewise recognises</h3>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Recognised</th><th scope="col">Rule</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">A pattern</th><td>At least 3 of the folder’s files follow it, and more than half of them</td></tr>
+        <tr><th scope="row">A date</th><td>At the start of a name: <code>2026.03.14</code> <code>2026-03-14</code> <code>20260314</code> <code>14.03.2026</code> <code>14-03-2026</code>; on the Mac anywhere in it, also as <code>14 March 2026</code>, <code>3 mrt 2026</code> or <code>März 2026</code> <span class="tag">Mac only</span></td></tr>
+        <tr><th scope="row">Shared text</th><td>Text all names have stays as it is, such as <code>Taxes -</code></td></tr>
+        <tr><th scope="row">A number</th><td>A word with a number after it, such as <code>Scan 12</code>; on the Mac also years, quarters and months that run <span class="tag">Mac only</span></td></tr>
+        <tr><th scope="row">The folder’s name</th><td>Text that is the folder’s name becomes <code>{folder}</code></td></tr>
+        <tr><th scope="row">Too few names</th><td>Rename with Suggestions uses your default pattern; on the Mac, the same folder of the year before may give the pattern <span class="tag">Mac only</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="small">The date in a proposal is the date a photo was taken or a PDF was made, when the file holds one, otherwise the older of its created and modified dates; the overview marks it, so you can check it. The extension is never part of a pattern. Everything runs on your device, without the internet.</p>
+  </section>
+
+  <section id="fields">
+    <h2 class="section"><svg class="folder" aria-hidden="true"><use href="#folder"/></svg>Pattern fields</h2>
+    <p class="lead">Change a pattern in the overview with Change, or keep it in Settings › Names. Text outside braces and brackets is written as it stands.</p>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Write</th><th scope="col">Gives</th><th scope="col">Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>{date}</code></td><td>The file’s date, year-month-day</td><td class="out">2026-03-14</td></tr>
+        <tr><td><code>{date:yyyy.MM.dd}</code></td><td>The date in your own form</td><td class="out">2026.03.14</td></tr>
+        <tr><td><code>{date:d MMMM yyyy@nl}</code></td><td>Month names in English, Dutch or German: <code>@en</code> <code>@nl</code> <code>@de</code>; without one, the app’s language</td><td class="out">14 maart 2026</td></tr>
+        <tr><td><code>{text}</code></td><td>What the current name says</td><td class="out">Acme invoice</td></tr>
+        <tr><td><code>{text:title}</code></td><td>A capital at the start of each word; also <code>:lower</code> and <code>:upper</code></td><td class="out">Acme Invoice</td></tr>
+        <tr><td><code>{folder}</code></td><td>The name of the file’s folder</td><td class="out">Holiday 2026</td></tr>
+        <tr><td><code>{folder:2}</code></td><td>The folder one level up; <code>{folder:3}</code> the one above that</td><td class="out">Client</td></tr>
+        <tr><td><code>{year}</code> <code>{year:yy}</code></td><td>The year of the date, or of the next period in a series</td><td class="out">2026 · 26</td></tr>
+        <tr><td><code>{seq}</code></td><td>The next number, as wide as the names write it (see <a href="#numbers">Numbers that run</a>)</td><td class="out">Letter 009</td></tr>
+        <tr><td><code>[ - draft]</code></td><td>An optional part: left out when its field is empty, or when its fixed text is not in the current name</td><td class="out"><code>{text}[ - draft]</code></td></tr>
+        <tr><td><code>{text|folder}</code></td><td>The first of the fields that has a value</td><td class="out">the text, else the folder</td></tr>
+        <tr><td><code>&lt;A|B&gt;</code></td><td>A choice of parts, for a folder with two kinds of names: each gives its own proposal</td><td class="out"><code>Tax - &lt;Sales {year}.Q{seq:4}|{text}&gt;</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>Date forms</h3>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Write</th><th scope="col">For</th><th scope="col">Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>yyyy</code> <code>yy</code></td><td>The year</td><td class="out">2026 · 26</td></tr>
+        <tr><td><code>MM</code> <code>MMM</code> <code>MMMM</code></td><td>The month as a number, a short name, a full name</td><td class="out">03 · Mar · March</td></tr>
+        <tr><td><code>dd</code> <code>d</code></td><td>The day, with or without a leading zero</td><td class="out">04 · 4</td></tr>
+        <tr><td><code>.</code> <code>-</code> <code>_</code> and a space</td><td>Between them</td><td class="out">2026_03_04</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>Saved patterns</h3>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Treewise starts with</th><th scope="col">Pattern</th><th scope="col">Gives</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Date and Text <span class="tag">default</span></th><td><code>{date:yyyy.MM.dd} {text}</code></td><td class="out">2026.03.14 Acme invoice</td></tr>
+        <tr><th scope="row">Date with Dashes and Text</th><td><code>{date:yyyy-MM-dd} {text}</code></td><td class="out">2026-03-14 Acme invoice</td></tr>
+        <tr><th scope="row">Folder and Number</th><td><code>{folder} {seq}</code></td><td class="out">Holiday 2026 13</td></tr>
+        <tr><th scope="row">Date, Folder and Text</th><td><code>{date:yyyy.MM.dd} {folder} - {text}</code></td><td class="out">2026.03.14 Taxes - Acme</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="small">Add your own in Settings › Names. When you change one, each folder that uses it asks whether to take the new version. A colon cannot be in a name, and <code>{ } [ ] &lt; &gt;</code> always belong to the pattern; a mistake is named, such as “Every [ needs its ]”.</p>
+  </section>
+
+  <section id="numbers">
+    <h2 class="section"><svg class="folder" aria-hidden="true"><use href="#folder"/></svg>Numbers that run</h2>
+    <p class="lead">After a colon, <code>{seq}</code> takes the numbers it runs through. At the end of a series that runs per year, it starts again and <code>{year}</code> goes up by one.</p>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Write</th><th scope="col">Numbers</th><th scope="col">After</th><th scope="col">Comes</th></tr></thead>
+      <tbody>
+        <tr><td><code>Scan {seq}</code></td><td>1, 2, 3 and on</td><td class="out">Scan 12</td><td>Scan 13</td></tr>
+        <tr><td><code>R {year}.Q{seq:4}</code></td><td>1 to 4</td><td class="out">R 2026.Q4</td><td>R 2027.Q1</td></tr>
+        <tr><td><code>Salary {year}.{seq:12}</code></td><td>01 to 12</td><td class="out">Salary 2026.07</td><td>Salary 2026.08</td></tr>
+        <tr><td><code>R {year}.{seq:2-4}</code></td><td>2 to 4</td><td class="out">R 2026.4</td><td>R 2027.2</td></tr>
+        <tr><td><code>R {seq:5-}</code></td><td>From 5 on</td><td class="out">R 7</td><td>R 8</td></tr>
+        <tr><td><code>R {year}.{seq:2,4,6,8}</code></td><td>Only these</td><td class="out">R 2026.4</td><td>R 2026.6</td></tr>
+        <tr><td><code>Letter {seq:001-}</code></td><td>Always three digits</td><td class="out">Letter 9</td><td>Letter 010</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section id="templates">
+    <h2 class="section"><svg class="folder" aria-hidden="true"><use href="#folder"/></svg>Folder templates</h2>
+    <p class="lead">A template is a folder’s structure: its folders at every depth, without their files.</p>
+    <ol class="steps3">
+      <li><b>Save</b><p>On a folder: Folder Structure › Save as Template…</p></li>
+      <li><b>Change</b><p>Settings › Templates: rename, add, move or delete folders, and put fields in names with Insert Field.</p></li>
+      <li><b>Make</b><p>On the folder to hold them: Folder Structure › New Folders from Template. Only missing folders are made; Undo removes them.</p></li>
+    </ol>
+
+    <div class="trees">
+      <pre class="ftree"><span class="cap">The template Household Year</span>{year}
+├─ Bank
+├─ Receipts
+│  └─ {month:MM MMMM}
+└─ Tax
+   └─ Appeals</pre>
+      <span class="arrow" aria-hidden="true">→</span>
+      <pre class="ftree"><span class="cap">Made for 2027</span>2027
+├─ Bank
+├─ Receipts
+│  ├─ 01 January
+│  ├─ …
+│  └─ 12 December
+└─ Tax
+   └─ Appeals</pre>
+    </div>
+
+    <h3>Fields in a template</h3>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Insert Field</th><th scope="col">Writes</th><th scope="col">Makes</th><th scope="col">Where</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Year</th><td><code>{year}</code></td><td>The year you choose; Treewise proposes the one missing, or the next</td><td class="out">Any folder</td></tr>
+        <tr><th scope="row">Year in Two Digits</th><td><code>{year:yy}</code></td><td>The same, as 27</td><td class="out">Any folder</td></tr>
+        <tr><th scope="row">Text</th><td><code>{text}</code></td><td>Text you type, such as a client’s name</td><td class="out">Any folder</td></tr>
+        <tr><th scope="row">Number</th><td><code>{seq}</code></td><td>The next free number: Project 0013 after Project 0012</td><td class="out">Top folder</td></tr>
+        <tr><th scope="row">Date</th><td><code>{date:yyyy-MM-dd}</code></td><td>The date you choose, today at first</td><td class="out">Any folder</td></tr>
+        <tr><th scope="row">Each Month</th><td><code>{month:MM MMMM}</code></td><td>12 folders, 01 January to 12 December</td><td class="out">Below the top</td></tr>
+        <tr><th scope="row">Each Quarter</th><td><code>Q{quarter}</code></td><td>4 folders, Q1 to Q4</td><td class="out">Below the top</td></tr>
+        <tr><th scope="row">Each Half</th><td><code>H{half}</code></td><td>2 folders, H1 and H2</td><td class="out">Below the top</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="small">A repeating folder gets a copy of everything inside it, and cannot sit inside another. On the Mac, saving a template turns a year in the names into <code>{year}</code> and twelve month folders into one Each Month by itself; on the iPad and iPhone, use Insert Field.</p>
+
+    <h3>Sharing templates</h3>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Action</th><th scope="col">What happens</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Export…</th><td>Saves the template as a file, such as <code>Household Year Folder Template.json</code></td></tr>
+        <tr><th scope="row">Import…</th><td>Adds a template from such a file; if it is here already, choose Replace or Keep Both</td></tr>
+        <tr><th scope="row">Copy Structure, Paste Structure…</th><td>Makes one folder’s structure in another, without a template</td></tr>
+        <tr><th scope="row">Sync</th><td>With “Sync settings through cloud drives” on in Settings › General, patterns, templates and folder settings reach your other Macs, iPad and iPhone through your cloud drive</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <a class="back" href="index.html">Everything Treewise does</a>
+  <p class="footer">Treewise is open source under the <a href="https://github.com/mag243/treewise/blob/main/LICENSE">Mozilla Public License 2.0</a>. <a href="privacy.html">Privacy</a></p>
+</div>
+</body>
+</html>
