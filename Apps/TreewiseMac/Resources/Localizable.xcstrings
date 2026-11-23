@@ -1494,6 +1494,22 @@
         }
       }
     },
+    "Choose Folder…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordner auswählen …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kies map…"
+          }
+        }
+      }
+    },
     "Choose a Saved Pattern" : {
       "localizations" : {
         "de" : {
@@ -1733,6 +1749,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kopieer structuur"
+          }
+        }
+      }
+    },
+    "Copy to" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieren nach"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieer naar"
           }
         }
       }
@@ -3743,6 +3775,22 @@
         }
       }
     },
+    "Move" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats"
+          }
+        }
+      }
+    },
     "Move Down" : {
       "localizations" : {
         "de" : {
@@ -3803,6 +3851,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Omhoog"
+          }
+        }
+      }
+    },
+    "Move to" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegen nach"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats naar"
           }
         }
       }

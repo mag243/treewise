@@ -35,7 +35,7 @@ struct FileContextMenu {
         let groups: [[NSMenuItem]] = [
             openItems(for: items),
             renameAndTrashItems(for: items),
-            clipboardItems(for: items) + otherWindowItems(),
+            clipboardItems(for: items) + moveToItems() + otherWindowItems(),
             subjectItems(for: items),
             [favoriteItem(for: items), terminalItem(for: items), showInFinderItem(for: items)]
                 .compactMap(\.self),
@@ -157,6 +157,14 @@ struct FileContextMenu {
                 })
         }
         return shown
+    }
+
+    /// Move to ▸ and Copy to ▸, for the items the menu is about (ADR 0147).
+    private func moveToItems() -> [NSMenuItem] {
+        [
+            MoveToMenu.item(.move, browser: browser, undoManager: undoManager),
+            MoveToMenu.item(.copy, browser: browser, undoManager: undoManager),
+        ]
     }
 
     /// Copy and Move to Other Window, while there is another window (ADR 0037).

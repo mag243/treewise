@@ -2,8 +2,8 @@ import AppKit
 
 /// The Edit menu: Undo and Redo of the window's undo manager, which all
 /// browser windows share (ADR 0037), or of the text being edited; the
-/// standard pasteboard items; Treewise's own (ADR 0022); and Spelling and
-/// Grammar for the name being typed (ADR 0084).
+/// standard pasteboard items; Treewise's own (ADR 0022); Move to ▸ and Copy to ▸
+/// (ADR 0147); and Spelling and Grammar for the name being typed (ADR 0084).
 @MainActor
 enum EditMenu {
     private typealias Window = BrowserWindowController
@@ -27,6 +27,8 @@ enum EditMenu {
                 MenuItem.make(
                     "Move to Trash", #selector(Window.moveSelectionToTrash(_:)), key: "\u{8}"),
                 .separator(),
+                moveTo(fillers[0]),
+                moveTo(fillers[1]),
                 MenuItem.make("Copy to Other Window", #selector(Window.copyToOtherWindow(_:))),
                 MenuItem.make("Move to Other Window", #selector(Window.moveToOtherWindow(_:))),
                 .separator(),
@@ -34,6 +36,18 @@ enum EditMenu {
                 .separator(),
                 spelling(),
             ])
+    }
+
+    /// What fills Move to ▸ and Copy to ▸ for the window in front (ADR 0147), kept as long as
+    /// the menu, which holds its delegate weakly.
+    private static let fillers = [MoveToMenuFiller(.move), MoveToMenuFiller(.copy)]
+
+    private static func moveTo(_ filler: MoveToMenuFiller) -> NSMenuItem {
+        let item = NSMenuItem(title: filler.title, action: nil, keyEquivalent: "")
+        let menu = NSMenu(title: filler.title)
+        menu.delegate = filler
+        item.submenu = menu
+        return item
     }
 
     /// AppKit's own checking of the text being edited, and whether a name shows its
