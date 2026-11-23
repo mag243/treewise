@@ -116,29 +116,4 @@ import TreewiseCore
 
         #expect(history.backStack == ["home"])
     }
-
-    @Test func recentFoldersAreTheEarlierOnesLastFirstWithoutTheCurrentOne() {
-        var history = NavigationHistory(at: "home")
-        history.navigate(to: "documents")
-        history.navigate(to: "home")
-        history.navigate(to: "invoices")
-
-        #expect(history.recentFolders(limit: 5) == ["home", "documents"])
-    }
-
-    @Test func recentFoldersTakeTheFoldersGoneBackFromAfterTheEarlierOnes() {
-        var history = NavigationHistory(at: "home")
-        history.navigate(to: "documents")
-        history.navigate(to: "invoices")
-        history.goBack()
-
-        #expect(history.recentFolders(limit: 5) == ["home", "invoices"])
-    }
-
-    @Test func recentFoldersStopAtTheLimit() {
-        var history = NavigationHistory(at: "a")
-        for folder in ["b", "c", "d"] { history.navigate(to: FileItem.ID(folder)) }
-
-        #expect(history.recentFolders(limit: 2) == ["c", "b"])
-    }
 }

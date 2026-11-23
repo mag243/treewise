@@ -37,6 +37,16 @@
             }
         }
 
+        /// The folder Move to… shows among the recent targets (ADR 0147), as though the
+        /// user had put a file there before: the documents' archive.
+        static func recentTargets(in folder: URL) -> [URL] {
+            let language = language
+            return [
+                folder.appendingPathComponent(documents.text(in: language))
+                    .appendingPathComponent(archive.text(in: language))
+            ]
+        }
+
         /// Three photos named by the day they were taken and the place, the least a pattern
         /// is recognized from, and the camera's, in the summer's folder: the place is the
         /// same in each, so the suggestion is a whole name.

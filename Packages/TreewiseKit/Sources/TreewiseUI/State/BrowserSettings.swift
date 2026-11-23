@@ -17,6 +17,7 @@ public final class BrowserSettings {
         static let showsDetails = "showsDetails"
         static let lastSession = "lastSession"
         static let favoriteFolders = "favoriteFolders"
+        static let recentTargets = "recentTargets"
         static let sidebarWidth = "sidebarWidth"
         static let tableColumns = "tableColumns"
         static let terminalApp = "terminalApp"
@@ -192,6 +193,14 @@ public final class BrowserSettings {
         }
     }
 
+    /// The folders items were last moved or copied into, this device's own (ADR 0147).
+    public var recentTargets: RecentTargets {
+        didSet {
+            store.setSetting(
+                Self.json(recentTargets.folders.map(\.rawValue)), for: Key.recentTargets)
+        }
+    }
+
     /// The sidebar width the user last dragged to, for a new window (ADR 0093); nil before
     /// a drag.
     public var sidebarWidth: Double? {
@@ -249,6 +258,9 @@ public final class BrowserSettings {
             ?? .leaveOutOfApproveAll
         favoriteFolders = Self.decoded([String].self, at: Key.favoriteFolders, in: store)?
             .map { FileItem.ID($0) }
+        recentTargets = RecentTargets(
+            folders: (Self.decoded([String].self, at: Key.recentTargets, in: store) ?? [])
+                .map { FileItem.ID($0) })
         sidebarWidth = store.setting(Key.sidebarWidth).flatMap(Double.init)
         tableColumns =
             Self.decoded(TableColumnLayout.self, at: Key.tableColumns, in: store)

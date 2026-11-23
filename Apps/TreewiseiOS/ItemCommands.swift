@@ -91,8 +91,7 @@ enum ItemCommands {
         return sections
     }
 
-    /// Move to… and Copy to…, where the width is compact and no second folder shows
-    /// (ADR 0132).
+    /// Move to… and Copy to…, at every width (ADR 0132, ADR 0147).
     private static func moveToCommands(
         _ items: [FileItem], _ actions: ItemActions, isEnabled: Bool
     ) -> [ItemCommand] {

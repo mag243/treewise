@@ -24,6 +24,7 @@ struct TestRun {
     private static let removeArgument = "TreewiseTestRemove"
     private static let demoArgument = "TreewiseTestDemo"
     private static let appearanceArgument = "TreewiseTestAppearance"
+    private static let recentTargetArgument = "TreewiseTestRecentTarget"
 
     /// Whether the run asks for dark mode; always false in a Release build.
     static var isDark: Bool {
@@ -76,6 +77,20 @@ struct TestRun {
             }
         #endif
         return []
+    }
+
+    /// The folders Move to… shows among the recent targets from the start (ADR 0147): the
+    /// demo's, or the one the launch names by its path in the run's folder, for a screen
+    /// that shows the sheet without moving a file first.
+    func fixtureRecentTargets() -> [URL] {
+        #if DEBUG
+            if UserDefaults.standard.bool(forKey: Self.demoArgument) {
+                return DemoTree.recentTargets(in: folder)
+            }
+        #endif
+        guard let path = UserDefaults.standard.string(forKey: Self.recentTargetArgument)
+        else { return [] }
+        return [folder.appendingPathComponent(path)]
     }
 
     /// Where the run keeps its bookmarks.

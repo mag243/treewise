@@ -120,7 +120,7 @@ struct FolderView: View {
         ItemActions(
             browser: browser, conflicts: conflicts, undoManager: undoManager, open: open,
             suggestNames: suggestNames, askName: { naming = $0 },
-            moveTo: isCompact ? { movingTo = $0 } : nil,
+            moveTo: { movingTo = $0 },
             share: isCompact ? { sharing = ShareRequest(items: $0) } : nil,
             openInNewWindow: supportsMultipleWindows ? { openInNewWindow($0) } : nil,
             folderStructure: { structureAsked.ask($0, browser: browser) })

@@ -14,10 +14,9 @@ struct MoveToRequest: Identifiable {
     let purpose: Purpose
 }
 
-/// Move to… and Copy to… where the width is compact, as the iPhone shows no second folder
-/// (ADR 0132): the recent folders, the favorites and the locations, a tap going into a
-/// folder, and Move or Copy into the folder shown, through the drag rules as a drop with ⌘
-/// or ⌥ would.
+/// Move to… and Copy to…, at every width (ADR 0132, ADR 0147): the folders items were last
+/// moved or copied into, the favorites and the locations, a tap going into a folder, and
+/// Move or Copy into the folder shown, through the drag rules as a drop with ⌘ or ⌥ would.
 struct MoveToSheet: View {
     let request: MoveToRequest
     let browser: BrowserState
@@ -25,7 +24,7 @@ struct MoveToSheet: View {
     @Environment(\.dismiss) private var dismiss
     /// The folders gone into, the last of them the target.
     @State private var path: [FileItem] = []
-    /// The folders the tab showed before, the last first (ADR 0132).
+    /// The folders items were last moved or copied into, the newest first (ADR 0147).
     @State private var recent: [FileItem] = []
 
     var body: some View {
@@ -52,7 +51,7 @@ struct MoveToSheet: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
-            .task { recent = await browser.recentFolders() }
+            .task { recent = await browser.recentTargets() }
             .navigationDestination(for: FileItem.self) { folder in
                 MoveToFolderList(folder: folder, browser: browser)
                     .toolbar { toolbar }

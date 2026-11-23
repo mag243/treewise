@@ -132,21 +132,23 @@ final class IPhoneTests: XCTestCase {
         XCTAssertTrue(app.eventually { !paste.exists }, "the clipboard emptied")
     }
 
+    /// The folder a file was last copied into is offered at the top of Move to… (ADR 0147).
     @MainActor
-    func testMoveToOffersTheFolderShownBefore() {
+    func testMoveToOffersTheFolderLastCopiedTo() {
         let app = openDocuments()
-        row("Projects", in: app).tap()
-        let up = app.buttons["enclosingFolder"].firstMatch
-        XCTAssertTrue(up.waitForExistence(timeout: Self.timeout))
-        up.tap()
-        XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
+        selectAndPerform("Actions", on: "Budget.txt", in: app)
+        app.buttons["Copy to…"].firstMatch.tap()
+        app.buttons["Work"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Work"].waitForExistence(timeout: Self.timeout))
+        app.buttons["moveToConfirm"].firstMatch.tap()
+        app.buttons["Done"].firstMatch.tap()
+
         selectAndPerform("Actions", on: "Notes.md", in: app)
         app.buttons["Move to…"].firstMatch.tap()
-
-        let recent = app.buttons["recent-Projects"].firstMatch
-        XCTAssertTrue(recent.waitForExistence(timeout: Self.timeout), "Projects among Recent")
+        let recent = app.buttons["recent-Work"].firstMatch
+        XCTAssertTrue(recent.waitForExistence(timeout: Self.timeout), "Work among Recent")
         recent.tap()
-        XCTAssertTrue(app.navigationBars["Projects"].waitForExistence(timeout: Self.timeout))
+        XCTAssertTrue(app.navigationBars["Work"].waitForExistence(timeout: Self.timeout))
         app.buttons["moveToConfirm"].firstMatch.tap()
 
         let notes = row("Notes.md", in: app)

@@ -23,16 +23,11 @@ extension BrowserState {
         await changeActiveTab(of: pane) { $0.history.goUp { _ in parent } }
     }
 
-    /// The most recent folders Move to… offers (ADR 0132).
-    public static let recentFolderLimit = 5
-
-    /// The folders the focused tab showed before, the last first and without the one it
-    /// shows, for Move to… (ADR 0132); a folder that cannot be read is left out.
-    public func recentFolders() async -> [FileItem] {
-        let ids = layout.focusedPane.activeTab.history.recentFolders(
-            limit: Self.recentFolderLimit)
+    /// The folders items were last moved or copied into, the newest first, for Move to and
+    /// Copy to (ADR 0147); a folder that cannot be read is left out.
+    public func recentTargets() async -> [FileItem] {
         var folders: [FileItem] = []
-        for id in ids {
+        for id in settings.recentTargets.folders {
             if let folder = try? await fileSystem.item(at: id), folder.isContainer {
                 folders.append(folder)
             }

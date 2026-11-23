@@ -50,11 +50,8 @@ extension AppStoreScreenshotTests {
         keepActions("03-actions", in: app, language: language)
         app.terminate()
 
+        // The demo has the archive among the recent targets, as though a file went there.
         app = open(language)
-        row(language.archive, in: app).tap()
-        let up = app.buttons["enclosingFolder"].firstMatch
-        XCTAssertTrue(up.waitForExistence(timeout: Self.timeout))
-        up.tap()
         XCTAssertTrue(row(language.budget, in: app).waitForExistence(timeout: Self.timeout))
         perform(language.title("Move to…"), on: language.budget, in: app, language: language)
         XCTAssertTrue(

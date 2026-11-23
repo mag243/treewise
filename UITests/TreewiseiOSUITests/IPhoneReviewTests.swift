@@ -168,12 +168,7 @@ final class IPhoneReviewTests: XCTestCase {
     @MainActor
     func testMoveTo() throws {
         try eachReviewVariant { variant in
-            let app = launch(state: UUID().uuidString)
-            XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
-            row("Projects", in: app).tap()
-            let up = app.buttons["enclosingFolder"].firstMatch
-            XCTAssertTrue(up.waitForExistence(timeout: Self.timeout))
-            up.tap()
+            let app = launch(state: UUID().uuidString, recentTarget: "Documents/Projects")
             XCTAssertTrue(row("Notes.md", in: app).waitForExistence(timeout: Self.timeout))
 
             perform("Move to…", on: "Notes.md", in: app)

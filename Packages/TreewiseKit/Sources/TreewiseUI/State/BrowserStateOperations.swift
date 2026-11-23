@@ -274,6 +274,9 @@ extension BrowserState {
             }
         }
         if layout.focusedPane.activeTab.folder == folder { selectInFocusedTab(result?.items ?? []) }
+        if let result, !result.items.isEmpty {
+            settings.recentTargets.record(target: folder, sources: items.compactMap(\.parentID))
+        }
         return result != nil
     }
 

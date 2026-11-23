@@ -4,11 +4,13 @@ import XCTest
 /// folders `Documents` and `Work` added, and the elements they look for.
 extension XCTestCase {
     /// Starts Treewise in the state `name`, with the fixture's folders unless `fixture` is
-    /// false, after removing the fixture folder `removing`.
+    /// false, after removing the fixture folder `removing`, and with `recentTarget`, a path in
+    /// the fixture, among Move to's recent targets (ADR 0147).
     @MainActor
-    func launch(state name: String, fixture: Bool = true, removing: String? = nil)
-        -> XCUIApplication
-    {
+    func launch(
+        state name: String, fixture: Bool = true, removing: String? = nil,
+        recentTarget: String? = nil
+    ) -> XCUIApplication {
         QuiescenceShortcut.installIfAsked()
         let app = XCUIApplication()
         app.launchArguments = [
@@ -16,6 +18,9 @@ extension XCTestCase {
             "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
         ]
         if let removing { app.launchArguments += ["-TreewiseTestRemove", removing] }
+        if let recentTarget {
+            app.launchArguments += ["-TreewiseTestRecentTarget", recentTarget]
+        }
         if UIReviewWalk.appearance == "dark" {
             app.launchArguments += ["-TreewiseTestAppearance", "dark"]
         }
