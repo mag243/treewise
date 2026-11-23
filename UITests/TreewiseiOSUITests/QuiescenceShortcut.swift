@@ -12,7 +12,7 @@ import XCTest
 /// it. Should a newer Xcode rename them, nothing is changed and the review waits as before,
 /// which `idle.py` reports.
 ///
-/// TODO: remove once Apple fixes the waits on iPadOS 27 (reported in Feedback Assistant).
+/// TODO: remove once Apple fixes the waits on iPadOS 27 (FB25657253).
 enum QuiescenceShortcut {
     /// The pause in place of the wait, long enough for a sheet or menu to settle.
     static let pause: TimeInterval = 0.5
