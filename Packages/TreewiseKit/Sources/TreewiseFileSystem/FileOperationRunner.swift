@@ -142,7 +142,8 @@ public actor FileOperationRunner: FileOperating {
         let trashService = trashService
         return try await FileCopier.run {
             try Self.mapping(id) {
-                try FileCoordination.delete(URL(fileURLWithPath: id.rawValue)) { _ in
+                guard !TrashService.coordinatesItself else { return try trashService.trash(id) }
+                return try FileCoordination.delete(URL(fileURLWithPath: id.rawValue)) { _ in
                     try trashService.trash(id)
                 }
             }
