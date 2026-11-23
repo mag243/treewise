@@ -6,6 +6,22 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+## [1.1.0] - unreleased
+
+Move and copy in fewer steps, and swipe on the iPad and the iPhone.
+
+### New
+- **Move to and Copy to with the folders you use:** the context menu (and on the Mac also the Edit menu) offers Move to and Copy to with the last five folders you moved or copied something into, by any way, at the top, then your favorites, then Choose Folder… to pick any other. On the iPad they are now there at every width, as on the iPhone.
+- **Swipe a row on the iPad and the iPhone:** swipe left for Move to Trash, which a full swipe does at once, and More… with Share, Rename and the rest; swipe right for Cut, which a full swipe does at once, and Copy.
+
+### Improved
+- **The right icon for each file on the iPad and the iPhone:** documents, pictures, archives and the rest show the system's own icon for their kind, as in the Files app.
+
+### Fixed
+- Swiping a favorite away on the iPad or the iPhone, after its location was removed and added again, no longer ends the app.
+- A folder structure template deleted on the iPad stays deleted.
+- Move to Trash in On My iPad no longer hangs on iPadOS 27.
+
 ## [1.0.0] - 2026-11-21
 
 Treewise on the iPad, the iPhone and the iPhone Duo.
