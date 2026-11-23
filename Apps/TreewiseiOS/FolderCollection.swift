@@ -43,6 +43,13 @@ struct FolderCollection: UIViewRepresentable {
     func makeUIView(context: Context) -> UICollectionView {
         var list = UICollectionLayoutListConfiguration(appearance: .plain)
         list.showsSeparators = true
+        let coordinator = context.coordinator
+        list.trailingSwipeActionsConfigurationProvider = { [weak coordinator] path in
+            coordinator?.trailingSwipe(at: path)
+        }
+        list.leadingSwipeActionsConfigurationProvider = { [weak coordinator] path in
+            coordinator?.leadingSwipe(at: path)
+        }
         let view = FolderCollectionView(
             frame: .zero,
             collectionViewLayout: UICollectionViewCompositionalLayout.list(using: list))
