@@ -24,7 +24,10 @@
 #               smaller iPad on the newest iOS instead, and `--iphone` runs the iPhone's
 #               UI tests (IPhoneTests) on the pinned iPhone (ADR 0132), and `--duo` the
 #               iPhone Duo's (DuoTests) on the pinned Duo (ADR 0133); `--ios 26.5` on the
-#               review's iPad on that iOS, made the first time from an installed runtime.
+#               review's iPad on that iOS, made the first time from an installed runtime;
+#               `--skip-idle` skips XCUITest's wait for the app to come to rest on iOS 27
+#               and later, which takes a minute while a context menu is open (ADR 0115),
+#               for a quick look; a run without it is the one that counts.
 #   iosreview   The iPad's UI review (ADR 0115): its screens in landscape and portrait,
 #               on the pinned iPad, a smaller one on the newest iOS and the iPhone (versions.env),
 #               checked for quirks as uireview does, with a screenshot of each in
@@ -588,13 +591,17 @@ ios_simulator_on() {
 # as Class or Class/testName separated by commas; --show first opens the Simulator app, and
 # --11inch runs them on the UI review's smaller iPad on the newest iOS, --iphone runs the
 # iPhone's (IPhoneTests, ADR 0132) on the pinned iPhone and --duo the iPhone Duo's
-# (DuoTests, ADR 0133) on the pinned Duo; the iPads' runs skip both.
+# (DuoTests, ADR 0133) on the pinned Duo; the iPads' runs skip both. --skip-idle skips
+# XCUITest's wait for the app to come to rest on iOS 27 and later (ADR 0115).
 cmd_iosuitest() {
   local show="" filter="" name="$IOS_SIMULATOR_NAME" os="$IOS_SIMULATOR_OS" only=() tests=()
   local word test other="" skip=(-skip-testing:"$IPHONE_TESTS" -skip-testing:"$DUO_TESTS")
+  # xcodebuild hands TEST_RUNNER_ variables to the tests without the prefix.
+  local -x TEST_RUNNER_TREEWISE_SKIP_IDLE=""
   for word in "$@"; do
     case "$word" in
       --show) show=--show ;;
+      --skip-idle) TEST_RUNNER_TREEWISE_SKIP_IDLE=YES ;;
       --11inch) name="$IOS_REVIEW_SIMULATOR_NAME" os="$IOS_REVIEW_SIMULATOR_OS" ;;
       --iphone)
         name="$IOS_IPHONE_SIMULATOR_NAME" os="$IOS_IPHONE_SIMULATOR_OS"
@@ -614,7 +621,7 @@ cmd_iosuitest() {
     [[ "$other" != next ]] || fail "--ios takes an iOS version, such as 26.5."
     name="$(ios_simulator_on "$other")" os="$other"
   fi
-  step "iPad app UI tests${filter:+ ($filter)} on $name"
+  step "iPad app UI tests${filter:+ ($filter)} on $name${TEST_RUNNER_TREEWISE_SKIP_IDLE:+, without the waits for rest}"
   require_project
   local udid; udid="$(ipad_simulator "$show" "$name")"
   local bundle; bundle="$(result_bundle "TreewiseiOS-UI")"
@@ -1271,8 +1278,8 @@ while (($#)); do
     # word is a command.
     run_command "$c" "$1"; shift
   elif [[ "$c" == iosuitest ]]; then
-    # iosuitest takes --show, --11inch, --iphone, --duo and a filter as its next words, a word that is
-    # no command.
+    # iosuitest takes --show, --skip-idle, --11inch, --iphone, --duo, --ios and a filter as its
+    # next words, a word that is no command.
     words=()
     while (($#)) && [[ "$1" == --show || "$COMMANDS" != *" $1 "* ]]; do
       words+=("$1"); shift

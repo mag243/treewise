@@ -9,6 +9,7 @@ extension XCTestCase {
     func launch(state name: String, fixture: Bool = true, removing: String? = nil)
         -> XCUIApplication
     {
+        QuiescenceShortcut.installIfAsked()
         let app = XCUIApplication()
         app.launchArguments = [
             "-TreewiseTestState", name, "-TreewiseTestFixture", fixture ? "YES" : "NO",

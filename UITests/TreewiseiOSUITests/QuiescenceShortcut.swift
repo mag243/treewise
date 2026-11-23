@@ -1,8 +1,9 @@
 import ObjectiveC
 import XCTest
 
-/// A fixed pause in place of XCUITest's wait for the app to come to rest, for the UI review
-/// on iPadOS 27 and later only (ADR 0115).
+/// A fixed pause in place of XCUITest's wait for the app to come to rest, on iPadOS 27 and
+/// later only: always for the UI review, and for the UI tests when `iosuitest --skip-idle`
+/// asks for it (ADR 0115).
 ///
 /// On the iPadOS 27 simulator XCUITest often stops reporting an app idle after text input or
 /// while a context menu is open, Apple's apps too, and waits a minute before every step. The
@@ -22,6 +23,15 @@ enum QuiescenceShortcut {
         "shouldSkipPreEventQuiescence", "shouldSkipPostEventQuiescence",
     ]
     @MainActor private static var isInstalled = false
+    /// Set by `tools/build.sh iosuitest --skip-idle`, without xcodebuild's TEST_RUNNER_ prefix.
+    private static let askedFor = "TREEWISE_SKIP_IDLE"
+
+    /// Installs the pause where the run asked for it, for a quick run of the UI tests.
+    @MainActor
+    static func installIfAsked() {
+        guard ProcessInfo.processInfo.environment[askedFor] == "YES" else { return }
+        installIfNeeded()
+    }
 
     /// Installs the pause, once, where the iOS the tests run on needs it.
     @MainActor
