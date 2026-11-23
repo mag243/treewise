@@ -4,81 +4,83 @@ import TreewiseCore
 import TreewiseFileSystem
 import TreewiseTestSupport
 
-/// The runner coordinates every access (ADR 0047), so iCloud Drive and File
-/// Provider apps, which present their files, hear of each read and change.
-@Suite struct FileCoordinationTests {
-    /// How long a presenter may take to hear of an access.
-    private static let deadline = Duration.seconds(2)
+extension FilePresenterSuites {
+    /// The runner coordinates every access (ADR 0047), so iCloud Drive and File
+    /// Provider apps, which present their files, hear of each read and change.
+    @Suite struct FileCoordinationTests {
+        /// How long a presenter may take to hear of an access.
+        private static let deadline = Duration.seconds(2)
 
-    @Test func aCopyReadsTheSourceCoordinated() async throws {
-        let directory = try TempDirectory()
-        try directory.makeFolder("to")
-        let source = try directory.makeFile("Notes.md", contents: "hello")
-        let presenter = Presenter(source)
-        defer { presenter.stop() }
-        let runner = directory.runner
+        @Test func aCopyReadsTheSourceCoordinated() async throws {
+            let directory = try TempDirectory()
+            try directory.makeFolder("to")
+            let source = try directory.makeFile("Notes.md", contents: "hello")
+            let presenter = Presenter(source)
+            defer { presenter.stop() }
+            let runner = directory.runner
 
-        let notes = try await runner.item(at: FileItem.ID(source.path))
-        _ = try await runner.transfer(
-            [notes], to: FileItem.ID(directory.url("to").path), mode: .copy,
-            resolver: ScriptedResolver())
+            let notes = try await runner.item(at: FileItem.ID(source.path))
+            _ = try await runner.transfer(
+                [notes], to: FileItem.ID(directory.url("to").path), mode: .copy,
+                resolver: ScriptedResolver())
 
-        #expect(await presenter.hears("read", within: Self.deadline))
-    }
+            #expect(await presenter.hears("read", within: Self.deadline))
+        }
 
-    @Test func aMoveWritesTheSourceCoordinated() async throws {
-        let directory = try TempDirectory()
-        try directory.makeFolder("to")
-        let source = try directory.makeFile("Notes.md")
-        let presenter = Presenter(source)
-        defer { presenter.stop() }
-        let runner = directory.runner
+        @Test func aMoveWritesTheSourceCoordinated() async throws {
+            let directory = try TempDirectory()
+            try directory.makeFolder("to")
+            let source = try directory.makeFile("Notes.md")
+            let presenter = Presenter(source)
+            defer { presenter.stop() }
+            let runner = directory.runner
 
-        let notes = try await runner.item(at: FileItem.ID(source.path))
-        _ = try await runner.transfer(
-            [notes], to: FileItem.ID(directory.url("to").path), mode: .move,
-            resolver: ScriptedResolver())
+            let notes = try await runner.item(at: FileItem.ID(source.path))
+            _ = try await runner.transfer(
+                [notes], to: FileItem.ID(directory.url("to").path), mode: .move,
+                resolver: ScriptedResolver())
 
-        #expect(await presenter.hears("write", within: Self.deadline))
-    }
+            #expect(await presenter.hears("write", within: Self.deadline))
+        }
 
-    @Test func aRenameWritesTheItemCoordinated() async throws {
-        let directory = try TempDirectory()
-        let source = try directory.makeFile("Notes.md")
-        let presenter = Presenter(source)
-        defer { presenter.stop() }
-        let runner = directory.runner
+        @Test func aRenameWritesTheItemCoordinated() async throws {
+            let directory = try TempDirectory()
+            let source = try directory.makeFile("Notes.md")
+            let presenter = Presenter(source)
+            defer { presenter.stop() }
+            let runner = directory.runner
 
-        let notes = try await runner.item(at: FileItem.ID(source.path))
-        _ = try await runner.rename(notes, to: "Ideas.md")
+            let notes = try await runner.item(at: FileItem.ID(source.path))
+            _ = try await runner.rename(notes, to: "Ideas.md")
 
-        #expect(await presenter.hears("write", within: Self.deadline))
-    }
+            #expect(await presenter.hears("write", within: Self.deadline))
+        }
 
-    @Test(.enabled(if: TrashAvailability.inTemporaryDirectory, "needs a Trash"))
-    func movingToTheTrashDeletesCoordinated() async throws {
-        let directory = try TempDirectory()
-        let source = try directory.makeFile("Notes.md")
-        let presenter = Presenter(source)
-        defer { presenter.stop() }
-        let runner = directory.runner
+        @Test(.enabled(if: TrashAvailability.inTemporaryDirectory, "needs a Trash"))
+        func movingToTheTrashDeletesCoordinated() async throws {
+            let directory = try TempDirectory()
+            let source = try directory.makeFile("Notes.md")
+            let presenter = Presenter(source)
+            defer { presenter.stop() }
+            let runner = directory.runner
 
-        let trashed = try await runner.trash(FileItem.ID(source.path))
-        defer { try? TrashService().restore(trashed) }
+            let trashed = try await runner.trash(FileItem.ID(source.path))
+            defer { try? TrashService().restore(trashed) }
 
-        #expect(await presenter.hears("delete", within: Self.deadline))
-    }
+            #expect(await presenter.hears("delete", within: Self.deadline))
+        }
 
-    @Test func aNewFolderIsWrittenCoordinated() async throws {
-        let directory = try TempDirectory()
-        let parent = try directory.makeFolder("Projects")
-        let presenter = Presenter(parent.appendingPathComponent("New"))
-        defer { presenter.stop() }
+        @Test func aNewFolderIsWrittenCoordinated() async throws {
+            let directory = try TempDirectory()
+            let parent = try directory.makeFolder("Projects")
+            let presenter = Presenter(parent.appendingPathComponent("New"))
+            defer { presenter.stop() }
 
-        _ = try await directory.runner.createFolder(
-            in: FileItem.ID(parent.path), named: "New")
+            _ = try await directory.runner.createFolder(
+                in: FileItem.ID(parent.path), named: "New")
 
-        #expect(await presenter.hears("write", within: Self.deadline))
+            #expect(await presenter.hears("write", within: Self.deadline))
+        }
     }
 }
 
