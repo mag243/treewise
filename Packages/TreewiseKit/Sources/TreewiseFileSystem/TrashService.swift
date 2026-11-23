@@ -7,15 +7,17 @@ public struct TrashService: Sendable {
     /// Creates the service.
     public init() {}
 
-    /// Whether `trashItem` coordinates the item with its provider itself, as on iOS 27 and
-    /// later; a coordinated write around it there waits for ever, as the two wait on each
-    /// other (ADR 0047). On the Mac and on iOS 18 it does not, so callers coordinate it.
-    public static var coordinatesItself: Bool {
+    /// Whether callers leave `trashItem` without a coordinated access of their own, as on
+    /// iOS: there it hands the item to its provider, which coordinates it, and on iOS 27 a
+    /// coordinated write around it waits for ever, as the two wait on each other (ADR 0047).
+    /// On the Mac it does not coordinate, so callers do.
+    public static let coordinatesItself: Bool = {
         #if os(iOS)
-            if #available(iOS 27, *) { return true }
+            true
+        #else
+            false
         #endif
-        return false
-    }
+    }()
 
     /// Moves an item to the Trash of its volume.
     ///
