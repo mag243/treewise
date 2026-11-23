@@ -39,6 +39,22 @@ final class SettingsAndFavoritesTests: XCTestCase {
     }
 
     @MainActor
+    func testAFavoriteSwipedAwayIsRemoved() {
+        let app = openDocuments()
+        row("Projects", in: app).press(forDuration: 1)
+        app.buttons["Add to Favorites"].firstMatch.tap()
+        let favorite = sidebar(of: app).staticTexts["Projects"]
+        XCTAssertTrue(favorite.waitForExistence(timeout: Self.timeout), "in Favorites")
+
+        swipeLeft(favorite)
+        let remove = app.buttons["Remove from Favorites"].firstMatch
+        if remove.waitForExistence(timeout: 2) { remove.tap() }
+
+        XCTAssertTrue(app.eventually { !favorite.exists }, "removed")
+        XCTAssertEqual(app.state, .runningForeground, "still running")
+    }
+
+    @MainActor
     func testAFolderAddedToFavoritesOpensFromTheSidebarAndIsRemoved() {
         let app = openDocuments()
         row("Projects", in: app).press(forDuration: 1)

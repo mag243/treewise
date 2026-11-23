@@ -28,6 +28,16 @@ extension XCTestCase {
         app.staticTexts[name].firstMatch
     }
 
+    /// Drags a finger across the whole of `element` from right to left: a full swipe, which
+    /// performs a row's first swipe action at once on iOS 27 and shows its buttons on iOS 18.
+    /// XCUITest's own swipe finds no visible frame for the sidebar's rows on iOS 18.
+    @MainActor
+    func swipeLeft(_ element: XCUIElement) {
+        let start = element.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        let end = element.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5))
+        start.press(forDuration: 0.05, thenDragTo: end)
+    }
+
     @MainActor
     func sidebar(of app: XCUIApplication) -> XCUIElement {
         app.descendants(matching: .any)["locations"].firstMatch

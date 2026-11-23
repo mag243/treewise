@@ -31,9 +31,46 @@ final class OnMyIPadTests: XCTestCase {
         XCTAssertTrue(app.eventually { !self.row(next, in: app).exists }, "cleaned up")
     }
 
+    /// A favorite whose location was removed and added again is a favorite again, and is
+    /// removed as any other.
+    @MainActor
+    func testAFavoriteOfALocationAddedAgainIsRemoved() {
+        let app = launch(state: UUID().uuidString, fixture: false)
+        addOnMyIPad(in: app)
+        let folder = "Favorite \(UUID().uuidString.prefix(8))"
+        makeFolder(folder, in: app)
+        row(folder, in: app).press(forDuration: 1)
+        app.buttons["Add to Favorites"].firstMatch.tap()
+        let favorite = sidebar(of: app).staticTexts[folder]
+        XCTAssertTrue(favorite.waitForExistence(timeout: Self.timeout), "in Favorites")
+
+        let location = sidebar(of: app).staticTexts["On My iPad"]
+        location.press(forDuration: 1)
+        app.buttons["Remove Location"].firstMatch.tap()
+        XCTAssertTrue(app.eventually { !location.exists }, "the location is removed")
+        addOnMyIPad(in: app)
+        XCTAssertTrue(favorite.waitForExistence(timeout: Self.timeout), "a favorite again")
+
+        swipeLeft(favorite)
+        // A swipe across the whole row removes it at once, as on iOS 27; a shorter one shows
+        // the button.
+        let remove = app.buttons["Remove from Favorites"].firstMatch
+        if remove.waitForExistence(timeout: 2) { remove.tap() }
+
+        XCTAssertTrue(app.eventually { !favorite.exists }, "removed")
+        XCTAssertEqual(app.state, .runningForeground, "still running")
+        moveToTrash(folder, in: app)
+    }
+
+    /// A row of the folder shown, not a favorite of the same name in the sidebar.
+    @MainActor
+    private func folderRow(_ name: String, in app: XCUIApplication) -> XCUIElement {
+        app.collectionViews["folderTable"].staticTexts[name].firstMatch
+    }
+
     @MainActor
     private func moveToTrash(_ name: String, in app: XCUIApplication) {
-        row(name, in: app).press(forDuration: 1)
+        folderRow(name, in: app).press(forDuration: 1)
         app.buttons["Move to Trash"].firstMatch.tap()
     }
 

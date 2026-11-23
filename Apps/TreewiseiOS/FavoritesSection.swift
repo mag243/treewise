@@ -16,7 +16,7 @@ struct FavoritesSection: View {
                 Label(folder.name, systemImage: ItemSymbol.name(for: folder))
                     .tag(folder.id)
                     .contextMenu { removeButton(folder.id) }
-                    .swipeActions { removeButton(folder.id) }
+                    .swipeActions { swipeRemoveButton(folder.id) }
                     .takesDrops(on: folder, with: drops)
             }
             .onMove(perform: move)
@@ -26,7 +26,7 @@ struct FavoritesSection: View {
                     .foregroundStyle(.secondary)
                     .accessibilityHint(Text("Not available."))
                     .contextMenu { removeButton(folder) }
-                    .swipeActions { removeButton(folder) }
+                    .swipeActions { swipeRemoveButton(folder) }
             }
         } header: {
             Text("Favorites")
@@ -48,6 +48,19 @@ struct FavoritesSection: View {
         } label: {
             Label("Remove from Favorites", systemImage: "star.slash")
         }
+    }
+
+    /// Remove from Favorites as a swipe shows it: red, but without the destructive role, with
+    /// which SwiftUI takes the row away itself on a full swipe, before the favorites change.
+    /// After the sidebar was built again under the document picker, that left SwiftUI's list
+    /// deleting the row twice, which ended the app (iOS 27).
+    private func swipeRemoveButton(_ folder: FileItem.ID) -> some View {
+        Button {
+            Task { await browser.removeFavorite(folder) }
+        } label: {
+            Label("Remove from Favorites", systemImage: "star.slash")
+        }
+        .tint(.red)
     }
 
     private func move(_ source: IndexSet, to destination: Int) {
