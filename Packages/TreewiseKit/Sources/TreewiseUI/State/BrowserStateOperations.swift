@@ -220,6 +220,7 @@ extension BrowserState {
         }
         let trashed = await perform(
             name: Self.actionName("Move to Trash"), undoManager: undoManager,
+            touching: Set(items.compactMap(\.parentID)),
             whenFailing: { offerToDeletePermanently(items, after: $0) },
             { try await $0.moveToTrash(ids) })
         guard trashed != nil else { return }
@@ -259,7 +260,10 @@ extension BrowserState {
         let name = Self.actionName(mode == .move ? "Move" : "Copy")
         let control = TransferControl()
         let result = await runInTurn(control: control, progress: nil) {
-            await self.perform(name: name, undoManager: undoManager) { operations in
+            await self.perform(
+                name: name, undoManager: undoManager,
+                touching: mode == .move ? Set(items.compactMap(\.parentID)) : []
+            ) { operations in
                 try await operations.transfer(
                     items, to: folder, mode: mode, resolver: resolver,
                     progress: self.reporter(), control: control)
@@ -309,14 +313,14 @@ extension BrowserState {
         return result
     }
 
-    /// Runs an operation, registers its undo, reloads what the panes show and
-    /// records a failure. Returns `nil` when the operation failed.
-    @discardableResult
     /// Performs an operation, registers its undo and reads the folders shown again; on a
     /// failure, `whenFailing` runs before the failure shows, so that what an alert offers
-    /// with it is there as the alert is built.
+    /// with it is there as the alert is built. The folders its items are in now, and
+    /// `touching`, where it took items from, are told as changed, by it and by its undo
+    /// (ADR 0112). Returns `nil` when the operation failed.
+    @discardableResult
     func perform(
-        name: String, undoManager: UndoManager?,
+        name: String, undoManager: UndoManager?, touching: Set<FileItem.ID> = [],
         whenFailing: (FileSystemError) -> Void = { _ in },
         _ operation: (any FileOperating) async throws -> OperationResult
     ) async -> OperationResult? {
@@ -324,13 +328,18 @@ extension BrowserState {
         do {
             let result = try await operation(operations)
             failure = nil
-            registerUndo(Task { result.undo }, name: name, undoManager: undoManager)
+            let touched = touching.union(result.items.compactMap(\.parentID))
+            registerUndo(
+                Task { result.undo }, name: name, undoManager: undoManager, touching: touched)
+            folderChanges.note(touched)
             await reloadShownFolders()
             return result
         } catch {
             let failure = FileSystemError(error)
             whenFailing(failure)
             self.failure = failure
+            // A stopped or failed operation may have changed some of them.
+            folderChanges.note(touching)
             await reloadShownFolders()
             return nil
         }

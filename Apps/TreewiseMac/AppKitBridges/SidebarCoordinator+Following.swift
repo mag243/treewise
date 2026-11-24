@@ -40,6 +40,21 @@ extension SidebarCoordinator {
         Task { await readAgain(node, folder: folder) }
     }
 
+    /// Reads again the rows of folders whose entries Treewise changed (ADR 0112): a row read
+    /// before gets its subfolders anew, and one never opened is checked for subfolders, so
+    /// its triangle comes or goes, open in the tree or not.
+    func readAgain(changed folders: Set<FileItem.ID>) {
+        for folder in folders {
+            for node in rows(of: folder) {
+                if node.children != nil {
+                    Task { await readAgain(node, folder: folder) }
+                } else {
+                    Task { await dropTriangles(of: [node]) }
+                }
+            }
+        }
+    }
+
     /// Reads a row's subfolders again: a row still there is kept, with its open folders
     /// and the selection; a new folder gets a row; a gone one loses its row and its watch.
     func readAgain(_ node: SidebarNode, folder: FileItem.ID) async {
@@ -84,12 +99,18 @@ extension SidebarCoordinator {
 
     /// The row in Locations whose subfolders have been read, for `folder`.
     private func readRow(of folder: FileItem.ID) -> SidebarNode? {
+        rows(of: folder).first { $0.children != nil }
+    }
+
+    /// Every row in Locations for `folder`, read or not.
+    private func rows(of folder: FileItem.ID) -> [SidebarNode] {
         var pending = Array(roots.dropFirst())
+        var found: [SidebarNode] = []
         while let node = pending.popLast() {
-            if node.item?.id == folder, node.children != nil { return node }
+            if node.item?.id == folder { found.append(node) }
             pending += node.children ?? []
         }
-        return nil
+        return found
     }
 
     /// Stops following the rows and every row below them.

@@ -10,20 +10,23 @@ extension BrowserState {
     /// step, which waits for that task's record (ADR 0018).
     ///
     /// `alongside` is what the same step changes beside the files, undone after them and
-    /// redone after them (ADR 0139).
+    /// redone after them (ADR 0139). `touching` are the folders whose entries the step
+    /// changed, which its undo and redo change again and tell as changed (ADR 0112).
     func registerUndo(
         _ record: Task<UndoRecord, Never>, name: String, undoManager: UndoManager?,
-        alongside: UndoAlongside? = nil
+        alongside: UndoAlongside? = nil, touching: Set<FileItem.ID> = []
     ) {
         guard let undoManager else { return }
         undoManager.registerUndo(withTarget: self) { browser in
             let inverse = Task { @MainActor in
                 let redo = await browser.performUndo(record.value)
                 await alongside?.undo()
+                browser.folderChanges.note(touching)
                 return redo
             }
             browser.registerUndo(
-                inverse, name: name, undoManager: undoManager, alongside: alongside?.reversed)
+                inverse, name: name, undoManager: undoManager, alongside: alongside?.reversed,
+                touching: touching)
         }
         undoManager.setActionName(name)
     }

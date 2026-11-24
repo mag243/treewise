@@ -73,7 +73,8 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
                 locations: LaunchOptions.locations, folderSettings: AppServices.folderSettings),
             watcher: DirectoryWatcher(watchesFileChanges: reader.isInCloudFolder),
             startFolder: requested ?? settings.startFolder(home: home, lookUp: lookUp),
-            homeFolder: home, settings: settings, clipboard: AppServices.clipboard)
+            homeFolder: home, settings: settings, clipboard: AppServices.clipboard,
+            folderChanges: AppServices.folderChanges)
         browser.licences = LaunchOptions.licenceKeeper(for: settings)
         return browser
     }

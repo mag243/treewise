@@ -24,6 +24,18 @@ final class SidebarController: NSViewController {
     override func loadView() {
         view = outline.makeScrollView()
         Observing.follow(self) { $0.update() }
+        followFolderChanges()
+    }
+
+    /// Reads the tree's rows of the folders any window's operations changed (ADR 0112).
+    private func followFolderChanges() {
+        let changes = browser.folderChanges.changes()
+        Task { [weak self] in
+            for await folders in changes {
+                guard let self else { return }
+                outline.readAgain(changed: folders)
+            }
+        }
     }
 
     override func viewWillAppear() {

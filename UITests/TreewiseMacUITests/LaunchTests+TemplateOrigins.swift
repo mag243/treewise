@@ -3,7 +3,7 @@ import XCTest
 /// The details pane says which templates a folder was made from (ADR 0141), also for the
 /// folder selected while a template fills it.
 extension LaunchTests {
-    private static let yearTemplate = "Plain Year"
+    static let yearTemplate = "Plain Year"
 
     @MainActor
     func testTheDetailsPaneShowsMadeFromOnceATemplateFilledTheSelectedFolder() throws {
@@ -39,7 +39,7 @@ extension LaunchTests {
 
     /// Writes a year's template where the app keeps a UI test's templates: beside its root,
     /// in the folder named after it.
-    private func seedYearTemplate() throws {
+    func seedYearTemplate() throws {
         let root = try XCTUnwrap(self.root)
         let settings = root.deletingLastPathComponent().appendingPathComponent(
             root.lastPathComponent + "-folder-settings", isDirectory: true)

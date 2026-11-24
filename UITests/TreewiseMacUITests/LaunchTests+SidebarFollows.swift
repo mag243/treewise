@@ -45,6 +45,33 @@ extension LaunchTests {
             "the folder now holds a folder to open")
     }
 
+    /// A folder neither open in the tree nor shown in a pane, filled by Treewise, gets its
+    /// triangle back: what Treewise does tells the tree (ADR 0112).
+    @MainActor
+    func testAFolderFilledFromATemplateGetsADisclosureTriangle() throws {
+        try seedYearTemplate()
+        let root = try XCTUnwrap(self.root)
+        try FileManager.default.createDirectory(
+            at: root.appendingPathComponent("2028"), withIntermediateDirectories: false)
+        let (app, window) = try launchWithTheRootOpenInTheSidebar()
+        let row = window.outlines.outlineRows.containing(.staticText, identifier: "2028")
+            .firstMatch
+        XCTAssertTrue(row.appeared(timeout: Self.launchTimeout))
+        XCTAssertTrue(app.eventually { !row.disclosureTriangles.firstMatch.exists })
+        window.tables.staticTexts["2028"].rightClick()
+        let menu = window.tables.menus.submenuItem(
+            "New Folders from Template", in: "Folder Structure")
+        XCTAssertTrue(menu.appeared(timeout: Self.launchTimeout), "the menu offers templates")
+        menu.hover()
+        menu.menuItems[Self.yearTemplate].click()
+        let create = window.sheets.firstMatch.buttons["Create Folders"]
+        XCTAssertTrue(create.appeared(timeout: Self.launchTimeout), "the sheet shows")
+        create.click()
+        XCTAssertTrue(
+            app.eventually { row.disclosureTriangles.firstMatch.exists },
+            "the folder now holds folders to open")
+    }
+
     /// Starts Treewise, goes into Documents and back, so the sidebar opens the root and
     /// the list shows it.
     @MainActor

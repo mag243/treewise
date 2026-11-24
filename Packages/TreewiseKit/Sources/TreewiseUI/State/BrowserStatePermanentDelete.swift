@@ -18,7 +18,9 @@ extension BrowserState {
         itemsWithoutTrash = []
         guard !items.isEmpty else { return }
         let ids = items.map(\.id)
-        let deleted = await perform(name: "", undoManager: nil) { operations in
+        let deleted = await perform(
+            name: "", undoManager: nil, touching: Set(items.compactMap(\.parentID))
+        ) { operations in
             for id in ids {
                 try Task.checkCancellation()
                 try await operations.deletePermanently(id)
