@@ -2,27 +2,43 @@ import SwiftUI
 import TreewiseCore
 import TreewiseUI
 
-/// The choice of how files' icons look (ADR 0151), each choice shown with a few files.
+/// The choice of how files' icons look (ADR 0151): one row with the chosen look's
+/// samples and name, which opens the four looks, each shown with a few files.
 struct FileIconSettings: View {
     let settings: BrowserSettings
 
-    /// The files each choice is shown with: a PDF, a spreadsheet and a document.
+    /// The files each look is shown with: a PDF, a spreadsheet and a document.
     private static let samples = ["Sample.pdf", "Sample.xlsx", "Sample.docx"]
 
     var body: some View {
         Section {
+            NavigationLink {
+                looks
+            } label: {
+                LabeledContent {
+                    Text(Self.title(of: settings.fileIconLook))
+                } label: {
+                    HStack(spacing: 12) {
+                        Self.sampleIcons(settings.fileIconLook)
+                        Text("File Icons")
+                    }
+                }
+            }
+            // The UI tests find it by it.
+            .accessibilityIdentifier("fileIconLook")
+        }
+    }
+
+    /// The four looks to choose from.
+    private var looks: some View {
+        Form {
             Picker(
                 selection: Binding(
                     get: { settings.fileIconLook }, set: { settings.fileIconLook = $0 })
             ) {
                 ForEach(FileIconLook.allCases, id: \.self) { look in
                     HStack(spacing: 12) {
-                        HStack(spacing: 4) {
-                            ForEach(Self.sampleItems, id: \.id) { FileIcon(item: $0) }
-                        }
-                        .environment(\.fileIconLook, look)
-                        // The samples show the look; the choice's name says it.
-                        .accessibilityHidden(true)
+                        Self.sampleIcons(look)
                         Text(Self.title(of: look))
                     }
                     .tag(look)
@@ -31,13 +47,22 @@ struct FileIconSettings: View {
                 Text("File Icons")
             }
             .pickerStyle(.inline)
-            // The section's header names it.
+            // The screen's title names it.
             .labelsHidden()
             // The UI tests find it by it.
-            .accessibilityIdentifier("fileIconLook")
-        } header: {
-            Text("File Icons")
+            .accessibilityIdentifier("fileIconLooks")
         }
+        .navigationTitle(Text("File Icons"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// The samples in a look; the look's name says what they show.
+    private static func sampleIcons(_ look: FileIconLook) -> some View {
+        HStack(spacing: 4) {
+            ForEach(sampleItems, id: \.id) { FileIcon(item: $0) }
+        }
+        .environment(\.fileIconLook, look)
+        .accessibilityHidden(true)
     }
 
     private static func title(of look: FileIconLook) -> LocalizedStringKey {

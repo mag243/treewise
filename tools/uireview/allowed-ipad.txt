@@ -76,6 +76,14 @@ general-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
 general-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 general-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
 general-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+file-icons-landscape-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+file-icons-landscape-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+file-icons-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+file-icons-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
+file-icons-portrait-11inch | outsideWindow | image ""  # iPadOS's sheet shadow
+file-icons-portrait-11inch | overlap | button "gearshape"  # iPadOS 27's tab bar
+file-icons-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
+file-icons-portrait-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar
 about-landscape-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 about-portrait-11inch | overlap | button "textformat"  # iPadOS 27's tab bar
 settings-landscape-11inch | overlap | button "folder.badge.gearshape"  # iPadOS 27's tab bar

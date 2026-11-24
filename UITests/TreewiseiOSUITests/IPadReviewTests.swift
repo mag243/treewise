@@ -103,7 +103,8 @@ final class IPadReviewTests: XCTestCase {
         }
     }
 
-    /// Settings with its saved patterns and About, and the sidebar with a favorite (ADR 0130, 0131).
+    /// Settings with its file icons, saved patterns and About, and the sidebar with a favorite
+    /// (ADR 0130, 0131, 0151).
     @MainActor
     func testSettings() throws {
         try eachReviewVariant { variant in
@@ -118,6 +119,12 @@ final class IPadReviewTests: XCTestCase {
             let syncs = app.switches["syncsSettings"].firstMatch
             XCTAssertTrue(syncs.waitForExistence(timeout: Self.timeout))
             review(app, as: "general", variant: variant)
+            app.buttons["fileIconLook"].firstMatch.tap()
+            let looks = app.navigationBars["File Icons"]
+            XCTAssertTrue(looks.waitForExistence(timeout: Self.timeout))
+            review(app, as: "file-icons", variant: variant)
+            looks.buttons.firstMatch.tap()
+            XCTAssertTrue(syncs.waitForExistence(timeout: Self.timeout))
             app.buttons["Names"].firstMatch.tap()
             let saved = app.buttons["savedPatterns"].firstMatch
             XCTAssertTrue(saved.waitForExistence(timeout: Self.timeout))
