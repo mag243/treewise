@@ -62,7 +62,9 @@ jobs:
             !build/DerivedData/Index.noindex
             Packages/TreewiseKit/.build
 
-      # The same as tools/build.sh ci, in separate steps: each shows its own time.
+      # tools/build.sh ci without the UI reviews, in separate steps: each shows its own
+      # time. The Mac review needs treewise-modules beside treewise and the iPad review
+      # three simulators, so both run only on the owner's Mac (ADR 0152).
       - name: Sample package tests that hang
         # Healthy package tests take seconds, so any still running after six minutes
         # hang. The samples show where each thread waits; the patterns are bracketed
