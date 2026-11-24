@@ -61,8 +61,9 @@
 #   quick       check + test: the gate for a step that leaves the apps alone.
 #   verify      check + test + build: the gate for a change to an app. Leaves the
 #               screen alone (ADR 0028).
-#   ci          check + test + build + apptest: when the owner says the UI tests may
-#               take the screen, and before a release. The default.
+#   ci          check + test + build + apptest + uireview + iosreview (ADR 0152): when the
+#               owner says the UI tests may take the screen, and before a release. The
+#               default.
 #   all         ci + export.
 #   official    The official build (ADR 0057): the macOS app from the workspace in the
 #               private treewise-modules folder beside this one (TREEWISE_MODULES_DIR),
@@ -1254,7 +1255,7 @@ run_command() {
     official) timed official cmd_official ;;
     quick) run_command check; run_command test ;;
     verify) run_command check; run_command test; run_command build ;;
-    ci) run_command verify; run_command apptest ;;
+    ci) run_command verify; run_command apptest; run_command uireview; run_command iosreview ;;
     all) run_command ci; run_command export ;;
     -h|--help|help) usage; exit 0 ;;
     *) usage; fail "Unknown command: $1" ;;
