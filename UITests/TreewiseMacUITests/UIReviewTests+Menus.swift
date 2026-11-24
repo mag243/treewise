@@ -32,6 +32,25 @@ extension UIReviewTests {
             keepScreen(over: window, as: "browser-context-\(shot)", appearance: appearance)
             app.typeKey(.escape, modifierFlags: [])
         }
+        reviewMoveToMenu(in: window, app: app, appearance: appearance)
+    }
+
+    /// A folder's Move to ▸ (ADR 0147): the favorites with their icons and Choose Folder….
+    @MainActor
+    private func reviewMoveToMenu(in window: XCUIElement, app: XCUIApplication, appearance: String?)
+    {
+        let folder = window.tables.staticTexts["Projects"]
+        press(folder, in: window.scrollViews.firstMatch, .rightClick)
+        let moveTo = window.tables.menus.menuItems["Move to"]
+        XCTAssertTrue(moveTo.waitForExistence(timeout: Self.timeout), "Move to shows")
+        press(moveTo, .hover)
+        XCTAssertTrue(
+            moveTo.menuItems["Choose Folder…"].waitForExistence(timeout: Self.timeout),
+            "its submenu opens")
+        settleScreen()
+        keepScreen(over: window, as: "browser-context-move-to", appearance: appearance)
+        app.typeKey(.escape, modifierFlags: [])
+        app.typeKey(.escape, modifierFlags: [])
     }
 
     /// Keeps the part of the screen under `window`, with what lies over it, as a screen of

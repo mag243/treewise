@@ -13,15 +13,20 @@ final class ClosureMenuItem: NSMenuItem {
         self.handler = handler
         super.init(title: title, action: #selector(run), keyEquivalent: "")
         if let symbol {
-            image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
-            // macOS 27 hides a menu item's image unless asked; CI's older Xcode
-            // does not know the property (ADR 0012, ADR 0052).
-            #if compiler(>=6.4)
-                if #available(macOS 27, *) { preferredImageVisibility = .visible }
-            #endif
+            show(NSImage(systemSymbolName: symbol, accessibilityDescription: nil))
         }
         target = self
         isEnabled = enabled
+    }
+
+    /// Shows `image` beside the title.
+    func show(_ image: NSImage?) {
+        self.image = image
+        // macOS 27 hides a menu item's image unless asked; CI's older Xcode
+        // does not know the property (ADR 0012, ADR 0052).
+        #if compiler(>=6.4)
+            if #available(macOS 27, *) { preferredImageVisibility = .visible }
+        #endif
     }
 
     @available(*, unavailable)

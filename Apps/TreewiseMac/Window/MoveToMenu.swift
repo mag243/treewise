@@ -68,7 +68,7 @@ enum MoveToMenu {
         let item = ClosureMenuItem(title, enabled: enabled) { send(folder) }
         let icon = ItemIcon.image(for: folder)
         icon.size = NSSize(width: iconSide, height: iconSide)
-        item.image = icon
+        item.show(icon)
         return item
     }
 
