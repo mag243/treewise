@@ -7,28 +7,30 @@ public struct FileBadge: Equatable, Sendable {
     /// The kinds of file the icons tell apart by colour.
     public enum Kind: Sendable, CaseIterable {
         case pdf, document, spreadsheet, presentation, image, movie, audio, archive, code
-        case text, other
+        case executable, text, other
     }
 
     /// The longest extension the icon shows; a longer one would not fit its band.
     public static let longestLabel = 4
 
-    /// The office formats by extension: their types also conform to zip, and a few have
-    /// no type of their own on every system.
-    private static let officeKinds: [String: Kind] = [
+    /// The office formats and the installers by extension: their types conform to zip or
+    /// an archive, and a few have no type of their own on every system.
+    private static let extensionKinds: [String: Kind] = [
         "doc": .document, "docx": .document, "pages": .document, "rtf": .document,
         "odt": .document,
         "xls": .spreadsheet, "xlsx": .spreadsheet, "numbers": .spreadsheet,
         "csv": .spreadsheet, "tsv": .spreadsheet, "ods": .spreadsheet,
         "ppt": .presentation, "pptx": .presentation, "key": .presentation,
         "odp": .presentation,
+        "exe": .executable, "msi": .executable, "pkg": .executable, "apk": .executable,
     ]
 
-    /// The kinds that follow from a type's conformance, the first match counting.
+    /// The kinds that follow from a type's conformance, the first match counting: a jar
+    /// is an archive too, and a script is source code but not executable.
     private static let typeKinds: [(UTType, Kind)] = [
         (.pdf, .pdf), (.spreadsheet, .spreadsheet), (.presentation, .presentation),
         (.image, .image), (.movie, .movie), (.video, .movie), (.audio, .audio),
-        (.archive, .archive), (.sourceCode, .code), (.text, .text),
+        (.executable, .executable), (.archive, .archive), (.sourceCode, .code), (.text, .text),
     ]
 
     public let kind: Kind
@@ -45,7 +47,7 @@ public struct FileBadge: Equatable, Sendable {
     }
 
     private static func kind(of pathExtension: String) -> Kind {
-        if let kind = officeKinds[pathExtension] { return kind }
+        if let kind = extensionKinds[pathExtension] { return kind }
         guard !pathExtension.isEmpty, let type = UTType(filenameExtension: pathExtension)
         else { return .other }
         return typeKinds.first { type.conforms(to: $0.0) }?.1 ?? .other

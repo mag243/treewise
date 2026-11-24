@@ -30,19 +30,14 @@ enum FilePageStyle {
     /// How far a long label may shrink to fit.
     static let labelShrink: CGFloat = 0.6
 
-    /// The kind's colour, one of the system's, so dark mode follows.
-    static func colour(of kind: FileBadge.Kind) -> Color {
-        switch kind {
-        case .pdf: .red
-        case .document: .blue
-        case .spreadsheet: .green
-        case .presentation: .orange
-        case .image: .purple
-        case .movie: .teal
-        case .audio: .pink
-        case .archive: .brown
-        case .code: .indigo
-        case .text, .other: .gray
-        }
-    }
+    /// The kinds' colours, the system's, so dark mode follows; an executable's dark grey
+    /// is the same in both, and darker than the grey of text and every other file.
+    private static let colours: [FileBadge.Kind: Color] = [
+        .pdf: .red, .document: .blue, .spreadsheet: .green, .presentation: .orange,
+        .image: .purple, .movie: .teal, .audio: .pink, .archive: .brown, .code: .indigo,
+        .executable: Color(.darkGray),
+    ]
+
+    /// The kind's colour.
+    static func colour(of kind: FileBadge.Kind) -> Color { colours[kind] ?? .gray }
 }
