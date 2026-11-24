@@ -188,3 +188,4 @@ rename-suggestions-landscape | outsideWindow | button "assistantDictation"  # iP
 more-menu-landscape-iphone | outsideWindow | button "Size"  # iPadOS's menu, scrolled
 # Quick Look's own bar: its search and action buttons' frames touch while the preview loads.
 quick-look-landscape-11inch | overlap | button "QLTextItemViewControllerBarSearchRightButtonAccessibilityIde"  # Quick Look's own buttons
+quick-look-portrait-11inch | overlap | button "QLTextItemViewControllerBarSearchRightButtonAccessibilityIde"  # Quick Look's own buttons, while it loads
