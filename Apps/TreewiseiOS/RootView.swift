@@ -30,6 +30,7 @@ struct RootView: View {
             // Where only the height is compact, as on a Pro Max in landscape, the
             // iPhone's layout stays (ADR 0132); an iPad's height is never compact.
             .environment(\.horizontalSizeClass, heightClass == .compact ? .compact : widthClass)
+            .environment(\.fileIconLook, locations.settings.fileIconLook)
             // The menus' commands act on the window in front (ADR 0135).
             .focusedSceneValue(\.browserWindow, window)
             .onChange(of: isPickingFolder || isShowingSettings) { _, isPresenting in

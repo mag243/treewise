@@ -1296,6 +1296,38 @@
         }
       }
     },
+    "File Icons" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateisymbole"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestandsiconen"
+          }
+        }
+      }
+    },
+    "Filled Page" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gefülltes Blatt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gevuld vel"
+          }
+        }
+      }
+    },
     "Fits %@" : {
       "localizations" : {
         "de" : {
@@ -2535,6 +2567,38 @@
         }
       }
     },
+    "Page with Band" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blatt mit Band"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vel met band"
+          }
+        }
+      }
+    },
+    "Page with Label" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blatt mit Etikett"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vel met etiket"
+          }
+        }
+      }
+    },
     "Paste" : {
       "localizations" : {
         "de" : {
@@ -3645,6 +3709,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Synchroniseer instellingen via clouddrives"
+          }
+        }
+      }
+    },
+    "System Icons" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemsymbole"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeemiconen"
           }
         }
       }

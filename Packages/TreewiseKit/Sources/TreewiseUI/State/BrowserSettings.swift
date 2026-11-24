@@ -12,6 +12,7 @@ public final class BrowserSettings {
         static let showsExtensions = "showsExtensions"
         static let expandsSidebarToOpenFolder = "expandsSidebarToOpenFolder"
         static let rowDensity = "rowDensity"
+        static let fileIconLook = "fileIconLook"
         static let startFolder = "startFolder"
         static let doubleClickOpensIn = "doubleClickOpensIn"
         static let showsDetails = "showsDetails"
@@ -62,6 +63,10 @@ public final class BrowserSettings {
     /// How tall the list's rows are.
     public var rowDensity: RowDensity {
         didSet { store.setSetting(rowDensity.rawValue, for: Key.rowDensity) }
+    }
+    /// How files' icons look on the iPad and the iPhone (ADR 0151).
+    public var fileIconLook: FileIconLook {
+        didSet { store.setSetting(fileIconLook.rawValue, for: Key.fileIconLook) }
     }
     /// The folder a new window starts at; `nil` for home.
     public var startFolder: FileItem.ID? {
@@ -234,7 +239,8 @@ public final class BrowserSettings {
         showsHiddenFiles = store.setting(Key.showsHiddenFiles) == "true"
         showsExtensions = store.setting(Key.showsExtensions) != "false"
         expandsSidebarToOpenFolder = store.setting(Key.expandsSidebarToOpenFolder) != "false"
-        rowDensity = store.setting(Key.rowDensity).flatMap(RowDensity.init) ?? .medium
+        rowDensity = Self.choice(at: Key.rowDensity, in: store) ?? .medium
+        fileIconLook = Self.choice(at: Key.fileIconLook, in: store) ?? .pageWithLabel
         startFolder = store.setting(Key.startFolder).map { FileItem.ID($0) }
         doubleClickOpensIn =
             store.setting(Key.doubleClickOpensIn) == "otherPane" ? .otherPane : .samePane
@@ -254,8 +260,7 @@ public final class BrowserSettings {
         addOns =
             Self.decoded(AddOnPreferences.self, at: Key.addOns, in: store) ?? AddOnPreferences()
         personalDataInNames =
-            store.setting(Key.personalDataInNames).flatMap(PersonalDataInNames.init)
-            ?? .leaveOutOfApproveAll
+            Self.choice(at: Key.personalDataInNames, in: store) ?? .leaveOutOfApproveAll
         favoriteFolders = Self.decoded([String].self, at: Key.favoriteFolders, in: store)?
             .map { FileItem.ID($0) }
         recentTargets = RecentTargets(
@@ -270,6 +275,14 @@ public final class BrowserSettings {
         syncLeavesOut = Set(Self.decoded([String].self, at: Key.syncLeavesOut, in: store) ?? [])
         syncStartedHere = Set(
             Self.decoded([String].self, at: Key.syncStartedHere, in: store) ?? [])
+    }
+
+    /// A setting kept as one of a choice's raw values, or nil when there is none or it is
+    /// not one of them.
+    private static func choice<Value: RawRepresentable<String>>(
+        at key: String, in store: any SettingsStoring
+    ) -> Value? {
+        store.setting(key).flatMap { Value(rawValue: $0) }
     }
 
     /// A setting that is on unless turned off, kept as `false`, or as `0` by a boolean.

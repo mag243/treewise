@@ -129,6 +129,7 @@ settings-landscape-iphone | outsideWindow | text "For each folder you suggest na
 # About scrolls there too: its links pass under the tab bar and start below the edge.
 about-landscape-iphone | overlap | button "Website"  # scrolls under the tab bar
 about-landscape-iphone | overlap | button "GitHub"  # scrolls under the tab bar
+general-landscape-iphone | overlap | text "Folder settings, saved patterns and templates are kept in a "  # scrolls under the tab bar
 about-landscape-iphone | outsideWindow | button "Privacy"  # scrolls
 about-landscape-iphone | outsideWindow | text "Privacy"  # scrolls
 about-landscape-iphone | outsideWindow | image "arrow.up.right.square"  # scrolls

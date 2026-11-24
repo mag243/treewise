@@ -13,6 +13,7 @@ struct GeneralSettings: View {
 
     var body: some View {
         Form {
+            FileIconSettings(settings: settings)
             Section {
                 Toggle(
                     "Sync settings through cloud drives",

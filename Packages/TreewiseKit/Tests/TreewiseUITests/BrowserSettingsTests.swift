@@ -17,6 +17,19 @@ import TreewiseUI
         #expect(settings.doubleClickOpensIn == .samePane)
         #expect(!settings.showsDetails)
         #expect(settings.terminalApp == nil)
+        #expect(settings.fileIconLook == .pageWithLabel)
+    }
+
+    @Test func keepsTheFileIconLook() {
+        let store = MemorySettingsStore()
+        BrowserSettings(store: store).fileIconLook = .system
+        #expect(BrowserSettings(store: store).fileIconLook == .system)
+    }
+
+    @Test func unknownFileIconLookIsTheDefault() {
+        let store = MemorySettingsStore()
+        store.setSetting("sparkles", for: "fileIconLook")
+        #expect(BrowserSettings(store: store).fileIconLook == .pageWithLabel)
     }
 
     @Test func showsTheNameReviewsPanelsUntilClosed() {

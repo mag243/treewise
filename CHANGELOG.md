@@ -15,7 +15,7 @@ Move and copy in fewer steps, and swipe on the iPad and the iPhone.
 - **Swipe a row on the iPad and the iPhone:** swipe left for Move to Trash, which a full swipe does at once, and More… with Share, Rename and the rest; swipe right for Cut, which a full swipe does at once, and Copy.
 
 ### Improved
-- **The right icon for each file on the iPad and the iPhone:** documents, pictures, archives and the rest show the system's own icon for their kind, as in the Files app.
+- **Clearer file icons on the iPad and the iPhone:** each file shows its type at a glance, as a page with a coloured label and its extension: red for PDF, green for spreadsheets, blue for documents. Settings > General > File Icons offers two other looks and the system's own icons.
 
 ### Fixed
 - Swiping a favorite away on the iPad or the iPhone, after its location was removed and added again, no longer ends the app.
