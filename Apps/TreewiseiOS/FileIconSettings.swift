@@ -3,7 +3,7 @@ import TreewiseCore
 import TreewiseUI
 
 /// The choice of how files' icons look (ADR 0151): one row with the chosen look's
-/// samples and name, which opens the four looks, each shown with a few files.
+/// samples, which opens the four looks, each shown with a few files and its name.
 struct FileIconSettings: View {
     let settings: BrowserSettings
 
@@ -16,14 +16,13 @@ struct FileIconSettings: View {
                 looks
             } label: {
                 LabeledContent {
-                    Text(Self.title(of: settings.fileIconLook))
+                    Self.sampleIcons(settings.fileIconLook)
                 } label: {
-                    HStack(spacing: 12) {
-                        Self.sampleIcons(settings.fileIconLook)
-                        Text("File Icons")
-                    }
+                    Text("File Icons")
                 }
             }
+            // The samples show the chosen look; VoiceOver reads its name.
+            .accessibilityValue(Text(Self.title(of: settings.fileIconLook)))
             // The UI tests find it by it.
             .accessibilityIdentifier("fileIconLook")
         }
