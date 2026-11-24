@@ -52,6 +52,15 @@ final class DetailsPane: NSView {
             title.widthAnchor.constraint(equalToConstant: Self.width - Self.padding * 2),
         ])
         Observing.follow(self) { $0.update() }
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(foldersMade), name: FolderTemplateSheet.foldersMade,
+            object: nil)
+    }
+
+    /// Folders made from a template may be the one selected, read before it was made from it.
+    @objc private func foldersMade() {
+        madeFrom = nil
+        update()
     }
 
     @available(*, unavailable)
