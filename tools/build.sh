@@ -705,7 +705,8 @@ cmd_iosreview() {
 # The App Store's screenshots (ADR 0118, 0145): AppStoreScreenshotTests in each language of
 # the listing with the status bar's time fixed, copied to
 # build/appstore/screenshots/<device>/<locale>/ for tools/appstore/upload.py. The 13-inch
-# iPad's; with --iphone the iPhone's, on the iPhone 16 Pro; with --duo the iPhone Duo's, its
+# iPad's; with --iphone the iPhone's, on the iPhone 16 Pro, both on the newest iOS as the
+# Duo (ADR 0150); with --duo the iPhone Duo's, its
 # outer display with the Duo folded shut and its inner one with it open, as duoctl folds it.
 # --show opens Simulator.
 cmd_appstorescreenshots() {
@@ -722,7 +723,7 @@ cmd_appstorescreenshots() {
   require_project
   local udid
   case "$device" in
-    ipad) appstore_walk "$(ipad_simulator "$show")" ipad ;;
+    ipad) appstore_walk "$(ipad_simulator "$show" "$IOS_APPSTORE_IPAD_SIMULATOR_NAME")" ipad ;;
     iphone)
       appstore_walk "$(ipad_simulator "$show" "$IOS_APPSTORE_IPHONE_SIMULATOR_NAME")" iphone
       ;;
