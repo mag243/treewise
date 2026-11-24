@@ -22,6 +22,8 @@ Move and copy in fewer steps, and swipe on the iPad and the iPhone.
 - A folder structure template deleted on the iPad stays deleted.
 - Move to Trash in On My iPad no longer hangs on iPadOS 27.
 - A zip with a password is no longer now and then called damaged when you open or extract it on the Mac; Treewise says it needs a password.
+- On the Mac, the details pane shows Made from for a folder you fill from a template while it is selected, without selecting another first.
+- On the Mac, a folder in the sidebar shows its disclosure triangle as soon as Treewise makes folders in it, also when it is closed in the tree, and a folder that gained folders while its parent was closed shows it when the parent opens again.
 
 ## [1.0.0] - 2026-11-21
 

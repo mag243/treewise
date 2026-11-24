@@ -72,6 +72,36 @@ extension LaunchTests {
             "the folder now holds folders to open")
     }
 
+    /// A folder that gained subfolders while its parent was closed in the tree gets its
+    /// triangle once the parent opens again (ADR 0112).
+    @MainActor
+    func testOpeningAFolderAgainChecksItsRowsTriangles() throws {
+        let root = try XCTUnwrap(self.root)
+        try FileManager.default.createDirectory(
+            at: root.appendingPathComponent("Holder/Inner"), withIntermediateDirectories: true)
+        let (app, window) = try launchWithTheRootOpenInTheSidebar()
+        let holder = window.outlines.outlineRows.containing(.staticText, identifier: "Holder")
+            .firstMatch
+        XCTAssertTrue(holder.appeared(timeout: Self.launchTimeout))
+        holder.disclosureTriangles.firstMatch.click()
+        let inner = window.outlines.outlineRows.containing(.staticText, identifier: "Inner")
+            .firstMatch
+        XCTAssertTrue(inner.appeared(timeout: Self.launchTimeout), "Holder opens")
+        XCTAssertTrue(app.eventually { !inner.disclosureTriangles.firstMatch.exists })
+        holder.disclosureTriangles.firstMatch.click()
+        XCTAssertTrue(inner.disappeared(timeout: Self.launchTimeout), "Holder closes")
+        try FileManager.default.createDirectory(
+            at: root.appendingPathComponent("Holder/Inner/Deep"), withIntermediateDirectories: false
+        )
+
+        holder.disclosureTriangles.firstMatch.click()
+
+        XCTAssertTrue(inner.appeared(timeout: Self.launchTimeout), "Holder opens again")
+        XCTAssertTrue(
+            app.eventually { inner.disclosureTriangles.firstMatch.exists },
+            "Inner now holds a folder to open")
+    }
+
     /// Starts Treewise, goes into Documents and back, so the sidebar opens the root and
     /// the list shows it.
     @MainActor

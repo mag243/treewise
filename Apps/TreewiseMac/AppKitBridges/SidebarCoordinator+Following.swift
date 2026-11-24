@@ -10,9 +10,10 @@ extension SidebarCoordinator {
             node.children != nil, let folder = node.item?.id,
             !watches.watches(ObjectIdentifier(node))
         else { return }
-        // Opened again after it was closed, and not followed meanwhile.
+        // Opened again after it was closed, and not followed meanwhile: its rows may have
+        // gained or lost subfolders too.
         watch(node, folder: folder)
-        Task { await readAgain(node, folder: folder) }
+        Task { await readAgain(node, folder: folder, checkingTriangles: true) }
     }
 
     func outlineViewItemDidCollapse(_ notification: Notification) {
@@ -57,11 +58,17 @@ extension SidebarCoordinator {
 
     /// Reads a row's subfolders again: a row still there is kept, with its open folders
     /// and the selection; a new folder gets a row; a gone one loses its row and its watch.
-    func readAgain(_ node: SidebarNode, folder: FileItem.ID) async {
+    /// `checkingTriangles` checks the rows' triangles even when the subfolders are the same.
+    func readAgain(
+        _ node: SidebarNode, folder: FileItem.ID, checkingTriangles: Bool = false
+    ) async {
         guard let loadSubfolders, let outline else { return }
         let subfolders = await loadSubfolders(folder)
-        guard let before = node.children, before.compactMap(\.item?.id) != subfolders.map(\.id)
-        else { return }
+        guard let before = node.children else { return }
+        guard before.compactMap(\.item?.id) != subfolders.map(\.id) else {
+            if checkingTriangles { await checkTriangles(of: before) }
+            return
+        }
         let pairs = before.compactMap { row in row.item.map { ($0.id, row) } }
         let kept = Dictionary(pairs, uniquingKeysWith: Self.first)
         let open = before.filter { outline.isItemExpanded($0) }
