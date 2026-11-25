@@ -18,6 +18,13 @@ import TreewiseUI
         #expect(!settings.showsDetails)
         #expect(settings.terminalApp == nil)
         #expect(settings.fileIconLook == .pageWithLabel)
+        #expect(settings.showsGitStatus)
+    }
+
+    @Test func keepsGitStatusTurnedOff() {
+        let store = MemorySettingsStore()
+        BrowserSettings(store: store).showsGitStatus = false
+        #expect(!BrowserSettings(store: store).showsGitStatus)
     }
 
     @Test func keepsTheFileIconLook() {

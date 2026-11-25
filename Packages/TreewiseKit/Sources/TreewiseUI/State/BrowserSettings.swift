@@ -16,6 +16,7 @@ public final class BrowserSettings {
         static let startFolder = "startFolder"
         static let doubleClickOpensIn = "doubleClickOpensIn"
         static let showsDetails = "showsDetails"
+        static let showsGitStatus = "showsGitStatus"
         static let lastSession = "lastSession"
         static let favoriteFolders = "favoriteFolders"
         static let recentTargets = "recentTargets"
@@ -84,6 +85,10 @@ public final class BrowserSettings {
     /// Whether windows show the details pane at their right (M5b).
     public var showsDetails: Bool {
         didSet { store.setSetting(String(showsDetails), for: Key.showsDetails) }
+    }
+    /// Whether items show their git state, and the status bar the branch (ADR 0149).
+    public var showsGitStatus: Bool {
+        didSet { store.setSetting(String(showsGitStatus), for: Key.showsGitStatus) }
     }
 
     /// The bundle identifier of the terminal Open in Terminal uses (ADR 0052);
@@ -245,6 +250,7 @@ public final class BrowserSettings {
         doubleClickOpensIn =
             store.setting(Key.doubleClickOpensIn) == "otherPane" ? .otherPane : .samePane
         showsDetails = store.setting(Key.showsDetails) == "true"
+        showsGitStatus = store.setting(Key.showsGitStatus) != "false"
         showsNameReviewPanel = Self.isOn(store.setting(Key.showsNameReviewPanel))
         showsNameReviewAddOns = Self.isOn(store.setting(Key.showsNameReviewAddOns))
         terminalApp = store.setting(Key.terminalApp)
@@ -272,9 +278,13 @@ public final class BrowserSettings {
             ?? TableColumnLayout()
         offersMissingFolders = store.setting(Key.offersMissingFolders) != "false"
         syncsSettings = store.setting(Key.syncsSettings) != "false"
-        syncLeavesOut = Set(Self.decoded([String].self, at: Key.syncLeavesOut, in: store) ?? [])
-        syncStartedHere = Set(
-            Self.decoded([String].self, at: Key.syncStartedHere, in: store) ?? [])
+        syncLeavesOut = Self.names(at: Key.syncLeavesOut, in: store)
+        syncStartedHere = Self.names(at: Key.syncStartedHere, in: store)
+    }
+
+    /// A setting kept as a JSON list of names, empty when there is none.
+    private static func names(at key: String, in store: any SettingsStoring) -> Set<String> {
+        Set(decoded([String].self, at: key, in: store) ?? [])
     }
 
     /// A setting kept as one of a choice's raw values, or nil when there is none or it is
