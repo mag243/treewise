@@ -1334,6 +1334,22 @@
         }
       }
     },
+    "Badges, the Git column and the branch for folders in a git repository. Treewise only reads them and never changes a repository." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges, die Git-Spalte und der Branch für Ordner in einem Git-Repository. Treewise liest sie nur und ändert nie etwas an einem Repository."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges, de Git-kolom en de branch voor mappen in een git-repository. Treewise leest ze alleen en verandert nooit iets aan een repository."
+          }
+        }
+      }
+    },
     "Bring All to Front" : {
       "localizations" : {
         "de" : {
@@ -3034,6 +3050,71 @@
         }
       }
     },
+    "Git" : {
+      "comment" : "List column of an item's state in git",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git"
+          }
+        }
+      }
+    },
+    "Git isn't installed on this Mac. It comes with Apple's Command Line Tools." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git ist auf diesem Mac nicht installiert. Es gehört zu den Command Line Tools von Apple."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git is niet geïnstalleerd op deze Mac. Het hoort bij de Command Line Tools van Apple."
+          }
+        }
+      }
+    },
+    "Git repository" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git-Repository"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git-repository"
+          }
+        }
+      }
+    },
+    "Git:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git:"
+          }
+        }
+      }
+    },
     "GitHub" : {
       "localizations" : {
         "de" : {
@@ -3286,6 +3367,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voeg veld in"
+          }
+        }
+      }
+    },
+    "Install…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installieren …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installeer…"
           }
         }
       }
@@ -5841,6 +5938,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toon bestandsextensies"
+          }
+        }
+      }
+    },
+    "Show Git status" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git-Status anzeigen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon Git-status"
           }
         }
       }

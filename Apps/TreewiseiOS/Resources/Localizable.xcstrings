@@ -1543,6 +1543,23 @@
         }
       }
     },
+    "Git" : {
+      "comment" : "List column of a file's state in git",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git"
+          }
+        }
+      }
+    },
     "GitHub" : {
       "localizations" : {
         "de" : {
