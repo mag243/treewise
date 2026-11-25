@@ -23,8 +23,9 @@ public final class GitStatusModel {
     @ObservationIgnored private let wait: @Sendable () async -> Void
     /// How many tabs show each folder, whether or not it is in a repository.
     @ObservationIgnored private var shown: [FileItem.ID: Int] = [:]
-    /// The repository of each shown folder that is in one, once found.
-    @ObservationIgnored private var repositories: [FileItem.ID: GitRepository] = [:]
+    /// The repository of each shown folder that is in one, once found. Observed, as the
+    /// states are, so a view that asked before it was found hears when it is.
+    private var repositories: [FileItem.ID: GitRepository] = [:]
     /// The shown folders that hold no repository, so they are not looked for again while
     /// shown.
     @ObservationIgnored private var outside: Set<FileItem.ID> = []

@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import Synchronization
 import Testing
 import TreewiseCore
@@ -189,6 +190,22 @@ import TreewiseUI
         #expect(await settles { model.status(of: sources) != nil })
     }
 
+    @Test func aViewThatReadTheStateBeforeItWasKnownHearsWhenItIs() async {
+        reader.addRepository(at: top, porcelain: changed)
+        let model = model()
+        let heard = Gate()
+        withObservationTracking {
+            _ = model.state(of: "/work/tidepool/Sources/main.swift", in: sources)
+            _ = model.status(of: sources)
+        } onChange: {
+            heard.open()
+        }
+        let tab = Task { await model.follow(sources) }
+        defer { tab.cancel() }
+
+        #expect(await settles { heard.isOpen })
+    }
+
     @Test func theSidebarMarksATopFolderOnlyWhileTurnedOn() {
         reader.addRepository(at: top, porcelain: "")
         let model = model()
@@ -212,6 +229,9 @@ private final class Gate: Sendable {
     }
 
     private let state = Mutex(State())
+
+    /// Whether it was opened.
+    var isOpen: Bool { state.withLock { $0.isOpen } }
 
     /// How many are waiting now.
     var waiting: Int { state.withLock { $0.waiting.count } }
