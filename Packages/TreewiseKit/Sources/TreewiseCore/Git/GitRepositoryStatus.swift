@@ -39,6 +39,8 @@ public struct GitRepositoryStatus: Hashable, Sendable {
     var wholeFolders: [String: GitItemState] = [:]
     /// The folders that hold a change, by their key; the top folder's key is empty.
     var changedFolders: Set<String> = []
+    /// The folders that hold an item in conflict, by their key.
+    var conflictFolders: Set<String> = []
 
     /// A repository with no state yet.
     public init() {}
@@ -47,7 +49,8 @@ public struct GitRepositoryStatus: Hashable, Sendable {
     public var hasChanges: Bool { changedFolders.contains("") }
 
     /// The state of the item at `path`, relative to the top folder; `nil` when it is
-    /// unchanged. A folder that holds a change is modified.
+    /// unchanged. A folder that holds an item in conflict is in conflict, so the tree leads
+    /// to it first; one that holds another change is modified.
     public func state(of path: String) -> GitItemState? {
         let key = Self.key(path)
         if let state = items[key] ?? wholeFolders[key] { return state }
@@ -56,6 +59,7 @@ public struct GitRepositoryStatus: Hashable, Sendable {
             folder = folder[..<slash]
             if let state = wholeFolders[String(folder)] { return state }
         }
+        if conflictFolders.contains(key) { return .conflict }
         return changedFolders.contains(key) ? .modified : nil
     }
 
@@ -68,9 +72,11 @@ public struct GitRepositoryStatus: Hashable, Sendable {
         guard state != .ignored else { return }
         var folder = Substring(key)
         changedFolders.insert("")
+        if state == .conflict { conflictFolders.insert("") }
         while let slash = folder.lastIndex(of: "/") {
             folder = folder[..<slash]
             changedFolders.insert(String(folder))
+            if state == .conflict { conflictFolders.insert(String(folder)) }
         }
     }
 

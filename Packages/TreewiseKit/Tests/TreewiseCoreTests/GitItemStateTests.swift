@@ -19,13 +19,21 @@ import TreewiseCore
     @Test(arguments: [
         "1 .M N... 100644 100644 100644 a b src/app/main.swift",
         "? src/app/main.swift",
-        "u UU N... 100644 100644 100644 100644 a b c src/app/main.swift",
         "1 .D N... 100644 100644 100644 a b src/app/main.swift",
     ])
     func aFolderHoldingAChangeIsModifiedUpToTheTop(_ record: String) {
         let state = status(record)
         #expect(state.state(of: "src") == .modified)
         #expect(state.state(of: "src/app") == .modified)
+    }
+
+    @Test func aFolderHoldingAConflictIsInConflictUpToTheTop() {
+        let state = status(
+            "1 .M N... \(hashes) src/app/other.swift",
+            "u UU N... 100644 100644 100644 100644 a b c src/app/main.swift")
+        #expect(state.state(of: "src") == .conflict)
+        #expect(state.state(of: "src/app") == .conflict)
+        #expect(state.state(of: "docs") == nil)
     }
 
     @Test func aFolderHoldingOnlyIgnoredItemsHasNoState() {
