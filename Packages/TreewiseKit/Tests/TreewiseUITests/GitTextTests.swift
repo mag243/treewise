@@ -44,7 +44,8 @@ import TreewiseUI
         #expect(GitText.branchHelp(status(nil, nil), locale: english) == nil)
     }
 
-    @Test func theTooltipSaysItInASentence() {
+    @Test(.tags(.localization), .needsCompiledStrings)
+    func theTooltipCountsTheCommitsInTheSingularAndPlural() {
         #expect(
             GitText.branchHelp(
                 status(.branch("main"), .following(ahead: 2, behind: 1)), locale: english)
@@ -53,6 +54,13 @@ import TreewiseUI
             GitText.branchHelp(
                 status(.branch("main"), .following(ahead: 1, behind: 0)), locale: english)
                 == "On branch main: 1 commit to push")
+    }
+
+    @Test func theTooltipSaysItInASentence() {
+        #expect(
+            GitText.branchHelp(
+                status(.branch("main"), .following(ahead: 3, behind: 0)), locale: english)
+                == "On branch main: 3 commits to push")
         #expect(
             GitText.branchHelp(
                 status(.branch("main"), .following(ahead: 0, behind: 0)), locale: english)
