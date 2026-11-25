@@ -4,31 +4,54 @@
     import Synchronization
 
     /// An FSEvents stream that reports the files directly in a folder changing,
-    /// which a `DispatchSource` on the folder does not hear (ADR 0051).
+    /// which a `DispatchSource` on the folder does not hear (ADR 0051), or anything in
+    /// a git working copy changing (ADR 0149).
     enum FileEvents {
         /// How long the system gathers events into one report, in seconds.
         private static let latency: CFTimeInterval = 0.3
 
         /// What the stream's C callback needs, reached through its `info` pointer.
         private final class Target: Sendable {
-            let folder: String
+            let accepts: @Sendable (String) -> Bool
             let onChange: @Sendable () -> Void
 
-            init(folder: String, onChange: @escaping @Sendable () -> Void) {
-                self.folder = folder
+            init(
+                accepts: @escaping @Sendable (String) -> Bool,
+                onChange: @escaping @Sendable () -> Void
+            ) {
+                self.accepts = accepts
                 self.onChange = onChange
             }
         }
 
-        /// Starts watching `folder`; the result stops it. `nil` when the folder
-        /// is gone or the stream cannot be made.
+        /// Starts watching the files directly in `folder`; the result stops it. `nil`
+        /// when the folder is gone or the stream cannot be made.
         static func watch(
             folder: String, onChange: @escaping @Sendable () -> Void
         ) -> (@Sendable () -> Void)? {
-            // FSEvents reports real paths, such as /private/var for /var.
-            guard let resolved = realpath(folder, nil) else { return nil }
+            guard let resolved = realPath(folder) else { return nil }
+            return watch(
+                trees: [resolved],
+                accepts: { ($0 as NSString).deletingLastPathComponent == resolved },
+                onChange: onChange)
+        }
+
+        /// The path with its links resolved, as FSEvents reports it, such as /private/var
+        /// for /var; `nil` when it is gone.
+        static func realPath(_ path: String) -> String? {
+            guard let resolved = realpath(path, nil) else { return nil }
             defer { free(resolved) }
-            let target = Target(folder: String(cString: resolved), onChange: onChange)
+            return String(cString: resolved)
+        }
+
+        /// Starts watching everything in the folders `trees`, given as real paths, and
+        /// reports a change to a path `accepts`; the result stops it. `nil` when the
+        /// stream cannot be made.
+        static func watch(
+            trees: [String], accepts: @escaping @Sendable (String) -> Bool,
+            onChange: @escaping @Sendable () -> Void
+        ) -> (@Sendable () -> Void)? {
+            let target = Target(accepts: accepts, onChange: onChange)
             var context = FSEventStreamContext(
                 version: 0, info: Unmanaged.passUnretained(target).toOpaque(), retain: nil,
                 release: nil, copyDescription: nil)
@@ -36,7 +59,7 @@
                 kFSEventStreamCreateFlagFileEvents | kFSEventStreamCreateFlagNoDefer)
             guard
                 let created = FSEventStreamCreate(
-                    nil, callback, &context, [target.folder] as CFArray,
+                    nil, callback, &context, trees as CFArray,
                     FSEventStreamEventId(kFSEventStreamEventIdSinceNow), latency, flags)
             else { return nil }
             // Touched only to stop the stream, on the queue its events arrive on.
@@ -70,11 +93,10 @@
             guard let info else { return }
             let target = Unmanaged<Target>.fromOpaque(info).takeUnretainedValue()
             let list = paths.assumingMemoryBound(to: UnsafePointer<CChar>.self)
-            let isDirectEntry = (0..<count).contains { index in
-                let path = String(cString: list[index])
-                return (path as NSString).deletingLastPathComponent == target.folder
+            let isAccepted = (0..<count).contains { index in
+                target.accepts(String(cString: list[index]))
             }
-            if isDirectEntry { target.onChange() }
+            if isAccepted { target.onChange() }
         }
     }
 #endif
