@@ -98,6 +98,8 @@
 #               images in build/sandbox/ with the prototype's demo tree, made when
 #               missing (ADR 0019). `sandbox reset` makes them afresh, `sandbox
 #               eject` detaches them. Try file operations with tools/build.sh run sandbox.
+#               Projects/Treewise on the HD is a git repository with an item in each
+#               state, to try git status by hand (ADR 0149).
 #   icon        Render the app icons from tools/icon/treewise-icon.svg into the
 #               AppIcon sets of both apps.
 #   downloads   How often each release was downloaded from GitHub, per file: the .dmg
@@ -1121,6 +1123,49 @@ sandbox_seed() {
     [[ -z "$path" || "$path" == \#* ]] && continue
     touch -t "${modified//[-: ]/}" "$(sandbox_mount "${path%%/*}")/${path#*/}"
   done <"$SANDBOX_TREE"
+  sandbox_git
+}
+
+# Makes Projects/Treewise on the HD volume a git repository with an item in each state, for
+# trying git status by hand (ADR 0149): one commit ahead of its upstream, a bare repository
+# on the same volume, and one behind; a merge left in conflict; a changed, a new and two
+# ignored items. Nothing outside the sandbox volumes is touched.
+sandbox_git() {
+  local work origin
+  work="$(sandbox_mount HD)/Users/Home/Projects/Treewise"
+  origin="$(sandbox_mount HD)/Users/Shared/treewise-origin.git"
+  # Apart from the owner's own git settings, such as signing commits.
+  sandbox_git_in() {
+    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+      git -C "$work" -c user.name=Sandbox -c user.email=sandbox@example.com "$@"
+  }
+  printf '*.log\nbuild/\n' >"$work/.gitignore"
+  sandbox_git_in init -q -b main
+  sandbox_git_in add -A
+  sandbox_git_in commit -q -m "First version"
+  GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git init -q --bare -b main "$origin"
+  sandbox_git_in remote add origin "$origin"
+  sandbox_git_in push -q -u origin main
+  # A commit the upstream has and the branch lacks, then one the other way round.
+  sandbox_git_in commit -q --allow-empty -m "Pushed from elsewhere"
+  sandbox_git_in push -q
+  sandbox_git_in reset -q --hard HEAD~1
+  printf "Treewise sandbox: a line added\n" >>"$work/README.md"
+  sandbox_git_in commit -q -am "Not pushed yet"
+  # A merge that leaves a file in conflict.
+  sandbox_git_in switch -q -c feature
+  printf "Treewise sandbox: the feature's line\n" >>"$work/Sources/FileTreeView.swift"
+  sandbox_git_in commit -q -am "Feature"
+  sandbox_git_in switch -q main
+  printf "Treewise sandbox: main's line\n" >>"$work/Sources/FileTreeView.swift"
+  sandbox_git_in commit -q -am "Main"
+  sandbox_git_in merge -q feature >/dev/null 2>&1 || true
+  # Changes in the working copy: changed, new and ignored.
+  printf "Treewise sandbox: changed\n" >>"$work/Sources/TreewiseApp.swift"
+  printf "Treewise sandbox: new\n" >"$work/Sources/SearchField.swift"
+  printf "Treewise sandbox: a log\n" >"$work/debug.log"
+  mkdir -p "$work/build"
+  printf "Treewise sandbox: built\n" >"$work/build/Treewise.o"
 }
 
 # Attaches the sandbox volumes, making and filling them first when missing;
