@@ -5,7 +5,7 @@ import TreewiseUI
 /// The list's columns, in order; which of them beside the name show is the user's choice
 /// (ADR 0127).
 enum FileTableColumn: String, CaseIterable {
-    case name, dateModified, dateCreated, dateAdded, size, kind
+    case name, dateModified, dateCreated, dateAdded, size, kind, git
 
     /// The column the user shows or hides; `nil` for the name, which always shows.
     var folderColumn: FolderColumn? {
@@ -16,6 +16,7 @@ enum FileTableColumn: String, CaseIterable {
         case .dateAdded: .dateAdded
         case .size: .size
         case .kind: .kind
+        case .git: .git
         }
     }
 
@@ -31,6 +32,7 @@ enum FileTableColumn: String, CaseIterable {
         case .dateAdded: .dateAdded
         case .size: .size
         case .kind: .kind
+        case .git: .git
         }
     }
 
@@ -43,6 +45,7 @@ enum FileTableColumn: String, CaseIterable {
         case .dateAdded: String(localized: "Date Added", comment: "List column")
         case .size: String(localized: "Size", comment: "List column")
         case .kind: String(localized: "Kind", comment: "List column")
+        case .git: String(localized: "Git", comment: "List column of an item's state in git")
         }
     }
 
@@ -53,6 +56,7 @@ enum FileTableColumn: String, CaseIterable {
         case .dateModified, .dateCreated, .dateAdded: 170
         case .size: 80
         case .kind: 150
+        case .git: 90
         }
     }
 
@@ -64,6 +68,7 @@ enum FileTableColumn: String, CaseIterable {
         case .dateModified, .dateCreated, .dateAdded: 110
         case .size: 60
         case .kind: 80
+        case .git: 60
         }
     }
 
@@ -76,6 +81,7 @@ enum FileTableColumn: String, CaseIterable {
             case .dateAdded: .dateAdded
             case .size: .size
             case .kind: .kind
+            case .git: .git
             }
     }
 

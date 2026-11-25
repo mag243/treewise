@@ -62,6 +62,9 @@ public final class BrowserState {
     /// The folders whose entries this window's operations changed, which the windows that
     /// share it hear (ADR 0112).
     @ObservationIgnored public let folderChanges: FolderChanges
+    /// The git state of the folders the windows show, shared by every window; `nil` where
+    /// none is read, as on the iPad (ADR 0149).
+    @ObservationIgnored public let gitStatus: GitStatusModel?
     /// Where the browser reads its folders from.
     @ObservationIgnored public let fileSystem: any FileSystemProviding
     /// The provider's operations, when it can change files.
@@ -95,16 +98,19 @@ public final class BrowserState {
     /// Creates a window with one tab showing `startFolder`; `start()` loads it.
     /// New tabs open at `homeFolder`, which is the start folder unless given.
     /// Windows that share `clipboard` paste each other's cut and copied items, and those that
-    /// share `folderChanges` hear the folders each other's operations changed.
+    /// share `folderChanges` hear the folders each other's operations changed; `gitStatus`
+    /// shows the git state of the folders the panes show.
     public init(
         fileSystem: any FileSystemProviding, watcher: any FolderWatching,
         startFolder: FileItem.ID, homeFolder: FileItem.ID? = nil,
         settings: BrowserSettings = BrowserSettings(store: MemorySettingsStore()),
         clipboard: SharedClipboard = SharedClipboard(),
-        folderChanges: FolderChanges = FolderChanges(), locale: Locale = .current
+        folderChanges: FolderChanges = FolderChanges(), gitStatus: GitStatusModel? = nil,
+        locale: Locale = .current
     ) {
         sharedClipboard = clipboard
         self.folderChanges = folderChanges
+        self.gitStatus = gitStatus
         self.homeFolder = homeFolder ?? startFolder
         self.settings = settings
         self.fileSystem = fileSystem
@@ -165,7 +171,7 @@ public final class BrowserState {
             content.query.isEmpty
             ? shown
             : shown.filter { $0.name.localizedCaseInsensitiveContains(content.query) }
-        return sort.sorted(matching, kinds: kinds)
+        return sort.sorted(matching, kinds: kinds) { gitState(of: $0, in: tab) }
     }
 
     /// The containers inside a folder, by name, for the sidebar tree, with

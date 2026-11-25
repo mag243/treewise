@@ -57,7 +57,7 @@ struct FolderTableHeadings: View {
 
     private var columnMenu: some View {
         Menu {
-            ForEach(FolderColumn.allCases, id: \.self) { column in
+            ForEach(FolderColumn.onIPad, id: \.self) { column in
                 Toggle(
                     isOn: Binding(
                         get: { layout.isShown(column) },

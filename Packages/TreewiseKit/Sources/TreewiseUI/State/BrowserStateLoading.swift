@@ -1,10 +1,16 @@
 import TreewiseCore
 
 extension BrowserState {
-    /// The watch on the folder an active tab shows.
+    /// The watch on the folder an active tab shows, and the following of its git state.
     struct Watch {
         let folder: FileItem.ID
         let task: Task<Void, Never>
+        var gitFollowing: Task<Void, Never>?
+
+        func cancel() {
+            task.cancel()
+            gitFollowing?.cancel()
+        }
     }
 
     /// Reads the folder a tab shows. When the folder is gone, the tab moves to
@@ -73,7 +79,7 @@ extension BrowserState {
             layout.panes.map { ($0.activeTabID, $0.activeTab.folder) }
         ) { first, _ in first }
         for (tab, watch) in watches where shown[tab] != watch.folder {
-            watch.task.cancel()
+            watch.cancel()
             watches[tab] = nil
         }
         for (tab, folder) in shown where watches[tab] == nil {
@@ -84,7 +90,8 @@ extension BrowserState {
                     await load(tab)
                 }
             }
-            watches[tab] = Watch(folder: folder, task: task)
+            let gitFollowing = gitStatus.map { model in Task { await model.follow(folder) } }
+            watches[tab] = Watch(folder: folder, task: task, gitFollowing: gitFollowing)
         }
     }
 
@@ -118,7 +125,7 @@ extension BrowserState {
     /// closes. A transfer that runs goes on: closing a window does not stop a copy.
     public func stop() {
         isStopped = true
-        for watch in watches.values { watch.task.cancel() }
+        for watch in watches.values { watch.cancel() }
         watches = [:]
         locationsWatch?.cancel()
         locationsWatch = nil
@@ -128,7 +135,7 @@ extension BrowserState {
     /// iOS asks of file presenters (ADR 0120); `resumeWatching()` starts again.
     public func pauseWatching() {
         isWatchingPaused = true
-        for watch in watches.values { watch.task.cancel() }
+        for watch in watches.values { watch.cancel() }
         watches = [:]
     }
 

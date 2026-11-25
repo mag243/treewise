@@ -9,6 +9,7 @@ public final class ScriptedGitReader: GitStatusReading {
         var statuses: [GitRepository: GitRepositoryStatus] = [:]
         var reads: [GitRepository: Int] = [:]
         var lookups = 0
+        var paths: [FileItem.ID: String] = [:]
         var watching: [GitRepository: [UUID: AsyncStream<[String]>.Continuation]] = [:]
     }
 
@@ -21,13 +22,17 @@ public final class ScriptedGitReader: GitStatusReading {
     }
 
     /// Makes `top` a working copy whose state is read as `porcelain`; every folder whose id
-    /// starts with it, followed by `/`, is in it.
+    /// starts with it, followed by `/`, is in it, and so is each item of `paths`, at the
+    /// path from the top folder it gives, for ids that are no paths.
     @discardableResult
-    public func addRepository(at top: FileItem.ID, porcelain: String) -> GitRepository {
+    public func addRepository(
+        at top: FileItem.ID, porcelain: String, paths: [FileItem.ID: String] = [:]
+    ) -> GitRepository {
         let repository = GitRepository(top: top, gitDirectory: top.rawValue + "/.git")
         script.withLock {
             $0.repositories[top] = repository
             $0.statuses[repository] = Self.status(porcelain)
+            $0.paths.merge(paths) { _, new in new }
         }
         return repository
     }
@@ -85,6 +90,7 @@ public final class ScriptedGitReader: GitStatusReading {
     }
 
     public func relativePath(of item: FileItem.ID, in repository: GitRepository) -> String? {
+        if let path = script.withLock({ $0.paths[item] }) { return path }
         let top = repository.top.rawValue
         if item.rawValue == top { return "" }
         return item.rawValue.hasPrefix(top + "/")

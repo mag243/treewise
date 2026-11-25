@@ -1,9 +1,13 @@
 import Foundation
 import TreewiseCore
 
-/// A column of the iPad's table beside the name, which always shows (ADR 0125).
+/// A column of the iPad's table beside the name, which always shows (ADR 0125), or of the
+/// Mac's list: the Git column only there (ADR 0149).
 public enum FolderColumn: String, CaseIterable, Codable, Sendable {
-    case dateModified, dateCreated, dateAdded, size, kind
+    case dateModified, dateCreated, dateAdded, size, kind, git
+
+    /// The columns the iPad offers: all but Git, as the iPad reads no git state.
+    public static let onIPad: [FolderColumn] = allCases.filter { $0 != .git }
 
     /// The column's width until the user gives it one, in points.
     public var defaultWidth: Double {
@@ -12,21 +16,24 @@ public enum FolderColumn: String, CaseIterable, Codable, Sendable {
         case .dateModified, .dateCreated, .dateAdded: 220
         case .size: 90
         case .kind: 160
+        case .git: 100
         }
     }
 
     /// Whether the column shows until the user chooses otherwise: the dates a file was
-    /// made and added show only when chosen (ADR 0127).
+    /// made and added, and the Git column, show only when chosen (ADR 0127, 0149).
     public var isShownByDefault: Bool {
         switch self {
         case .dateModified, .size, .kind: true
-        case .dateCreated, .dateAdded: false
+        case .dateCreated, .dateAdded, .git: false
         }
     }
 
     /// The order in which columns give way where the table has too little room: the least
     /// telling first, the date modified last (ADR 0125).
-    static let givingWay: [FolderColumn] = [.dateAdded, .dateCreated, .kind, .size, .dateModified]
+    static let givingWay: [FolderColumn] = [
+        .git, .dateAdded, .dateCreated, .kind, .size, .dateModified,
+    ]
 
     /// The sort column it stands for.
     public var sortColumn: SortColumn {
@@ -36,6 +43,7 @@ public enum FolderColumn: String, CaseIterable, Codable, Sendable {
         case .dateAdded: .dateAdded
         case .size: .size
         case .kind: .kind
+        case .git: .git
         }
     }
 }

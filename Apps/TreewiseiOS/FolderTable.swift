@@ -122,6 +122,8 @@ enum FolderTableColumn: Hashable {
         case .dateAdded: String(localized: "Date Added")
         case .size: String(localized: "Size")
         case .kind: String(localized: "Kind")
+        // The iPad never offers the Git column (`FolderColumn.onIPad`).
+        case .git: String(localized: "Git", comment: "List column of a file's state in git")
         }
     }
 
@@ -188,6 +190,7 @@ struct FolderTableRow: View {
         case .dateAdded: formats.date(item.added)
         case .size: formats.size(of: item)
         case .kind: formats.kind(of: item)
+        case .git: ""
         }
     }
 }
