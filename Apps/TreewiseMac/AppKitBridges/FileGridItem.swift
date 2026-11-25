@@ -15,11 +15,14 @@ final class FileGridItem: NSCollectionViewItem {
     private static let labelRadius: CGFloat = 5
     private static let fontSize: CGFloat = 12
     private static let nameLines = 2
+    /// The side of the git badge on a tile's icon.
+    private static let badgeSide: CGFloat = 16
 
     /// The item the tile shows, so a late thumbnail lands on the right tile.
     private(set) var itemID: FileItem.ID?
     private let plate = NSView()
     private let cloud = CloudStatusView()
+    private let gitBadge = GitBadgeView()
 
     /// Whether the tile's pane is the active pane of the window.
     var isActivePane = true {
@@ -51,6 +54,7 @@ final class FileGridItem: NSCollectionViewItem {
             tile.addSubview(subview)
         }
         NSLayoutConstraint.activate(constraints(icon: icon, name: name, in: tile))
+        GitIconLook.place(gitBadge, on: icon, side: Self.badgeSide, in: tile)
         view = tile
         imageView = icon
         textField = name
@@ -68,6 +72,13 @@ final class FileGridItem: NSCollectionViewItem {
     /// Shows the file's cloud status; see `CloudStatusView`.
     func showCloudStatus(isOnlyOnline: Bool, download: Double?) {
         cloud.show(isOnlyOnline: isOnlyOnline, download: download)
+    }
+
+    /// Shows the item's git state on its icon: a badge, or the icon dimmed when ignored
+    /// (ADR 0149).
+    func showGitState(_ state: GitItemState?) {
+        gitBadge.state = state
+        imageView?.alphaValue = GitIconLook.alpha(for: state)
     }
 
     /// Shows a thumbnail made later, when the tile still shows its item.

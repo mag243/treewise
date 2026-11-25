@@ -18,6 +18,8 @@ struct FileGridContent {
     var revealRequest: FileItem.ID?
     /// The downloads running, with their fractions done (ADR 0051).
     var downloads: [FileItem.ID: Double] = [:]
+    /// The items' states in their git repository, the unchanged left out (ADR 0149).
+    var gitStates: [FileItem.ID: GitItemState] = [:]
     /// Whether names show their extension (ADR 0023).
     var showsExtensions: Bool
     var actions: FileTableActions

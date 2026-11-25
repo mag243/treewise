@@ -27,6 +27,10 @@ struct SidebarContent {
     var select: (FileItem) -> Void
     /// Ejects volumes (ADR 0044).
     var eject: ([FileItem]) -> Void
+    /// Whether a folder's row marks it as a git repository's top folder (ADR 0149).
+    var marksRepository: (FileItem.ID) -> Bool = { _ in false }
+    /// Whether git status shows, so the rows mark again when it is turned on or off.
+    var showsGitStatus = false
     var drop: DropAction
     /// Adds, removes and moves favorites (ADR 0050).
     var favoriteActions: SidebarFavoriteActions

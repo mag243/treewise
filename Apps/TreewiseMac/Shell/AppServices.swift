@@ -4,7 +4,8 @@ import TreewiseModuleXPC
 import TreewiseUI
 
 /// What the app shares across its windows, made here once: the settings, the clipboard
-/// (ADR 0037), the folders each window's operations changed (ADR 0112), the updater (ADR 0032), the windows and their tabs, the connection to the
+/// (ADR 0037), the folders each window's operations changed (ADR 0112), the git state of
+/// the folders shown (ADR 0149), the updater (ADR 0032), the windows and their tabs, the connection to the
 /// add-ons' service and the folder settings it keeps (ADR 0057), and the icon view's
 /// thumbnails (ADR 0025).
 @MainActor
@@ -12,6 +13,9 @@ enum AppServices {
     static let settings = BrowserSettings(store: LaunchOptions.settingsStore)
     static let clipboard = SharedClipboard()
     static let folderChanges = FolderChanges()
+    /// The git state of the folders every window shows (ADR 0149).
+    static let gitStatus = GitStatusModel(
+        reader: GitStatusReader(), isEnabled: settings.showsGitStatus)
     static let updater = AppUpdater()
     static let windows = WindowTabs()
     /// One connection to the add-ons' service, for every review and template.

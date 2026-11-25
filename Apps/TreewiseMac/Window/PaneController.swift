@@ -79,6 +79,7 @@ final class PaneController: NSViewController {
         let counts = statusText(items: items, content: content)
         statusBar.show(
             counts: isFocused ? browser.statusMessage ?? counts : counts, mode: browser.viewMode)
+        statusBar.show(branch: browser.gitRepositoryStatus(of: tab))
     }
 
     // MARK: - The folder
@@ -88,6 +89,10 @@ final class PaneController: NSViewController {
         let renameRequest = isActive ? browser.renameRequest : nil
         let revealRequest = isActive ? browser.revealRequest : nil
         let actions = actions(for: tab)
+        let gitStates = Dictionary(
+            uniqueKeysWithValues: items.compactMap { item in
+                browser.gitState(of: item, in: tab).map { (item.id, $0) }
+            })
         switch browser.viewMode {
         case .list:
             show(listView)
@@ -97,7 +102,8 @@ final class PaneController: NSViewController {
                     sort: browser.sort, columns: browser.settings.tableColumns,
                     isActive: isActive, cutItems: cutItems,
                     renameRequest: renameRequest, revealRequest: revealRequest,
-                    downloads: downloads, showsExtensions: browser.settings.showsExtensions,
+                    downloads: downloads, gitStates: gitStates,
+                    showsExtensions: browser.settings.showsExtensions,
                     rowHeight: browser.settings.rowDensity.rowHeight, actions: actions))
         case .icons:
             show(gridView)
@@ -105,7 +111,7 @@ final class PaneController: NSViewController {
                 with: FileGridContent(
                     folder: content.folder, items: items, selection: content.selection,
                     isActive: isActive, cutItems: cutItems, renameRequest: renameRequest,
-                    revealRequest: revealRequest, downloads: downloads,
+                    revealRequest: revealRequest, downloads: downloads, gitStates: gitStates,
                     showsExtensions: browser.settings.showsExtensions, actions: actions))
         }
     }

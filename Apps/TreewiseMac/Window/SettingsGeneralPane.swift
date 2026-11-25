@@ -5,8 +5,9 @@ import TreewiseUI
 
 /// Settings' General pane: where folders open, the start folder, and how the list
 /// shows items (ADR 0022, ADR 0023), checking for updates (ADR 0032), the terminal to
-/// open (ADR 0052), the way to change shortcuts (ADR 0029), and syncing settings through
-/// the cloud drives with its safety net (ADR 0144). Changes apply at once.
+/// open (ADR 0052), git status with Install… when git is missing (ADR 0149), the way to
+/// change shortcuts (ADR 0029), and syncing settings through the cloud drives with its
+/// safety net (ADR 0144). Changes apply at once.
 @MainActor
 final class SettingsGeneralPane: NSViewController {
     /// The Keyboard pane of System Settings, where App Shortcuts live (ADR 0029).
@@ -20,6 +21,15 @@ final class SettingsGeneralPane: NSViewController {
     private let settings: BrowserSettings
     private let updater: AppUpdater
     private let sync: SyncController
+    private let git: GitStatusModel
+    private lazy var gitStatus = SettingsForm.checkbox("Show Git status") { [settings, git] in
+        // The model first, so whatever the setting's change redraws reads the new state.
+        git.isEnabled = $0
+        settings.showsGitStatus = $0
+    }
+    private let gitNote = NSTextField(wrappingLabelWithString: "")
+    /// The row of Install…, shown only while git is missing.
+    private var installRow: NSGridRow?
     private lazy var placement = SettingsForm.popUp(
         [String(localized: "This window"), String(localized: "The other window")],
         accessibilityLabel: "Double-click opens folders in"
@@ -68,10 +78,13 @@ final class SettingsGeneralPane: NSViewController {
         "Check for updates automatically"
     ) { [updater] in updater.checksAutomatically = $0 }
 
-    init(settings: BrowserSettings, updater: AppUpdater, sync: SyncController) {
+    init(
+        settings: BrowserSettings, updater: AppUpdater, sync: SyncController, git: GitStatusModel
+    ) {
         self.settings = settings
         self.updater = updater
         self.sync = sync
+        self.git = git
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -91,6 +104,8 @@ final class SettingsGeneralPane: NSViewController {
         form.row("Row size:", rowSize)
         form.group()
         form.row("Terminal app:", terminal)
+        form.group()
+        addGitRows(to: form)
         form.group()
         updates.isEnabled = updater.isRunning
         form.row(nil, updates)
@@ -129,6 +144,7 @@ final class SettingsGeneralPane: NSViewController {
         let chosen = TerminalOpener.chosenApp(in: settings)
         terminal.selectItem(at: TerminalOpener.installedApps.firstIndex { $0.id == chosen } ?? 0)
         updates.state = updater.checksAutomatically ? .on : .off
+        showGit()
         syncs.state = settings.syncsSettings ? .on : .off
         let replaced = sync.replaced.count
         replacedRow?.isHidden = replaced == 0
@@ -147,6 +163,29 @@ final class SettingsGeneralPane: NSViewController {
         )
         replacedCount.stringValue = String(
             localized: "Replaced by another device: \(replaced)")
+    }
+
+    private func addGitRows(to form: SettingsForm) {
+        form.row("Git:", gitStatus)
+        gitNote.textColor = .secondaryLabelColor
+        gitNote.preferredMaxLayoutWidth = SettingsForm.noteWidth
+        form.row(nil, gitNote)
+        installRow = form.row(nil, SettingsForm.button("Install…") { GitTool.requestInstall() })
+    }
+
+    private func showGit() {
+        gitStatus.state = settings.showsGitStatus && git.hasGit ? .on : .off
+        gitStatus.isEnabled = git.hasGit
+        installRow?.isHidden = git.hasGit
+        gitNote.stringValue =
+            git.hasGit
+            ? String(
+                localized:
+                    "Badges, the Git column and the branch for folders in a git repository. Treewise only reads them and never changes a repository."
+            )
+            : String(
+                localized:
+                    "Git isn't installed on this Mac. It comes with Apple's Command Line Tools.")
     }
 
     private static func setSyncing(_ isOn: Bool, in sync: SyncController) {

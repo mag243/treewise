@@ -26,6 +26,9 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     private var select: ((FileItem) -> Void)?
     /// Ejects volumes: the eject buttons and the context menu (ADR 0044).
     private(set) var eject: (([FileItem]) -> Void)?
+    /// Whether a folder's row marks it as a git repository's top folder (ADR 0149).
+    private(set) var marksRepository: (FileItem.ID) -> Bool = { _ in false }
+    private var showsGitStatus = false
     private(set) var drop: DropAction?
     private(set) var favoriteActions: SidebarFavoriteActions?
     /// Keeps folders closed while a drag only passes over them.
@@ -69,11 +72,16 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
         currentFolder = view.currentFolder
         select = view.select
         eject = view.eject
+        marksRepository = view.marksRepository
         drop = view.drop
         favoriteActions = view.favoriteActions
         defer {
             selectRow(of: view.currentFolder)
             follow(view.pathToReveal)
+        }
+        if showsGitStatus != view.showsGitStatus {
+            showsGitStatus = view.showsGitStatus
+            markRepositories()
         }
         if showsHiddenFiles != view.showsHiddenFiles {
             showsHiddenFiles = view.showsHiddenFiles
@@ -162,6 +170,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             cell.textField?.stringValue = title
             cell.imageView?.image = FolderIcon.image(for: .computer)
             (cell as? SidebarCell)?.eject = nil
+            (cell as? SidebarCell)?.marksRepository = false
             return cell
         case .item(let folder):
             let cell = reusedCell(Self.cellIdentifier, in: outlineView, withIcon: true)
@@ -172,6 +181,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             cell.imageView?.image = icon
             (cell as? SidebarCell)?.eject =
                 folder.isEjectable ? { [weak self] in self?.eject?([folder]) } : nil
+            (cell as? SidebarCell)?.marksRepository = marksRepository(folder.id)
             return cell
         }
     }

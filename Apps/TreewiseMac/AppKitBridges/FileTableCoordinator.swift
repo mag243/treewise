@@ -22,6 +22,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
     private var showsExtensions = true
     private var cutItems: Set<FileItem.ID> = []
     private var downloads: [FileItem.ID: Double] = [:]
+    private var gitStates: [FileItem.ID: GitItemState] = [:]
     /// Set while the table is brought in line with the state, so its own
     /// notifications are not sent back as user actions.
     private var isApplyingState = false
@@ -81,6 +82,10 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             downloads = view.downloads
             showDownloads(in: table)
         }
+        if gitStates != view.gitStates {
+            gitStates = view.gitStates
+            if !itemsChanged { showGitStates(in: table) }
+        }
         if table.rowHeight != view.rowHeight { table.rowHeight = view.rowHeight }
         showColumns(view.columns, sortedBy: view.sort, in: table)
         if itemsChanged || view.selection != shownSelection { show(view.selection, in: table) }
@@ -122,6 +127,23 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         }
     }
 
+    /// Shows the git states in the rows that have a view, as `showDownloads` does, without
+    /// reloading a row that may be being renamed.
+    private func showGitStates(in table: NSTableView) {
+        let gitColumn = table.column(withIdentifier: FileTableColumn.git.identifier)
+        table.enumerateAvailableRowViews { _, row in
+            guard items.indices.contains(row) else { return }
+            let state = gitStates[items[row].id]
+            let name = table.view(atColumn: 0, row: row, makeIfNecessary: false)
+            (name as? FileNameCell)?.showGitState(state)
+            guard gitColumn >= 0,
+                let cell = table.view(atColumn: gitColumn, row: row, makeIfNecessary: false)
+                    as? NSTableCellView
+            else { return }
+            cell.textField?.stringValue = text(of: items[row], in: .git)
+        }
+    }
+
     func numberOfRows(in tableView: NSTableView) -> Int {
         items.count
     }
@@ -151,6 +173,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             cell.imageView?.image = icon
             (cell as? FileNameCell)?.showCloudStatus(
                 isOnlyOnline: item.isOnlyOnline, download: downloads[item.id])
+            (cell as? FileNameCell)?.showGitState(gitStates[item.id])
         }
         return cell
     }
@@ -217,6 +240,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         case .dateAdded: formats.date(item.added)
         case .size: formats.size(of: item)
         case .kind: formats.kind(of: item)
+        case .git: gitStates[item.id].map { GitText.state($0, locale: .autoupdatingCurrent) } ?? ""
         }
     }
 
@@ -246,6 +270,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             icon.translatesAutoresizingMaskIntoConstraints = false
             cell.addSubview(icon)
             cell.imageView = icon
+            (cell as? FileNameCell)?.placeGitBadge(on: icon)
             constraints += [
                 icon.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: cellPadding),
                 icon.centerYAnchor.constraint(equalTo: cell.centerYAnchor),

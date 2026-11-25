@@ -51,6 +51,7 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
     private var showsExtensions = true
     private var cutItems: Set<FileItem.ID> = []
     private var downloads: [FileItem.ID: Double] = [:]
+    private var gitStates: [FileItem.ID: GitItemState] = [:]
     private var isActive = true
     /// Set while the view is brought in line with the state, so its own
     /// selection changes are not sent back as user actions.
@@ -117,8 +118,8 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
         }
     }
 
-    /// Shows whether the pane is active and the downloads in the tiles on screen. Only
-    /// those tiles exist; one made later reads both when it is shown.
+    /// Shows whether the pane is active, the downloads and the git states in the tiles on
+    /// screen. Only those tiles exist; one made later reads them when it is shown.
     private func showTileState(of view: FileGridContent, in grid: NSCollectionView) {
         if isActive != view.isActive {
             isActive = view.isActive
@@ -126,12 +127,14 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
                 tile.isActivePane = isActive
             }
         }
-        guard downloads != view.downloads else { return }
+        guard downloads != view.downloads || gitStates != view.gitStates else { return }
         downloads = view.downloads
+        gitStates = view.gitStates
         for path in grid.indexPathsForVisibleItems() where items.indices.contains(path.item) {
             let item = items[path.item]
-            (grid.item(at: path) as? FileGridItem)?.showCloudStatus(
-                isOnlyOnline: item.isOnlyOnline, download: downloads[item.id])
+            let tile = grid.item(at: path) as? FileGridItem
+            tile?.showCloudStatus(isOnlyOnline: item.isOnlyOnline, download: downloads[item.id])
+            tile?.showGitState(gitStates[item.id])
         }
     }
 
@@ -154,6 +157,7 @@ final class FileGridCoordinator: NSObject, NSCollectionViewDataSource, NSCollect
             isCut: cutItems.contains(item.id))
         tile.isActivePane = isActive
         tile.showCloudStatus(isOnlyOnline: item.isOnlyOnline, download: downloads[item.id])
+        tile.showGitState(gitStates[item.id])
         return tile
     }
 

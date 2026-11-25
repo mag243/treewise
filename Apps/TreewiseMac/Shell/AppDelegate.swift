@@ -39,6 +39,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidBecomeActive(_ notification: Notification) {
         Task { @MainActor in await SyncWatcher.refresh() }
+        MainActor.assumeIsolated { Self.findGitInstalledSince() }
+    }
+
+    /// Uses git once it is there, as after Install… in Settings, without a restart
+    /// (ADR 0149).
+    @MainActor
+    private static func findGitInstalledSince() {
+        guard !AppServices.gitStatus.hasGit, let tool = GitTool.find() else { return }
+        AppServices.gitStatus.use(GitStatusReader(tool: tool))
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

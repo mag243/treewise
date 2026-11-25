@@ -33,7 +33,8 @@ enum SettingsWindow {
         tabs.addTabViewItem(
             pane(
                 SettingsGeneralPane(
-                    settings: settings, updater: AppServices.updater, sync: AppServices.sync),
+                    settings: settings, updater: AppServices.updater, sync: AppServices.sync,
+                    git: AppServices.gitStatus),
                 "General", "gearshape"))
         tabs.addTabViewItem(pane(SettingsNamesPane(settings: settings), "Names", "textformat"))
         tabs.addTabViewItem(

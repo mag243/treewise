@@ -1,14 +1,19 @@
 import AppKit
 
 /// A sidebar row: an icon and a name, or a section heading without an icon;
-/// a volume that can be ejected has an eject button at the end (ADR 0044).
+/// a volume that can be ejected has an eject button at the end (ADR 0044), and a git
+/// repository's top folder a small mark there (ADR 0149).
 final class SidebarCell: NSTableCellView {
     private static let ejectSize: CGFloat = 16
+    private static let markSize: CGFloat = 11
     /// The room a name keeps from the sidebar's edge before it is cut short, as Finder's.
     private static let edgeMargin: CGFloat = 8
 
     private let ejectButton = NSButton()
-    /// The name stops before the eject button while there is one, else near the edge.
+    private let repositoryMark = NSImageView()
+    /// The mark and the eject button, at the row's end.
+    private let accessories = NSStackView()
+    /// The name stops before the accessories while there are some, else near the edge.
     private var beforeEject: NSLayoutConstraint?
     private var beforeEdge: NSLayoutConstraint?
 
@@ -16,8 +21,15 @@ final class SidebarCell: NSTableCellView {
     var eject: (() -> Void)? {
         didSet {
             ejectButton.isHidden = eject == nil
-            beforeEject?.isActive = eject != nil
-            beforeEdge?.isActive = eject == nil
+            placeName()
+        }
+    }
+
+    /// Whether the row's folder is a git repository's top folder.
+    var marksRepository = false {
+        didSet {
+            repositoryMark.isHidden = !marksRepository
+            placeName()
         }
     }
 
@@ -30,8 +42,10 @@ final class SidebarCell: NSTableCellView {
         addSubview(text)
         textField = text
         setUpEjectButton()
+        setUpRepositoryMark()
+        setUpAccessories()
         beforeEject = text.trailingAnchor.constraint(
-            lessThanOrEqualTo: ejectButton.leadingAnchor, constant: -ListMetrics.iconSpacing)
+            lessThanOrEqualTo: accessories.leadingAnchor, constant: -ListMetrics.iconSpacing)
         beforeEdge = text.trailingAnchor.constraint(
             lessThanOrEqualTo: trailingAnchor, constant: -Self.edgeMargin)
         var constraints = [
@@ -62,6 +76,39 @@ final class SidebarCell: NSTableCellView {
         fatalError("SidebarCell is created in code only")
     }
 
+    private func placeName() {
+        let hasAccessory = eject != nil || marksRepository
+        // Deactivated first, so the two never hold at once.
+        beforeEject?.isActive = false
+        beforeEdge?.isActive = false
+        (hasAccessory ? beforeEject : beforeEdge)?.isActive = true
+    }
+
+    private func setUpRepositoryMark() {
+        repositoryMark.image = NSImage(
+            systemSymbolName: "arrow.triangle.branch",
+            accessibilityDescription: String(localized: "Git repository"))
+        repositoryMark.symbolConfiguration = NSImage.SymbolConfiguration(
+            pointSize: Self.markSize, weight: .regular)
+        repositoryMark.contentTintColor = .secondaryLabelColor
+        repositoryMark.toolTip = String(localized: "Git repository")
+        repositoryMark.isHidden = true
+    }
+
+    private func setUpAccessories() {
+        accessories.orientation = .horizontal
+        accessories.spacing = ListMetrics.iconSpacing
+        accessories.setViews([repositoryMark, ejectButton], in: .trailing)
+        accessories.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(accessories)
+        NSLayoutConstraint.activate([
+            accessories.trailingAnchor.constraint(equalTo: trailingAnchor),
+            accessories.centerYAnchor.constraint(equalTo: centerYAnchor),
+            ejectButton.widthAnchor.constraint(equalToConstant: Self.ejectSize),
+            ejectButton.heightAnchor.constraint(equalToConstant: Self.ejectSize),
+        ])
+    }
+
     private func setUpEjectButton() {
         ejectButton.image = NSImage(systemSymbolName: "eject", accessibilityDescription: nil)
         ejectButton.isBordered = false
@@ -72,14 +119,6 @@ final class SidebarCell: NSTableCellView {
         ejectButton.target = self
         ejectButton.action = #selector(ejectClicked)
         ejectButton.isHidden = true
-        ejectButton.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(ejectButton)
-        NSLayoutConstraint.activate([
-            ejectButton.trailingAnchor.constraint(equalTo: trailingAnchor),
-            ejectButton.centerYAnchor.constraint(equalTo: centerYAnchor),
-            ejectButton.widthAnchor.constraint(equalToConstant: Self.ejectSize),
-            ejectButton.heightAnchor.constraint(equalToConstant: Self.ejectSize),
-        ])
     }
 
     @objc private func ejectClicked() {
