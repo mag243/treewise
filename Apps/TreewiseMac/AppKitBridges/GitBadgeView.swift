@@ -68,7 +68,8 @@ final class GitBadgeView: NSView {
         }
     }
 
-    private static func colour(of state: GitItemState) -> NSColor {
+    /// The colour of a state, also of its word in the Git column.
+    static func colour(of state: GitItemState) -> NSColor {
         switch state {
         case .modified: .systemOrange
         case .new: .systemGreen

@@ -141,6 +141,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
                     as? NSTableCellView
             else { return }
             cell.textField?.stringValue = text(of: items[row], in: .git)
+            (cell as? GitStateCell)?.state = state
         }
     }
 
@@ -167,6 +168,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         let item = items[row]
         cell.textField?.stringValue = text(of: item, in: column)
         cell.alphaValue = cutItems.contains(item.id) ? Tint.cut : 1
+        (cell as? GitStateCell)?.state = gitStates[item.id]
         if column == .name {
             let icon = ItemIcon.image(for: item)
             icon.size = ListMetrics.iconSize
@@ -249,7 +251,8 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
         alignment: NSTextAlignment
     ) -> NSTableCellView {
         let withIcon = column == .name
-        let cell = withIcon ? FileNameCell() : NSTableCellView()
+        let cell =
+            withIcon ? FileNameCell() : column == .git ? GitStateCell() : NSTableCellView()
         cell.identifier = identifier
         let text = NSTextField(labelWithString: "")
         text.lineBreakMode = .byTruncatingMiddle
