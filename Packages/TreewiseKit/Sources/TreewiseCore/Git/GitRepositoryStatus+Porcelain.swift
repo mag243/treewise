@@ -47,11 +47,13 @@ extension GitRepositoryStatus {
         case "branch.oid": oid = String(fields[2])
         case "branch.head":
             head = fields[2] == "(detached)" ? .detached("") : .branch(String(fields[2]))
+        // Git names the upstream, then counts against it only when it is still there.
+        case "branch.upstream": upstream = upstream ?? .gone
         case "branch.ab":
             guard fields.count >= 4, let ahead = Int(fields[2].dropFirst()),
                 let behind = Int(fields[3].dropFirst())
             else { return }
-            upstream = Upstream(ahead: ahead, behind: behind)
+            upstream = .following(ahead: ahead, behind: behind)
         default: return
         }
     }

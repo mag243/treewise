@@ -35,13 +35,13 @@ import TreewiseCore
         let state = status(
             "# branch.oid \(oid)", "# branch.head main", "# branch.upstream origin/main",
             "# branch.ab +2 -1")
-        #expect(state.upstream == GitRepositoryStatus.Upstream(ahead: 2, behind: 1))
+        #expect(state.upstream == .following(ahead: 2, behind: 1))
     }
 
-    @Test func anUpstreamThatIsGoneHasNoCounts() {
+    @Test func anUpstreamWithoutCountsIsGone() {
         let state = status(
             "# branch.oid \(oid)", "# branch.head main", "# branch.upstream origin/gone")
-        #expect(state.upstream == nil)
+        #expect(state.upstream == .gone)
     }
 
     @Test func aChangedFileIsModified() {

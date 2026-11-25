@@ -122,7 +122,19 @@ struct GitStatusReaderTests {
         try commitAll("mine", in: clone)
         try git(["fetch", "-q"], in: clone)
         let (_, state) = try await status(of: clone)
-        #expect(state.upstream == GitRepositoryStatus.Upstream(ahead: 1, behind: 1))
+        #expect(state.upstream == .following(ahead: 1, behind: 1))
+    }
+
+    @Test func readsAnUpstreamThatWasDeleted() async throws {
+        let origin = try makeRepository("origin")
+        try git(["branch", "feature"], in: origin)
+        let clone = directory.url("clone").path
+        try git(["clone", "-q", origin, clone], in: directory.path)
+        try git(["switch", "-q", "feature"], in: clone)
+        try git(["branch", "-q", "-D", "feature"], in: origin)
+        try git(["fetch", "-q", "--prune"], in: clone)
+        let (_, state) = try await status(of: clone)
+        #expect(state.upstream == .gone)
     }
 
     @Test func withoutGitNothingIsRead() async throws {

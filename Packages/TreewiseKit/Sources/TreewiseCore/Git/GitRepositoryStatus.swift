@@ -13,23 +13,18 @@ public struct GitRepositoryStatus: Hashable, Sendable {
         case detached(String)
     }
 
-    /// How far a branch is from the branch it follows.
-    public struct Upstream: Hashable, Sendable {
-        /// The commits on the branch that its upstream lacks.
-        public var ahead: Int
-        /// The commits on the upstream that the branch lacks.
-        public var behind: Int
-
-        /// Creates the counts.
-        public init(ahead: Int, behind: Int) {
-            self.ahead = ahead
-            self.behind = behind
-        }
+    /// The branch on a remote a branch follows.
+    public enum Upstream: Hashable, Sendable {
+        /// It is there: `ahead` commits on the branch it lacks, `behind` commits on it
+        /// the branch lacks.
+        case following(ahead: Int, behind: Int)
+        /// It was deleted from the remote.
+        case gone
     }
 
     /// Where HEAD points; `nil` when git did not say.
     public var head: Head?
-    /// The counts against the upstream; `nil` without an upstream, or one that is gone.
+    /// The branch on a remote that HEAD's branch follows; `nil` when it follows none.
     public var upstream: Upstream?
 
     /// Each listed item's state, by its key.
