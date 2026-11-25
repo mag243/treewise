@@ -44,15 +44,25 @@ public enum GitText {
                 return String(
                     localized: "On branch \(name), whose branch on the remote was deleted",
                     bundle: bundle, locale: locale)
-            case .following(0, 0):
-                return String(
-                    localized: "On branch \(name), up to date with its remote", bundle: bundle,
-                    locale: locale)
             case .following(let ahead, let behind):
+                let counts = [
+                    ahead > 0
+                        ? String(
+                            localized: "\(ahead) commits to push", bundle: bundle, locale: locale)
+                        : nil,
+                    behind > 0
+                        ? String(
+                            localized: "\(behind) commits to pull", bundle: bundle, locale: locale)
+                        : nil,
+                ].compactMap(\.self)
+                guard !counts.isEmpty else {
+                    return String(
+                        localized: "On branch \(name), up to date with its remote",
+                        bundle: bundle, locale: locale)
+                }
+                let joined = counts.joined(separator: ", ")
                 return String(
-                    localized:
-                        "On branch \(name): \(ahead) commits to push, \(behind) to pull",
-                    bundle: bundle, locale: locale)
+                    localized: "On branch \(name): \(joined)", bundle: bundle, locale: locale)
             }
         }
     }

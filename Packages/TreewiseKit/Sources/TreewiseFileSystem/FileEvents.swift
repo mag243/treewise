@@ -13,11 +13,11 @@
         /// What the stream's C callback needs, reached through its `info` pointer.
         private final class Target: Sendable {
             let accepts: @Sendable (String) -> Bool
-            let onChange: @Sendable () -> Void
+            let onChange: @Sendable ([String]) -> Void
 
             init(
                 accepts: @escaping @Sendable (String) -> Bool,
-                onChange: @escaping @Sendable () -> Void
+                onChange: @escaping @Sendable ([String]) -> Void
             ) {
                 self.accepts = accepts
                 self.onChange = onChange
@@ -33,7 +33,7 @@
             return watch(
                 trees: [resolved],
                 accepts: { ($0 as NSString).deletingLastPathComponent == resolved },
-                onChange: onChange)
+                onChange: { _ in onChange() })
         }
 
         /// The path with its links resolved, as FSEvents reports it, such as /private/var
@@ -45,11 +45,11 @@
         }
 
         /// Starts watching everything in the folders `trees`, given as real paths, and
-        /// reports a change to a path `accepts`; the result stops it. `nil` when the
-        /// stream cannot be made.
+        /// reports the paths of a batch of changes that `accepts`; the result stops it.
+        /// `nil` when the stream cannot be made.
         static func watch(
             trees: [String], accepts: @escaping @Sendable (String) -> Bool,
-            onChange: @escaping @Sendable () -> Void
+            onChange: @escaping @Sendable ([String]) -> Void
         ) -> (@Sendable () -> Void)? {
             let target = Target(accepts: accepts, onChange: onChange)
             var context = FSEventStreamContext(
@@ -93,10 +93,8 @@
             guard let info else { return }
             let target = Unmanaged<Target>.fromOpaque(info).takeUnretainedValue()
             let list = paths.assumingMemoryBound(to: UnsafePointer<CChar>.self)
-            let isAccepted = (0..<count).contains { index in
-                target.accepts(String(cString: list[index]))
-            }
-            if isAccepted { target.onChange() }
+            let accepted = (0..<count).map { String(cString: list[$0]) }.filter(target.accepts)
+            if !accepted.isEmpty { target.onChange(accepted) }
         }
     }
 #endif

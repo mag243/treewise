@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 import TreewiseCore
 import TreewiseTestSupport
@@ -129,6 +130,65 @@ import TreewiseUI
         #expect(reader.reads(of: repository) == 2)
     }
 
+    @Test func changesBeforeTheReadStartsAreReadOnce() async {
+        let gate = Gate()
+        let repository = reader.addRepository(at: top, porcelain: changed)
+        let model = GitStatusModel(reader: reader) { await gate.wait() }
+        let tab = Task { await model.follow(sources) }
+        defer { tab.cancel() }
+        #expect(await settles { reader.reads(of: repository) == 1 })
+
+        for _ in 0..<3 { reader.change(repository) }
+        #expect(await settles { gate.waiting == 1 })
+        for _ in 0..<100 { await Task.yield() }
+        gate.open()
+
+        #expect(await settles { reader.reads(of: repository) == 2 })
+        for _ in 0..<100 { await Task.yield() }
+        #expect(reader.reads(of: repository) == 2)
+    }
+
+    @Test func aChangeOnlyToIgnoredItemsIsNotRead() async {
+        let repository = reader.addRepository(at: top, porcelain: "! build/\n! debug.log")
+        let model = model()
+        let tab = Task { await model.follow(top) }
+        defer { tab.cancel() }
+        #expect(await settles { reader.reads(of: repository) == 1 })
+
+        reader.change(repository, paths: ["build/out/app.o", "debug.log"])
+        for _ in 0..<100 { await Task.yield() }
+        #expect(reader.reads(of: repository) == 1)
+
+        reader.change(repository, paths: ["build/out/app.o", "Sources/main.swift"])
+        #expect(await settles { reader.reads(of: repository) == 2 })
+    }
+
+    @Test func aFolderOutsideIsLookedForAgainWhenShownAgain() async {
+        let model = model()
+        let first = Task { await model.follow("/work/scratch") }
+        #expect(await settles { reader.lookups == 1 })
+        first.cancel()
+        await first.value
+
+        let second = Task { await model.follow("/work/scratch") }
+        defer { second.cancel() }
+        #expect(await settles { reader.lookups == 2 })
+    }
+
+    @Test func gitInstalledLaterIsUsedForTheShownFolders() async {
+        reader.addRepository(at: top, porcelain: changed)
+        let model = GitStatusModel(reader: ScriptedGitReader(hasGit: false), pause: .zero)
+        let tab = Task { await model.follow(sources) }
+        defer { tab.cancel() }
+        for _ in 0..<100 { await Task.yield() }
+        #expect(!model.hasGit)
+
+        model.use(reader)
+
+        #expect(model.hasGit)
+        #expect(await settles { model.status(of: sources) != nil })
+    }
+
     @Test func theSidebarMarksATopFolderOnlyWhileTurnedOn() {
         reader.addRepository(at: top, porcelain: "")
         let model = model()
@@ -141,5 +201,37 @@ import TreewiseUI
     @Test func withoutGitItSaysSo() {
         #expect(!GitStatusModel(reader: ScriptedGitReader(hasGit: false)).hasGit)
         #expect(model().hasGit)
+    }
+}
+
+/// A wait that lasts until the test opens it.
+private final class Gate: Sendable {
+    private struct State {
+        var isOpen = false
+        var waiting: [CheckedContinuation<Void, Never>] = []
+    }
+
+    private let state = Mutex(State())
+
+    /// How many are waiting now.
+    var waiting: Int { state.withLock { $0.waiting.count } }
+
+    func wait() async {
+        await withCheckedContinuation { continuation in
+            let isOpen = state.withLock { state in
+                if !state.isOpen { state.waiting.append(continuation) }
+                return state.isOpen
+            }
+            if isOpen { continuation.resume() }
+        }
+    }
+
+    func open() {
+        let waiting = state.withLock { state in
+            state.isOpen = true
+            defer { state.waiting = [] }
+            return state.waiting
+        }
+        for continuation in waiting { continuation.resume() }
     }
 }

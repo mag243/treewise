@@ -5,7 +5,8 @@ import TreewiseCore
 /// The git state of the working copies the windows show: one for each repository, read
 /// once for every tab and window that shows a folder in it, and read again a moment after
 /// it changes (ADR 0149). Reading happens in the background: the state shown stays until
-/// the new one is there, and browsing never waits for it.
+/// the new one is there, and browsing never waits for it. A change only to items git
+/// ignores, such as a build writing its output, is not read again.
 ///
 /// Turned off, it runs no git and follows nothing; the folders shown are kept, so turning
 /// it on reads their repositories again.
@@ -16,44 +17,63 @@ public final class GitStatusModel {
     /// read once.
     public static let pause = Duration.milliseconds(500)
 
-    @ObservationIgnored private let reader: any GitStatusReading
-    @ObservationIgnored private let pause: Duration
+    @ObservationIgnored private var reader: any GitStatusReading
+    /// Counts the readers used, so a repository a former one found is not followed.
+    @ObservationIgnored private var readerGeneration = 0
+    @ObservationIgnored private let wait: @Sendable () async -> Void
     /// How many tabs show each folder, whether or not it is in a repository.
     @ObservationIgnored private var shown: [FileItem.ID: Int] = [:]
     /// The repository of each shown folder that is in one, once found.
     @ObservationIgnored private var repositories: [FileItem.ID: GitRepository] = [:]
-    /// The folders that hold no repository, so they are not looked for again.
+    /// The shown folders that hold no repository, so they are not looked for again while
+    /// shown.
     @ObservationIgnored private var outside: Set<FileItem.ID> = []
-    /// The reading of each followed repository: once at first, then after each change.
+    /// The reading of each followed repository: once at first, then after its changes.
     @ObservationIgnored private var updates: [GitRepository: Task<Void, Never>] = [:]
     /// Each followed repository's state, once read.
     private var statuses: [GitRepository: GitRepositoryStatus] = [:]
+    /// Whether a git is installed that Treewise can run.
+    public private(set) var hasGit: Bool
 
     /// Whether git status shows; off, nothing is read or followed.
     public var isEnabled: Bool {
         didSet {
             guard isEnabled != oldValue else { return }
-            if isEnabled {
-                for folder in shown.keys { Task { await self.find(folder) } }
-            } else {
-                stopAll()
-            }
+            if isEnabled { findShownFolders() } else { stopAll() }
         }
     }
 
-    /// Whether a git is installed that Treewise can run.
-    public var hasGit: Bool { reader.hasGit }
-
     /// A model that reads with `reader`, waiting `pause` after a change.
-    public init(reader: any GitStatusReading, isEnabled: Bool = true, pause: Duration = pause) {
+    public convenience init(
+        reader: any GitStatusReading, isEnabled: Bool = true, pause: Duration = pause
+    ) {
+        self.init(reader: reader, isEnabled: isEnabled) { try? await Task.sleep(for: pause) }
+    }
+
+    /// A model that reads with `reader`, running `wait` after a change before it reads.
+    public init(
+        reader: any GitStatusReading, isEnabled: Bool = true,
+        wait: @escaping @Sendable () async -> Void
+    ) {
         self.reader = reader
         self.isEnabled = isEnabled
-        self.pause = pause
+        self.wait = wait
+        hasGit = reader.hasGit
+    }
+
+    /// Reads with `reader` from now on, as after git was installed, and reads the shown
+    /// folders' repositories again.
+    public func use(_ reader: any GitStatusReading) {
+        stopAll()
+        self.reader = reader
+        readerGeneration += 1
+        hasGit = reader.hasGit
+        if isEnabled { findShownFolders() }
     }
 
     /// Follows the repository that holds `folder` while a tab shows it: returns when the
     /// calling task is cancelled, also for a folder outside a repository, which is looked
-    /// for again when the setting is turned on.
+    /// for again when it is shown again or the setting is turned on.
     public func follow(_ folder: FileItem.ID) async {
         shown[folder, default: 0] += 1
         await find(folder)
@@ -61,6 +81,7 @@ public final class GitStatusModel {
         shown[folder, default: 1] -= 1
         guard shown[folder] == 0 else { return }
         shown[folder] = nil
+        outside.remove(folder)
         if let repository = repositories.removeValue(forKey: folder) { stopIfUnshown(repository) }
     }
 
@@ -84,37 +105,49 @@ public final class GitStatusModel {
         isEnabled && reader.isRepositoryTop(folder)
     }
 
+    private func findShownFolders() {
+        for folder in shown.keys { Task { await self.find(folder) } }
+    }
+
     /// Finds the repository of a shown folder and follows it, unless it is known.
     private func find(_ folder: FileItem.ID) async {
         guard isEnabled, repositories[folder] == nil, !outside.contains(folder) else { return }
-        guard let repository = await reader.repository(holding: folder) else {
+        let generation = readerGeneration
+        let repository = await reader.repository(holding: folder)
+        // While git looked, the tab may have moved on, the setting turned off or git come.
+        guard isEnabled, shown[folder] != nil, generation == readerGeneration else { return }
+        guard let repository else {
             outside.insert(folder)
             return
         }
-        // While git looked, the tab may have moved on, or the setting turned off.
-        guard isEnabled, shown[folder] != nil else { return }
         repositories[folder] = repository
         if updates[repository] == nil {
             updates[repository] = Task { await self.keepUpToDate(repository) }
         }
     }
 
-    /// Reads the repository now and again after each change, until cancelled.
+    /// Reads the repository now and again after the changes that matter, until cancelled.
     private func keepUpToDate(_ repository: GitRepository) async {
         let changes = reader.changes(of: repository)
+        let rereading = Rereading(wait: wait) { [weak self] in await self?.read(repository) }
         await read(repository)
-        for await _ in changes {
-            // Changes during the pause and the read wait as one, read once after it.
-            try? await Task.sleep(for: pause)
-            guard !Task.isCancelled else { return }
-            await read(repository)
+        for await paths in changes where matters(paths, in: repository) {
+            rereading.request()
         }
+        rereading.cancel()
+    }
+
+    /// Whether a change of `paths` can change the state: not when each was ignored by
+    /// the last reading.
+    private func matters(_ paths: [String], in repository: GitRepository) -> Bool {
+        guard let status = statuses[repository] else { return true }
+        return paths.contains { status.state(of: $0) != .ignored }
     }
 
     private func read(_ repository: GitRepository) async {
-        guard let status = try? await reader.status(of: repository), !Task.isCancelled else {
-            return
-        }
+        let status = try? await reader.status(of: repository)
+        // The repository may have stopped being followed while git ran.
+        guard let status, updates[repository] != nil else { return }
         statuses[repository] = status
     }
 
@@ -139,5 +172,39 @@ public final class GitStatusModel {
         for await _ in stream {}
         // Used after the loop, so the stream does not end before the task is cancelled.
         continuation.finish()
+    }
+}
+
+/// Reads a repository again after a change: changes before the read starts are read with
+/// it, changes during the read once more after it.
+@MainActor
+private final class Rereading {
+    private let wait: @Sendable () async -> Void
+    private let read: @MainActor () async -> Void
+    private var isRequested = false
+    private var run: Task<Void, Never>?
+
+    init(wait: @escaping @Sendable () async -> Void, read: @escaping @MainActor () async -> Void) {
+        self.wait = wait
+        self.read = read
+    }
+
+    func request() {
+        isRequested = true
+        guard run == nil else { return }
+        run = Task {
+            while isRequested, !Task.isCancelled {
+                await wait()
+                guard !Task.isCancelled else { break }
+                isRequested = false
+                await read()
+            }
+            run = nil
+        }
+    }
+
+    func cancel() {
+        run?.cancel()
+        isRequested = false
     }
 }

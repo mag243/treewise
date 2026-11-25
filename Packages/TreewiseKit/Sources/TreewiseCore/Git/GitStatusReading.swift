@@ -26,9 +26,10 @@ public protocol GitStatusReading: Sendable {
     /// - Throws: `FileSystemError` when git cannot read it.
     func status(of repository: GitRepository) async throws -> GitRepositoryStatus
 
-    /// A stream that yields when the repository's state may have changed: a file in its
-    /// working copy, its HEAD, its index or its branches. Ending the iteration stops it.
-    func changes(of repository: GitRepository) -> AsyncStream<Void>
+    /// A stream that yields the paths, from the top folder, of a batch of changes that may
+    /// change the repository's state: a file in its working copy, or its HEAD, index or
+    /// branches, which come as the top folder's empty path. Ending the iteration stops it.
+    func changes(of repository: GitRepository) -> AsyncStream<[String]>
 
     /// The path of `item` from the repository's top folder, as `GitRepositoryStatus`
     /// takes it; empty for the top folder, `nil` for an item outside it.

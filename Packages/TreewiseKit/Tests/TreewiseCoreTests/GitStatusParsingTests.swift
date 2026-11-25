@@ -98,6 +98,15 @@ import TreewiseCore
         #expect(GitRepositoryStatus(porcelain: data).state(of: "good.txt") == .new)
     }
 
+    @Test func aRenameWhoseNameIsNoUTF8LeavesItsOldNameUnread() {
+        var data = Data("2 R. N... \(hashes) R100 bad".utf8)
+        data.append(contentsOf: [0xFF, 0])
+        data.append(Data("? looks-like-a-record.txt\0? good.txt\0".utf8))
+        let state = GitRepositoryStatus(porcelain: data)
+        #expect(state.state(of: "looks-like-a-record.txt") == nil)
+        #expect(state.state(of: "good.txt") == .new)
+    }
+
     @Test func aRecordGitAddsLaterIsLeftAlone() {
         let state = status("# branch.oid \(oid)", "# stash 3", "x future record", "? a.txt")
         #expect(state.state(of: "a.txt") == .new)

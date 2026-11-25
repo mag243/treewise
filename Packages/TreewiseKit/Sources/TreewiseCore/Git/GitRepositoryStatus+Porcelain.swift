@@ -18,24 +18,31 @@ extension GitRepositoryStatus {
         var oid: String?
         var records = data.split(separator: 0, omittingEmptySubsequences: true).makeIterator()
         while let bytes = records.next() {
-            guard let record = String(bytes: bytes, encoding: .utf8), let kind = bytes.first
-            else { continue }
-            switch kind {
-            case UInt8(ascii: "#"): readHeader(record, oid: &oid)
-            case UInt8(ascii: "?"): readWhole(record, as: .new)
-            case UInt8(ascii: "!"): readWhole(record, as: .ignored)
-            case UInt8(ascii: "1"), UInt8(ascii: "2"), UInt8(ascii: "u"):
+            guard let kind = bytes.first else { continue }
+            let record = String(bytes: bytes, encoding: .utf8)
+            if kind == UInt8(ascii: "2") {
+                // A rename's old name follows as a record of its own, never read as one.
+                let old = records.next().flatMap { String(bytes: $0, encoding: .utf8) }
+                guard let record else { continue }
                 readChange(record, kind: kind)
-                if kind == UInt8(ascii: "2"), let old = records.next(),
-                    let name = String(bytes: old, encoding: .utf8)
-                {
-                    mark(nil, at: name)
-                }
-            default: continue
+                if let old { mark(nil, at: old) }
+            } else if let record {
+                read(record, kind: kind, oid: &oid)
             }
         }
         if case .detached = head, let oid {
             head = .detached(String(oid.prefix(Self.shortHashLength)))
+        }
+    }
+
+    /// A record other than a rename's.
+    private mutating func read(_ record: String, kind: UInt8, oid: inout String?) {
+        switch kind {
+        case UInt8(ascii: "#"): readHeader(record, oid: &oid)
+        case UInt8(ascii: "?"): readWhole(record, as: .new)
+        case UInt8(ascii: "!"): readWhole(record, as: .ignored)
+        case UInt8(ascii: "1"), UInt8(ascii: "u"): readChange(record, kind: kind)
+        default: return
         }
     }
 

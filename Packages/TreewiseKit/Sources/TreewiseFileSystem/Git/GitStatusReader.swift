@@ -49,8 +49,8 @@
             return GitRepositoryStatus(porcelain: data)
         }
 
-        public func changes(of repository: GitRepository) -> AsyncStream<Void> {
-            AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
+        public func changes(of repository: GitRepository) -> AsyncStream<[String]> {
+            AsyncStream { continuation in
                 guard let top = FileEvents.realPath(repository.top.rawValue),
                     let git = FileEvents.realPath(repository.gitDirectory)
                 else {
@@ -60,7 +60,9 @@
                 let trees = git.hasPrefix(top + "/") ? [top] : [top, git]
                 let stop = FileEvents.watch(
                     trees: trees, accepts: { Self.changesState($0, gitDirectory: git) },
-                    onChange: { continuation.yield() })
+                    onChange: { paths in
+                        continuation.yield(paths.map { Self.path($0, top: top, gitDirectory: git) })
+                    })
                 guard let stop else {
                     continuation.finish()
                     return
@@ -91,6 +93,15 @@
                 if parent == folder || parent.isEmpty { return false }
                 folder = parent
             }
+        }
+
+        /// A changed real path from the top folder; the top folder's empty path for one in
+        /// the git data.
+        static func path(_ path: String, top: String, gitDirectory: String) -> String {
+            guard !path.hasPrefix(gitDirectory + "/"), path.hasPrefix(top + "/") else {
+                return ""
+            }
+            return String(path.dropFirst(top.count + 1))
         }
 
         /// Whether a change at `path` can change the state: anything in the working copy,

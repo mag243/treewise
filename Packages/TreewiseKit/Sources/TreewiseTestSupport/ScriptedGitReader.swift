@@ -9,7 +9,7 @@ public final class ScriptedGitReader: GitStatusReading {
         var statuses: [GitRepository: GitRepositoryStatus] = [:]
         var reads: [GitRepository: Int] = [:]
         var lookups = 0
-        var watching: [GitRepository: [UUID: AsyncStream<Void>.Continuation]] = [:]
+        var watching: [GitRepository: [UUID: AsyncStream<[String]>.Continuation]] = [:]
     }
 
     private let script = Mutex(Script())
@@ -50,10 +50,11 @@ public final class ScriptedGitReader: GitStatusReading {
         script.withLock { Set($0.watching.filter { !$0.value.isEmpty }.keys) }
     }
 
-    /// Reports a change in `repository` to everyone following it.
-    public func change(_ repository: GitRepository) {
+    /// Reports a change of `paths` in `repository`, from its top folder, to everyone
+    /// following it; by default one in its git data.
+    public func change(_ repository: GitRepository, paths: [String] = [""]) {
         let watching = script.withLock { Array(($0.watching[repository] ?? [:]).values) }
-        for continuation in watching { continuation.yield() }
+        for continuation in watching { continuation.yield(paths) }
     }
 
     public func repository(holding folder: FileItem.ID) async -> GitRepository? {
@@ -73,9 +74,8 @@ public final class ScriptedGitReader: GitStatusReading {
         }
     }
 
-    public func changes(of repository: GitRepository) -> AsyncStream<Void> {
-        let (stream, continuation) = AsyncStream<Void>.makeStream(
-            bufferingPolicy: .bufferingNewest(1))
+    public func changes(of repository: GitRepository) -> AsyncStream<[String]> {
+        let (stream, continuation) = AsyncStream<[String]>.makeStream()
         let id = UUID()
         continuation.onTermination = { [weak self] _ in
             self?.script.withLock { $0.watching[repository]?[id] = nil }

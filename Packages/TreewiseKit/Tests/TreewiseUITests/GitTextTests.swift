@@ -48,7 +48,11 @@ import TreewiseUI
         #expect(
             GitText.branchHelp(
                 status(.branch("main"), .following(ahead: 2, behind: 1)), locale: english)
-                == "On branch main: 2 commits to push, 1 to pull")
+                == "On branch main: 2 commits to push, 1 commit to pull")
+        #expect(
+            GitText.branchHelp(
+                status(.branch("main"), .following(ahead: 1, behind: 0)), locale: english)
+                == "On branch main: 1 commit to push")
         #expect(
             GitText.branchHelp(
                 status(.branch("main"), .following(ahead: 0, behind: 0)), locale: english)

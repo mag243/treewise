@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 import TreewiseCore
 import TreewiseFileSystem
@@ -151,50 +152,84 @@ struct GitStatusReaderTests {
                 == GitTool(executable: "/bin/ls"))
     }
 
-    @Test func hearsACommitAndAFileChangingInAFolderInside() async throws {
+    @Test func hearsAFileChangingInPlaceInAFolderInside() async throws {
         let top = try makeRepository()
         try directory.makeFolder("repo/src")
         try directory.makeFile("repo/src/main.swift")
         try commitAll("src", in: top)
         let repository = try #require(await reader.repository(holding: FileItem.ID(top)))
+        let heard = try await Heard.listening(to: reader.changes(of: repository))
+        defer { heard.stop() }
 
-        #expect(
-            try await Self.hears(reader.changes(of: repository)) {
-                let handle = try FileHandle(forWritingTo: directory.url("repo/src/main.swift"))
-                try handle.seekToEnd()
-                try handle.write(contentsOf: Data("changed\n".utf8))
-                try handle.close()
-            }, "a file changed in place, in a folder no tab shows")
-        #expect(
-            try await Self.hears(reader.changes(of: repository)) {
-                try commitAll("changed", in: top)
-            }, "a commit in the Terminal")
+        let handle = try FileHandle(forWritingTo: directory.url("repo/src/main.swift"))
+        try handle.seekToEnd()
+        try handle.write(contentsOf: Data("changed\n".utf8))
+        try handle.close()
+
+        #expect(await heard.hears { $0.contains("src/main.swift") })
     }
 
-    /// How long a change may take to arrive: FSEvents gathers events for 0.3 seconds.
-    private static let deadline = Duration.seconds(3)
-    /// How long the stream gets to start before the change.
-    private static let start = Duration.milliseconds(500)
+    @Test func hearsACommitAsAChangeInTheGitData() async throws {
+        let top = try makeRepository()
+        try directory.makeFile("repo/tracked.txt", contents: "two\n")
+        let repository = try #require(await reader.repository(holding: FileItem.ID(top)))
+        let heard = try await Heard.listening(to: reader.changes(of: repository))
+        defer { heard.stop() }
 
-    /// Whether `events` yields after `change`, before the deadline.
-    private static func hears(
-        _ events: AsyncStream<Void>, after change: () throws -> Void
-    ) async throws -> Bool {
-        try await Task.sleep(for: start)
-        try change()
-        return await withTaskGroup(of: Bool.self) { group in
-            group.addTask {
-                for await _ in events { return true }
-                return false
-            }
-            group.addTask {
-                try? await Task.sleep(for: deadline)
-                return false
-            }
-            let first = await group.next() ?? false
-            group.cancelAll()
-            return first
+        try commitAll("changed", in: top)
+
+        #expect(await heard.hears { $0.contains("") })
+    }
+
+    @Test func readingTheStateWakesNoWatching() async throws {
+        let top = try makeRepository()
+        try directory.makeFile("repo/tracked.txt", contents: "two\n")
+        let repository = try #require(await reader.repository(holding: FileItem.ID(top)))
+        let heard = try await Heard.listening(to: reader.changes(of: repository))
+        defer { heard.stop() }
+
+        _ = try await reader.status(of: repository)
+
+        #expect(!(await heard.hears { _ in true }), "git status wrote what it reads")
+    }
+}
+
+/// The batches of a repository's changes, heard from after the stream had time to start,
+/// so a change made before it is not among them.
+private final class Heard: Sendable {
+    /// How long a change may take to arrive: FSEvents gathers events for 0.3 seconds.
+    private static let deadline = Duration.seconds(2)
+    /// How long the stream gets to start, and earlier changes to arrive, before listening.
+    private static let start = Duration.milliseconds(800)
+    private static let poll = Duration.milliseconds(50)
+
+    private let batches = Mutex<[[String]]>([])
+    private let listening = Mutex<Task<Void, Never>?>(nil)
+
+    static func listening(to events: AsyncStream<[String]>) async throws -> Heard {
+        let heard = Heard()
+        let task = Task {
+            for await batch in events { heard.batches.withLock { $0.append(batch) } }
         }
+        heard.listening.withLock { $0 = task }
+        try await Task.sleep(for: start)
+        heard.batches.withLock { $0 = [] }
+        return heard
+    }
+
+    /// Whether a batch `matches` arrives before the deadline.
+    func hears(_ matches: @escaping ([String]) -> Bool) async -> Bool {
+        let clock = ContinuousClock()
+        let end = clock.now + Self.deadline
+        while clock.now < end {
+            if batches.withLock({ $0.contains(where: matches) }) { return true }
+            try? await Task.sleep(for: Self.poll)
+        }
+        return batches.withLock { $0.contains(where: matches) }
+    }
+
+    func stop() {
+        listening.withLock { $0?.cancel() }
     }
 }
 
