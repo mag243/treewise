@@ -97,6 +97,8 @@ final class SidebarCell: NSTableCellView {
 
     private func setUpAccessories() {
         accessories.orientation = .horizontal
+        // A hidden eject button or mark takes no room, so the name runs up to what shows.
+        accessories.detachesHiddenViews = true
         accessories.spacing = ListMetrics.iconSpacing
         accessories.setViews([repositoryMark, ejectButton], in: .trailing)
         accessories.translatesAutoresizingMaskIntoConstraints = false

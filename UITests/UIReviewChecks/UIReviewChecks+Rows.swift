@@ -54,8 +54,10 @@ extension UIReviewChecks {
                 guard let words = text.value as? String, !words.isEmpty else { return nil }
                 let needs = (words as NSString).size(withAttributes: [.font: listFont]).width
                 guard needs > text.frame.width + cutSlack else { return nil }
-                // The room after it: up to the next thing in the row, or the row's end.
-                let next = texts.map(\.frame.minX).filter { $0 >= text.frame.maxX }.min()
+                // The room after it: up to the next thing in the row, a text, an image or a
+                // button such as a mark or an eject button, or the row's end.
+                let next = rowThings(in: row).map(\.frame.minX)
+                    .filter { $0 >= text.frame.maxX }.min()
                 let room = (next ?? row.frame.maxX) - text.frame.maxX
                 guard room > roomLeft else { return nil }
                 return finding(
@@ -63,6 +65,18 @@ extension UIReviewChecks {
                     "needs \(Int(needs)) in \(Int(text.frame.width)), with \(Int(room)) free after it"
                 )
             }.first
+        }
+    }
+
+    /// What a row shows that takes room beside its texts: its texts, images and buttons,
+    /// leaving out those in a group inside it.
+    static func rowThings(in snapshot: any XCUIElementSnapshot) -> [any XCUIElementSnapshot] {
+        snapshot.children.flatMap { child -> [any XCUIElementSnapshot] in
+            if child.elementType == .group { return [] }
+            let own =
+                [.staticText, .textField, .image, .button].contains(child.elementType)
+                && !child.frame.isEmpty
+            return (own ? [child] : []) + rowThings(in: child)
         }
     }
 

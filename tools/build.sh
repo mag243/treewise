@@ -76,7 +76,7 @@
 #               appearance, checked for quirks such as cut-off or overlapping controls,
 #               with a screenshot of each in build/ui-review/index.html. Ends red on a
 #               finding not in tools/uireview/allowed.txt. Followed by a category, only
-#               that one: settings, browser, templates, names or dialogs; and by `all`,
+#               that one: settings, browser, templates, names, dialogs or git; and by `all`,
 #               in light and in dark. On demand only; takes the screen.
 #   sandboxtest The overview of proposed names from start to end on sandbox volumes made
 #               afresh (PLAN.md M7). Takes the screen, as ci does.
@@ -146,7 +146,7 @@ SANDBOX_TESTS="TreewiseMacUITests/SandboxVolumeTests"
 # The UI review's walk, on the official build only, not run by apptest (ADR 0103).
 UIREVIEW_TESTS="TreewiseMacUITests/UIReviewTests"
 UIREVIEW_DIR="$BUILD_DIR/ui-review"
-UIREVIEW_CATEGORIES=" settings browser templates names dialogs "
+UIREVIEW_CATEGORIES=" settings browser templates names dialogs git "
 # The iPad's UI review (ADR 0115).
 IPAD_REVIEW_TESTS="TreewiseiOSUITests/IPadReviewTests"
 # The iPhone's UI tests, which run on the iPhone only (ADR 0132).

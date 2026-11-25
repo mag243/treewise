@@ -11,3 +11,7 @@ names-add-ons | listMargin | image "drag"  # a point, not visible
 # AppKit's About panel sets its copyright line in a field just wide enough for it; the
 # panel is AppKit's own, not Treewise's layout.
 about | listMargin | text "_NS:111"  # AppKit's copyright field, drawn as AppKit lays it out
+# The git badge sits on the item's icon, at its bottom left, by design (ADR 0149); the
+# finding names the icon, which has no label of its own.
+git-list | overlap | image ""  # the badge belongs on the icon
+git-icons | overlap | image ""  # the badge belongs on the icon
