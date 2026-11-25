@@ -22,10 +22,20 @@ extension LaunchTests {
         XCTAssertEqual(branch.value as? String, "main local only")
     }
 
+    /// The git of the Xcode that runs the test. The runner lives in the App Sandbox, where
+    /// `/usr/bin/git`, which hands over through `xcrun`, refuses to run.
+    private static func git() throws -> URL {
+        let framework = Bundle(for: XCTestCase.self).bundlePath
+        let contents = try XCTUnwrap(
+            framework.range(of: ".app/Contents/").map { framework[..<$0.upperBound] },
+            "XCTest outside an Xcode: \(framework)")
+        return URL(fileURLWithPath: contents + "Developer/usr/bin/git")
+    }
+
     /// Runs git in `folder`, apart from the user's own settings, with a name to commit under.
     private func runGit(_ arguments: [String], in folder: URL) throws {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+        process.executableURL = try Self.git()
         process.arguments =
             ["-C", folder.path, "-c", "user.name=Test", "-c", "user.email=test@example.com"]
             + arguments
