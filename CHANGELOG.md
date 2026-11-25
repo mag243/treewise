@@ -8,9 +8,10 @@ the smallest, is in the commits.
 
 ## [1.1.0] - unreleased
 
-Move and copy in fewer steps, and swipe on the iPad and the iPhone.
+Git status on the Mac, move and copy in fewer steps, and swipe on the iPad and the iPhone.
 
 ### New
+- **Git status on the Mac:** in a git repository each file and folder shows its state on its icon: a dot for modified, a ring for new, a diamond for a conflict, and an ignored item is dimmed. A folder shows what it holds, so you can follow the changes down the tree. The Git column says it in words and sorts the changes to the top, the status bar shows the branch and how many commits are to push and to pull, and the sidebar marks each repository. Treewise only reads your repositories and never changes them. It uses the git of Apple's Command Line Tools or Homebrew; without one, Settings > General offers Install…, and Show Git status there turns it off.
 - **Move to and Copy to with the folders you use:** the context menu (and on the Mac also the Edit menu) offers Move to and Copy to with the last five folders you moved or copied something into, by any way, at the top, then your favorites, then Choose Folder… to pick any other. On the iPad they are now there at every width, as on the iPhone.
 - **Swipe a row on the iPad and the iPhone:** swipe left for Move to Trash, which a full swipe does at once, and More… with Share, Rename and the rest; swipe right for Cut, which a full swipe does at once, and Copy.
 
