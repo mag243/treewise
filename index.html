@@ -83,6 +83,15 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
 .steps { padding-left: 1.3em; max-width: 40em; }
 .steps li { padding: 3px 0; }
 
+/* What Treewise does at a glance, each row a link to the part that tells more. */
+.glance { margin-top: 40px; }
+.glance h2 { margin: 0; font-size: 15px; font-weight: 600; color: var(--soft); }
+.glance ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); column-gap: 28px; }
+.glance a { display: flex; align-items: center; gap: 9px; padding: 7px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.glance a:hover { color: var(--bark); }
+.glance .icon { flex: none; width: 22px; height: 22px; padding: 3px; border-radius: 6px; background: var(--row); fill: none; stroke: var(--bark); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tree > li { scroll-margin-top: 16px; }
+
 .note { margin: 0; color: var(--soft); font-size: 15px; max-width: 44em; padding: 0 0 56px; }
 
 @media (max-width: 560px) {
@@ -124,7 +133,25 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
       <a class="download" data-download href="https://github.com/mag243/treewise/releases/download/v1.1.0/Treewise-1.1.0-2026.1126.143001.dmg">Download for Mac</a>
       <span class="needs">Free and open source. Needs macOS 15 or later.</span>
       <a class="needs" href="windows.html">Coming from Windows? Explorer’s ways in Treewise</a>
+      <span class="needs">Coming soon to the iPad and the iPhone.</span>
     </div>
+    <nav class="glance" aria-labelledby="glance">
+      <h2 id="glance">At a glance</h2>
+      <ul>
+        <li><a href="#find"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v14M5 8h6M5 14h6M11 8h8M11 14h8"/></svg>A folder tree to any depth</a></li>
+        <li><a href="#find"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="2"/><path d="M4 14h4M10 14h4M16 14h4M4 19h16"/></svg>Address bar and command bar</a></li>
+        <li><a href="#find"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4v16M16.5 9h2M16.5 12h2"/></svg>A details pane with a preview</a></li>
+        <li><a href="#move"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M8.2 15 18 4M15.8 15 6 4"/></svg>Cut, copy and paste files</a></li>
+        <li><a href="#move"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="8.5" height="14" rx="1.5"/><rect x="13" y="5" width="8.5" height="14" rx="1.5"/></svg>Two windows side by side</a></li>
+        <li><a href="#move"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h13M13 7l5 5-5 5"/><path d="M4 6v12"/></svg>Dragging that says copy or move</a></li>
+        <li><a href="#move"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 10l5 5"/><path d="M4 10h10a5 5 0 0 1 0 10h-4"/></svg>Undo and tabs in every window</a></li>
+        <li><a href="#names"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11M4 12h7M4 17h9"/><path d="M17 10v8M15 10h4M15 18h4"/></svg>Names suggested from a pattern</a></li>
+        <li><a href="#folders"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2h9A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" stroke-dasharray="3 2.2"/></svg>Folder templates</a></li>
+        <li><a href="#cloud"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 11 3.5 3.5 0 0 0 7 18z"/></svg>Cloud folders and online files</a></li>
+        <li><a href="#cloud"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M12 15h5"/></svg>Open in Terminal</a></li>
+        <li><a href="#cloud"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 4-6 3-11.5 7.5"/></svg>Git status of your repositories</a></li>
+      </ul>
+    </nav>
     <!-- A short video of cut and paste and dragging between windows goes here, in place of this image. -->
     <picture>
       <source srcset="images/01-main-dark.webp" media="(prefers-color-scheme: dark)">
@@ -133,7 +160,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
   </section>
 
   <ul class="tree">
-    <li><details open>
+    <li id="find"><details open>
       <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Find your way</h2></summary>
       <div class="body"><ul class="rows">
         <li><b>A folder tree</b> with your favorites, your disks, your home folder and your cloud folders, open to any depth.</li>
@@ -148,7 +175,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
       </picture></div>
     </details></li>
 
-    <li><details open>
+    <li id="move"><details open>
       <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Move your files</h2></summary>
       <div class="body"><ul class="rows">
         <li><b>Cut, copy and paste</b> with <kbd>⌘X</kbd>, <kbd>⌘C</kbd> and <kbd>⌘V</kbd>, also between windows and Finder.</li>
@@ -163,7 +190,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
       </picture></div>
     </details></li>
 
-    <li><details open>
+    <li id="names"><details open>
       <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Name your files</h2></summary>
       <div class="body"><ul class="rows">
         <li><b>Suggest Names</b> proposes names for a folder’s files from the pattern its names already follow, such as <code>2026.03.14 Tax - Payroll 2026.02</code>, or from one you type. You approve each name before anything is renamed.</li>
@@ -177,7 +204,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
       </picture></div>
     </details></li>
 
-    <li><details open>
+    <li id="folders"><details open>
       <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Set up folders</h2></summary>
       <div class="body"><ul class="rows">
         <li><b>Folder templates:</b> save a folder's structure, its folders without their files, and make it again anywhere with New Folders from Template.</li>
@@ -191,7 +218,7 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
       </picture></div>
     </details></li>
 
-    <li><details open>
+    <li id="cloud"><details open>
       <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Work with the cloud, the command line and git</h2></summary>
       <div class="body"><ul class="rows">
         <li><b>Cloud folders</b> such as Dropbox, OneDrive and iCloud Drive appear by themselves.</li>
