@@ -28,6 +28,13 @@ extension BrowserState {
         updateWatches()
     }
 
+    /// Reads a half's folder again without giving it the focus, as when a download in the
+    /// other half ends; nothing for a half that is gone.
+    public func readAgain(pane: Int) async {
+        guard let tab = layout.pane(at: pane)?.activeTabID else { return }
+        await load(tab)
+    }
+
     /// The window's title: the name of the folder it shows, or of both halves' folders,
     /// left first, when split; `nil` while no folder has been read.
     public var windowTitle: String? {

@@ -25,11 +25,12 @@ extension LaunchTests {
     @MainActor
     func testAFolderInTheSidebarShowsTheStateOfWhatItHolds() throws {
         let root = try XCTUnwrap(self.root)
+        let letter = root.appendingPathComponent("Documents/Letter.md")
+        try Data("first".utf8).write(to: letter)
         try TestGit.run(["init", "-q", "-b", "main"], in: root)
         try TestGit.run(["add", "-A"], in: root)
         try TestGit.run(["commit", "-q", "-m", "first"], in: root)
-        let scan = root.appendingPathComponent("Documents/Taxes/scan0001.pdf")
-        try Data("changed".utf8).write(to: scan)
+        try Data("changed".utf8).write(to: letter)
         let app = try launchApp()
         let window = app.windows.firstMatch
         XCTAssertTrue(
@@ -37,6 +38,6 @@ extension LaunchTests {
 
         XCTAssertTrue(
             window.outlines.images["Modified"].appeared(timeout: Self.launchTimeout),
-            "Documents, which holds the changed scan, has the modified badge in the sidebar")
+            "Documents, which holds the changed letter, has the modified badge in the sidebar")
     }
 }

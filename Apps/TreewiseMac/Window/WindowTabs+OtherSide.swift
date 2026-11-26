@@ -13,9 +13,26 @@ extension WindowTabs {
         browser.layout.otherSide(hasOtherWindow: otherWindow(than: window) != nil, for: use)
     }
 
-    /// Whether the selection of `browser` has somewhere to be copied or moved to.
+    /// Whether the selection of `browser` has somewhere to be copied or moved to: another
+    /// half or window, showing another folder.
     func hasOtherSide(of browser: BrowserState, from window: NSWindow?) -> Bool {
-        otherSide(of: browser, from: window, for: .sending) != nil
+        sendingFolder(of: browser, from: window) != nil
+    }
+
+    /// The folder Copy and Move to Other Side go to; `nil` without another half or window,
+    /// or when it shows the folder the selection is in, where a copy would only be named
+    /// "copy" and a move would do nothing.
+    private func sendingFolder(of browser: BrowserState, from window: NSWindow?) -> FileItem.ID? {
+        let folder: FileItem.ID?
+        switch otherSide(of: browser, from: window, for: .sending) {
+        case .pane(let other):
+            folder = browser.layout.pane(at: other)?.activeTab.folder
+        case .otherWindow:
+            folder = otherWindowFolder(than: window)
+        case .newWindowBeside, nil:
+            folder = nil
+        }
+        return folder == browser.layout.focusedPane.activeTab.folder ? nil : folder
     }
 
     /// Shows `folder` on the other side: in the other half, which the active half keeps
@@ -43,16 +60,7 @@ extension WindowTabs {
         selectionOf browser: BrowserState, mode: TransferMode, from window: NSWindow?,
         undoManager: UndoManager?
     ) async {
-        let folder: FileItem.ID?
-        switch otherSide(of: browser, from: window, for: .sending) {
-        case .pane(let other):
-            folder = browser.layout.pane(at: other)?.activeTab.folder
-        case .otherWindow:
-            folder = otherWindowFolder(than: window)
-        case .newWindowBeside, nil:
-            folder = nil
-        }
-        guard let folder else { return }
+        guard let folder = sendingFolder(of: browser, from: window) else { return }
         await browser.send(
             selectionTo: folder, mode: mode, resolver: AlertConflictResolver.make(),
             undoManager: undoManager)

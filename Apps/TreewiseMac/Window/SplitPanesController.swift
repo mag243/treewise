@@ -12,6 +12,8 @@ final class SplitPanesController: NSViewController, NSSplitViewDelegate {
     private let browser: BrowserState
     private let splitView = NSSplitView()
     private var halves: [PaneController] = []
+    /// Whether a new right half waits for the window's width to take half of it.
+    private var halvesWaitToBeEqual = false
     /// Keeps a split window wide enough for two halves; active only while split.
     private lazy var splitWidth = splitView.widthAnchor.constraint(
         greaterThanOrEqualToConstant: 2 * Self.minimumHalfWidth + splitView.dividerThickness)
@@ -33,12 +35,17 @@ final class SplitPanesController: NSViewController, NSSplitViewDelegate {
         Observing.follow(self) { $0.update() }
     }
 
-    /// Shows a half for each pane the window has.
+    /// Shows a half for each pane the window has; when one comes or goes, the keyboard
+    /// focus goes to the active half, as the menus and the command bar act on it.
     private func update() {
         let wanted = browser.layout.panes.count
+        let before = halves.count
         while halves.count < wanted { addHalf() }
         while halves.count > wanted { removeHalf() }
         splitWidth.isActive = halves.count > 1
+        guard before > 0, before != halves.count else { return }
+        let active = browser.layout.focusedPaneIndex
+        if halves.indices.contains(active) { halves[active].takeFocus() }
     }
 
     private func addHalf() {
@@ -47,8 +54,16 @@ final class SplitPanesController: NSViewController, NSSplitViewDelegate {
         halves.append(half)
         splitView.addArrangedSubview(half.view)
         guard halves.count > 1 else { return }
-        // A new right half takes half of the width.
-        splitView.layoutSubtreeIfNeeded()
+        // A new right half takes half of the width, once the window has one: a restored
+        // window adds it before it is laid out.
+        halvesWaitToBeEqual = true
+        view.needsLayout = true
+    }
+
+    override func viewDidLayout() {
+        super.viewDidLayout()
+        guard halvesWaitToBeEqual, halves.count > 1, splitView.bounds.width > 0 else { return }
+        halvesWaitToBeEqual = false
         splitView.setPosition(splitView.bounds.width / 2, ofDividerAt: 0)
     }
 

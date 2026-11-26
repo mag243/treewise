@@ -91,6 +91,12 @@ final class PaneController: NSViewController {
         statusBar.show(branch: browser.gitRepositoryStatus(of: tab))
     }
 
+    /// Gives this half's list or icons the keyboard focus, as when Split View opens it.
+    func takeFocus() {
+        let folderView = browser.viewMode(of: paneIndex) == .list ? listView : gridView
+        view.window?.makeFirstResponder(folderView.documentView)
+    }
+
     // MARK: - The folder
 
     private func showFolder(content: TreewiseUI.TabContent, items: [FileItem], tab: TabModel.ID) {
@@ -193,7 +199,7 @@ final class PaneController: NSViewController {
                 guard let self else { return }
                 let ended = report.count < downloads.count
                 show(downloads: report)
-                if ended { await browser.refresh(pane: paneIndex) }
+                if ended { await browser.readAgain(pane: paneIndex) }
             }
             self?.show(downloads: [:])
         }

@@ -50,6 +50,16 @@ import TreewiseUI
         #expect(browser.layout.panes.map(\.activeTab.folder) == ["documents"])
     }
 
+    @Test func readingAHalfAgainLeavesTheFocusWhereItIs() async {
+        let browser = await makeBrowser()
+        await browser.showSplitView()
+        browser.focusPane(0)
+
+        await browser.readAgain(pane: 1)
+
+        #expect(browser.layout.focusedPaneIndex == 0)
+    }
+
     @Test func theTitleNamesTheFolder() async {
         let browser = await makeBrowser()
 
