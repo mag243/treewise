@@ -119,7 +119,8 @@ final class PaneController: NSViewController {
                     renameRequest: renameRequest, revealRequest: revealRequest,
                     downloads: downloads, gitStates: gitStates,
                     showsExtensions: browser.settings.showsExtensions,
-                    rowHeight: browser.settings.rowDensity.rowHeight, actions: actions))
+                    rowHeight: browser.settings.rowDensity.rowHeight,
+                    columnsGiveWay: browser.layout.isSplit, actions: actions))
         case .icons:
             show(gridView)
             grid.update(

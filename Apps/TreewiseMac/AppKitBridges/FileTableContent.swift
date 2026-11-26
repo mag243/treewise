@@ -60,6 +60,9 @@ struct FileTableContent {
     var showsExtensions: Bool
     /// The height of the rows, from the row density setting.
     var rowHeight: CGFloat
+    /// Whether the columns give way where the list is too narrow for them: in a half of a
+    /// split window (ADR 0154); a whole window keeps them, as ADR 0127 decides.
+    var columnsGiveWay = false
     var actions: FileTableActions
 }
 
@@ -77,6 +80,12 @@ extension FileTableCoordinator {
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = true
         scrollView.autohidesScrollers = true
+        scrollView.postsFrameChangedNotifications = true
+        resizing = NotificationCenter.default.addObserver(
+            forName: NSView.frameDidChangeNotification, object: scrollView, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.fitColumns() }
+        }
         return scrollView
     }
 }

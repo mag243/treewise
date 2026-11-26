@@ -3,8 +3,12 @@ import TreewiseCore
 import TreewiseUI
 
 /// The list headers' menu, as in Finder: a Control-click or right-click on a header shows
-/// or hides the columns beside the name (ADR 0127).
+/// or hides the columns beside the name (ADR 0127). Where the list is too narrow for the
+/// columns chosen, as in a half of a split window, they give way in `FolderColumn`'s order,
+/// the date modified last, and come back with the room (ADR 0125, ADR 0154).
 extension FileTableCoordinator {
+    /// The room the name keeps before the columns beside it give way, in points.
+    private static let nameRoom = 200.0
     /// Gives the table's headers the menu of columns.
     func attachColumnsMenu(to table: NSTableView) {
         let menu = NSMenu()
@@ -19,14 +23,28 @@ extension FileTableCoordinator {
         table.headerView?.menu = menu
     }
 
-    /// Shows the columns `layout` shows and hides the others, and ticks them in the menu.
+    /// Fits the columns chosen into the list's width again, as after it changed.
+    func fitColumns() {
+        guard let table, let chosenColumns else { return }
+        showColumns(chosenColumns, in: table)
+    }
+
+    /// Shows the columns `layout` shows that fit beside the name and hides the others, and
+    /// ticks those chosen in the menu.
     func showColumns(_ layout: TableColumnLayout, in table: NSTableView) {
+        chosenColumns = layout
+        let visible = Double(table.enclosingScrollView?.contentView.bounds.width ?? 0)
+        let fitted =
+            columnsGiveWay && visible > 0
+            ? layout.fitted(
+                into: visible - Self.nameRoom, spacing: Double(table.intercellSpacing.width))
+            : layout
         var changed = false
         for column in FileTableColumn.allCases {
             guard let folderColumn = column.folderColumn,
                 let tableColumn = table.tableColumn(withIdentifier: column.identifier)
             else { continue }
-            let isHidden = !layout.isShown(folderColumn)
+            let isHidden = !layout.isShown(folderColumn) || fitted.isCrowdedOut(folderColumn)
             if tableColumn.isHidden != isHidden {
                 tableColumn.isHidden = isHidden
                 changed = true

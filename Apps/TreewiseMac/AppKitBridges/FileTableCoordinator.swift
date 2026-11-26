@@ -13,6 +13,12 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
     /// Makes the pane active on a click anywhere in its scroll view.
     var clickFocus: PaneClickFocus?
     var folder: FileItem?
+    /// The columns the user chose, which give way where the list is too narrow for them.
+    var chosenColumns: TableColumnLayout?
+    /// Whether they give way, as in a half of a split window.
+    var columnsGiveWay = false
+    /// Fits the columns again when the list's width changes.
+    var resizing: NSObjectProtocol?
     /// Renames items in place, in the name's field.
     lazy var renamer = NameFieldRenamer(
         actions: { [weak self] in self?.actions },
@@ -87,6 +93,7 @@ final class FileTableCoordinator: NSObject, NSTableViewDataSource, NSTableViewDe
             if !itemsChanged { showGitStates(in: table) }
         }
         if table.rowHeight != view.rowHeight { table.rowHeight = view.rowHeight }
+        columnsGiveWay = view.columnsGiveWay
         showColumns(view.columns, sortedBy: view.sort, in: table)
         if itemsChanged || view.selection != shownSelection { show(view.selection, in: table) }
         table.isActivePane = view.isActive

@@ -118,6 +118,33 @@ extension LaunchTests {
     }
 
     @MainActor
+    func testAHalfTooNarrowForItsColumnsLetsThemGiveWay() throws {
+        let root = try XCTUnwrap(root)
+        let app = XCUIApplication()
+        app.launchArguments =
+            [
+                "-TreewiseRoot", root.path, "-ApplePersistenceIgnoreState", "YES",
+                "-TreewiseWindowSize", "960x600",
+            ] + OpenedLog.arguments(for: root)
+        app.launch()
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
+        XCTAssertTrue(window.tables.buttons["Kind"].exists, "a whole window shows Kind")
+
+        app.typeKey("\\", modifierFlags: [.command, .control])
+
+        XCTAssertTrue(app.eventually { self.showsTwoHalves(window) }, "two halves")
+        let left = window.tables.element(boundBy: 0)
+        XCTAssertTrue(app.eventually { !left.buttons["Kind"].exists }, "Kind gives way in a half")
+        let name = left.staticTexts["Notes.md"]
+        XCTAssertLessThanOrEqual(name.frame.maxX, left.frame.maxX, "the name shows whole")
+        app.typeKey("\\", modifierFlags: [.command, .control])
+        XCTAssertTrue(
+            app.eventually { window.tables.firstMatch.buttons["Kind"].exists },
+            "Kind comes back with the room")
+    }
+
+    @MainActor
     func testCopyToOtherSideCopiesIntoTheOtherHalf() throws {
         let root = try XCTUnwrap(self.root)
         let copy = root.appendingPathComponent("Documents/Notes.md")
