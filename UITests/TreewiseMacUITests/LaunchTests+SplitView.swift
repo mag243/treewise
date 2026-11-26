@@ -6,6 +6,9 @@ extension LaunchTests {
     /// The narrowest a half's list is expected to be, a little under the app's minimum
     /// half width, which also holds the half's caption and edges.
     private static let halfListMinimum: CGFloat = 250
+    /// How long the pointer holds on the row before dragging, and over the target before
+    /// dropping, so AppKit starts the drag and picks the target.
+    private static let dragHold: TimeInterval = 0.5
 
     /// The captions a split window's halves show; a window that is not split has none.
     @MainActor
@@ -85,7 +88,12 @@ extension LaunchTests {
         let app = try launchApp()
         let (left, right) = splitWithDocumentsOnTheRight(app)
 
-        left.staticTexts["Notes.md"].press(forDuration: 0.5, thenDragTo: right)
+        // `click(forDuration:thenDragTo:)` is the mouse drag; `press` is for touch. The
+        // right half's folder is empty, so the drop lands on the folder it shows.
+        let centre = CGVector(dx: 0.5, dy: 0.5)
+        left.staticTexts["Notes.md"].coordinate(withNormalizedOffset: centre).click(
+            forDuration: Self.dragHold, thenDragTo: right.coordinate(withNormalizedOffset: centre),
+            withVelocity: .slow, thenHoldForDuration: Self.dragHold)
 
         let files = FileManager.default
         XCTAssertTrue(
