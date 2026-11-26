@@ -19,14 +19,15 @@ The specification of the app's keys (ADR 0022).
 | ⌘T | New tab on the current folder: one of macOS's window tabs, which tear off and merge as in Finder |
 | ⌘W | Close the tab; the window with its last tab |
 | ⌃⇥ / ⌃⇧⇥ | Next / previous tab |
+| ⌘\ | Split View: two folders side by side in this window, each half with its own view and sort order; again for one |
 | ⌥⌘N | Window beside: a second window on the current folder, the two on the halves of the screen |
 | ⌘1 / ⌘2 | Icons / list |
 | ⇧⌘P | Show or hide the details pane: a preview and the selection's kind, size, date and folder |
 | ⌘[ / ⌘] | Back / forward, in the Go menu |
 | ⌘↑ | Enclosing folder, in the Go menu; above a volume is This Mac, which lists the volumes |
 | ⌘R | Refresh: read the folder again |
-| ⌘↓ | Open the selection; ⌥⌘↓ opens a folder in the other window |
-| Double-click | Open, in the window the setting chooses; ⌥ the other window, ⌘ a new tab |
+| ⌘↓ | Open the selection; ⌥⌘↓ opens a folder on the other side: the other half of a split window, or the other window |
+| Double-click | Open, on the side the setting chooses; ⌥ the other side, ⌘ a new tab |
 | Return | Rename; a click on the name of the selected item also renames it, after a short wait, as in Finder |
 | Space | Quick Look |
 | ⌘F | Search in the current folder |
@@ -56,7 +57,7 @@ The specification of the app's keys (ADR 0022).
 
 ## Toolbar
 
-The toolbar has Back, Forward, Enclosing Folder, Refresh and search. Under the tab bar are the address bar and Explorer's command bar: *New* (New Folder), Cut, Copy, Paste, Rename, Share and Move to Trash, each enabled when its menu item is, *Sort* (column and direction), *View* (icons or list, row size, hidden files, file extensions), *Window Beside* and *Details*, the details pane at the right of the window. *Help > Treewise Website* opens the download page.
+The toolbar has Back, Forward, Enclosing Folder, Refresh and search. Under the tab bar are the address bar and Explorer's command bar: *New* (New Folder), Cut, Copy, Paste, Rename, Share and Move to Trash, each enabled when its menu item is, *Sort* (column and direction), *View* (icons or list, row size, hidden files, file extensions), *Split View* and *Details*, the details pane at the right of the window. *Help > Treewise Website* opens the download page.
 
 ## Building from source
 
