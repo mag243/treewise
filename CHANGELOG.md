@@ -6,7 +6,7 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
-## [1.1.0] - unreleased
+## [1.1.0] - 2026-11-26
 
 Git status on the Mac, move and copy in fewer steps, and swipe on the iPad and the iPhone.
 
