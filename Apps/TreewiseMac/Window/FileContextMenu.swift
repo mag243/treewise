@@ -77,7 +77,7 @@ struct FileContextMenu {
             shown.append(
                 open("Open in New Tab", symbol: "plus.square.on.square", items, in: .newTab))
             shown.append(
-                open("Open in Other Window", symbol: "rectangle.split.2x1", items, in: .otherPane))
+                open("Open on Other Side", symbol: "rectangle.split.2x1", items, in: .otherPane))
         }
         if items.allSatisfy(\.isEjectable) {
             shown.append(
@@ -167,16 +167,16 @@ struct FileContextMenu {
         ]
     }
 
-    /// Copy and Move to Other Window, while there is another window (ADR 0037).
+    /// Copy and Move to Other Side, while there is another half or window (ADR 0154).
     private func otherWindowItems() -> [NSMenuItem] {
         let window = NSApp.keyWindow
-        guard AppServices.windows.otherWindow(than: window) != nil else { return [] }
+        guard AppServices.windows.hasOtherSide(of: browser, from: window) else { return [] }
         return [
-            ClosureMenuItem(String(localized: "Copy to Other Window"), symbol: "doc.on.doc.fill") {
+            ClosureMenuItem(String(localized: "Copy to Other Side"), symbol: "doc.on.doc.fill") {
                 send(.copy, from: window)
             },
             ClosureMenuItem(
-                String(localized: "Move to Other Window"), symbol: "arrow.right.square",
+                String(localized: "Move to Other Side"), symbol: "arrow.right.square",
                 enabled: browser.canCutSelection
             ) {
                 send(.move, from: window)
@@ -186,7 +186,7 @@ struct FileContextMenu {
 
     private func send(_ mode: TransferMode, from window: NSWindow?) {
         Task {
-            await AppServices.windows.send(
+            await AppServices.windows.sendToOtherSide(
                 selectionOf: browser, mode: mode, from: window, undoManager: undoManager)
         }
     }

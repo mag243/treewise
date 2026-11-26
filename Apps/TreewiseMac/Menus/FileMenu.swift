@@ -19,7 +19,7 @@ enum FileMenu {
                     modifiers: [.command, .shift]),
                 MenuItem.make("Open", #selector(Window.openSelection(_:)), key: down),
                 MenuItem.make(
-                    "Open in Other Window", #selector(Window.openSelectionInOtherWindow(_:)),
+                    "Open on Other Side", #selector(Window.openSelectionInOtherWindow(_:)),
                     key: down, modifiers: [.command, .option]),
             ] + namingAndArchiveItems() + [
                 MenuItem.make("Eject", #selector(Window.ejectSelection(_:)), key: "e"),

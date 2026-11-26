@@ -29,9 +29,9 @@ struct BrowserActions {
         return !selection.isEmpty && selection.allSatisfy(\.isEjectable) ? selection : []
     }
     func eject() { VolumeEjection.eject(ejectableSelection) }
-    /// Whether there is a selection and another window to copy or move it to.
+    /// Whether there is a selection and another half or window to copy or move it to.
     var canSendToOtherWindow: Bool {
-        hasSelection && AppServices.windows.otherWindow(than: NSApp.keyWindow) != nil
+        hasSelection && AppServices.windows.hasOtherSide(of: browser, from: NSApp.keyWindow)
     }
 
     /// Whether the selection can also leave where it is: out of an archive it can only copy.
@@ -120,11 +120,11 @@ struct BrowserActions {
         Task { await ItemOpening.open(items, from: pane, in: placement, browser: browser) }
     }
 
-    /// Copy to Other Window or Move to Other Window (ADR 0037).
+    /// Copy to Other Side or Move to Other Side (ADR 0154).
     func sendToOtherWindow(_ mode: TransferMode) {
         let window = NSApp.keyWindow
         Task {
-            await AppServices.windows.send(
+            await AppServices.windows.sendToOtherSide(
                 selectionOf: browser, mode: mode, from: window, undoManager: undoManager)
         }
     }

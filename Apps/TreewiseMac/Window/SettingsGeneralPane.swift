@@ -31,7 +31,7 @@ final class SettingsGeneralPane: NSViewController {
     /// The row of Install…, shown only while git is missing.
     private var installRow: NSGridRow?
     private lazy var placement = SettingsForm.popUp(
-        [String(localized: "This window"), String(localized: "The other window")],
+        [String(localized: "This side"), String(localized: "The other side")],
         accessibilityLabel: "Double-click opens folders in"
     ) { [settings] in settings.doubleClickOpensIn = Self.placements[$0] }
     private let startFolder = NSTextField(labelWithString: "")

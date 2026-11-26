@@ -20,18 +20,6 @@ extension WindowTabs {
         otherWindow(than: window).flatMap(browser(of:))?.layout.focusedPane.activeTab.folder
     }
 
-    /// Copies or moves the selection of `browser` into the other window's
-    /// folder; nothing happens without another window.
-    func send(
-        selectionOf browser: BrowserState, mode: TransferMode, from window: NSWindow?,
-        undoManager: UndoManager?
-    ) async {
-        guard let folder = otherWindowFolder(than: window) else { return }
-        await browser.send(
-            selectionTo: folder, mode: mode, resolver: AlertConflictResolver.make(),
-            undoManager: undoManager)
-    }
-
     /// Shows `folder` in the other window, just behind `window`, or in a new
     /// window beside it when there is no other window.
     func openInOtherWindow(_ folder: FileItem.ID, from window: NSWindow?) async {

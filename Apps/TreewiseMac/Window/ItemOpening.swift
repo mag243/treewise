@@ -7,8 +7,8 @@ import TreewiseUI
 @MainActor
 enum ItemOpening {
     /// Opens `items` from a pane. One item opens where `placement` says; of
-    /// several, each folder opens in a new tab. A new tab is a window tab, and
-    /// the other pane is the other window (ADR 0037).
+    /// several, each folder opens in a new tab. A new tab is a window tab (ADR 0037), and
+    /// the other pane is the other side: the other half or the other window (ADR 0154).
     static func open(
         _ items: [FileItem], from pane: Int, in placement: OpenPlacement, browser: BrowserState
     ) async {
@@ -19,7 +19,8 @@ enum ItemOpening {
                 continue
             }
             if placement == .otherPane, let place = browser.placeToOpen(for: item) {
-                await AppServices.windows.openInOtherWindow(place, from: NSApp.keyWindow)
+                await AppServices.windows.openOnOtherSide(
+                    place, of: browser, from: NSApp.keyWindow)
                 continue
             }
             guard case .openFile(let file) = await browser.open(item, pane: pane, in: placement)
