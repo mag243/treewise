@@ -92,6 +92,9 @@ final class SidebarController: NSViewController {
             eject: { VolumeEjection.eject($0) },
             marksRepository: { browser.gitStatus?.marksRepository($0) ?? false },
             showsGitStatus: browser.settings.showsGitStatus,
+            gitState: { browser.gitStatus?.state(ofFolder: $0) },
+            followRepository: { await browser.gitStatus?.follow($0) },
+            gitRevision: browser.gitStatus?.revision ?? 0,
             drop: DropRouting.action(for: browser, undoManager: undoManager),
             favoriteActions: favoriteActions)
     }

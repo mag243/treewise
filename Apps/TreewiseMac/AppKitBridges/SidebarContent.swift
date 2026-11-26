@@ -31,6 +31,13 @@ struct SidebarContent {
     var marksRepository: (FileItem.ID) -> Bool = { _ in false }
     /// Whether git status shows, so the rows mark again when it is turned on or off.
     var showsGitStatus = false
+    /// The git state of a folder inside a repository, for its badge (ADR 0149).
+    var gitState: (FileItem.ID) -> GitItemState? = { _ in nil }
+    /// Follows the repository whose top folder is open in the tree until the calling task
+    /// is cancelled, so its folders' badges stay current.
+    var followRepository: (FileItem.ID) async -> Void = { _ in }
+    /// Changes whenever a repository's state is read, so the rows show it again.
+    var gitRevision = 0
     var drop: DropAction
     /// Adds, removes and moves favorites (ADR 0050).
     var favoriteActions: SidebarFavoriteActions

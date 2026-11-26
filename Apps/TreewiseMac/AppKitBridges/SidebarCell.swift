@@ -1,16 +1,21 @@
 import AppKit
+import TreewiseCore
 
 /// A sidebar row: an icon and a name, or a section heading without an icon;
 /// a volume that can be ejected has an eject button at the end (ADR 0044), and a git
-/// repository's top folder a small mark there (ADR 0149).
+/// repository's top folder a small mark there; a folder inside a repository shows its
+/// state on its icon, as in the list (ADR 0149).
 final class SidebarCell: NSTableCellView {
     private static let ejectSize: CGFloat = 16
     private static let markSize: CGFloat = 11
+    /// The git badge's side, as in the list.
+    private static let badgeSide: CGFloat = 9
     /// The room a name keeps from the sidebar's edge before it is cut short, as Finder's.
     private static let edgeMargin: CGFloat = 8
 
     private let ejectButton = NSButton()
     private let repositoryMark = NSImageView()
+    private let gitBadge = GitBadgeView()
     /// The mark and the eject button, at the row's end.
     private let accessories = NSStackView()
     /// The name stops before the accessories while there are some, else near the edge.
@@ -30,6 +35,14 @@ final class SidebarCell: NSTableCellView {
         didSet {
             repositoryMark.isHidden = !marksRepository
             placeName()
+        }
+    }
+
+    /// The git state of the row's folder; `nil` shows none (ADR 0149).
+    var gitState: GitItemState? {
+        didSet {
+            gitBadge.state = gitState
+            imageView?.alphaValue = GitIconLook.alpha(for: gitState)
         }
     }
 
@@ -69,6 +82,9 @@ final class SidebarCell: NSTableCellView {
             constraints.append(text.leadingAnchor.constraint(equalTo: leadingAnchor))
         }
         NSLayoutConstraint.activate(constraints)
+        if let icon = imageView {
+            GitIconLook.place(gitBadge, on: icon, side: Self.badgeSide, in: self)
+        }
     }
 
     @available(*, unavailable)

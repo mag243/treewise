@@ -19,6 +19,11 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     private(set) var changes: ((FileItem.ID) -> AsyncStream<Void>)?
     /// The folders open in the tree that are followed (ADR 0112).
     let watches = SidebarFolderWatches()
+    /// The repositories followed because their top folders are open in the tree, by row.
+    let gitFollows = SidebarFolderWatches()
+    var gitState: (FileItem.ID) -> GitItemState? = { _ in nil }
+    var followRepository: (FileItem.ID) async -> Void = { _ in }
+    var gitRevision = 0
     /// The listing of the folder a pane showed at the last update.
     private var shownListing: SidebarShownListing?
     /// The folder the active pane shows, whose row stays selected.
@@ -28,7 +33,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
     private(set) var eject: (([FileItem]) -> Void)?
     /// Whether a folder's row marks it as a git repository's top folder (ADR 0149).
     private(set) var marksRepository: (FileItem.ID) -> Bool = { _ in false }
-    private var showsGitStatus = false
+    var showsGitStatus = false
     private(set) var drop: DropAction?
     private(set) var favoriteActions: SidebarFavoriteActions?
     /// Keeps folders closed while a drag only passes over them.
@@ -79,10 +84,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             selectRow(of: view.currentFolder)
             follow(view.pathToReveal)
         }
-        if showsGitStatus != view.showsGitStatus {
-            showsGitStatus = view.showsGitStatus
-            markRepositories()
-        }
+        updateGit(with: view)
         if showsHiddenFiles != view.showsHiddenFiles {
             showsHiddenFiles = view.showsHiddenFiles
             reloadFolders()
@@ -171,6 +173,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             cell.imageView?.image = FolderIcon.image(for: .computer)
             (cell as? SidebarCell)?.eject = nil
             (cell as? SidebarCell)?.marksRepository = false
+            (cell as? SidebarCell)?.gitState = nil
             return cell
         case .item(let folder):
             let cell = reusedCell(Self.cellIdentifier, in: outlineView, withIcon: true)
@@ -182,6 +185,7 @@ final class SidebarCoordinator: NSObject, NSOutlineViewDataSource, NSOutlineView
             (cell as? SidebarCell)?.eject =
                 folder.isEjectable ? { [weak self] in self?.eject?([folder]) } : nil
             (cell as? SidebarCell)?.marksRepository = marksRepository(folder.id)
+            (cell as? SidebarCell)?.gitState = gitState(folder.id)
             return cell
         }
     }

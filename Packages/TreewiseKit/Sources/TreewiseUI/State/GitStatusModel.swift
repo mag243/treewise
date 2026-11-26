@@ -32,7 +32,12 @@ public final class GitStatusModel {
     /// The reading of each followed repository: once at first, then after its changes.
     @ObservationIgnored private var updates: [GitRepository: Task<Void, Never>] = [:]
     /// Each followed repository's state, once read.
-    private var statuses: [GitRepository: GitRepositoryStatus] = [:]
+    private var statuses: [GitRepository: GitRepositoryStatus] = [:] {
+        didSet { revision &+= 1 }
+    }
+    /// Changes whenever a repository's state is read or forgotten, for a view that shows
+    /// states it asks for one by one, as the sidebar tree, to hear when to ask again.
+    public private(set) var revision = 0
     /// Whether a git is installed that Treewise can run.
     public private(set) var hasGit: Bool
 
@@ -99,6 +104,23 @@ public final class GitStatusModel {
             let path = reader.relativePath(of: item, in: repository)
         else { return nil }
         return status.state(of: path)
+    }
+
+    /// The state of a folder the sidebar tree shows, in whichever followed repository holds
+    /// it, by the list's folder rules; `nil` for a repository's top folder, which the tree
+    /// marks instead, outside a followed repository, or while turned off. The tree follows
+    /// a repository whose top folder it shows open with `follow(_:)`.
+    public func state(ofFolder folder: FileItem.ID) -> GitItemState? {
+        guard isEnabled else { return nil }
+        // The innermost repository holds it, as a submodule inside another.
+        let innermostFirst = statuses.sorted {
+            $0.key.top.rawValue.count > $1.key.top.rawValue.count
+        }
+        for (repository, status) in innermostFirst {
+            guard let path = reader.relativePath(of: folder, in: repository) else { continue }
+            return path.isEmpty ? nil : status.state(of: path)
+        }
+        return nil
     }
 
     /// Whether the sidebar marks `folder` as a repository's top folder.

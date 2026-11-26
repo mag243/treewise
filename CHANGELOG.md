@@ -6,6 +6,9 @@ the smallest, is in the commits.
 
 ## [Unreleased]
 
+### Improved
+- **Git status in the sidebar on the Mac:** folders in the tree inside a git repository show their state on their icons, as in the list, so you can follow a change or a conflict down the tree.
+
 ## [1.1.0] - 2026-11-26
 
 Git status on the Mac, move and copy in fewer steps, and swipe on the iPad and the iPhone.

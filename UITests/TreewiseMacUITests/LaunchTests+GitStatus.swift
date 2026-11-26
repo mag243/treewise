@@ -21,4 +21,22 @@ extension LaunchTests {
         XCTAssertTrue(branch.appeared(timeout: Self.launchTimeout), "the branch shows")
         XCTAssertEqual(branch.value as? String, "main local only")
     }
+
+    @MainActor
+    func testAFolderInTheSidebarShowsTheStateOfWhatItHolds() throws {
+        let root = try XCTUnwrap(self.root)
+        try TestGit.run(["init", "-q", "-b", "main"], in: root)
+        try TestGit.run(["add", "-A"], in: root)
+        try TestGit.run(["commit", "-q", "-m", "first"], in: root)
+        let scan = root.appendingPathComponent("Documents/Taxes/scan0001.pdf")
+        try Data("changed".utf8).write(to: scan)
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        XCTAssertTrue(
+            window.outlines.staticTexts["Documents"].appeared(timeout: Self.launchTimeout))
+
+        XCTAssertTrue(
+            window.outlines.images["Modified"].appeared(timeout: Self.launchTimeout),
+            "Documents, which holds the changed scan, has the modified badge in the sidebar")
+    }
 }

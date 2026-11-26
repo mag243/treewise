@@ -6,6 +6,9 @@ import TreewiseCore
 /// their open folders.
 extension SidebarCoordinator {
     func outlineViewItemDidExpand(_ notification: Notification) {
+        if let node = notification.userInfo?["NSObject"] as? SidebarNode {
+            followRepository(openIn: node)
+        }
         guard let node = notification.userInfo?["NSObject"] as? SidebarNode,
             node.children != nil, let folder = node.item?.id,
             !watches.watches(ObjectIdentifier(node))
@@ -19,6 +22,7 @@ extension SidebarCoordinator {
     func outlineViewItemDidCollapse(_ notification: Notification) {
         guard let node = notification.userInfo?["NSObject"] as? SidebarNode else { return }
         watches.end([ObjectIdentifier(node)])
+        gitFollows.end([ObjectIdentifier(node)])
     }
 
     /// Follows the folder of an open row until it closes or leaves the tree.
@@ -129,5 +133,6 @@ extension SidebarCoordinator {
             pending += row.children ?? []
         }
         watches.end(ended)
+        gitFollows.end(ended)
     }
 }
