@@ -19,7 +19,7 @@ The specification of the app's keys (ADR 0022).
 | ⌘T | New tab on the current folder: one of macOS's window tabs, which tear off and merge as in Finder |
 | ⌘W | Close the tab; the window with its last tab |
 | ⌃⇥ / ⌃⇧⇥ | Next / previous tab |
-| ⌘\ | Split View: two folders side by side in this window, each half with its own view and sort order; again for one |
+| ⌃⌘\ | Split View: two folders side by side in this window, each half with its own view and sort order; again for one |
 | ⌥⌘N | Window beside: a second window on the current folder, the two on the halves of the screen |
 | ⌘1 / ⌘2 | Icons / list |
 | ⇧⌘P | Show or hide the details pane: a preview and the selection's kind, size, date and folder |

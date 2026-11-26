@@ -1,6 +1,6 @@
 import XCTest
 
-/// Split View: two folders side by side in one window, ⌘\ to show and hide it, the other
+/// Split View: two folders side by side in one window, ⌃⌘\ to show and hide it, the other
 /// side as the other half, and a split window restored split (ADR 0154).
 extension LaunchTests {
     /// The narrowest a half's list is expected to be, a little under the app's minimum
@@ -29,7 +29,7 @@ extension LaunchTests {
     {
         let window = app.windows.firstMatch
         XCTAssertTrue(window.tables.staticTexts["Documents"].appeared(timeout: Self.launchTimeout))
-        app.typeKey("\\", modifierFlags: .command)
+        app.typeKey("\\", modifierFlags: [.command, .control])
         XCTAssertTrue(app.eventually { self.showsTwoHalves(window) }, "two halves")
         let right = window.tables.element(boundBy: 1)
         right.staticTexts["Documents"].doubleClick()
@@ -40,17 +40,17 @@ extension LaunchTests {
     }
 
     @MainActor
-    func testCommandBackslashSplitsTheWindowAndJoinsItAgain() throws {
+    func testControlCommandBackslashSplitsTheWindowAndJoinsItAgain() throws {
         let app = try launchApp()
         let window = app.windows.firstMatch
         XCTAssertTrue(window.tables.staticTexts["Projects"].appeared(timeout: Self.launchTimeout))
         XCTAssertEqual(window.tables.count, 1)
 
-        app.typeKey("\\", modifierFlags: .command)
+        app.typeKey("\\", modifierFlags: [.command, .control])
 
         XCTAssertTrue(app.eventually { self.showsTwoHalves(window) }, "two halves, each usable")
         XCTAssertEqual(captions(in: window).count, 2, "each half names its folder")
-        app.typeKey("\\", modifierFlags: .command)
+        app.typeKey("\\", modifierFlags: [.command, .control])
         XCTAssertTrue(app.eventually { window.tables.count == 1 }, "one half again")
         XCTAssertEqual(captions(in: window).count, 0)
     }
@@ -112,7 +112,7 @@ extension LaunchTests {
         app.launch()
         let window = app.windows.firstMatch
         XCTAssertTrue(window.tables.staticTexts["Projects"].appeared(timeout: Self.launchTimeout))
-        app.typeKey("\\", modifierFlags: .command)
+        app.typeKey("\\", modifierFlags: [.command, .control])
         XCTAssertTrue(app.eventually { self.showsTwoHalves(window) }, "two halves")
         app.typeKey("q", modifierFlags: .command)
         XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.launchTimeout), "Treewise quits")

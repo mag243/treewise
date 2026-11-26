@@ -80,7 +80,7 @@ struct BrowserActions {
     /// Whether the window shows two folders side by side (ADR 0154).
     var isSplit: Bool { browser.layout.isSplit }
 
-    /// Split View (⌘\): shows a second half on the active folder, or the active half
+    /// Split View (⌃⌘\): shows a second half on the active folder, or the active half
     /// alone (ADR 0154).
     func toggleSplitView() {
         let browser = browser

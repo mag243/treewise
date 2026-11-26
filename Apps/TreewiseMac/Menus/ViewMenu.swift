@@ -16,8 +16,10 @@ enum ViewMenu {
                 MenuItem.make(
                     "Show Details", #selector(Window.toggleDetails(_:)), key: "p",
                     modifiers: [.command, .shift]),
+                // ⌃⌘\, as ⌘\ is 1Password's Autofill everywhere (ADR 0154).
                 MenuItem.make(
-                    "Show Split View", #selector(Window.toggleSplitView(_:)), key: "\\"),
+                    "Show Split View", #selector(Window.toggleSplitView(_:)), key: "\\",
+                    modifiers: [.command, .control]),
                 MenuItem.make("Refresh", #selector(Window.refreshFolder(_:)), key: "r"),
                 .separator(),
                 MenuItem.make(

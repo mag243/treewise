@@ -7,7 +7,7 @@ the smallest, is in the commits.
 ## [Unreleased]
 
 ### New
-- **Split View on the Mac:** show two folders side by side in one window with View > Show Split View or ⌘\, or the command bar's Split View button. Each half has its own view and sort order, the toolbar, the address bar and the command bar act on the half you clicked last, and a window that was split comes back split. Open, Copy and Move on Other Side go to the other half, or to the other window when the window is not split. Window Beside (⌥⌘N) still opens a second window.
+- **Split View on the Mac:** show two folders side by side in one window with View > Show Split View or ⌃⌘\, or the command bar's Split View button. Each half has its own view and sort order, the toolbar, the address bar and the command bar act on the half you clicked last, and a window that was split comes back split. Open, Copy and Move on Other Side go to the other half, or to the other window when the window is not split. Window Beside (⌥⌘N) still opens a second window.
 
 ### Improved
 - **Git status in the sidebar on the Mac:** folders in the tree inside a git repository show their state on their icons, as in the list, so you can follow a change or a conflict down the tree.

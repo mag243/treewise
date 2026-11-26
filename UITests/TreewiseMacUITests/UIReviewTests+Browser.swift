@@ -43,13 +43,13 @@ extension UIReviewTests {
     private func reviewSplitView(
         in window: XCUIElement, app: XCUIApplication, appearance: String?
     ) {
-        app.typeKey("\\", modifierFlags: .command)
+        app.typeKey("\\", modifierFlags: [.command, .control])
         XCTAssertTrue(app.eventually { window.tables.count + window.collectionViews.count == 2 })
         app.typeKey("1", modifierFlags: .command)
         settleScreen()
         review(window, as: "browser-split", appearance: appearance)
         app.typeKey("2", modifierFlags: .command)
-        app.typeKey("\\", modifierFlags: .command)
+        app.typeKey("\\", modifierFlags: [.command, .control])
     }
 
     /// The width a new window's sidebar starts at, `SidebarWidth.ideal` (ADR 0093), which the
