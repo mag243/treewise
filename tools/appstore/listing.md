@@ -180,6 +180,37 @@ bestanden,mappen,kopiëren,verplaatsen,hernoemen,slepen,usb,icloud,dropbox,docum
 Dateien,Ordner,kopieren,verschieben,umbenennen,ziehen,USB,iCloud,Dropbox,Dokumente,Vorlagen
 ```
 
+## What's new
+
+What this version brings to the iPad and the iPhone; the Mac's news stays out.
+
+### en-US
+
+```
+• Swipe a row: left for Move to Trash and More…, right for Cut and Copy. A full swipe trashes or cuts at once.
+• Move to… and Copy to… offer the last five folders you moved or copied into, then your favorites. On the iPad at every width, as on the iPhone.
+• Clearer file icons: each file shows its type as a page with a coloured label, red for PDF, green for spreadsheets, blue for documents. Settings > General > File Icons offers two other looks and the system's own icons.
+• Fixed: swiping away a favorite whose location was added again no longer ends the app; a deleted folder structure template stays deleted; Move to Trash in On My iPad no longer hangs on iPadOS 27.
+```
+
+### nl-NL
+
+```
+• Veeg over een rij: naar links voor Verplaats naar Prullenmand en Meer…, naar rechts voor Knip en Kopieer. Helemaal doorvegen gooit weg of knipt meteen.
+• Verplaats naar… en Kopieer naar… bieden de laatste vijf mappen waar je iets naartoe verplaatste of kopieerde, en daarna je favorieten. Op de iPad bij elke breedte, net als op de iPhone.
+• Duidelijkere bestandsiconen: elk bestand toont zijn soort als een pagina met een gekleurd label, rood voor pdf, groen voor spreadsheets, blauw voor documenten. Instellingen > Algemeen > Bestandsiconen biedt twee andere stijlen en de iconen van het systeem.
+• Opgelost: een favoriet wegvegen waarvan de locatie opnieuw was toegevoegd, sluit de app niet meer af; een verwijderd sjabloon voor een mapstructuur blijft verwijderd; Verplaats naar Prullenmand in Op mijn iPad loopt niet meer vast op iPadOS 27.
+```
+
+### de-DE
+
+```
+• Wische über eine Zeile: nach links für In den Papierkorb legen und Mehr…, nach rechts für Ausschneiden und Kopieren. Ganz durchwischen legt sofort in den Papierkorb oder schneidet aus.
+• Bewegen nach… und Kopieren nach… bieten die letzten fünf Ordner, in die du etwas bewegt oder kopiert hast, danach deine Favoriten. Auf dem iPad in jeder Breite, wie auf dem iPhone.
+• Klarere Dateisymbole: Jede Datei zeigt ihre Art als Seite mit farbigem Etikett, rot für PDF, grün für Tabellen, blau für Dokumente. Einstellungen > Allgemein > Dateisymbole bietet zwei andere Stile und die Symbole des Systems.
+• Behoben: Einen Favoriten wegwischen, dessen Ort erneut hinzugefügt wurde, beendet die App nicht mehr; eine gelöschte Ordnerstruktur-Vorlage bleibt gelöscht; In den Papierkorb legen in „Auf meinem iPad“ hängt unter iPadOS 27 nicht mehr.
+```
+
 ## Support URL
 
 ### all
