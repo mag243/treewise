@@ -27,6 +27,9 @@ public struct WindowSnapshot: Codable, Equatable, Sendable {
     /// The sidebar's width in points (ADR 0093); absent in snapshots made before it was
     /// kept.
     public var sidebarWidth: Double?
+    /// Where a split window's divider is, as the left half's share of the width (ADR 0154);
+    /// absent in snapshots made before it was kept.
+    public var dividerPosition: Double?
 
     /// Describes a window's layout, with one sort order and view for every pane.
     public init(layout: PaneLayout, sort: ItemSort, viewMode: ViewMode) {
@@ -85,7 +88,7 @@ public struct WindowSnapshot: Codable, Equatable, Sendable {
         return RestoredWindow(
             layout: PaneLayout(panes: models, focused: focused),
             sort: window.sort, viewMode: window.viewMode, paneLooks: looks,
-            sidebarWidth: sidebarWidth)
+            sidebarWidth: sidebarWidth, dividerPosition: dividerPosition)
     }
 
     /// A pane's saved sort order and view, each falling back to the window's; the window's

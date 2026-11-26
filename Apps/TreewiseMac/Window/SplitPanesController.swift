@@ -8,12 +8,15 @@ import TreewiseUI
 final class SplitPanesController: NSViewController, NSSplitViewDelegate {
     /// The narrowest a half gets: its address caption and the list's name column whole.
     static let minimumHalfWidth: CGFloat = 320
+    /// How far the divider moves before it is kept again, so a window's resizing, which
+    /// keeps the halves' shares, saves nothing new.
+    private static let positionTolerance = 0.005
 
     private let browser: BrowserState
     private let splitView = NSSplitView()
     private var halves: [PaneController] = []
-    /// Whether a new right half waits for the window's width to take half of it.
-    private var halvesWaitToBeEqual = false
+    /// Whether a new right half waits for the window's width to take its share of it.
+    private var dividerWaits = false
     /// Keeps a split window wide enough for two halves; active only while split.
     private lazy var splitWidth = splitView.widthAnchor.constraint(
         greaterThanOrEqualToConstant: 2 * Self.minimumHalfWidth + splitView.dividerThickness)
@@ -54,17 +57,18 @@ final class SplitPanesController: NSViewController, NSSplitViewDelegate {
         halves.append(half)
         splitView.addArrangedSubview(half.view)
         guard halves.count > 1 else { return }
-        // A new right half takes half of the width, once the window has one: a restored
-        // window adds it before it is laid out.
-        halvesWaitToBeEqual = true
+        // The divider goes where the window had it, once the window has a width: a
+        // restored window adds its right half before it is laid out.
+        dividerWaits = true
         view.needsLayout = true
     }
 
     override func viewDidLayout() {
         super.viewDidLayout()
-        guard halvesWaitToBeEqual, halves.count > 1, splitView.bounds.width > 0 else { return }
-        halvesWaitToBeEqual = false
-        splitView.setPosition(splitView.bounds.width / 2, ofDividerAt: 0)
+        guard dividerWaits, halves.count > 1, splitView.bounds.width > 0 else { return }
+        dividerWaits = false
+        splitView.setPosition(
+            splitView.bounds.width * browser.dividerPosition, ofDividerAt: 0)
     }
 
     private func removeHalf() {
@@ -75,6 +79,17 @@ final class SplitPanesController: NSViewController, NSSplitViewDelegate {
     }
 
     // MARK: - NSSplitViewDelegate
+
+    /// Keeps where the divider is, for the window's next split and its restoring.
+    func splitViewDidResizeSubviews(_ notification: Notification) {
+        guard !dividerWaits, halves.count > 1, splitView.bounds.width > 0,
+            let left = splitView.arrangedSubviews.first
+        else { return }
+        let position = left.frame.width / splitView.bounds.width
+        if abs(position - browser.dividerPosition) > Self.positionTolerance {
+            browser.dividerPosition = position
+        }
+    }
 
     func splitView(
         _ splitView: NSSplitView, constrainMinCoordinate proposedMinimumPosition: CGFloat,

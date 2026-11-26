@@ -50,6 +50,31 @@ import TreewiseUI
         #expect(browser.layout.panes.map(\.activeTab.folder) == ["documents"])
     }
 
+    @Test func aSplitWindowRestoresWhereItsDividerWas() async {
+        let browser = await makeBrowser()
+        await browser.showSplitView()
+        browser.dividerPosition = 0.3
+        let again = await makeBrowser()
+
+        if let restored = browser.snapshot.restored(isUsable: { _ in true }) {
+            again.restore(restored)
+        }
+
+        #expect(again.dividerPosition == 0.3)
+    }
+
+    @Test func aWindowSavedBeforeHasItsHalvesEqual() async {
+        let browser = await makeBrowser()
+        await browser.showSplitView()
+        var saved = browser.snapshot
+        saved.dividerPosition = nil
+        let again = await makeBrowser()
+
+        if let restored = saved.restored(isUsable: { _ in true }) { again.restore(restored) }
+
+        #expect(again.dividerPosition == BrowserState.equalHalves)
+    }
+
     @Test func readingAHalfAgainLeavesTheFocusWhereItIs() async {
         let browser = await makeBrowser()
         await browser.showSplitView()

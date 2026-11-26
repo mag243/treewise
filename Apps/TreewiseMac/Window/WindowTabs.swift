@@ -19,6 +19,7 @@ struct TabRequest {
         folder = window.layout.focusedPane.activeTab.folder.rawValue
         var kept = WindowSnapshot(layout: window.layout, looks: window.paneLooks)
         kept.sidebarWidth = window.sidebarWidth
+        kept.dividerPosition = window.dividerPosition
         snapshot = kept
     }
 }

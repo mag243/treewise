@@ -11,4 +11,6 @@ public struct RestoredWindow {
     public var paneLooks: [PaneLook]
     /// The sidebar's width in points, when the window kept one (ADR 0093).
     public var sidebarWidth: Double?
+    /// Where a split window's divider was, when the window kept it (ADR 0154).
+    public var dividerPosition: Double?
 }

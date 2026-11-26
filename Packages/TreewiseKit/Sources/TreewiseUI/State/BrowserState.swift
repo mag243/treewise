@@ -14,6 +14,9 @@ public final class BrowserState {
     ///
     /// Invariant: one for each pane; every change to the number of panes keeps it so.
     var paneLooks = [PaneLook()]
+    /// Where a split window's divider is, as the left half's share of the width
+    /// (ADR 0154); kept when the window is not split, for the next split.
+    public var dividerPosition = BrowserState.equalHalves
     /// The folder a new tab opens at.
     public let homeFolder: FileItem.ID
     /// The sidebar's Favorites.
@@ -140,6 +143,7 @@ public final class BrowserState {
     /// restored window's (ADR 0024, ADR 0154), before `start()` loads them.
     public func restore(_ window: RestoredWindow) {
         layout = window.layout
+        dividerPosition = window.dividerPosition ?? Self.equalHalves
         paneLooks =
             window.paneLooks.count == layout.panes.count
             ? window.paneLooks
@@ -151,7 +155,10 @@ public final class BrowserState {
     /// The window's panes, tabs and each pane's sort order and view, for the next launch
     /// (ADR 0024).
     public var snapshot: WindowSnapshot {
-        WindowSnapshot(layout: layout, looks: paneLooks)
+        var snapshot = WindowSnapshot(layout: layout, looks: paneLooks)
+        // A window that is not split describes no divider, as before there was one.
+        snapshot.dividerPosition = layout.isSplit ? dividerPosition : nil
+        return snapshot
     }
 
     /// Loads the sidebar and the folders the panes show.

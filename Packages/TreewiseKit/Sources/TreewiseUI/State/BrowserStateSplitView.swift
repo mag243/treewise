@@ -4,6 +4,9 @@ import TreewiseCore
 /// (ADR 0154). Unlike `toggleSplit(newPaneAt:)`, which merges both panes' tabs as the iPad
 /// wants, each half here shows one folder, and the active half's folder outlives the split.
 extension BrowserState {
+    /// The divider's place between two equal halves, as the left half's share.
+    public static let equalHalves = 0.5
+
     /// What separates the two folders' names in a split window's title.
     static let titleSeparator = " | "
 
