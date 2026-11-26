@@ -65,11 +65,12 @@ final class BrowserContentController: NSViewController {
         CommandBar(browser: browser, windowBeside: windowBeside)
     }
 
-    /// The folder, and the details pane at its right when shown.
+    /// The folder, in one half or two (ADR 0154), and the details pane at its right when
+    /// shown.
     private func folderRow() -> NSView {
-        let paneController = PaneController(browser: browser)
-        addChild(paneController)
-        let pane = paneController.view
+        let halves = SplitPanesController(browser: browser)
+        addChild(halves)
+        let pane = halves.view
         pane.setContentHuggingPriority(.defaultLow, for: .horizontal)
         pane.setContentHuggingPriority(.defaultLow, for: .vertical)
         let detailsPane = DetailsPane(browser: browser)

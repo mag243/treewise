@@ -19,7 +19,10 @@ extension PaneController {
                         command: command, option: option,
                         preferred: browser.settings.doubleClickOpensIn))
             },
-            sort: { browser.sort(by: $0) },
+            sort: { column in
+                browser.focusPane(paneIndex)
+                browser.sort(by: column)
+            },
             toggleColumn: { browser.settings.tableColumns.toggle($0) },
             focus: { browser.focusPane(paneIndex) },
             cut: clipboard.cut, copy: clipboard.copy, paste: clipboard.paste,

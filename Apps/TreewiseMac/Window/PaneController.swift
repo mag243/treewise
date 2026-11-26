@@ -3,9 +3,9 @@ import TreewiseCore
 import TreewiseFileSystem
 import TreewiseUI
 
-/// The window's folder: its list or icons, with a message over them when the
-/// folder is empty or cannot be read, and the status bar with the view
-/// buttons.
+/// One half of a window, or its only one: the folder's list or icons, with a message over
+/// them when the folder is empty or cannot be read, the status bar with the view buttons,
+/// and while the window is split a caption naming the folder (ADR 0154).
 @MainActor
 final class PaneController: NSViewController {
     private static let messagePadding: CGFloat = 20
@@ -14,8 +14,11 @@ final class PaneController: NSViewController {
     private let folderArea = NSView()
     private let message = NSTextField(wrappingLabelWithString: "")
     private lazy var statusBar = PaneStatusBar { [weak self] mode in
-        self?.browser.viewMode = mode
+        guard let self else { return }
+        browser.focusPane(paneIndex)
+        browser.setViewMode(mode, of: paneIndex)
     }
+    private let caption = PaneCaption()
     private lazy var templateBar = TemplateBarView(browser: browser)
     private let list = FileTableCoordinator()
     private let grid = FileGridCoordinator()
@@ -27,11 +30,12 @@ final class PaneController: NSViewController {
     private var followed: [FileItem.ID]?
     private var following: Task<Void, Never>?
 
-    /// The pane the window shows: a window has one (ADR 0037).
-    var paneIndex: Int { browser.layout.focusedPaneIndex }
+    /// The pane this half shows: 0, or 1 for the right half of a split (ADR 0154).
+    let paneIndex: Int
 
-    init(browser: BrowserState) {
+    init(browser: BrowserState, paneIndex: Int) {
         self.browser = browser
+        self.paneIndex = paneIndex
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -41,7 +45,9 @@ final class PaneController: NSViewController {
     override func loadView() {
         message.alignment = .center
         message.isSelectable = false
-        let rows = NSStackView(views: [templateBar, folderArea, Self.separator(), statusBar])
+        let rows = NSStackView(views: [
+            caption, templateBar, folderArea, Self.separator(), statusBar,
+        ])
         rows.orientation = .vertical
         rows.spacing = 0
         rows.alignment = .leading
@@ -76,9 +82,12 @@ final class PaneController: NSViewController {
         showMessage(content: content, isEmpty: items.isEmpty)
         templateBar.follow(folder: content.folder, items: items)
         let isFocused = browser.layout.focusedPaneIndex == paneIndex
+        caption.isHidden = !browser.layout.isSplit
+        caption.show(folder: content.folder?.name ?? "", isActive: isFocused)
         let counts = statusText(items: items, content: content)
         statusBar.show(
-            counts: isFocused ? browser.statusMessage ?? counts : counts, mode: browser.viewMode)
+            counts: isFocused ? browser.statusMessage ?? counts : counts,
+            mode: browser.viewMode(of: paneIndex))
         statusBar.show(branch: browser.gitRepositoryStatus(of: tab))
     }
 
@@ -93,13 +102,13 @@ final class PaneController: NSViewController {
             uniqueKeysWithValues: items.compactMap { item in
                 browser.gitState(of: item, in: tab).map { (item.id, $0) }
             })
-        switch browser.viewMode {
+        switch browser.viewMode(of: paneIndex) {
         case .list:
             show(listView)
             list.update(
                 with: FileTableContent(
                     folder: content.folder, items: items, selection: content.selection,
-                    sort: browser.sort, columns: browser.settings.tableColumns,
+                    sort: browser.sort(of: paneIndex), columns: browser.settings.tableColumns,
                     isActive: isActive, cutItems: cutItems,
                     renameRequest: renameRequest, revealRequest: revealRequest,
                     downloads: downloads, gitStates: gitStates,
