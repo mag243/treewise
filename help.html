@@ -121,7 +121,7 @@ h2.section { margin: 56px 0 12px; font-size: 25px; line-height: 1.2; font-weight
 .brand nav a[aria-current] { color: var(--ink); }
 @media (max-width: 560px) { .brand nav { width: 100%; margin-left: 0; } }
 /* The help page: cards to jump to a part, tables for the facts. */
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 36px 0 0; padding: 0; list-style: none; }
+.cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 36px 0 0; padding: 0; list-style: none; }
 .cards a { display: block; height: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; background: var(--paper); }
 .cards a:hover { background: var(--row); }
 .cards b { display: block; font-weight: 650; }
@@ -178,13 +178,13 @@ h3 { margin: 30px 0 10px; font-size: 18px; font-weight: 650; }
 .help .intro, .help .lead, .help .small, .help .legend, .help .wrap, .help .cards, .help .folders, .help .steps3, .help .trees { max-width: none; }
 .help .legend { margin: 14px 0 0; color: var(--soft); font-size: 15px; }
 .help .legend .tag { margin-left: 0; }
-.cards { grid-template-columns: repeat(5, minmax(0, 1fr)); } /* one row; 3 and 2 when narrow, never 4 and 1 */
-@media (max-width: 860px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* Three topics to a row, a shorter last row centred under them. */
+.cards li { flex: 0 1 calc((100% - 2 * 12px) / 3); min-width: 0; }
 .folders { grid-template-columns: 1fr; }
 .folders figure { display: grid; grid-template-columns: minmax(0, 360px) 1fr; gap: 20px; align-items: center; }
 .folders figcaption { margin: 0; font-size: 16px; }
 @media (max-width: 720px) {
-  .cards { grid-template-columns: minmax(0, 1fr); }
+  .cards li { flex-basis: 100%; }
   .folders figure { grid-template-columns: 1fr; gap: 8px; }
 }
 /* One column for the whole site, centred, which the content fills. */
