@@ -152,6 +152,11 @@ struct GitStatusReaderTests {
                 == GitTool(executable: "/bin/ls"))
     }
 
+    @Test func neverRunsTheGitThatAsksToInstallTheCommandLineTools() {
+        #expect(!GitTool.homebrewCandidates.contains("/usr/bin/git"))
+        #expect(GitTool.find(developerDirectory: { nil }) != GitTool(executable: "/usr/bin/git"))
+    }
+
     @Test func hearsAFileChangingInPlaceInAFolderInside() async throws {
         let top = try makeRepository()
         try directory.makeFolder("repo/src")
