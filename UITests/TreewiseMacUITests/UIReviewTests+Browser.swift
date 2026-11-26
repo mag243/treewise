@@ -1,8 +1,8 @@
 import XCTest
 
 /// The UI review's walk through the browser window (ADR 0103): `tools/build.sh uireview
-/// browser`. The list, the command bar's menus, the context menus, the details pane, the icon view, a second
-/// tab and About Treewise.
+/// browser`. The list, the command bar's menus, the context menus, the details pane, the
+/// icon view, a split window, a second tab and About Treewise.
 extension UIReviewTests {
     @MainActor
     func testBrowser() throws {
@@ -30,10 +30,26 @@ extension UIReviewTests {
         settleScreen()
         review(window, as: "browser-icons", appearance: appearance)
         app.typeKey("2", modifierFlags: .command)
+        reviewSplitView(in: window, app: app, appearance: appearance)
         app.typeKey("t", modifierFlags: .command)
         settleScreen()
         review(app.windows.firstMatch, as: "browser-tabs", appearance: appearance)
         reviewAbout(in: app, appearance: appearance)
+    }
+
+    /// A split window (ADR 0154): the left half as a list, the right half, which has the
+    /// focus, as icons; then the window alone again.
+    @MainActor
+    private func reviewSplitView(
+        in window: XCUIElement, app: XCUIApplication, appearance: String?
+    ) {
+        app.typeKey("\\", modifierFlags: .command)
+        XCTAssertTrue(app.eventually { window.tables.count + window.collectionViews.count == 2 })
+        app.typeKey("1", modifierFlags: .command)
+        settleScreen()
+        review(window, as: "browser-split", appearance: appearance)
+        app.typeKey("2", modifierFlags: .command)
+        app.typeKey("\\", modifierFlags: .command)
     }
 
     /// The width a new window's sidebar starts at, `SidebarWidth.ideal` (ADR 0093), which the
