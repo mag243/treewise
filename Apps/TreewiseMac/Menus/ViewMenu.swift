@@ -1,7 +1,7 @@
 import AppKit
 
-/// The View menu: icons or list, the details pane, reading the folder again,
-/// and the sidebar and toolbar, as AppKit shows and hides them.
+/// The View menu: icons or list, the details pane, Split View (ADR 0154), reading the
+/// folder again, and the sidebar and toolbar, as AppKit shows and hides them.
 @MainActor
 enum ViewMenu {
     private typealias Window = BrowserWindowController
@@ -16,6 +16,8 @@ enum ViewMenu {
                 MenuItem.make(
                     "Show Details", #selector(Window.toggleDetails(_:)), key: "p",
                     modifiers: [.command, .shift]),
+                MenuItem.make(
+                    "Show Split View", #selector(Window.toggleSplitView(_:)), key: "\\"),
                 MenuItem.make("Refresh", #selector(Window.refreshFolder(_:)), key: "r"),
                 .separator(),
                 MenuItem.make(

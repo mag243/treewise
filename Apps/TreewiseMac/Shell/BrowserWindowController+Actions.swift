@@ -65,6 +65,7 @@ extension BrowserWindowController: NSMenuItemValidation, NSToolbarItemValidation
     // MARK: Window
 
     @objc func windowBeside(_ sender: Any?) { actions.windowBeside() }
+    @objc func toggleSplitView(_ sender: Any?) { actions.toggleSplitView() }
     @objc func tileWithOtherWindow(_ sender: Any?) { actions.tileWithOtherWindow() }
 
     // MARK: Validation
@@ -74,6 +75,11 @@ extension BrowserWindowController: NSMenuItemValidation, NSToolbarItemValidation
             item.title =
                 actions.showsDetails
                 ? String(localized: "Hide Details") : String(localized: "Show Details")
+        }
+        if item.action == #selector(toggleSplitView(_:)) {
+            item.title =
+                actions.isSplit
+                ? String(localized: "Hide Split View") : String(localized: "Show Split View")
         }
         if item.action == #selector(toggleSpellingWhileTyping(_:)) {
             item.state = actions.checksSpellingWhileTyping ? .on : .off
@@ -118,6 +124,7 @@ extension BrowserWindowController: NSMenuItemValidation, NSToolbarItemValidation
         #selector(copyToOtherWindow(_:)): { $0.canSendToOtherWindow },
         #selector(moveToOtherWindow(_:)): { $0.canMoveToOtherWindow },
         #selector(windowBeside(_:)): { $0.canArrange },
+        #selector(toggleSplitView(_:)): { $0.canArrange },
         #selector(tileWithOtherWindow(_:)): { $0.canArrange },
     ]
 

@@ -11,13 +11,13 @@ final class BrowserContentController: NSViewController {
 
     private let browser: BrowserState
     private let model: WindowModel
-    private let windowBeside: () -> Void
+    private let toggleSplit: () -> Void
     private let details = NSStackView()
 
-    init(browser: BrowserState, model: WindowModel, windowBeside: @escaping () -> Void) {
+    init(browser: BrowserState, model: WindowModel, toggleSplit: @escaping () -> Void) {
         self.browser = browser
         self.model = model
-        self.windowBeside = windowBeside
+        self.toggleSplit = toggleSplit
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -62,7 +62,7 @@ final class BrowserContentController: NSViewController {
     }
 
     private func commandBar() -> NSView {
-        CommandBar(browser: browser, windowBeside: windowBeside)
+        CommandBar(browser: browser, toggleSplit: toggleSplit)
     }
 
     /// The folder, in one half or two (ADR 0154), and the details pane at its right when

@@ -77,6 +77,20 @@ struct BrowserActions {
         AppServices.windows.openBeside(folder, from: NSApp.keyWindow)
     }
 
+    /// Whether the window shows two folders side by side (ADR 0154).
+    var isSplit: Bool { browser.layout.isSplit }
+
+    /// Split View (⌘\): shows a second half on the active folder, or the active half
+    /// alone (ADR 0154).
+    func toggleSplitView() {
+        let browser = browser
+        if browser.layout.isSplit {
+            browser.hideSplitView()
+        } else {
+            Task { await browser.showSplitView() }
+        }
+    }
+
     /// Puts this window and the other window side by side.
     func tileWithOtherWindow() {
         let window = NSApp.keyWindow

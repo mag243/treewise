@@ -87,7 +87,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
         sidebar.maximumThickness = WindowWidths.sidebarMaximum
         split.addSplitViewItem(sidebar)
         let content = BrowserContentController(browser: browser, model: model) { [weak self] in
-            self?.actions.windowBeside()
+            self?.actions.toggleSplitView()
         }
         let folderSide = NSSplitViewItem(viewController: content)
         // The folder side keeps the command bar's width, so the sidebar gives way first.
@@ -185,8 +185,9 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
     /// and shows a failure.
     private func update() {
         let tab = browser.layout.focusedPane.activeTabID
+        // A split window's tab names both folders (ADR 0154); the toolbar the active one.
+        window?.title = browser.windowTitle ?? "Treewise"
         let title = browser.content(of: tab).folder?.name ?? "Treewise"
-        window?.title = title
         toolbarItems.show(title: title, query: browser.content(of: tab).query)
         let snapshot = browser.snapshot
         if lastSnapshot != snapshot { window?.invalidateRestorableState() }

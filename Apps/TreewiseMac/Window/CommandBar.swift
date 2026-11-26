@@ -4,7 +4,7 @@ import TreewiseUI
 
 /// Explorer's command bar as a row of the window, under the address bar (ADR
 /// 0037): New, the actions (ADR 0036), Sort and View as menus with a label,
-/// and Window Beside and the details pane at the end. In a narrow window the
+/// and Split View (ADR 0154) and the details pane at the end. In a narrow window the
 /// menus and buttons drop their titles and keep their icons, so nothing is
 /// cut off.
 @MainActor
@@ -18,12 +18,12 @@ final class CommandBar: NSView {
     private let menus: CommandBarMenus
     private let actions: CommandBarActions
     private let row = NSStackView()
-    private let windowBeside: () -> Void
+    private let toggleSplit: () -> Void
     private lazy var newButton = pullDown(menus.new, "New", "plus.circle")
     private lazy var sortButton = pullDown(menus.sort, "Sort", "arrow.up.arrow.down")
     private lazy var viewButton = pullDown(menus.view, "View", "eye")
-    private lazy var besideButton = button(
-        "Window Beside", "rectangle.split.2x1", #selector(openBeside))
+    private lazy var splitButton = button(
+        "Split View", "rectangle.split.2x1", #selector(splitView))
     private lazy var detailsButton = button("Details", "sidebar.right", #selector(toggleDetails))
     /// The titles of the buttons that drop them in a narrow window.
     private var titled: [(button: NSButton, title: String)] = []
@@ -31,20 +31,21 @@ final class CommandBar: NSView {
     /// The width the row needs with its titles.
     private var titledWidth: CGFloat = 0
 
-    init(browser: BrowserState, windowBeside: @escaping () -> Void) {
+    init(browser: BrowserState, toggleSplit: @escaping () -> Void) {
         self.browser = browser
-        self.windowBeside = windowBeside
+        self.toggleSplit = toggleSplit
         menus = CommandBarMenus(browser: browser)
         actions = CommandBarActions(browser: browser)
         super.init(frame: .zero)
-        besideButton.toolTip = String(localized: "Open a window beside this one")
+        splitButton.setButtonType(.pushOnPushOff)
+        splitButton.toolTip = String(localized: "Show two folders side by side in this window")
         detailsButton.setButtonType(.pushOnPushOff)
         detailsButton.toolTip = String(localized: "Show or hide the details pane")
         newButton.toolTip = String(localized: "Make something new in this folder")
         row.setViews(
             [newButton, Self.divider(), actions, Self.divider(), sortButton, viewButton],
             in: .leading)
-        row.setViews([besideButton, detailsButton], in: .trailing)
+        row.setViews([splitButton, detailsButton], in: .trailing)
         row.spacing = Self.padding
         row.edgeInsets = NSEdgeInsets(top: 0, left: Self.padding, bottom: 0, right: Self.padding)
         row.translatesAutoresizingMaskIntoConstraints = false
@@ -71,6 +72,9 @@ final class CommandBar: NSView {
         // A borderless button draws its on state like its off state, so the accent
         // colour shows that the pane is open.
         detailsButton.contentTintColor = showsDetails ? .controlAccentColor : nil
+        let isSplit = browser.layout.isSplit
+        splitButton.state = isSplit ? .on : .off
+        splitButton.contentTintColor = isSplit ? .controlAccentColor : nil
         if actions.update() { remeasure() }
     }
 
@@ -107,8 +111,8 @@ final class CommandBar: NSView {
 
     // MARK: - Buttons
 
-    @objc private func openBeside() {
-        windowBeside()
+    @objc private func splitView() {
+        toggleSplit()
     }
 
     @objc private func toggleDetails() {
