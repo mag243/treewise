@@ -1128,8 +1128,9 @@ sandbox_seed() {
 
 # Makes Projects/Treewise on the HD volume a git repository with an item in each state, for
 # trying git status by hand (ADR 0149): one commit ahead of its upstream, a bare repository
-# on the same volume, and one behind; a merge left in conflict; a changed, a new and two
-# ignored items. Nothing outside the sandbox volumes is touched.
+# on the same volume, and one behind; a merge left in conflict; in the top folder and in
+# Sources a changed and a new item; two ignored items. Nothing outside the sandbox volumes
+# is touched.
 sandbox_git() {
   local work origin
   work="$(sandbox_mount HD)/Users/Home/Projects/Treewise"
@@ -1163,6 +1164,9 @@ sandbox_git() {
   # Changes in the working copy: changed, new and ignored.
   printf "Treewise sandbox: changed\n" >>"$work/Sources/TreewiseApp.swift"
   printf "Treewise sandbox: new\n" >"$work/Sources/SearchField.swift"
+  # The top folder too holds one of each, for the download page's screenshot.
+  printf "Treewise sandbox: changed\n" >>"$work/README.md"
+  printf "Treewise sandbox: new\n" >"$work/CHANGELOG.md"
   printf "Treewise sandbox: a log\n" >"$work/debug.log"
   mkdir -p "$work/build"
   printf "Treewise sandbox: built\n" >"$work/build/Treewise.o"

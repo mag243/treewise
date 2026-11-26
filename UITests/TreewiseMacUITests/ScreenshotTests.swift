@@ -32,6 +32,8 @@ final class ScreenshotTests: XCTestCase {
     @MainActor func testCopyToAnotherVolumeDark() throws { try copyToAnotherVolume(dark: true) }
     @MainActor func testFolderTemplateLight() throws { try folderTemplate(dark: false) }
     @MainActor func testFolderTemplateDark() throws { try folderTemplate(dark: true) }
+    @MainActor func testGitStatusLight() throws { try gitStatus(dark: false) }
+    @MainActor func testGitStatusDark() throws { try gitStatus(dark: true) }
 
     // MARK: - Scenes
 
@@ -154,6 +156,29 @@ final class ScreenshotTests: XCTestCase {
         settleScene()
         keep(window.screenshot(), as: name("07-templates", dark: dark))
         sheet.buttons["Cancel"].click()
+    }
+
+    /// The sandbox's repository: an item in each git state with its badge, the Git column
+    /// shown, the branch in the status bar and the repository marked in the sidebar.
+    @MainActor
+    private func gitStatus(dark: Bool) throws {
+        let app = try launch(dark: dark)
+        go(to: "Projects/Treewise", in: app)
+        let window = app.windows.firstMatch
+        let table = window.tables.firstMatch
+        XCTAssertTrue(
+            table.images["Conflict"].waitForExistence(timeout: Self.timeout),
+            "the folder in conflict shows its badge")
+        table.buttons["Size"].rightClick()
+        let column = app.menuItems["Git"]
+        XCTAssertTrue(column.waitForExistence(timeout: Self.timeout), "the headers' menu")
+        column.click()
+        XCTAssertTrue(table.buttons["Git"].waitForExistence(timeout: Self.timeout), "the column")
+        XCTAssertTrue(
+            window.staticTexts["gitBranch"].waitForExistence(timeout: Self.timeout),
+            "the branch")
+        settleScene()
+        keep(window.screenshot(), as: name("08-git", dark: dark))
     }
 
     @MainActor
