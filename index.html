@@ -192,12 +192,18 @@ details[open] > summary .chevron { transform: translateY(-2px) rotate(45deg); }
     </details></li>
 
     <li><details open>
-      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Work with the cloud and the command line</h2></summary>
+      <summary><span class="chevron"></span><svg class="folder"><use href="#folder"/></svg><h2>Work with the cloud, the command line and git</h2></summary>
       <div class="body"><ul class="rows">
         <li><b>Cloud folders</b> such as Dropbox, OneDrive and iCloud Drive appear by themselves.</li>
         <li><b>A cloud icon</b> marks a file that is only online, and a ring shows its download. Browsing a folder downloads nothing.</li>
         <li><b>Open in Terminal</b> with <kbd>⌃⌘T</kbd>, in Terminal, iTerm, Ghostty, Warp, kitty or Alacritty.</li>
-      </ul></div>
+        <li><b>Git status</b> on every file and folder in a repository: a dot for modified, a ring for new, a diamond for a conflict, and ignored items dimmed. A folder shows what it holds, so you can follow a change down the tree.</li>
+        <li><b>A Git column</b> that says it in words, the branch in the status bar with the commits to push and to pull, and each repository marked in the folder tree. Treewise only reads your repositories, with the git already on your Mac.</li>
+      </ul>
+      <picture>
+        <source srcset="images/08-git-dark.webp" media="(prefers-color-scheme: dark)">
+        <img class="shot" loading="lazy" src="images/08-git-light.webp" width="2000" height="1250" alt="A git repository in Treewise: Sources in conflict, CHANGELOG.md new, README.md modified, build and debug.log ignored, the Git column in colour and the branch main, two commits to push and one to pull, in the status bar.">
+      </picture></div>
     </details></li>
 
     <li><details open>
