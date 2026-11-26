@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Help: names and folder templates: Treewise</title>
-<meta name="description" content="How Treewise proposes file names, how to write a name pattern with its fields, and how folder templates make a structure of folders again.">
+<title>Help: names, folder templates and git status: Treewise</title>
+<meta name="description" content="How Treewise proposes file names, how to write a name pattern with its fields, and how folder templates make a structure of folders again, and what git status shows on the Mac.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="images/icon.png">
 <style>
@@ -128,6 +128,11 @@ h2.section { margin: 56px 0 12px; font-size: 25px; line-height: 1.2; font-weight
 .cards span { display: block; margin-top: 2px; color: var(--soft); font-size: 15px; line-height: 1.35; }
 section[id] { scroll-margin-top: 16px; }
 .lead { margin: 0 0 18px; max-width: 40em; color: var(--soft); }
+/* The git badges as the app draws them: a dot, a ring and a diamond, each in its colour. */
+:root { --git-mod: #d97a00; --git-new: #1f9a4a; --git-con: #d93a30; }
+@media (prefers-color-scheme: dark) { :root { --git-mod: #f0a030; --git-new: #43c46f; --git-con: #ff5a4f; } }
+.badge { width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px; }
+.dim { opacity: .45; }
 h3 { margin: 30px 0 10px; font-size: 18px; font-weight: 650; }
 .wrap { overflow-x: auto; max-width: 920px; border: 1px solid var(--line); border-radius: 12px; }
 .grid { width: 100%; border-collapse: collapse; font-size: 16px; }
@@ -199,14 +204,15 @@ h3 { margin: 30px 0 10px; font-size: 18px; font-weight: 650; }
   <header class="brand"><a class="home" href="index.html"><img src="images/icon.png" alt="" width="32" height="32">Treewise</a><nav aria-label="Pages"><a href="windows.html">From Windows</a><a href="help.html" aria-current="page">Help</a><a href="privacy.html">Privacy</a><a href="https://github.com/mag243/treewise">GitHub</a></nav></header>
 
   <section class="hero">
-    <h1>Names and folder templates.</h1>
-    <p class="intro">Treewise proposes names for your files in the pattern a folder already follows, and makes a structure of folders again from a template.</p>
+    <h1>Names, templates and git.</h1>
+    <p class="intro">Treewise proposes names for your files in the pattern a folder already follows, makes a structure of folders again from a template, and on the Mac shows what changed in a git repository.</p>
     <p class="legend">Parts marked <span class="tag">Mac only</span> are not in the iPad and iPhone app yet.</p>
     <ul class="cards">
       <li><a href="#suggest"><b>Suggested names</b><span>What Treewise proposes, and why</span></a></li>
       <li><a href="#fields"><b>Pattern fields</b><span>Every field you can write in a pattern</span></a></li>
       <li><a href="#numbers"><b>Numbers that run</b><span>Per year, quarter or month</span></a></li>
       <li><a href="#templates"><b>Folder templates</b><span>Save a structure, make it again</span></a></li>
+      <li><a href="#git"><b>Git status</b><span>What the badges and the branch say</span></a></li>
     </ul>
   </section>
 
@@ -400,6 +406,39 @@ h3 { margin: 30px 0 10px; font-size: 18px; font-weight: 650; }
       </tbody>
     </table>
     </div>
+  </section>
+
+  <section id="git">
+    <h2 class="section"><svg class="folder" aria-hidden="true"><use href="#folder"/></svg>Git status <span class="tag">Mac only</span></h2>
+    <p class="lead">In a folder of a git repository, every file and folder shows its state on its icon, as the Terminal’s <code>git status</code> would tell it. Treewise only reads your repositories: it never stages, commits or changes them.</p>
+
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">On the icon</th><th scope="col">In the Git column</th><th scope="col">Means</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><svg class="badge" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--git-mod)"/></svg>A dot</th><td>Modified</td><td>Changed since the last commit, or for a folder: something in it changed or was deleted</td></tr>
+        <tr><th scope="row"><svg class="badge" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="4.8" fill="none" stroke="var(--git-new)" stroke-width="2.4"/></svg>A ring</th><td>New</td><td>Not in the repository yet; a folder that is new as a whole</td></tr>
+        <tr><th scope="row"><svg class="badge" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1 13 7 7 13 1 7z" fill="var(--git-con)"/></svg>A diamond</th><td>Conflict</td><td>A merge left it in conflict; a folder holding one shows it first, so you can follow the diamonds down the tree</td></tr>
+        <tr><th scope="row"><svg class="badge dim" viewBox="0 0 26 21" aria-hidden="true"><use href="#folder"/></svg>Dimmed</th><td>Ignored</td><td>Left out by <code>.gitignore</code>, such as a build folder</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="small">The folders in the sidebar show the same badges, and a repository’s top folder has a small git mark at the end of its row. The Git column is off at first: right-click a column heading and choose Git. Sorting on it puts conflicts first, then the other changes.</p>
+
+    <h3>The branch in the status bar</h3>
+    <div class="wrap">
+    <table class="grid">
+      <thead><tr><th scope="col">Shows</th><th scope="col">Means</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><code>main ↑2 ↓1</code></th><td>On branch main, with 2 commits to push and 1 to pull; a count of zero is left out</td></tr>
+        <tr><th scope="row"><code>main</code></th><td>Up to date with its branch on the remote</td></tr>
+        <tr><th scope="row"><code>main local only</code></th><td>The branch follows no branch on a remote</td></tr>
+        <tr><th scope="row"><code>main upstream gone</code></th><td>Its branch on the remote was deleted</td></tr>
+        <tr><th scope="row"><code>a3f91c2</code></th><td>No branch is checked out: the commit HEAD is at</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="small">Treewise uses the git of Apple’s Command Line Tools or of Homebrew. Without one, Settings › General offers Install…, which asks macOS to install the Command Line Tools; nothing is asked before you click it. Show Git status in the same place turns it all off.</p>
   </section>
 
   <a class="back" href="index.html">Everything Treewise does</a>
