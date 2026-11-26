@@ -10,8 +10,10 @@ import TreewiseCore
 public final class BrowserState {
     /// The window's panes and tabs.
     public internal(set) var layout: PaneLayout
-    /// How every list in the window is sorted.
-    public private(set) var sort = ItemSort()
+    /// Each pane's sort order and view, in the order of `layout.panes` (ADR 0154).
+    ///
+    /// Invariant: one for each pane; every change to the number of panes keeps it so.
+    var paneLooks = [PaneLook()]
     /// The folder a new tab opens at.
     public let homeFolder: FileItem.ID
     /// The sidebar's Favorites.
@@ -38,8 +40,12 @@ public final class BrowserState {
     public internal(set) var progress: OperationProgress?
     /// Whether the running transfer is paused.
     public internal(set) var isPaused = false
-    /// Whether the window shows folders as a list or as icons (ADR 0025).
-    public var viewMode = ViewMode.list
+    /// Whether the focused pane shows its folder as a list or as icons (ADR 0025); each
+    /// pane of a split keeps its own (ADR 0154).
+    public var viewMode: ViewMode {
+        get { viewMode(of: layout.focusedPaneIndex) }
+        set { updateLook(of: layout.focusedPaneIndex) { $0.viewMode = newValue } }
+    }
     /// An item Treewise just made or renamed, which the list should bring into
     /// view; the list sets it back to `nil` when it does.
     public var revealRequest: FileItem.ID?
@@ -122,16 +128,30 @@ public final class BrowserState {
     }
 
     /// Replaces the window's panes, tabs, sort order and view with restored
-    /// ones (ADR 0024), before `start()` loads them.
+    /// ones (ADR 0024), before `start()` loads them; every pane gets the one sort order and
+    /// view.
     public func restore(_ layout: PaneLayout, sort: ItemSort, viewMode: ViewMode) {
         self.layout = layout
-        self.sort = sort
-        self.viewMode = viewMode
+        paneLooks = Array(
+            repeating: PaneLook(sort: sort, viewMode: viewMode), count: layout.panes.count)
     }
 
-    /// The window's panes, tabs, sort order and view, for the next launch (ADR 0024).
+    /// Replaces the window's panes, tabs and each pane's sort order and view with a
+    /// restored window's (ADR 0024, ADR 0154), before `start()` loads them.
+    public func restore(_ window: RestoredWindow) {
+        layout = window.layout
+        paneLooks =
+            window.paneLooks.count == layout.panes.count
+            ? window.paneLooks
+            : Array(
+                repeating: PaneLook(sort: window.sort, viewMode: window.viewMode),
+                count: layout.panes.count)
+    }
+
+    /// The window's panes, tabs and each pane's sort order and view, for the next launch
+    /// (ADR 0024).
     public var snapshot: WindowSnapshot {
-        WindowSnapshot(layout: layout, sort: sort, viewMode: viewMode)
+        WindowSnapshot(layout: layout, looks: paneLooks)
     }
 
     /// Loads the sidebar and the folders the panes show.
@@ -171,7 +191,8 @@ public final class BrowserState {
             content.query.isEmpty
             ? shown
             : shown.filter { $0.name.localizedCaseInsensitiveContains(content.query) }
-        return sort.sorted(matching, kinds: kinds) { gitState(of: $0, in: tab) }
+        let pane = layout.panes.firstIndex { $0.tab(tab) != nil } ?? layout.focusedPaneIndex
+        return sort(of: pane).sorted(matching, kinds: kinds) { gitState(of: $0, in: tab) }
     }
 
     /// The containers inside a folder, by name, for the sidebar tree, with
@@ -209,14 +230,17 @@ public final class BrowserState {
         watcher.changes(of: folder)
     }
 
-    /// Sorts by a column; the same column again flips the direction.
+    /// Sorts the focused pane by a column; the same column again flips the direction.
     public func sort(by column: SortColumn) {
-        sort = sort.selecting(column)
+        updateLook(of: layout.focusedPaneIndex) { $0.sort = $0.sort.selecting(column) }
     }
 
-    /// Sorts by a column in a direction, as the command bar's Sort menu chooses.
+    /// Sorts the focused pane by a column in a direction, as the command bar's Sort menu
+    /// chooses.
     public func sort(by column: SortColumn, ascending: Bool) {
-        sort = ItemSort(column: column, ascending: ascending)
+        updateLook(of: layout.focusedPaneIndex) {
+            $0.sort = ItemSort(column: column, ascending: ascending)
+        }
     }
 
     /// Selects an item in a tab: alone, or toggled into the selection when extending.

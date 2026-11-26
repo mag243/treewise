@@ -235,7 +235,7 @@ final class Locations {
             watcher: DirectoryWatcher(), startFolder: FileItem.ID(first.standardizedFileURL.path),
             settings: settings, clipboard: clipboard)
         if let restored = snapshot?.restored(isUsable: isUsable) {
-            state.restore(restored.layout, sort: restored.sort, viewMode: restored.viewMode)
+            state.restore(restored)
         }
         window.opening = nil
         window.browser = state

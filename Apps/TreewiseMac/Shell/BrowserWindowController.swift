@@ -153,7 +153,7 @@ final class BrowserWindowController: NSWindowController, NSWindowDelegate {
 
     private func start() {
         if let restored = request?.snapshot?.restored(isUsable: { _ in true }) {
-            browser.restore(restored.layout, sort: restored.sort, viewMode: restored.viewMode)
+            browser.restore(restored)
         }
         Task { await browser.start() }
     }

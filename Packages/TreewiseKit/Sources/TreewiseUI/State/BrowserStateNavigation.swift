@@ -100,6 +100,7 @@ extension BrowserState {
             return .tab
         }
         guard layout.closePane(at: pane) else { return .window }
+        removeLook(at: pane)
         contents[tab] = nil
         updateWatches()
         return .pane
@@ -132,6 +133,12 @@ extension BrowserState {
     /// Turns split view on, with a second pane showing `folder`, or off,
     /// merging the tabs of both panes.
     public func toggleSplit(newPaneAt folder: FileItem.ID) async {
+        let focused = layout.focusedPaneIndex
+        if layout.isSplit {
+            paneLooks = [look(of: focused)]
+        } else {
+            addLookForNewPane(from: focused)
+        }
         layout.toggleSplit(newPaneAt: folder)
         if layout.isSplit {
             await load(layout.focusedPane.activeTabID)

@@ -11,6 +11,7 @@ extension BrowserState {
     /// focus. A window already split keeps its halves.
     public func showSplitView() async {
         guard !layout.isSplit else { return }
+        addLookForNewPane(from: layout.focusedPaneIndex)
         layout.toggleSplit(newPaneAt: layout.focusedPane.activeTab.folder)
         await load(layout.focusedPane.activeTabID)
     }
@@ -22,6 +23,7 @@ extension BrowserState {
         guard let other else { return }
         let closed = layout.panes[other].tabs.map(\.id)
         layout.closePane(at: other)
+        removeLook(at: other)
         for tab in closed { contents[tab] = nil }
         updateWatches()
     }
