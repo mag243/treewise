@@ -1,7 +1,13 @@
+import AppKit
 import XCTest
 
 /// Split View: two folders side by side in one window, ⌃⌘\ to show and hide it, the other
 /// side as the other half, and a split window restored split (ADR 0154).
+extension XCUIElement {
+    /// Whether the element has the keyboard, as macOS's accessibility reports it.
+    fileprivate var hasKeyboard: Bool { (value(forKey: "hasKeyboardFocus") as? Bool) == true }
+}
+
 extension LaunchTests {
     /// The narrowest a half's list is expected to be, a little under the app's minimum
     /// half width, which also holds the half's caption and edges.
@@ -56,6 +62,59 @@ extension LaunchTests {
         app.typeKey("\\", modifierFlags: [.command, .control])
         XCTAssertTrue(app.eventually { window.tables.count == 1 }, "one half again")
         XCTAssertEqual(captions(in: window).count, 0)
+    }
+
+    @MainActor
+    func testTheActiveHalfKeepsTheKeyboardAlsoAsIcons() throws {
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.tables.staticTexts["Projects"].appeared(timeout: Self.launchTimeout))
+        window.tables.staticTexts["Notes.md"].click()
+
+        app.typeKey("\\", modifierFlags: [.command, .control])
+
+        XCTAssertTrue(app.eventually { self.showsTwoHalves(window) }, "two halves")
+        XCTAssertTrue(
+            app.eventually { window.tables.element(boundBy: 1).hasKeyboard },
+            "the new right half has the keyboard")
+        XCTAssertFalse(window.tables.element(boundBy: 0).hasKeyboard, "not the left half")
+        app.typeKey("1", modifierFlags: .command)
+        XCTAssertTrue(
+            app.eventually { window.collectionViews.firstMatch.hasKeyboard },
+            "the right half's icons have it")
+        XCTAssertFalse(window.tables.firstMatch.hasKeyboard, "not the left half's list")
+    }
+
+    /// Whether a row is drawn with the accent colour's selection, as only the active
+    /// half's selection is: its leftmost pixels are clearly blue rather than grey.
+    @MainActor
+    private func showsAccentSelection(_ row: XCUIElement) throws -> Bool {
+        let image = row.screenshot().image
+        let bitmap = try XCTUnwrap(
+            image.cgImage(forProposedRect: nil, context: nil, hints: nil).map(NSBitmapImageRep.init)
+        )
+        let colour = try XCTUnwrap(
+            bitmap.colorAt(x: 4, y: bitmap.pixelsHigh / 2)?.usingColorSpace(.sRGB))
+        return colour.blueComponent - max(colour.redComponent, colour.greenComponent) > 0.25
+    }
+
+    @MainActor
+    func testTheInactiveHalfShowsItsSelectionWithoutTheAccentColour() throws {
+        let app = try launchApp()
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.tables.staticTexts["Notes.md"].appeared(timeout: Self.launchTimeout))
+        window.tables.staticTexts["Notes.md"].click()
+        let selected = window.tables.element(boundBy: 0).tableRows
+            .matching(NSPredicate(format: "selected == true")).firstMatch
+        XCTAssertTrue(selected.appeared(timeout: Self.launchTimeout))
+        XCTAssertTrue(try showsAccentSelection(selected), "the active list's selection is blue")
+
+        app.typeKey("\\", modifierFlags: [.command, .control])
+
+        XCTAssertTrue(app.eventually { self.showsTwoHalves(window) }, "two halves")
+        XCTAssertTrue(
+            app.eventually { (try? self.showsAccentSelection(selected)) == false },
+            "the left half, no longer active, shows its selection without the accent colour")
     }
 
     @MainActor

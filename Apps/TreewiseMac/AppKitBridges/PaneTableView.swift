@@ -35,7 +35,11 @@ final class PaneTableView: NSTableView, NSMenuItemValidation {
     var isActivePane = true {
         didSet {
             guard oldValue != isActivePane else { return }
-            enumerateAvailableRowViews { rowView, _ in rowView.needsDisplay = true }
+            // AppKit draws a row's selection anew only when its emphasis is set.
+            enumerateAvailableRowViews { rowView, _ in
+                rowView.isEmphasized = isActivePane
+                rowView.needsDisplay = true
+            }
         }
     }
 
@@ -160,6 +164,9 @@ final class PaneRowView: NSTableRowView {
 
     override var isEmphasized: Bool {
         get { table?.isActivePane ?? true }
-        set {}  // AppKit sets this from the keyboard focus; the pane decides instead.
+        // AppKit sets this from the keyboard focus; the pane decides instead, and setting
+        // it is what makes AppKit draw the selection again.
+        // swiftlint:disable:next unused_setter_value - the pane's state wins over AppKit's
+        set { super.isEmphasized = table?.isActivePane ?? true }
     }
 }
