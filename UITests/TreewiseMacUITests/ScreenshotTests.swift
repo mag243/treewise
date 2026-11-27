@@ -34,6 +34,8 @@ final class ScreenshotTests: XCTestCase {
     @MainActor func testFolderTemplateDark() throws { try folderTemplate(dark: true) }
     @MainActor func testGitStatusLight() throws { try gitStatus(dark: false) }
     @MainActor func testGitStatusDark() throws { try gitStatus(dark: true) }
+    @MainActor func testSplitViewLight() throws { try splitView(dark: false) }
+    @MainActor func testSplitViewDark() throws { try splitView(dark: true) }
 
     // MARK: - Scenes
 
@@ -179,6 +181,24 @@ final class ScreenshotTests: XCTestCase {
             "the branch")
         settleScene()
         keep(window.screenshot(), as: name("08-git", dark: dark))
+    }
+
+    /// One window split in two (ADR 0154): Documents as a list on the left and, in the
+    /// active right half, Pictures as icons.
+    @MainActor
+    private func splitView(dark: Bool) throws {
+        let app = try launch(dark: dark)
+        go(to: "Documents", in: app)
+        let window = app.windows.firstMatch
+        app.typeKey("\\", modifierFlags: [.command, .control])
+        XCTAssertTrue(app.eventually { window.tables.count == 2 }, "two halves")
+        app.go(to: "../Pictures", timeout: Self.timeout, title: "Documents | Pictures")
+        app.typeKey("1", modifierFlags: .command)
+        XCTAssertTrue(
+            window.collectionViews.staticTexts["Wallpaper.jpg"].waitForExistence(
+                timeout: Self.timeout), "the right half shows Pictures as icons")
+        settleScene()
+        keep(window.screenshot(), as: name("09-split", dark: dark))
     }
 
     @MainActor

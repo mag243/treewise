@@ -2,10 +2,11 @@ import XCTest
 
 extension XCUIApplication {
     /// Goes to `path`, relative to the window's folder, by typing it in the address bar one
-    /// key at a time; a tilde would be a dead key on some keyboard layouts.
+    /// key at a time; a tilde would be a dead key on some keyboard layouts. Waits for the
+    /// window's `title`, by default the folder's name; a split window names both halves.
     @MainActor
-    func go(to path: String, timeout: TimeInterval) {
-        let folder = String(path.split(separator: "/").last ?? "")
+    func go(to path: String, timeout: TimeInterval, title: String? = nil) {
+        let folder = title ?? String(path.split(separator: "/").last ?? "")
         typeKey("l", modifierFlags: .command)
         XCTAssertTrue(textFields["Address"].waitForExistence(timeout: timeout))
         typeKey("a", modifierFlags: .command)
