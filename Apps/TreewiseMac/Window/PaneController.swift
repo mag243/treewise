@@ -51,10 +51,16 @@ final class PaneController: NSViewController {
         rows.orientation = .vertical
         rows.spacing = 0
         rows.alignment = .leading
+        // The height left over goes to the folder, never between the rows, so the status
+        // bar sits at the bottom with the same height in either half.
+        rows.distribution = .fill
         for row in rows.arrangedSubviews {
             row.widthAnchor.constraint(equalTo: rows.widthAnchor).isActive = true
         }
         folderArea.setContentHuggingPriority(.defaultLow, for: .vertical)
+        for bar in [templateBar, statusBar] as [NSStackView] {
+            bar.setHuggingPriority(.defaultHigh, for: .vertical)
+        }
         view = rows
         Observing.follow(self) { $0.update() }
     }

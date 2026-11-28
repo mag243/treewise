@@ -47,9 +47,38 @@ extension UIReviewTests {
         XCTAssertTrue(app.eventually { window.tables.count + window.collectionViews.count == 2 })
         app.typeKey("1", modifierFlags: .command)
         settleScreen()
-        review(window, as: "browser-split", appearance: appearance)
+        review(
+            window, as: "browser-split", appearance: appearance,
+            also: statusBarsLevel(in: window))
         app.typeKey("2", modifierFlags: .command)
         app.typeKey("\\", modifierFlags: [.command, .control])
+    }
+
+    /// What two frames' heights may differ by and still line up, as frames are rounded.
+    private static let levelSlack: CGFloat = 1
+
+    /// A finding when the halves' status bars do not line up: each half's view buttons
+    /// sit at the same height, whatever the half shows.
+    @MainActor
+    private func statusBarsLevel(in window: XCUIElement) -> [UIReviewFinding] {
+        let buttons = window.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "as List"))
+            .allElementsBoundByIndex.map(\.frame)
+        guard buttons.count == 2 else {
+            return [
+                UIReviewFinding(
+                    check: "statusBarsLevel", element: "status bar",
+                    detail: "found \(buttons.count) view buttons, not one in each half")
+            ]
+        }
+        guard abs(buttons[0].minY - buttons[1].minY) > Self.levelSlack else { return [] }
+        return [
+            UIReviewFinding(
+                check: "statusBarsLevel", element: "status bar",
+                detail:
+                    "the halves' view buttons sit at \(Int(buttons[0].minY)) and \(Int(buttons[1].minY))"
+            )
+        ]
     }
 
     /// The width a new window's sidebar starts at, `SidebarWidth.ideal` (ADR 0093), which the
