@@ -237,33 +237,3 @@ private final class Heard: Sendable {
         listening.withLock { $0?.cancel() }
     }
 }
-
-/// Runs git for a test, apart from the user's own settings, with a name to commit under.
-@discardableResult
-private func git(_ arguments: [String], in folder: String) throws -> String {
-    let tool = try #require(GitTool.find())
-    let output = Pipe()
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: tool.executable)
-    process.arguments =
-        ["-C", folder, "-c", "user.name=Test", "-c", "user.email=test@example.com"] + arguments
-    process.environment = [
-        "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1", "LC_ALL": "C",
-    ]
-    process.standardOutput = output
-    process.standardError = output
-    try process.run()
-    let data = output.fileHandleForReading.readDataToEndOfFile()
-    process.waitUntilExit()
-    let text = String(bytes: data, encoding: .utf8) ?? ""
-    guard process.terminationStatus == 0 else {
-        throw GitTestFailure(arguments: arguments, output: text)
-    }
-    return text
-}
-
-private struct GitTestFailure: Error, CustomStringConvertible {
-    let arguments: [String]
-    let output: String
-    var description: String { "git \(arguments.joined(separator: " ")): \(output)" }
-}
